@@ -1,0 +1,180 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper to check if user is logged in
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    // Helper to check if user is an admin (verified against firestore document)
+    function isAdmin() {
+      return isLoggedIn() && 
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper to check if user owns the support ticket or is admin
+    function isTicketParticipant(ticketId) {
+      return isLoggedIn() && (
+        isAdmin() ||
+        (firestore.exists(/databases/(default)/documents/supportTickets/$(ticketId)) &&
+         'userId' in firestore.get(/databases/(default)/documents/supportTickets/$(ticketId)).data &&
+         firestore.get(/databases/(default)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid) ||
+        (firestore.exists(/databases/(default)/documents/support_tickets/$(ticketId)) &&
+         'userId' in firestore.get(/databases/(default)/documents/support_tickets/$(ticketId)).data &&
+         firestore.get(/databases/(default)/documents/support_tickets/$(ticketId)).data.userId == request.auth.uid) ||
+        (firestore.exists(/databases/(default)/documents/buyer_support/$(ticketId)) &&
+         'buyerId' in firestore.get(/databases/(default)/documents/buyer_support/$(ticketId)).data &&
+         firestore.get(/databases/(default)/documents/buyer_support/$(ticketId)).data.buyerId == request.auth.uid) ||
+        (firestore.exists(/databases/(default)/documents/seller_support/$(ticketId)) &&
+         'sellerId' in firestore.get(/databases/(default)/documents/seller_support/$(ticketId)).data &&
+         firestore.get(/databases/(default)/documents/seller_support/$(ticketId)).data.sellerId == request.auth.uid)
+      );
+    }
+
+    // Helper to check if user is buyer or seller of an order or admin
+    function isOrderParticipant(orderId) {
+      return isLoggedIn() && (
+        isAdmin() ||
+        (
+          firestore.exists(/databases/(default)/documents/orders/$(orderId)) && (
+            ('buyerId' in firestore.get(/databases/(default)/documents/orders/$(orderId)).data && firestore.get(/databases/(default)/documents/orders/$(orderId)).data.buyerId == request.auth.uid) ||
+            ('userId' in firestore.get(/databases/(default)/documents/orders/$(orderId)).data && firestore.get(/databases/(default)/documents/orders/$(orderId)).data.userId == request.auth.uid) ||
+            ('sellerId' in firestore.get(/databases/(default)/documents/orders/$(orderId)).data && firestore.get(/databases/(default)/documents/orders/$(orderId)).data.sellerId == request.auth.uid) ||
+            ('sellerIds' in firestore.get(/databases/(default)/documents/orders/$(orderId)).data && request.auth.uid in firestore.get(/databases/(default)/documents/orders/$(orderId)).data.sellerIds)
+          )
+        )
+      );
+    }
+
+    // Helper to check if user is participant in a dispute
+    function isDisputeParticipant(disputeOrOrderId) {
+      return isLoggedIn() && (
+        isAdmin() ||
+        isOrderParticipant(disputeOrOrderId) ||
+        (
+          firestore.exists(/databases/(default)/documents/disputes/$(disputeOrOrderId)) && (
+            ('buyerId' in firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data && firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data.buyerId == request.auth.uid) ||
+            ('sellerId' in firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data && firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data.sellerId == request.auth.uid) ||
+            ('userId' in firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data && firestore.get(/databases/(default)/documents/disputes/$(disputeOrOrderId)).data.userId == request.auth.uid)
+          )
+        )
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // PRODUCT IMAGES & VIDEOS
+    // -------------------------------------------------------------------------
+    // Upload occurs during product creation/editing before Firestore save.
+    // Secure by requiring filename to start with the user's UID.
+    match /products/{type}/{fileName} {
+      allow read: if true;
+      allow write: if isLoggedIn() && (
+        isAdmin() || (
+          fileName.startsWith(request.auth.uid + '_') &&
+          (
+            (type == 'images' && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*')) ||
+            (type == 'videos' && request.resource.size < 50 * 1024 * 1024 && request.resource.contentType.matches('video/.*'))
+          )
+        )
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // SELLER KYC DOCUMENTS (Extreme confidentiality required)
+    // -------------------------------------------------------------------------
+    match /kyc/{uid}/{fileName} {
+      allow read: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isLoggedIn() && request.auth.uid == uid 
+        && request.resource.size < 10 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+
+    // -------------------------------------------------------------------------
+    // USER PUBLIC AVATARS (Legacy fallback / public avatars)
+    // -------------------------------------------------------------------------
+    match /users/{uid}/avatar/{fileName} {
+      allow read: if true;
+      allow write: if isLoggedIn() && request.auth.uid == uid 
+        && request.resource.size < 2 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // -------------------------------------------------------------------------
+    // SHOP ASSETS (Banners, Logos)
+    // -------------------------------------------------------------------------
+    match /shops/{sellerId}/{fileName} {
+      allow read: if true;
+      allow write: if isLoggedIn() && (isAdmin() || request.auth.uid == sellerId) 
+        && request.resource.size < 5 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // -------------------------------------------------------------------------
+    // PRIVATE SUPPORT & DISPUTE ATTACHMENTS (STRICT PARTICIPANT ACCESS ONLY - NO IDOR)
+    // -------------------------------------------------------------------------
+    match /support/{ticketId}/{fileName} {
+      allow read: if isTicketParticipant(ticketId);
+      allow write: if isTicketParticipant(ticketId) 
+        && request.resource.size < 10 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+
+    match /disputes/{disputeId}/{fileName} {
+      allow read: if isDisputeParticipant(disputeId);
+      allow write: if isDisputeParticipant(disputeId) 
+        && request.resource.size <= 1 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+
+    match /returns/{orderId}/{fileName} {
+      allow read: if isOrderParticipant(orderId);
+      allow write: if isOrderParticipant(orderId) 
+        && request.resource.size <= 1 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+
+    // -------------------------------------------------------------------------
+    // LIVE CHAT IMAGES (ORDER PARTICIPANTS ONLY - NO IDOR)
+    // -------------------------------------------------------------------------
+    match /chat_images/{orderId}/{fileName} {
+      allow read: if isOrderParticipant(orderId);
+      allow write: if isOrderParticipant(orderId) 
+        && request.resource.size < 10 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // -------------------------------------------------------------------------
+    // ADMIN ASSETS & MARKETING
+    // -------------------------------------------------------------------------
+    match /banners/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /categories_covers/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /megamenu_icons/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 2 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /homepage_media/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 15 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*'));
+    }
+
+    match /newsletter-images/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

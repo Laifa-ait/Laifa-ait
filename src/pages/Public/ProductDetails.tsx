@@ -1,0 +1,330 @@
+import React, { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowLeft, Share2, ShieldCheck, Star, ShoppingBag, Info, Flame } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import { db } from "../../lib/firebase";
+import { useCart } from "../../context/CartContext";
+import { useShop } from "../../context/ShopContext";
+import { Product } from "../../domains/product/product.types";
+import { Helmet } from "react-helmet-async";
+import { ProductGallery } from "../../components/Product/Details/ProductGallery";
+import { ProductInfo } from "../../components/Product/Details/ProductInfo";
+import { ProductBuyBox } from "../../components/Product/Details/ProductBuyBox";
+import { ProductReviews } from "../../components/Product/Details/ProductReviews";
+import { ProductLightbox } from "../../components/Product/ProductLightbox";
+import { ProductCard } from "../../components/Product/ProductCard";
+import { useProductLogic } from "../../hooks/useProductLogic";
+import { Breadcrumbs } from "../../components/Layout/Breadcrumbs";
+
+import {
+  getCategoryTranslation,
+  getTranslatedField,
+} from "../../utils/translations";
+
+export const ProductDetails: React.FC = () => {
+
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const { fetchCrossSellProducts } = useShop();
+
+  const [recommendedProducts, setRecommendedProducts] = React.useState<Product[]>([]);
+  const [loadingRecom, setLoadingRecom] = React.useState(true);
+  
+  const {
+    product,
+    shop,
+    loading,
+    selectedImageIndex,
+    setSelectedImageIndex,
+    selectedColor,
+    setSelectedColor,
+    selectedSize,
+    setSelectedSize,
+    showVideo,
+    setShowVideo,
+    isLightboxOpen,
+    setIsLightboxOpen,
+    showStickyBuyBar,
+    setShowStickyBuyBar,
+    images,
+    currentPrice,
+    reviews
+  } = useProductLogic();
+
+  const buyBoxRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setShowStickyBuyBar(!entry.isIntersecting), { threshold: 0 });
+    const current = buyBoxRef.current;
+    if (current) observer.observe(current);
+    return () => {
+      if (current) observer.unobserve(current);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      if (!product) return;
+      try {
+        setLoadingRecom(true);
+        const list = await fetchCrossSellProducts(product, 4);
+        setRecommendedProducts(list);
+      } catch (err) {
+        console.error("Error loading recommended products", err);
+      } finally {
+        setLoadingRecom(false);
+      }
+    };
+    loadRecommendations();
+  }, [product, fetchCrossSellProducts]);
+
+  const breadcrumbItems = React.useMemo(() => {
+    if (!product) return [];
+    const items = [
+      { label: t("common.shop") || "Boutique", link: "/shop" }
+    ];
+    if (product.category) {
+      items.push({
+        label: getCategoryTranslation(product.category, t),
+        link: `/shop?category=${encodeURIComponent(product.category)}`
+      });
+    }
+    if (product.subcategory) {
+      items.push({
+        label: getCategoryTranslation(product.subcategory, t),
+        link: `/shop?category=${encodeURIComponent(product.category)}&subcategory=${encodeURIComponent(product.subcategory)}`
+      });
+    }
+    const subSub = product.subSubCategory || product.subsubcategory;
+    if (subSub) {
+      items.push({
+        label: getCategoryTranslation(subSub, t),
+        link: `/shop?category=${encodeURIComponent(product.category)}&subcategory=${encodeURIComponent(product.subcategory!)}&subsubcategory=${encodeURIComponent(subSub)}`
+      });
+    }
+    if (product.name) {
+      items.push({
+        label: product.name,
+        link: ""
+      });
+    }
+    return items;
+  }, [product, t]);
+
+  const calculatedVariantKey = React.useMemo(() => {
+    return [selectedColor, selectedSize].filter(Boolean).join(' - ').toUpperCase();
+  }, [selectedColor, selectedSize]);
+
+  const selectedVariantObj = React.useMemo(() => {
+    if (!product || !product.variants || !Array.isArray(product.variants)) return null;
+    return product.variants.find((v: any) => v.name === calculatedVariantKey) || null;
+  }, [product, calculatedVariantKey]);
+
+  const isCurrentSelectionOutOfStock = React.useMemo(() => {
+    if (product && product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+      if (!selectedVariantObj) return false;
+      return (Number(selectedVariantObj.stock) || 0) <= 0;
+    }
+    return (product?.stock || 0) <= 0;
+  }, [product, selectedVariantObj]);
+
+  const displayedPrice = React.useMemo(() => {
+    const basePrice = currentPrice || 0;
+    if (selectedVariantObj) {
+      if (selectedVariantObj.priceOverride !== undefined && selectedVariantObj.priceOverride !== null && selectedVariantObj.priceOverride !== '') {
+         return Number(selectedVariantObj.priceOverride);
+      } else if (selectedVariantObj.priceDiff) {
+         return basePrice + Number(selectedVariantObj.priceDiff);
+      }
+    }
+    return basePrice;
+  }, [currentPrice, selectedVariantObj]);
+
+  const isColorOutOfStock = React.useCallback((c: string) => {
+    if (!product || !product.variants || !Array.isArray(product.variants) || product.variants.length === 0) {
+      return false;
+    }
+    const matchingVariants = product.variants.filter((v: any) => {
+      const parts = v.name.split(" - ");
+      return parts[0]?.toUpperCase() === c.toUpperCase();
+    });
+    if (matchingVariants.length === 0) return false;
+    return matchingVariants.every((v: any) => (parseInt(v.stock) || 0) <= 0);
+  }, [product]);
+
+  const isSizeOutOfStock = React.useCallback((s: string) => {
+    if (!product || !product.variants || !Array.isArray(product.variants) || product.variants.length === 0) {
+      return false;
+    }
+    const matchingVariants = product.variants.filter((v: any) => {
+      const parts = v.name.split(" - ");
+      return parts[1]?.toUpperCase() === s.toUpperCase() || parts[0]?.toUpperCase() === s.toUpperCase();
+    });
+    if (matchingVariants.length === 0) return false;
+    return matchingVariants.every((v: any) => (parseInt(v.stock) || 0) <= 0);
+  }, [product]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    const hasColors = product.colors && product.colors.length > 0;
+    const hasSizes = product.sizes && product.sizes.length > 0;
+    
+    if (hasColors && !selectedColor) {
+      toast.error(t("product.select_color_required") || "Veuillez sélectionner une couleur.");
+      return;
+    }
+    
+    if (hasSizes && !selectedSize) {
+      toast.error(t("product.select_size_required") || "Veuillez sélectionner une taille.");
+      return;
+    }
+    
+    let selectedVariant: string | null = null;
+    if (hasColors || hasSizes) {
+       selectedVariant = [selectedColor, selectedSize].filter(Boolean).join(' - ').toUpperCase();
+    }
+    
+    try {
+      await addToCart(product.id, product.sellerId, { selectedVariant });
+      if (navigator.vibrate) navigator.vibrate(50);
+      toast.success(t("product_added_to_cart") || "Article ajouté au panier !");
+    } catch (err) {
+      toast.error(t("checkout.error_adding_to_cart") || "Erreur lors de l'ajout au panier");
+      console.error(err);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      if (product) await navigator.share({ title: product.name, url: window.location.href });
+    } catch (e) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success(t("product.link_copied") || "Lien copié !");
+    }
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">{t("common.loading") || "Chargement..."}</div>;
+  if (!product) return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center bg-transparent">
+      <ShoppingBag className="w-16 h-16 text-slate-800/30 mb-4" />
+      <h1 className="text-2xl font-sans font-bold tracking-tight text-slate-800 mb-4">{t("common.not_found") || "Produit non trouvé"}</h1>
+      <button onClick={() => navigate('/shop')} className="px-8 py-3.5 bg-slate-800 hover:bg-zinc-900 text-white font-sans font-bold tracking-tight text-sm uppercase tracking-widest rounded-full transition-all cursor-pointer shadow-md">
+        {t("common.back_to_shop") || "Retour à la boutique"}
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="bg-transparent min-h-screen pb-32 selection:bg-black selection:text-white">
+      <Helmet>
+        <title>{product?.name ? `${product.name} | OLMART` : 'Produit | OLMART'}</title>
+        <meta name="description" content={product?.description?.substring(0, 160)} />
+        <meta property="og:title" content={product?.name} />
+        <meta property="og:description" content={product?.description?.substring(0, 200)} />
+        <meta property="og:image" content={images?.[0] || product?.images?.[0]} />
+        <meta property="og:type" content="product" />
+        <meta property="product:price:amount" content={String(displayedPrice)} />
+        <meta property="product:price:currency" content="DZD" />
+        {product && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": product.name,
+              "image": images?.[0] || product.images?.[0],
+              "description": product.description,
+              "sku": product.id,
+              "offers": {
+                "@type": "Offer",
+                "url": typeof window !== "undefined" ? window.location.href : "",
+                "priceCurrency": "DZD",
+                "price": displayedPrice,
+                "availability": isCurrentSelectionOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+              },
+              "aggregateRating": product.stats?.reviewCount ? {
+                "@type": "AggregateRating",
+                "ratingValue": product.stats?.averageRating || 5,
+                "reviewCount": product.stats?.reviewCount
+              } : undefined
+            })}
+          </script>
+        )}
+      </Helmet>
+      
+      <div className="pt-1 sm:pt-3 lg:pt-4">
+        <Breadcrumbs items={breadcrumbItems} />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 pb-16">
+          <div className="lg:col-span-6 h-max lg:sticky lg:top-28">
+            <ProductGallery images={images} selectedIndex={selectedImageIndex} productName={product.name} onSelectImage={setSelectedImageIndex} showVideo={showVideo} setShowVideo={setShowVideo} productVideoUrl={product.video} onOpenLightbox={() => setIsLightboxOpen(true)} />
+          </div>
+
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-white rounded-[2rem] p-5 sm:p-8 border border-stone-200/35 shadow-sm space-y-8">
+              <ProductInfo product={product} shop={shop} currentPrice={displayedPrice} selectedColor={selectedColor} selectedSize={selectedSize} onSelectColor={setSelectedColor} onSelectSize={setSelectedSize} isColorOutOfStock={isColorOutOfStock} isSizeOutOfStock={isSizeOutOfStock} />
+              <ProductBuyBox product={product} isCurrentSelectionOutOfStock={isCurrentSelectionOutOfStock} onAddToCart={handleAddToCart} onToggleWishlist={() => toggleWishlist(product.id)} wishlist={wishlist} onShare={handleShare} stickyRef={buyBoxRef} isSticky={showStickyBuyBar} />
+            </div>
+            
+            <div className="bg-white rounded-[2rem] p-5 sm:p-8 border border-stone-200/35 shadow-sm">
+              <ProductReviews comments={reviews.map(r => ({ id: r.id, name: r.userName, stars: r.rating, text: r.comment, createdAt: r.createdAt }))} stats={product.stats} userCanReview={false} submittingReview={false} newReviewText="" setNewReviewText={() => {}} newReviewStars={5} setNewReviewStars={() => {}} onSubmit={async (e) => e.preventDefault()} />
+            </div>
+          </div>
+        </div>
+
+
+        <ProductLightbox 
+          isOpen={isLightboxOpen} 
+          onClose={() => setIsLightboxOpen(false)} 
+          imageUrl={images[selectedImageIndex]} 
+          title={product.name} 
+        />
+
+        {/* Cohesive Recommended Products Module */}
+        <div className="mt-16 sm:mt-24 pt-16 border-t border-black/10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 px-2">
+            <div>
+              <div className="flex items-center gap-2 text-zinc-900 font-bold text-[11px] uppercase tracking-widest rtl:tracking-normal mb-2 bg-zinc-900/5 self-start px-3 py-1 rounded-full border border-zinc-900/20 w-fit">
+                <Flame className="w-4 h-4 text-orange-500" /> {t("product.premium_selection") || "Sélection Premium"}
+              </div>
+              <h2 className="font-sans font-bold tracking-tight text-2xl sm:text-3xl text-slate-900 uppercase tracking-wide">
+                {t("product.you_might_also_like") || "Vous aimerez aussi"}
+              </h2>
+            </div>
+          </div>
+
+          {loadingRecom ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 opacity-60">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="group cursor-pointer">
+                  <div className="aspect-[3/4] bg-slate-100 mb-3 overflow-hidden relative">
+                    <div className="w-full h-full bg-slate-200 animate-pulse"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-slate-200 w-3/4 animate-pulse rounded"></div>
+                    <div className="h-4 bg-slate-200 w-1/2 animate-pulse rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recommendedProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {recommendedProducts.map((p, idx) => (
+                <div key={p.id} className="opacity-0 animate-fade-in" style={{ animationDelay: `${idx * 100}ms`, animationFillMode: "forwards" }}>
+                  <ProductCard product={p} index={idx} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 italic px-2">{t("product.no_recommendations") || "Aucune recommandation pour le moment."}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

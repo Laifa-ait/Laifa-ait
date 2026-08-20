@@ -1,0 +1,24 @@
+import { defineConfig } from 'vitest/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/tests/**/*.test.ts', 'src/tests/**/*.test.tsx', 'src/tests/**/*.spec.ts'],
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+    maxWorkers: 1,
+    minWorkers: 1,
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
+  },
+});

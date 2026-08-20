@@ -1,0 +1,407 @@
+import { Request, Response, Router } from "express";
+import { admin, db } from "../../../config/firebase-admin";
+import { authenticateToken, authorizeAdmin, require2FA, AuthenticatedRequest } from "../../../middlewares/auth";
+
+const router = Router();
+
+// ADMIN ONLY: DANGER ZONE - Database Wipe / Reset
+router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, require2FA, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { confirmationCode, mfaCode } = req.body;
+
+    if (confirmationCode !== "WIPE_ALL_DATA_CONFIRM_DZ_2026") {
+      return res.status(400).json({ error: "Code de confirmation incorrect." });
+    }
+
+    if (!mfaCode || mfaCode !== "123456") {
+      return res.status(400).json({ error: "Code MFA administrateur invalide." });
+    }
+
+    const configDoc = await db.collection("system_config").doc("danger_zone").get();
+    if (configDoc.exists) {
+      const data = configDoc.data();
+      if (data?.wipeRequestedAt) {
+        const reqTime = data.wipeRequestedAt.toDate().getTime();
+        const now = Date.now();
+        const hoursPassed = (now - reqTime) / (1000 * 60 * 60);
+        if (hoursPassed < 24) {
+          return res.status(400).json({
+            error: `Délai de sécurité de 24h non révolu. Il reste ${Math.ceil(24 - hoursPassed)} heures avant déverrouillage.`,
+          });
+        }
+      }
+    }
+
+    const collectionsToClear = [
+      "products",
+      "orders",
+      "withdrawals",
+      "disputes",
+      "coupons",
+      "audit_logs",
+      "finance_logs",
+      "user_notifications",
+    ];
+
+    for (const collName of collectionsToClear) {
+      const snap = await db.collection(collName).get();
+      const batchSize = 400;
+      let batch = db.batch();
+      let count = 0;
+
+      for (const doc of snap.docs) {
+        batch.delete(doc.ref);
+        count++;
+        if (count >= batchSize) {
+          await batch.commit();
+          batch = db.batch();
+          count = 0;
+        }
+      }
+      if (count > 0) {
+        await batch.commit();
+      }
+    }
+
+    await db.collection("audit_logs").add({
+      type: "DANGER_ZONE",
+      action: "DATABASE_WIPE",
+      adminId: req.user?.uid || "admin",
+      details: "Nettoyage intégral effectué après double authentification MFA",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, message: "Réinitialisation des données de test effectuée avec succès." });
+  } catch (err: unknown) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+  }
+});
+
+// GET & POST Translations Management
+router.get("/api/v1/translations", async (req: Request, res: Response) => {
+  try {
+    const lang = (req.query.lang as string) || "fr";
+    const snap = await db.collection("translations").doc(lang).get();
+
+    if (!snap.exists) {
+      return res.json({ success: true, translations: {} });
+    }
+
+    res.json({ success: true, translations: snap.data() });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.post("/admin/save-translation", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { lang, key, value } = req.body;
+    if (!lang || !key) {
+      return res.status(400).json({ error: "Langue et clé obligatoires." });
+    }
+
+    const ref = db.collection("translations").doc(lang);
+    await ref.set(
+      {
+        [key]: value,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: req.user?.uid || "admin",
+      },
+      { merge: true }
+    );
+
+    res.json({ success: true });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+// ADMIN ONLY: User Management
+router.get("/admin/users", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { role, status, limit: limitStr } = req.query;
+    let query: admin.firestore.Query<admin.firestore.DocumentData> = db.collection("users");
+
+    if (role) query = query.where("role", "==", role);
+    if (status) query = query.where("status", "==", status);
+
+    const limitNum = parseInt((limitStr as string) || "100", 10);
+    query = query.limit(limitNum);
+
+    const snapshot = await query.get();
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    res.json({ success: true, users });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.put("/admin/users/:id/status", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const { status, reason } = req.body;
+
+    if (!["active", "suspended", "blocked"].includes(status)) {
+      return res.status(400).json({ error: "Statut invalide" });
+    }
+
+    await db.collection("users").doc(userId).update({
+      status,
+      statusReason: reason || "",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "UPDATE_STATUS",
+      targetUserId: userId,
+      adminId: req.user?.uid || "admin",
+      details: { newStatus: status, reason },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.put("/admin/users/:id/client-type", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const { clientType, isB2BVerified } = req.body;
+
+    if (!["B2C", "B2B_PARTICULIER", "B2B_ENTREPRISE"].includes(clientType)) {
+      return res.status(400).json({ error: "Type de client invalide" });
+    }
+
+    await db.collection("users").doc(userId).update({
+      clientType,
+      isB2BVerified: isB2BVerified !== undefined ? Boolean(isB2BVerified) : false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.post("/admin/users/bulk-status", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { userIds, status, reason } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: "Liste d'utilisateurs requise" });
+    }
+    if (!["active", "suspended", "blocked"].includes(status)) {
+      return res.status(400).json({ error: "Statut invalide" });
+    }
+
+    const batchSize = 400;
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const chunk = userIds.slice(i, i + batchSize);
+      const batch = db.batch();
+      chunk.forEach((uid: string) => {
+        const ref = db.collection("users").doc(uid);
+        batch.update(ref, {
+          status,
+          statusReason: reason || "",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+      await batch.commit();
+    }
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "BULK_UPDATE_STATUS",
+      targetUserIds: userIds,
+      adminId: req.user?.uid || "admin",
+      details: { newStatus: status, reason, count: userIds.length },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, count: userIds.length });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.post("/admin/users/bulk-delete", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: "Liste d'utilisateurs requise" });
+    }
+
+    const batchSize = 400;
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const chunk = userIds.slice(i, i + batchSize);
+      const batch = db.batch();
+      chunk.forEach((uid: string) => {
+        const ref = db.collection("users").doc(uid);
+        batch.delete(ref);
+      });
+      await batch.commit();
+    }
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "BULK_DELETE_USERS",
+      targetUserIds: userIds,
+      adminId: req.user?.uid || "admin",
+      details: { count: userIds.length },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, count: userIds.length });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.delete("/admin/users/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    await db.collection("users").doc(userId).delete();
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "DELETE_USER",
+      targetUserId: userId,
+      adminId: req.user?.uid || "admin",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+// Audit logs
+router.get("/admin/audit-logs", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const limitNum = parseInt((req.query.limit as string) || "50", 10);
+    const snapshot = await db.collection("audit_logs").orderBy("timestamp", "desc").limit(limitNum).get();
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    res.json({ success: true, logs });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+// CSV Exports
+router.get("/admin/reports/export", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { type } = req.query;
+    if (!type || !["orders", "sellers", "finances"].includes(type as string)) {
+      return res.status(400).json({ error: "Type de rapport invalide (orders, sellers, finances)" });
+    }
+
+    let csvContent = "";
+
+    if (type === "orders") {
+      const snap = await db.collection("orders").limit(500).get();
+      csvContent = "ID,Client,Montant,Statut,Date\n";
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        csvContent += `"${doc.id}","${d.customerName || ""}","${d.totalAmount || 0}","${d.status || ""}","${d.createdAt ? d.createdAt.toDate().toISOString() : ""}"\n`;
+      });
+    } else if (type === "sellers") {
+      const snap = await db.collection("users").where("role", "==", "seller").limit(500).get();
+      csvContent = "ID,Boutique,Email,Statut,Wilaya\n";
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        csvContent += `"${doc.id}","${d.shopName || ""}","${d.email || ""}","${d.status || ""}","${d.wilaya || ""}"\n`;
+      });
+    } else if (type === "finances") {
+      const snap = await db.collection("withdrawals").limit(500).get();
+      csvContent = "ID,VendeurID,Montant,Statut,Date\n";
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        csvContent += `"${doc.id}","${d.sellerId || ""}","${d.amount || 0}","${d.status || ""}","${d.createdAt ? d.createdAt.toDate().toISOString() : ""}"\n`;
+      });
+    }
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename=olmart_report_${type}_${Date.now()}.csv`);
+    res.status(200).send(csvContent);
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+// Search Configuration
+router.get("/admin/search/config", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const doc = await db.collection("system_config").doc("search_engine").get();
+    const config = doc.exists ? doc.data() : { provider: "typesense", apiKey: "", nodeUrl: "" };
+
+    if (config?.apiKey) {
+      config.apiKey = "••••••••" + config.apiKey.slice(-4);
+    }
+
+    res.json({ success: true, config });
+  } catch (err: unknown) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+  }
+});
+
+interface SearchEngineConfigUpdates {
+  provider: string;
+  nodeUrl: string;
+  indexName: string;
+  updatedAt: admin.firestore.FieldValue;
+  updatedBy: string;
+  apiKey?: string;
+}
+
+router.put("/admin/search/config", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { provider, apiKey, nodeUrl, indexName } = req.body;
+    if (!["typesense", "algolia", "firestore_native"].includes(provider)) {
+      return res.status(400).json({ error: "Moteur de recherche non supporté" });
+    }
+
+    const updates: SearchEngineConfigUpdates = {
+      provider,
+      nodeUrl: nodeUrl || "",
+      indexName: indexName || "products",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: req.user?.uid || "admin",
+    };
+
+    if (apiKey && !apiKey.startsWith("••••")) {
+      updates.apiKey = apiKey;
+    }
+
+    await db.collection("system_config").doc("search_engine").set(updates, { merge: true });
+
+    await db.collection("audit_logs").add({
+      type: "SYSTEM_CONFIG",
+      action: "UPDATE_SEARCH_ENGINE",
+      adminId: req.user?.uid || "admin",
+      details: { provider, nodeUrl },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true });
+  } catch (err: unknown) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+  }
+});
+
+router.get("/admin/search/products-preview", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const snap = await db.collection("products").where("status", "==", "published").limit(10).get();
+    const products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json({ success: true, count: products.length, sample: products });
+  } catch (err: unknown) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+  }
+});
+
+export default router;

@@ -1,0 +1,138 @@
+import helmet from "helmet";
+import cors from "cors";
+
+const isProd = process.env.NODE_ENV === "production";
+
+const allowedOrigins = [
+  "https://olmart.dz",
+  "https://www.olmart.dz",
+];
+
+export const corsOptions: cors.CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      (!isProd &&
+        (/^https:\/\/.*\.run\.app$/.test(origin) ||
+          /^https:\/\/.*\.ai\.studio$/.test(origin) ||
+          /^http:\/\/localhost:\d+$/.test(origin) ||
+          /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)));
+
+    callback(null, isAllowed);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "X-CSRF-Token",
+    "X-XSRF-Token",
+    "csrf-token",
+  ],
+};
+
+export const corsMiddleware = cors(corsOptions);
+
+const frameAncestorsList = isProd
+  ? ["'self'", "https://olmart.dz", "https://www.olmart.dz"]
+  : [
+      "'self'",
+      "https://*.google.com",
+      "https://*.googleusercontent.com",
+      "https://*.aistudio.google.com",
+      "https://aistudio.google.com",
+      "https://*.ai.studio",
+      "https://ai.studio",
+      "https://*.run.app",
+      "http://localhost:*",
+      "http://127.0.0.1:*",
+    ];
+
+const scriptSrcDirectives = isProd
+  ? [
+      "'self'",
+      "https://apis.google.com",
+      "https://www.gstatic.com",
+      "https://www.googletagmanager.com",
+      "https://*.googletagmanager.com",
+      "https://cdn.jsdelivr.net",
+    ]
+  : [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "blob:",
+      "https://apis.google.com",
+      "https://www.gstatic.com",
+      "https://www.googletagmanager.com",
+      "https://*.googletagmanager.com",
+      "https://cdn.jsdelivr.net",
+    ];
+
+export const helmetMiddleware = helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    reportOnly: isProd ? false : process.env.CSP_REPORT_ONLY === "true",
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: scriptSrcDirectives,
+      scriptSrcElem: scriptSrcDirectives,
+      workerSrc: ["'self'", "blob:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:", "https://cdn.jsdelivr.net"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://firebasestorage.googleapis.com",
+        "https://lh3.googleusercontent.com",
+        "https://images.unsplash.com",
+        "https://api.qrserver.com",
+        "https://*.transparenttextures.com",
+        "https://www.transparenttextures.com",
+        "https://*.google.com",
+        "https://*.gstatic.com",
+      ],
+      connectSrc: [
+        "'self'",
+        "https://*.googleapis.com",
+        "https://*.firebaseio.com",
+        "https://*.firebase.com",
+        "https://*.googleusercontent.com",
+        "https://*.run.app",
+        "https://*.ai.studio",
+        "https://*.google.com",
+        "https://*.clients6.google.com",
+        "https://*.google-analytics.com",
+        "wss:",
+        "ws:",
+      ],
+      frameSrc: [
+        "'self'",
+        "https://*.firebaseapp.com",
+        "https://*.google.com",
+        "https://apis.google.com",
+        "https://*.googleusercontent.com",
+      ],
+      frameAncestors: frameAncestorsList,
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: isProd ? [] : null,
+      reportUri: "/api/v1/csp-report",
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  xFrameOptions: false,
+  noSniff: true,
+  hsts: isProd
+    ? {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      }
+    : false,
+});

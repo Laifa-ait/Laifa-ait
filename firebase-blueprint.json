@@ -1,0 +1,257 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account and profile data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["buyer", "seller", "admin"] },
+        "status": { "type": "string", "enum": ["pending", "active", "rejected", "suspended"] },
+        "displayName": { "type": "string" },
+        "shopName": { "type": "string" },
+        "shopDescription": { "type": "string" },
+        "rcNumber": { "type": "string" },
+        "nifNumber": { "type": "string" },
+        "rib": { "type": "string" },
+        "documents": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Seller product listing",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "category": { "type": "string" },
+        "images": { "type": "array" },
+        "status": { "type": "string", "enum": ["pending", "active", "rejected"] },
+        "stock": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Property": {
+      "title": "Property Listing",
+      "description": "Algerian real estate property listing details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "object", "description": "Bilingual titles: { fr, ar, en }" },
+        "description": { "type": "object", "description": "Bilingual descriptions: { fr, ar, en }" },
+        "type": { "type": "string", "enum": ["vente", "location", "echange", "location_vacances"] },
+        "category": { "type": "string", "enum": ["appartement", "villa", "terrain", "local_commercial", "immeuble", "hangar", "carcasse"] },
+        "price": { "type": "number" },
+        "paymentPeriod": { "type": "string", "enum": ["unique", "mois", "an", "nuit"] },
+        "negotiable": { "type": "boolean" },
+        "hasPapers": { "type": "object", "description": "Documents legal check" },
+        "specifications": { "type": "object", "description": "Rooms, surface, floors" },
+        "amenities": { "type": "object", "description": "Utilities, elevator, garage, pool, etc" },
+        "location": { "type": "object", "description": "Wilaya, commune, address, coordinates" },
+        "media": { "type": "object", "description": "Photos array, videos, virtual tours" },
+        "status": { "type": "string", "enum": ["pending", "active", "rejected", "sold", "archived"] },
+        "sellerId": { "type": "string" },
+        "sellerType": { "type": "string", "enum": ["particulier", "agence", "promoteur"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "integer" },
+        "favoritesCount": { "type": "integer" },
+        "priceHistory": { "type": "array" }
+      },
+      "required": ["id", "title", "description", "type", "category", "price", "location", "status", "sellerId", "createdAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "buyerId": { "type": "string" },
+        "sellerIds": { "type": "array" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Notification": {
+      "title": "Internal Notification",
+      "description": "Admin system notification",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "message": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "UserNotification": {
+      "title": "User Notification",
+      "description": "Internal buyer-seller direct notification in FR, EN, and AR",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "recipientId": { "type": "string" },
+        "title": { "type": "object" },
+        "message": { "type": "object" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "orderId": { "type": "string" },
+        "productId": { "type": "string" },
+        "conversationId": { "type": "string" }
+      },
+      "required": ["senderId", "recipientId", "title", "message", "type", "read"]
+    },
+    "Coupon": {
+      "title": "Discount Coupon",
+      "description": "Store discount codes",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "description": "Uppercase, ex: WELCOME26" },
+        "type": { "type": "string", "enum": ["percentage", "fixed_amount"] },
+        "value": { "type": "number", "description": "Discount value" },
+        "minPurchase": { "type": "number", "description": "Minimum order amount in DA" },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "isActive": { "type": "boolean", "description": "Kill-switch" },
+        "usageLimit": { "type": "integer", "description": "Optional maximum uses" },
+        "currentUsages": { "type": "integer", "description": "Usage counter" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "type", "value", "minPurchase", "expiryDate", "isActive", "currentUsages", "createdAt"]
+    },
+    "HomepageVersion": {
+      "title": "Homepage Version",
+      "description": "Backup point of homepage configuration",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "sections": { "type": "array" },
+        "banners": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "adminEmail": { "type": "string" }
+      },
+      "required": ["name", "sections", "banners", "createdAt", "adminEmail"]
+    },
+    "DisputeMessage": {
+      "title": "Dispute Message",
+      "description": "Message log for order dispute",
+      "type": "object",
+      "properties": {
+        "disputeId": { "type": "string" },
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderRole": { "type": "string" },
+        "senderName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" }
+      },
+      "required": ["disputeId", "text", "senderId", "senderRole", "createdAt"]
+    },
+    "LoginHistory": {
+      "title": "Login History Record",
+      "description": "IP and device logs for user logins",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "location": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "success": { "type": "boolean" },
+        "reason": { "type": "string" }
+      },
+      "required": ["userId", "timestamp"]
+    },
+    "ConfirmedDeliveryInfo": {
+      "title": "Confirmed Delivery Info",
+      "description": "Delivery information and ordered item list submitted upon checkout completion",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "wilaya": { "type": "string" },
+        "commune": { "type": "string" },
+        "address": { "type": "string" },
+        "deliveryMethod": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "fullName", "phone", "wilaya", "commune", "address", "deliveryMethod", "items", "total", "createdAt", "userId"]
+    }
+  },
+  "firestore": {
+    "/confirmed_delivery_info/{refId}": {
+      "schema": "ConfirmedDeliveryInfo",
+      "description": "Captured user delivery credentials on completed purchases"
+    },
+    "/disputeMessages/{msgId}": {
+      "schema": "DisputeMessage",
+      "description": "Dispute message entries"
+    },
+    "/login_history/{logId}": {
+      "schema": "LoginHistory",
+      "description": "User connection IP history"
+    },
+    "/homepage_versions/{versionId}": {
+      "schema": "HomepageVersion",
+      "description": "Backup versions of homepage layouts"
+    },
+    "/coupons/{couponId}": {
+      "schema": "Coupon",
+      "description": "Coupon codes"
+    },
+    "/user_notifications/{notifId}": {
+      "schema": "UserNotification",
+      "description": "Internal marketplace notices with premium translations"
+    },
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product directory"
+    },
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Real estate listings directory"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Order records"
+    },
+    "/internal_notifications/{notifId}": {
+      "schema": "Notification",
+      "description": "Admin alerts"
+    },
+    "/withdrawals/{withdrawalId}": {
+      "schema": { "$ref": "Withdrawal" },
+      "description": "Paiement requests"
+    },
+    "/supportTickets/{ticketId}": {
+      "schema": { "$ref": "Ticket" },
+      "description": "Customer support tickets"
+    },
+    "/supportMessages/{msgId}": {
+      "schema": { "$ref": "Message" },
+      "description": "Ticket conversation logs"
+    }
+  }
+}
