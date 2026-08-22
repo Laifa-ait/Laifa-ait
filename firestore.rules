@@ -617,5 +617,58 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // -------------------------------------------------------------------------
+    // OLMA IMMO & LOCATION (Properties, Bookings, Visits)
+    // -------------------------------------------------------------------------
+    match /real_estate_properties/{propertyId} {
+      // Lecture unitaire : Annonce active publique, ou propriétaire de l'annonce, ou administrateur
+      allow get: if resource.data.status == 'active' || 
+                    isAdmin() || 
+                    (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      // Requêtes de liste : Restreintes aux annonces actives pour les requêtes directes côté client
+      allow list: if resource.data.status == 'active' || 
+                     isAdmin() || 
+                     (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      // Création et modifications : Directement contrôlées via le backend Express (Admin SDK)
+      allow write: if isAdmin();
+    }
+
+    match /real_estate_bookings/{bookingId} {
+      // Seuls le locataire (tenant), le propriétaire du bien ou l'administrateur peuvent consulter la réservation
+      allow get, list: if isAdmin() || 
+                          (isSignedIn() && (resource.data.tenantId == request.auth.uid || resource.data.ownerId == request.auth.uid));
+      // Création et modifications transactionnelles gérées par le backend Express (Admin SDK)
+      allow write: if isAdmin();
+    }
+
+    match /real_estate_visits/{visitId} {
+      // Seuls le visiteur, le propriétaire du bien ou l'administrateur peuvent consulter la demande de visite
+      allow get, list: if isAdmin() || 
+                          (isSignedIn() && (resource.data.visitorId == request.auth.uid || resource.data.ownerId == request.auth.uid));
+      // Création et statuts de visite gérés par le backend Express (Admin SDK)
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // CONVERSATIONS & MESSAGES (OLM-04 Unified Engine)
+    // -------------------------------------------------------------------------
+    match /conversations/{conversationId} {
+      // Lecture autorisée uniquement pour les participants réels de la conversation ou pour un administrateur
+      allow get, list: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      // Création et modifications transactionnelles gérées exclusivement par le backend Express (Admin SDK)
+      allow write: if isAdmin();
+
+      match /messages/{messageId} {
+        // Lecture autorisée pour les participants de la conversation parente ou administrateur
+        allow get, list: if isAdmin() || (
+          isSignedIn() && 
+          exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        );
+        // Écritures directes bloquées pour garantir le passage par le DLP et l'attribution serveur du senderId
+        allow write: if isAdmin();
+      }
+    }
+
   }
 }

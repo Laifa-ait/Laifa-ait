@@ -176,5 +176,27 @@ service firebase.storage {
       allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
+
+    // -------------------------------------------------------------------------
+    // OLM-04 CHAT ATTACHMENTS (Restricted to conversation participants & admin)
+    // -------------------------------------------------------------------------
+    match /chat_attachments/{conversationId}/{fileName} {
+      allow read: if request.auth != null && (
+        isAdmin() ||
+        (
+          firestore.exists(/databases/(default)/documents/conversations/$(conversationId)) &&
+          request.auth.uid in firestore.get(/databases/(default)/documents/conversations/$(conversationId)).data.participants
+        )
+      );
+      allow write: if request.auth != null && (
+        isAdmin() ||
+        (
+          firestore.exists(/databases/(default)/documents/conversations/$(conversationId)) &&
+          request.auth.uid in firestore.get(/databases/(default)/documents/conversations/$(conversationId)).data.participants &&
+          request.resource.size <= 5 * 1024 * 1024 &&
+          (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf')
+        )
+      );
+    }
   }
 }

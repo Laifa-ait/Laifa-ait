@@ -3,7 +3,7 @@ import { auth } from '../../lib/firebase';
 import { useTranslation } from 'react-i18next';
 import { Mail, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 import { apiPost } from '../../lib/api';
 import { settingsApi } from '../../services/api/settings.api';
 
@@ -16,7 +16,10 @@ export const Support: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     
-    const { data: globalSettings } = useSWR("/api/v1/settings/global", settingsApi.getGlobalSettings);
+    const { data: globalSettings } = useQuery({
+        queryKey: ['settings', 'global'],
+        queryFn: settingsApi.getGlobalSettings,
+    });
     const supportEmail = globalSettings?.supportEmail || "";
 
     const handleSubmit = async (e: React.FormEvent) => {

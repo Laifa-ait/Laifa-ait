@@ -7,7 +7,6 @@ import {
   Loader2, 
   MessageCircle, 
   AlertTriangle, 
-  ShieldCheck, 
   CheckCheck, 
   Info, 
   Sparkles,

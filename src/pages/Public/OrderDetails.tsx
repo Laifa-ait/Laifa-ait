@@ -14,7 +14,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { useConfirm } from "../../hooks/useConfirm";
-import useSWR from 'swr';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../lib/api';
 import { DisputeChat } from '../../components/Disputes/DisputeChat';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -26,14 +26,22 @@ export const OrderDetails: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { confirm: showConfirmModal, ConfirmationDialog } = useConfirm();
-  
-  const { data: order, error, mutate } = useSWR<Order>(id ? `/api/v1/orders/${id}` : null, apiGet, {
-    revalidateOnFocus: true,
-    refreshInterval: 60000,
+  const queryClient = useQueryClient();
+
+  const { data: order, error } = useQuery<Order>({
+    queryKey: ['order', id],
+    queryFn: () => apiGet<Order>(`/api/v1/orders/${id}`),
+    enabled: Boolean(id),
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000,
   });
-  
+
+  const mutate = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['order', id] });
+  };
+
   const setOrder = (updateFn: (prev: Order | undefined) => Order | undefined) => {
-    mutate(updateFn(order), false);
+    queryClient.setQueryData<Order>(['order', id], (prev) => updateFn(prev));
   };
   
   const loading = !order && !error;

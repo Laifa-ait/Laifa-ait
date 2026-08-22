@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { Product } from "../domains/product/product.types";
+import { Product, ProductVariant } from "../domains/product/product.types";
 
 interface FirestoreProduct extends Partial<Product> {
   hasOutOfStockVariants?: boolean;
@@ -129,8 +129,8 @@ describe("Bulk Load Restock Mechanism Forensics & Hardening", () => {
           name: "Variant Product",
           stock: 10,
           variants: [
-            { name: "Rouge", stock: 4 },
-            { name: "Bleu", stock: 6 },
+            { name: "Rouge", stock: 4, sku: "PV-ROUGE", priceDiff: 0 },
+            { name: "Bleu", stock: 6, sku: "PV-BLEU", priceDiff: 0 },
           ],
         },
       ],
@@ -144,8 +144,8 @@ describe("Bulk Load Restock Mechanism Forensics & Hardening", () => {
 
     const result = runRestockLogic(orderData, productDatabase);
     const updated = result.productUpdates.get("prod_v");
-    expect(updated?.variants?.find((v) => v.name === "Rouge")?.stock).toBe(6);
-    expect(updated?.variants?.find((v) => v.name === "Bleu")?.stock).toBe(9);
+    expect(updated?.variants?.find((v: ProductVariant) => v.name === "Rouge")?.stock).toBe(6);
+    expect(updated?.variants?.find((v: ProductVariant) => v.name === "Bleu")?.stock).toBe(9);
     expect(updated?.stock).toBe(15); // Recalculated total stock
   });
 
@@ -183,8 +183,8 @@ describe("Bulk Load Restock Mechanism Forensics & Hardening", () => {
           name: "Variant Product",
           stock: 0,
           variants: [
-            { name: "X", stock: 0 },
-            { name: "Y", stock: 0 },
+            { name: "X", stock: 0, sku: "PV-X", priceDiff: 0 },
+            { name: "Y", stock: 0, sku: "PV-Y", priceDiff: 0 },
           ],
           hasOutOfStockVariants: true,
         },

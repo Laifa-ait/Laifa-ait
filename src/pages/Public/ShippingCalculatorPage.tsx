@@ -9,7 +9,7 @@ import { formatPrice } from "../../utils/format";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import { settingsApi } from "../../services/api/settings.api";
 
 interface LocalShippingConfig {
@@ -26,7 +26,11 @@ export const ShippingCalculatorPage: React.FC = () => {
   const [selectedWilaya, setSelectedWilaya] = useState("16 Alger");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const { data: shippingConfigData } = useSWR("/api/v1/settings/shipping", settingsApi.getShippingSettings, { refreshInterval: 120000 });
+  const { data: shippingConfigData } = useQuery({
+    queryKey: ["settings", "shipping"],
+    queryFn: settingsApi.getShippingSettings,
+    refetchInterval: 120000,
+  });
   const shippingConfig = (shippingConfigData as LocalShippingConfig) || {};
 
   // Advanced features: Weight range selection

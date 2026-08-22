@@ -53,13 +53,14 @@ export const DEFAULT_OLMA_APPS: OlmaAppModule[] = [
     },
     icon: 'Home',
     category: 'immo',
-    status: 'coming_soon',
+    status: 'active',
     badge: {
       fr: 'Immobilier DZ',
       ar: 'عقارات الجزائر',
       en: 'Algeria Immo'
     },
     isFeatured: true,
+    targetRoute: '/immo',
     order: 2,
     tags: ['Location', 'Achat', 'Locaux', 'Villas'],
     waitingListCount: 2890

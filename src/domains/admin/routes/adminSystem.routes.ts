@@ -4,19 +4,45 @@ import { authenticateToken, authorizeAdmin, require2FA, AuthenticatedRequest } f
 
 const router = Router();
 
-// ADMIN ONLY: DANGER ZONE - Database Wipe / Reset
+// ADMIN ONLY: DANGER ZONE - Database Wipe / Reset (Restricted to non-production environments)
 router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, require2FA, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { confirmationCode, mfaCode } = req.body;
-
-    if (confirmationCode !== "WIPE_ALL_DATA_CONFIRM_DZ_2026") {
-      return res.status(400).json({ error: "Code de confirmation incorrect." });
+    // 1. Strict Production Guard: Global database wipe is strictly forbidden in production.
+    if (process.env.NODE_ENV === "production") {
+      await db.collection("audit_logs").add({
+        type: "SECURITY_ALERT",
+        action: "DANGER_ZONE_WIPE_BLOCKED_IN_PRODUCTION",
+        adminId: req.user?.uid || "unknown",
+        ip: req.ip || req.socket.remoteAddress || "unknown",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return res.status(403).json({
+        error: "Opération de réinitialisation globale formellement interdite et désactivée en environnement de production.",
+      });
     }
 
-    if (!mfaCode || mfaCode !== "123456") {
-      return res.status(400).json({ error: "Code MFA administrateur invalide." });
+    const { confirmationCode } = req.body;
+    const requiredSecret = process.env.DANGER_ZONE_SECRET;
+
+    // 2. Secret Verification: Must be explicitly configured in non-production environment.
+    if (!requiredSecret || requiredSecret.trim() === "") {
+      return res.status(500).json({
+        error: "DANGER_ZONE_SECRET non configuré sur le serveur. Opération impossible.",
+      });
     }
 
+    if (!confirmationCode || typeof confirmationCode !== "string" || confirmationCode !== requiredSecret.trim()) {
+      await db.collection("audit_logs").add({
+        type: "SECURITY_ALERT",
+        action: "DANGER_ZONE_WIPE_INVALID_SECRET",
+        adminId: req.user?.uid || "unknown",
+        ip: req.ip || req.socket.remoteAddress || "unknown",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return res.status(400).json({ error: "Code de confirmation de sécurité invalide." });
+    }
+
+    // 3. 24h Safety Window check via system_config
     const configDoc = await db.collection("system_config").doc("danger_zone").get();
     if (configDoc.exists) {
       const data = configDoc.data();
@@ -67,7 +93,7 @@ router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, requir
       type: "DANGER_ZONE",
       action: "DATABASE_WIPE",
       adminId: req.user?.uid || "admin",
-      details: "Nettoyage intégral effectué après double authentification MFA",
+      details: "Nettoyage intégral effectué en environnement hors-production après validation stricte.",
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 

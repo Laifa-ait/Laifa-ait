@@ -27,7 +27,6 @@ import { ai } from "../config/gemini";
 import { admin } from "../config/firebase-admin";
 import path from "path";
 import fs from "fs";
-import { translate } from "@vitalets/google-translate-api";
 import rateLimit from "express-rate-limit";
 
 const router = Router();

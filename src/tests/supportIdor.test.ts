@@ -2495,8 +2495,8 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
           const colRef = originalCollection(collectionName);
           if (collectionName === "supportAttachments") {
             const originalDoc = colRef.doc.bind(colRef);
-            colRef.doc = ((docId?: string) => {
-              const docRef = originalDoc(docId);
+            colRef.doc = ((docPath?: string) => {
+              const docRef = docPath !== undefined ? originalDoc(docPath) : originalDoc();
               const originalGet = docRef.get.bind(docRef);
               docRef.get = (async () => {
                 supportAttachmentsReadCount++;

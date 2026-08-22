@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./config/sentry";
 import { HelmetProvider } from "react-helmet-async";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
@@ -95,7 +95,8 @@ const I18nLoader = () => {
   );
 };
 
-const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
+const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
+  const errorMessage = error instanceof Error ? error.message : String(error || "Erreur inattendue");
   return (
     <div
       style={{
@@ -113,7 +114,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetError
       }}
     >
       <h2 style={{ fontSize: "24px", marginBottom: "16px" }}>Erreur inattendue</h2>
-      <p style={{ marginBottom: "24px", opacity: 0.8, color: "#ef4444" }}>{error.message}</p>
+      <p style={{ marginBottom: "24px", opacity: 0.8, color: "#ef4444" }}>{errorMessage}</p>
       <button
         onClick={resetErrorBoundary}
         style={{

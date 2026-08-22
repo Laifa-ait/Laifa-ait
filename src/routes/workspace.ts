@@ -30,7 +30,7 @@ const requireGoogleToken = (req: AuthenticatedRequest, res: Response, next: Next
  * 1. GOOGLE SHEETS (Export Premium "Canva-like")
  * Exportation des rapports formatés (Admin & Vendeur).
  */
-router.post("/sheets/export-premium", requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/sheets/export-premium", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { title, metadata, headers, rows, totals, theme } = req.body;
     
@@ -233,7 +233,7 @@ router.post("/sheets/export-premium", requireGoogleToken, async (req: Authentica
  * 2. GOOGLE DRIVE (User Upload - Admin Backup / Admin Docs)
  * Upload sécurisé avec le token de l'utilisateur.
  */
-router.post("/drive/upload", requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/drive/upload", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { fileName, mimeType, base64Data } = req.body;
     
@@ -286,6 +286,13 @@ router.post("/drive/system-upload-kyc", authenticateToken, async (req: Authentic
     
     if (!base64Data || !sellerId) {
        return res.status(400).json({ error: "Données de fichier ou ID vendeur manquant." });
+    }
+
+    // Contrôle BOLA / IDOR : Seul le propriétaire du compte vendeur ou un administrateur peut uploader un KYC
+    const callerUid = req.user?.uid as string | undefined;
+    const callerRole = req.user?.role as string | undefined;
+    if (callerUid !== sellerId && callerRole !== 'admin') {
+       return res.status(403).json({ error: "Accès refusé. Vous ne pouvez uploader un document KYC que pour votre propre compte." });
     }
 
     // 1. Décodage du Buffer pour vérifications réelles de taille et d'intégrité binaire
@@ -378,7 +385,7 @@ router.post("/drive/system-upload-kyc", authenticateToken, async (req: Authentic
  * 3. GOOGLE MEET & CALENDAR
  * Prise de RDV pour la vérification des nouveaux vendeurs.
  */
-router.post("/calendar/schedule", requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/calendar/schedule", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { sellerEmail, sellerEmails, startTime, endTime, summary, description } = req.body;
 

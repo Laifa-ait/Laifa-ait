@@ -126,13 +126,22 @@ export default tseslint.config(
         "src/pages/Seller/Verification.tsx",
         "src/pages/Seller/Wallet.tsx",
         "src/components/bricolage/**",
-        "src/pages/Public/OlmaBricolage.tsx"
+        "src/pages/Public/OlmaBricolage.tsx",
+        "src/components/OlmaImmo/SearchFilters.tsx",
+        "src/pages/OlmaImmo/**"
     ],
     rules: {
       "max-lines": "off"
     }
   },
   {
-    ignores: ["dist/**", "node_modules/**", "archived_scripts/**"]
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "archived_scripts/**",
+      "public/**",
+      "*.config.cjs",
+      "*.config.js"
+    ]
   }
 );

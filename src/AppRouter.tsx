@@ -3,25 +3,32 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 
 import { PageLoader } from "./components/ui/PageLoader";
+import { lazyWithRetry } from "./utils/lazyWithRetry";
 
 // Public Pages (Lazy Loaded)
-const Home = React.lazy(() => import("./pages/Public/Home").then((m) => ({ default: m.Home })));
-const Shop = React.lazy(() => import("./pages/Public/Shop").then((m) => ({ default: m.Shop })));
-const ProductDetails = React.lazy(() =>
-  import("./pages/Public/ProductDetails").then((m) => ({
-    default: m.ProductDetails,
-  }))
+const Home = lazyWithRetry(() => import("./pages/Public/Home").then((m) => m.Home), "Home");
+const Shop = lazyWithRetry(() => import("./pages/Public/Shop").then((m) => m.Shop), "Shop");
+const ProductDetails = lazyWithRetry(
+  () => import("./pages/Public/ProductDetails").then((m) => m.ProductDetails),
+  "ProductDetails"
 );
-const Auth = React.lazy(() => import("./pages/Public/Auth").then((m) => ({ default: m.Auth })));
-const Cart = React.lazy(() => import("./pages/Public/Cart").then((m) => ({ default: m.Cart })));
-const Checkout = React.lazy(() => import("./pages/Public/Checkout").then((m) => ({ default: m.Checkout })));
-const BuyerDashboard = React.lazy(() => import("./pages/BuyerDashboard").then((m) => ({ default: m.BuyerDashboard })));
-const PrivacyPolicy = React.lazy(() =>
-  import("./pages/Public/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy }))
+const Auth = lazyWithRetry(() => import("./pages/Public/Auth").then((m) => m.Auth), "Auth");
+const Cart = lazyWithRetry(() => import("./pages/Public/Cart").then((m) => m.Cart), "Cart");
+const Checkout = lazyWithRetry(() => import("./pages/Public/Checkout").then((m) => m.Checkout), "Checkout");
+const BuyerDashboard = lazyWithRetry(
+  () => import("./pages/BuyerDashboard").then((m) => m.BuyerDashboard),
+  "BuyerDashboard"
 );
-const RefundPolicy = React.lazy(() => import("./pages/Public/RefundPolicy").then((m) => ({ default: m.RefundPolicy })));
-const Support = React.lazy(() => import("./pages/Public/Support").then((m) => ({ default: m.Support })));
-const MobileCategories = React.lazy(() => import("./components/MobileCategories"));
+const PrivacyPolicy = lazyWithRetry(
+  () => import("./pages/Public/PrivacyPolicy").then((m) => m.PrivacyPolicy),
+  "PrivacyPolicy"
+);
+const RefundPolicy = lazyWithRetry(
+  () => import("./pages/Public/RefundPolicy").then((m) => m.RefundPolicy),
+  "RefundPolicy"
+);
+const Support = lazyWithRetry(() => import("./pages/Public/Support").then((m) => m.Support), "Support");
+const MobileCategories = lazyWithRetry(() => import("./components/MobileCategories"), "MobileCategories");
 
 // Modular Dashboards
 const SellerDashboardLayout = React.lazy(() =>
@@ -257,6 +264,20 @@ const OlmaBricolage = React.lazy(() =>
   import("./pages/Public/OlmaBricolage").then((module) => ({
     default: module.OlmaBricolage,
   }))
+);
+
+// Olma Immo & Location Module
+const OlmaImmoHome = React.lazy(() =>
+  import("./pages/OlmaImmo/OlmaImmoHome").then((m) => ({ default: m.OlmaImmoHome }))
+);
+const PropertyDetail = React.lazy(() =>
+  import("./pages/OlmaImmo/PropertyDetail").then((m) => ({ default: m.PropertyDetail }))
+);
+const PropertyOwnerDashboard = React.lazy(() =>
+  import("./pages/OlmaImmo/PropertyOwnerDashboard").then((m) => ({ default: m.PropertyOwnerDashboard }))
+);
+const PropertyEditor = React.lazy(() =>
+  import("./pages/OlmaImmo/PropertyEditor").then((m) => ({ default: m.PropertyEditor }))
 );
 
 const ProductFilterPage = React.lazy(() =>
@@ -535,6 +556,48 @@ export const AppRouter: React.FC = () => {
                 }
               />
               <Route path="/services/bricolage" element={<Navigate to="/bricolage" replace />} />
+
+              {/* Olma Immo & Location Routes */}
+              <Route
+                path="/immo"
+                element={
+                  <PageWrapper>
+                    <OlmaImmoHome />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/property/:id"
+                element={
+                  <PageWrapper>
+                    <PropertyDetail />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/owner"
+                element={
+                  <PageWrapper>
+                    <PropertyOwnerDashboard />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/publish"
+                element={
+                  <PageWrapper>
+                    <PropertyEditor />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/edit/:id"
+                element={
+                  <PageWrapper>
+                    <PropertyEditor />
+                  </PageWrapper>
+                }
+              />
               <Route
                 path="/shipping-calculator"
                 element={

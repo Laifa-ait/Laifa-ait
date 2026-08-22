@@ -48,11 +48,17 @@
 
   // Suppress benign WebSocket/HMR errors in development proxy
   window.addEventListener("unhandledrejection", function (event) {
+    const reasonStr = event.reason
+      ? typeof event.reason === "string"
+        ? event.reason
+        : event.reason.message || String(event.reason) || ""
+      : "";
+
     if (
-      event.reason &&
-      (event.reason === "WebSocket closed without opened." ||
-        (event.reason.message && event.reason.message.includes("WebSocket")) ||
-        (typeof event.reason === "string" && event.reason.includes("WebSocket")))
+      reasonStr.includes("WebSocket") ||
+      reasonStr.includes("websocket") ||
+      reasonStr.includes("closed without opened") ||
+      reasonStr.includes("failed to connect")
     ) {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -62,11 +68,13 @@
   window.addEventListener(
     "error",
     function (event) {
+      const msg = event.message || "";
       if (
-        event.message &&
-        (event.message.includes("WebSocket") ||
-          event.message.includes("websocket") ||
-          event.message.includes("HMR"))
+        msg.includes("WebSocket") ||
+        msg.includes("websocket") ||
+        msg.includes("closed without opened") ||
+        msg.includes("failed to connect") ||
+        msg.includes("HMR")
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();

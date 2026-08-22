@@ -12,7 +12,7 @@ import { Product } from "../../domains/product/product.types";
 import { normalizeTimestamp } from '../../utils/date';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useDebounce } from '../../hooks/useDebounce';
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 import { handleDevQuotaLogger } from '../../utils/mockProducts';
 import { getCategoryTranslation } from '../../utils/translations';
 import { withExponentialBackoff } from '../../utils/retry';
@@ -71,64 +71,61 @@ export const Shop: React.FC = () => {
     }
   }, [urlCategory, setActiveCategory]);
 
-  const cacheKey = `shop_list_${urlCategory || activeCategory}_${urlSubcategory || "none"}_${activeWilaya}_${sortOption}_${urlTag || "none"}`;
+  const { data: queryData, error: queryErrorObj, isLoading: queryIsLoading } = useQuery({
+    queryKey: ['shop_list', urlCategory || activeCategory, urlSubcategory || "none", urlSubsubcategory || "none", activeWilaya, sortOption, urlTag || "none", INITIAL_LIMIT],
+    queryFn: async () => {
+      const catToFilter = urlCategory || activeCategory;
+      const params = new URLSearchParams();
+      if (catToFilter && catToFilter !== "Tous") {
+        params.append("category", catToFilter);
+      }
+      if (urlSubcategory) {
+        params.append("subcategory", urlSubcategory);
+      }
+      if (urlSubsubcategory) {
+        params.append("subsubcategory", urlSubsubcategory);
+      }
+      if (activeWilaya && activeWilaya !== "Tous") {
+        params.append("wilaya", activeWilaya);
+      }
+      if (urlTag) {
+        params.append("tag", urlTag);
+      }
+      params.append("limit", String(INITIAL_LIMIT));
+      params.append("offset", "0");
 
-  const fetchProductsSWR = async () => {
-    const catToFilter = urlCategory || activeCategory;
-    const params = new URLSearchParams();
-    if (catToFilter && catToFilter !== "Tous") {
-      params.append("category", catToFilter);
-    }
-    if (urlSubcategory) {
-      params.append("subcategory", urlSubcategory);
-    }
-    if (urlSubsubcategory) {
-      params.append("subsubcategory", urlSubsubcategory);
-    }
-    if (activeWilaya && activeWilaya !== "Tous") {
-      params.append("wilaya", activeWilaya);
-    }
-    if (urlTag) {
-      params.append("tag", urlTag);
-    }
-    params.append("limit", String(INITIAL_LIMIT));
-    params.append("offset", "0");
-
-    const res = await fetch(`/api/v1/products/shop?${params.toString()}`);
-    if (!res.ok) {
-      throw new Error(`API error ${res.status}`);
-    }
-    const data = await res.json();
-    return {
-      products: data.products || [],
-      hasMore: data.hasMore
-    };
-  };
-
-  const { data: swrData, error: swrError, isLoading: swrIsLoading } = useSWR(cacheKey, fetchProductsSWR, {
-    revalidateOnFocus: true,
-    revalidateIfStale: true
+      const res = await fetch(`/api/v1/products/shop?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`API error ${res.status}`);
+      }
+      const data = await res.json();
+      return {
+        products: (data.products || []) as Product[],
+        hasMore: Boolean(data.hasMore)
+      };
+    },
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
-    if (swrIsLoading) {
+    if (queryIsLoading) {
        setIsLoadingProducts(true);
        setQueryError(null);
-    } else if (swrError) {
-        console.error("Shop Query Error:", swrError);
+    } else if (queryErrorObj) {
+        console.error("Shop Query Error:", queryErrorObj);
         setQueryError({ 
           message: "Une erreur est survenue lors du chargement des produits. Veuillez réessayer."
         });
         setProducts([]);
         setHasMore(false);
         setIsLoadingProducts(false);
-    } else if (swrData) {
-        setProducts(swrData.products);
-        setHasMore(swrData.hasMore);
+    } else if (queryData) {
+        setProducts(queryData.products);
+        setHasMore(queryData.hasMore);
         setQueryError(null);
         setIsLoadingProducts(false);
     }
-  }, [swrData, swrError, swrIsLoading]);
+  }, [queryData, queryErrorObj, queryIsLoading]);
 
   const loadMoreProducts = async () => {
     if (!hasMore || loadingMore) return;
@@ -157,11 +154,11 @@ export const Shop: React.FC = () => {
       const res = await fetch(`/api/v1/products/shop?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load more products");
       const data = await res.json();
-      const newProducts = data.products || [];
+      const newProducts = (data.products || []) as Product[];
       
       setProducts(prev => {
         const existingIds = new Set(prev.map(p => p.id));
-        const filteredNew = newProducts.filter((p: any) => !existingIds.has(p.id));
+        const filteredNew = newProducts.filter((p: Product) => !existingIds.has(p.id));
         return [...prev, ...filteredNew];
       });
       setHasMore(data.hasMore);

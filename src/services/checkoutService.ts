@@ -1,7 +1,8 @@
 import { auth } from '../lib/firebase';
 import { CartItem } from '../domains/product/product.types';
 
-const MIN_ORDER_AMOUNT = import.meta.env.VITE_MIN_ORDER_AMOUNT ? parseInt(import.meta.env.VITE_MIN_ORDER_AMOUNT, 10) : 100;
+const parsedMinOrder = import.meta.env.VITE_MIN_ORDER_AMOUNT ? parseInt(import.meta.env.VITE_MIN_ORDER_AMOUNT, 10) : 100;
+const MIN_ORDER_AMOUNT = Number.isInteger(parsedMinOrder) && parsedMinOrder >= 0 ? parsedMinOrder : 100;
 
 export interface CheckoutPayload {
   total?: number;

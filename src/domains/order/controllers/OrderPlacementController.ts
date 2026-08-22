@@ -286,7 +286,8 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
             }
           }
 
-          const minOrderAmount = process.env.MIN_ORDER_AMOUNT ? parseInt(process.env.MIN_ORDER_AMOUNT, 10) : 100;
+          const parsedMinOrder = process.env.MIN_ORDER_AMOUNT ? parseInt(process.env.MIN_ORDER_AMOUNT, 10) : 100;
+          const minOrderAmount = Number.isInteger(parsedMinOrder) && parsedMinOrder >= 0 ? parsedMinOrder : 100;
           if (subtotal < minOrderAmount) {
             const minOrderErr = new Error(`Le montant minimum de commande (${minOrderAmount} DA) n'est pas atteint.`) as Error & { code?: string };
             minOrderErr.code = "MIN_ORDER_AMOUNT_NOT_MET";

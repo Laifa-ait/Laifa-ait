@@ -1,0 +1,231 @@
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Loader2 } from 'lucide-react';
+import { storage } from '../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { InitiateConversationDTO } from '../../types/messaging';
+import { messagingApi } from '../../services/messagingApi';
+import { useMessaging } from '../../hooks/useMessaging';
+import { NegotiationPanel } from './NegotiationPanel';
+import { ConversationList } from './ConversationList';
+import { MessageBubble } from './MessageBubble';
+import { ChatInputBar } from './ChatInputBar';
+import { ReportMessageModal } from './ReportMessageModal';
+import { CreateNegotiationForm } from './CreateNegotiationForm';
+import { UnifiedMessagingHeader } from './UnifiedMessagingHeader';
+import toast from 'react-hot-toast';
+
+interface UnifiedMessagingDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialContext?: InitiateConversationDTO;
+  initialConversationId?: string;
+}
+
+export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
+  isOpen,
+  onClose,
+  initialContext,
+  initialConversationId
+}) => {
+  const {
+    currentUser,
+    conversations,
+    selectedConversation,
+    setSelectedConversation,
+    messages,
+    setMessages,
+    loadingConversations,
+    loadingMessages,
+    hasMoreMessages,
+    hasMoreConversations,
+    loadingAction,
+    setLoadingAction,
+    loadConversations,
+    loadMessages
+  } = useMessaging(isOpen, initialContext, initialConversationId);
+
+  const [textInput, setTextInput] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [showCreateNegotiation, setShowCreateNegotiation] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedConversation || !textInput.trim() || sendingMessage || !currentUser) return;
+    setSendingMessage(true);
+    const content = textInput.trim();
+    setTextInput('');
+    try {
+      const res = await messagingApi.sendMessage(selectedConversation.id, { text: content });
+      if (res.success && res.data) {
+        setMessages((prev) => [...prev, res.data]);
+        scrollToBottom();
+      }
+    } catch {
+      toast.error("Erreur lors de l'envoi.");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedConversation || !currentUser) return;
+    if (file.size > 5 * 1024 * 1024) return toast.error('Fichier supérieur à 5 Mo interdit.');
+    const isPdf = file.type === 'application/pdf';
+    setUploadingAttachment(true);
+    try {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fileRef = ref(storage, `chat_attachments/${selectedConversation.id}/${Date.now()}_${cleanName}`);
+      await uploadBytes(fileRef, file, { contentType: file.type });
+      const downloadUrl = await getDownloadURL(fileRef);
+      const res = await messagingApi.sendMessage(selectedConversation.id, {
+        text: isPdf ? `[Document PDF : ${file.name}]` : 'Photo partagée',
+        attachments: [{ type: isPdf ? 'pdf' : 'image', url: downloadUrl, fileName: file.name, fileSizeBytes: file.size }]
+      });
+      if (res.success && res.data) {
+        setMessages((prev) => [...prev, res.data]);
+        scrollToBottom();
+      }
+    } catch {
+      toast.error("Erreur lors de l'envoi du fichier.");
+    } finally {
+      setUploadingAttachment(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCreateNegotiation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedConversation || !offerAmount || !currentUser) return;
+    const parsed = parseInt(offerAmount, 10);
+    if (isNaN(parsed) || parsed <= 0) return toast.error('Montant invalide.');
+    setLoadingAction('create');
+    try {
+      const res = await messagingApi.createNegotiation(selectedConversation.id, parsed, '');
+      if (res.success && res.data) {
+        setSelectedConversation((prev) => (prev ? { ...prev, activeNegotiation: res.data } : null));
+        setShowCreateNegotiation(false);
+        setOfferAmount('');
+        toast.success('Offre envoyée.');
+        await loadMessages(selectedConversation.id);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleResolveOffer = async (action: 'ACCEPT' | 'REJECT', offerId: string) => {
+    if (!selectedConversation) return;
+    setLoadingAction(`${action.toLowerCase()}-${offerId}`);
+    try {
+      const res = await messagingApi.resolveNegotiation(selectedConversation.id, { offerId, action });
+      if (res.success && res.data) {
+        setSelectedConversation((prev) => (prev ? { ...prev, activeNegotiation: res.data } : null));
+        toast.success(action === 'ACCEPT' ? 'Offre acceptée.' : 'Offre refusée.');
+        await loadMessages(selectedConversation.id);
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-xs" />
+        <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-slate-900 border-l border-slate-800 text-slate-100 flex flex-col h-full shadow-2xl z-10">
+          <UnifiedMessagingHeader
+            selectedConversation={selectedConversation}
+            onBack={() => setSelectedConversation(null)}
+            onBlock={async () => {
+              if (selectedConversation) {
+                await messagingApi.blockConversation(selectedConversation.id);
+                setSelectedConversation((p) => p ? { ...p, isBlocked: true } : null);
+                toast.success('Bloqué');
+              }
+            }}
+            onClose={onClose}
+          />
+
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {!selectedConversation ? (
+              <div className="flex-1 overflow-y-auto">
+                <ConversationList
+                  conversations={conversations}
+                  selectedId={null}
+                  currentUserId={currentUser?.uid || ''}
+                  onSelect={async (conv) => {
+                    setSelectedConversation(conv);
+                    await loadMessages(conv.id);
+                    await messagingApi.markConversationRead(conv.id);
+                  }}
+                  isLoading={loadingConversations}
+                  hasMore={hasMoreConversations}
+                  onLoadMore={loadConversations}
+                />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {selectedConversation.activeNegotiation && (
+                  <div className="px-4">
+                    <NegotiationPanel
+                      negotiation={selectedConversation.activeNegotiation}
+                      currentUserId={currentUser?.uid || ''}
+                      onAccept={(id) => handleResolveOffer('ACCEPT', id)}
+                      onReject={(id) => handleResolveOffer('REJECT', id)}
+                      onCounter={async (offerId, amt) => {
+                        const res = await messagingApi.resolveNegotiation(selectedConversation.id, { offerId, action: 'COUNTER', counterAmountDZD: amt });
+                        if (res.success && res.data) setSelectedConversation((p) => p ? { ...p, activeNegotiation: res.data } : null);
+                      }}
+                      onCancel={async (offerId) => {
+                        const res = await messagingApi.cancelNegotiation(selectedConversation.id, offerId);
+                        if (res.success && res.data) setSelectedConversation((p) => p ? { ...p, activeNegotiation: res.data } : null);
+                      }}
+                      loadingAction={loadingAction}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {hasMoreMessages && (
+                    <div className="text-center py-2">
+                      <button type="button" onClick={() => messages.length > 0 && loadMessages(selectedConversation.id, messages[0].createdAt)} className="text-xs text-emerald-400 hover:underline cursor-pointer">
+                        Charger messages anciens
+                      </button>
+                    </div>
+                  )}
+                  {loadingMessages ? (
+                    <div className="flex items-center justify-center p-8 text-slate-500"><Loader2 className="w-6 h-6 animate-spin" /></div>
+                  ) : (
+                    messages.map((msg) => <MessageBubble key={msg.id} msg={msg} isMe={msg.senderId === currentUser?.uid} onReport={(id) => setReportingMessageId(id)} />)
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {showCreateNegotiation && (
+                  <CreateNegotiationForm offerAmount={offerAmount} setOfferAmount={setOfferAmount} onSubmit={handleCreateNegotiation} onCancel={() => setShowCreateNegotiation(false)} />
+                )}
+
+                <ChatInputBar textInput={textInput} onChangeText={setTextInput} onSubmit={handleSendMessage} onSelectFile={handleFileUpload} onToggleNegotiate={() => setShowCreateNegotiation((p) => !p)} isBlocked={selectedConversation.isBlocked} isSending={sendingMessage} isUploading={uploadingAttachment} hasActiveNegotiation={Boolean(selectedConversation.activeNegotiation)} fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>} />
+              </div>
+            )}
+          </div>
+
+          <ReportMessageModal messageId={reportingMessageId} onClose={() => setReportingMessageId(null)} onSubmit={async (msgId, reason, desc) => { await messagingApi.reportMessage(msgId, reason, desc); toast.success('Signalement envoyé.'); }} />
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};

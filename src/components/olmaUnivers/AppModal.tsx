@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -102,12 +103,13 @@ export const AppModal: React.FC<AppModalProps> = ({ app, lang, onClose }) => {
 
           {app.status === 'active' && app.targetRoute ? (
             <div className="text-center pt-2">
-              <a
-                href={app.targetRoute}
+              <Link
+                to={app.targetRoute}
+                onClick={onClose}
                 className="inline-flex items-center justify-center w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold shadow-lg shadow-orange-500/20 hover:opacity-95 transition-opacity"
               >
                 Accéder à l'application {title}
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/60">

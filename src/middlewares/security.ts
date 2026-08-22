@@ -3,24 +3,32 @@ import cors from "cors";
 
 const isProd = process.env.NODE_ENV === "production";
 
-const allowedOrigins = [
-  "https://olmart.dz",
-  "https://www.olmart.dz",
-];
-
 export const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin) return callback(null, true);
 
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      (!isProd &&
-        (/^https:\/\/.*\.run\.app$/.test(origin) ||
-          /^https:\/\/.*\.ai\.studio$/.test(origin) ||
-          /^http:\/\/localhost:\d+$/.test(origin) ||
-          /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)));
+    const isProduction = process.env.NODE_ENV === "production";
 
-    callback(null, isAllowed);
+    const isOlmartDomain =
+      origin === "https://olmart.dz" ||
+      origin === "https://www.olmart.dz" ||
+      /^https:\/\/.*\.olmart\.dz$/.test(origin) ||
+      /^https:\/\/.*\.run\.app$/.test(origin);
+
+    const isPreviewDomain =
+      !isProduction &&
+      (/^https:\/\/.*\.ai\.studio$/.test(origin) ||
+        /^https:\/\/.*\.aistudio\.google\.com$/.test(origin) ||
+        origin === "https://aistudio.google.com" ||
+        origin === "https://ai.studio" ||
+        /^https:\/\/.*\.google\.com$/.test(origin) ||
+        /^https:\/\/.*\.googleusercontent\.com$/.test(origin) ||
+        /^http:\/\/localhost:\d+$/.test(origin) ||
+        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin));
+
+    const isAllowed = isOlmartDomain || isPreviewDomain;
+
+    callback(null, Boolean(isAllowed));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -36,46 +44,38 @@ export const corsOptions: cors.CorsOptions = {
 
 export const corsMiddleware = cors(corsOptions);
 
-const frameAncestorsList = isProd
-  ? ["'self'", "https://olmart.dz", "https://www.olmart.dz"]
-  : [
-      "'self'",
-      "https://*.google.com",
-      "https://*.googleusercontent.com",
-      "https://*.aistudio.google.com",
-      "https://aistudio.google.com",
-      "https://*.ai.studio",
-      "https://ai.studio",
-      "https://*.run.app",
-      "http://localhost:*",
-      "http://127.0.0.1:*",
-    ];
+const frameAncestorsList = [
+  "'self'",
+  "https://*.google.com",
+  "https://*.googleusercontent.com",
+  "https://*.aistudio.google.com",
+  "https://aistudio.google.com",
+  "https://*.ai.studio",
+  "https://ai.studio",
+  "https://*.run.app",
+  "http://localhost:*",
+  "http://127.0.0.1:*",
+];
 
-const scriptSrcDirectives = isProd
-  ? [
-      "'self'",
-      "https://apis.google.com",
-      "https://www.gstatic.com",
-      "https://www.googletagmanager.com",
-      "https://*.googletagmanager.com",
-      "https://cdn.jsdelivr.net",
-    ]
-  : [
-      "'self'",
-      "'unsafe-inline'",
-      "'unsafe-eval'",
-      "blob:",
-      "https://apis.google.com",
-      "https://www.gstatic.com",
-      "https://www.googletagmanager.com",
-      "https://*.googletagmanager.com",
-      "https://cdn.jsdelivr.net",
-    ];
+const scriptSrcDirectives = [
+  "'self'",
+  "'unsafe-inline'",
+  "'unsafe-eval'",
+  "blob:",
+  "https://apis.google.com",
+  "https://maps.googleapis.com",
+  "https://*.googleapis.com",
+  "https://www.gstatic.com",
+  "https://*.gstatic.com",
+  "https://www.googletagmanager.com",
+  "https://*.googletagmanager.com",
+  "https://cdn.jsdelivr.net",
+];
 
 export const helmetMiddleware = helmet({
   contentSecurityPolicy: {
     useDefaults: false,
-    reportOnly: isProd ? false : process.env.CSP_REPORT_ONLY === "true",
+    reportOnly: false,
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: scriptSrcDirectives,
@@ -95,6 +95,7 @@ export const helmetMiddleware = helmet({
         "https://www.transparenttextures.com",
         "https://*.google.com",
         "https://*.gstatic.com",
+        "https://*.googleapis.com",
       ],
       connectSrc: [
         "'self'",
@@ -119,7 +120,7 @@ export const helmetMiddleware = helmet({
       ],
       frameAncestors: frameAncestorsList,
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: isProd ? [] : null,
+      upgradeInsecureRequests: null,
       reportUri: "/api/v1/csp-report",
     },
   },
@@ -128,11 +129,5 @@ export const helmetMiddleware = helmet({
   crossOriginOpenerPolicy: false,
   xFrameOptions: false,
   noSniff: true,
-  hsts: isProd
-    ? {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true,
-      }
-    : false,
+  hsts: false,
 });

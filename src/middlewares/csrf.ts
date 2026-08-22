@@ -1,17 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
 
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || "olmart_secure_csrf_secret_key_2026";
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Safely retrieve the CSRF secret key.
+ * In production, an explicit CSRF_SECRET environment variable is mandatory.
+ */
+function getCsrfSecret(): string {
+  const secret = process.env.CSRF_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!secret || secret.trim() === "") {
+      throw new Error(
+        "[Olmart Security] ❌ FATAL: CSRF_SECRET environment variable must be explicitly defined in production."
+      );
+    }
+    return secret.trim();
+  }
+  return secret?.trim() || "olmart_dev_csrf_secret_key_2026";
+}
 
 /**
  * Generate a signed CSRF token
  */
 export function generateCsrfToken(userIdOrSession?: string): string {
+  const secret = getCsrfSecret();
   const timestamp = Date.now().toString();
   const salt = crypto.randomBytes(16).toString("hex");
   const payload = `${userIdOrSession || "guest"}:${timestamp}:${salt}`;
-  const hmac = crypto.createHmac("sha256", CSRF_SECRET).update(payload).digest("hex");
+  const hmac = crypto.createHmac("sha256", secret).update(payload).digest("hex");
   return Buffer.from(`${payload}:${hmac}`).toString("base64");
 }
 
@@ -21,6 +38,7 @@ export function generateCsrfToken(userIdOrSession?: string): string {
 export function verifyCsrfToken(token: string): boolean {
   if (!token) return false;
   try {
+    const secret = getCsrfSecret();
     const decoded = Buffer.from(token, "base64").toString("utf-8");
     const parts = decoded.split(":");
     if (parts.length !== 4) return false;
@@ -32,7 +50,7 @@ export function verifyCsrfToken(token: string): boolean {
     }
 
     const payload = `${userOrSession}:${timestampStr}:${salt}`;
-    const expectedHmac = crypto.createHmac("sha256", CSRF_SECRET).update(payload).digest("hex");
+    const expectedHmac = crypto.createHmac("sha256", secret).update(payload).digest("hex");
 
     const providedBuffer = Buffer.from(providedHmac, "hex");
     const expectedBuffer = Buffer.from(expectedHmac, "hex");

@@ -28,13 +28,18 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const tokenRole = decodedToken.role || "buyer";
     let dbRole = tokenRole;
+    let dbCapabilities: string[] = [];
 
     // Check DB for role if possible
     try {
       if (db) {
         const userDoc = await db.collection("users").doc(decodedToken.uid).get();
         if (userDoc.exists) {
-          dbRole = userDoc.data()?.role || tokenRole;
+          const udata = userDoc.data();
+          dbRole = udata?.role || tokenRole;
+          if (Array.isArray(udata?.capabilities)) {
+            dbCapabilities = udata.capabilities;
+          }
         }
       }
     } catch (e: unknown) {
@@ -49,10 +54,10 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     if (tokenRole === "admin" || tokenRole === "superadmin") {
       effectiveRole = (dbRole === "suspended" || dbRole === "buyer") ? dbRole : tokenRole;
     } else {
-      effectiveRole = (dbRole === "seller" || dbRole === "artisan") ? dbRole : "buyer";
+      effectiveRole = (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") ? dbRole : "buyer";
     }
 
-    req.user = { ...decodedToken, role: effectiveRole };
+    req.user = { ...decodedToken, role: effectiveRole, capabilities: dbCapabilities };
     next();
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -76,12 +81,17 @@ export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: 
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const tokenRole = decodedToken.role || "buyer";
     let dbRole = tokenRole;
+    let dbCapabilities: string[] = [];
 
     try {
       if (db) {
         const userDoc = await db.collection("users").doc(decodedToken.uid).get();
         if (userDoc.exists) {
-          dbRole = userDoc.data()?.role || tokenRole;
+          const udata = userDoc.data();
+          dbRole = udata?.role || tokenRole;
+          if (Array.isArray(udata?.capabilities)) {
+            dbCapabilities = udata.capabilities;
+          }
         }
       }
     } catch {
@@ -92,10 +102,10 @@ export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: 
     if (tokenRole === "admin" || tokenRole === "superadmin") {
       effectiveRole = (dbRole === "suspended" || dbRole === "buyer") ? dbRole : tokenRole;
     } else {
-      effectiveRole = (dbRole === "seller" || dbRole === "artisan") ? dbRole : "buyer";
+      effectiveRole = (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") ? dbRole : "buyer";
     }
 
-    req.user = { ...decodedToken, role: effectiveRole };
+    req.user = { ...decodedToken, role: effectiveRole, capabilities: dbCapabilities };
     return next();
   } catch {
     // Treat invalid tokens as anonymous
@@ -113,6 +123,16 @@ export const authorizeAdmin = (req: AuthenticatedRequest, res: Response, next: N
 export const authorizeSeller = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user || (req.user.role !== "seller" && req.user.role !== "admin")) {
     return res.status(403).json({ error: "Accès refusé. Privilèges Vendeur ou Administrateur requis." });
+  }
+  next();
+};
+
+export const authorizePropertyOwner = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const hasCapability = Array.isArray(req.user?.capabilities) && req.user.capabilities.includes("property_owner");
+  const isOwnerRole = req.user?.role === "property_owner" || req.user?.role === "seller" || req.user?.role === "admin" || req.user?.role === "superadmin";
+
+  if (!req.user || (!isOwnerRole && !hasCapability)) {
+    return res.status(403).json({ error: "Accès refusé. Privilèges Propriétaire Immobilier, Vendeur ou Administrateur requis." });
   }
   next();
 };

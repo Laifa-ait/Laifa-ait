@@ -30,6 +30,8 @@ import disputesRouter from "./src/domains/dispute/controllers/DisputeController"
 import shippingRouter from "./src/domains/shipping/routes";
 import { olmaUniversRouter } from "./src/routes/olmaUnivers";
 import { bricolageRouter } from "./src/routes/bricolage";
+import { realEstateRouter } from "./src/routes/realEstate";
+import messagingRouter from "./src/routes/messaging";
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
@@ -44,7 +46,8 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const PORT = 3000;
+const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 3000;
 const httpServer = http.createServer(app);
 
 // Express running behind Cloud Run / Nginx reverse proxy (1 hop).
@@ -91,6 +94,8 @@ app.use("/api/v1", ordersRouter);
 app.use("/api/v1", adminRouter);
 app.use("/api/v1", olmaUniversRouter);
 app.use("/api/v1", bricolageRouter);
+app.use("/api/v1/real-estate", realEstateRouter);
+app.use("/api/v1/messaging", messagingRouter);
 
 // Domain catalog & core gateways
 app.use("/", productsRouter);

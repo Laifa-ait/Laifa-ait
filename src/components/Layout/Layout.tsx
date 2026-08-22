@@ -58,6 +58,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isCheckoutPage = location.pathname === "/checkout";
   const isBricolagePage = location.pathname.startsWith("/bricolage");
+  const isImmoPage = location.pathname.startsWith("/immo");
 
   const isShop =
     location.pathname.startsWith("/shop") ||
@@ -87,13 +88,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         Aller au contenu principal
       </a>
 
-      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && <Navbar />}
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && <Navbar />}
 
       <main id="main-content" className="min-h-[calc(100vh-200px)] relative">{children}</main>
 
       {isHomepage && <Footer isHomepage={isHomepage} />}
 
-      <MobileBottomNav hideOnRoutes={["/checkout", "/auth", "/onboarding", "/verify-email", "/forgot-password", "/bricolage"]} />
+      <MobileBottomNav hideOnRoutes={["/checkout", "/auth", "/onboarding", "/verify-email", "/forgot-password", "/bricolage", "/immo"]} />
 
       {!isOnline && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full z-50 flex items-center gap-2 shadow-lg">

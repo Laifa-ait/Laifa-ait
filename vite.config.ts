@@ -118,6 +118,8 @@ export default defineConfig(({mode}) => {
     base: '/',
     build: {
       outDir: 'dist',
+      emptyOutDir: true,
+      sourcemap: false,
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         external: ['firebase-admin', 'firebase-admin/firestore'],
