@@ -28,7 +28,11 @@ logDev("         🟢 INITIALIZING OLMART ENTERPRISE ENGINE (FIREBASE SERVICES) 
 logDev("================================================================================");
 
 // Prioritize Environment Project ID as it is guaranteed to match the runtime environment
-const envProjectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
+const envProjectId =
+  process.env.FIREBASE_PROJECT_ID ||
+  process.env.VITE_FIREBASE_PROJECT_ID ||
+  process.env.GCLOUD_PROJECT ||
+  process.env.GOOGLE_CLOUD_PROJECT;
 const configProjectId = typeof firebaseConfig.projectId === "string" ? firebaseConfig.projectId : undefined;
 const targetProjectId = envProjectId || configProjectId;
 
