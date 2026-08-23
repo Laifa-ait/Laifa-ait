@@ -20,6 +20,12 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Setup Java (required for Firebase Emulators)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Node.js (via .nvmrc)
         uses: actions/setup-node@v4
         with:
@@ -35,8 +41,8 @@ jobs:
       - name: TypeScript Typecheck
         run: npm run typecheck
 
-      - name: Run Vitest Test Suite
-        run: npm test
+      - name: Run Vitest Test Suite (with Firebase Emulators)
+        run: npx firebase emulators:exec --only firestore,storage "npm test"
 
       - name: Build Application (SPA + Server)
         run: npm run build
