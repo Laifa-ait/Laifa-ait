@@ -14,7 +14,7 @@ describe.skipIf(!hasEmulator)('Firebase Storage Security Rules - Real Emulator S
 
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
-      projectId: 'olmart-storage-rules-test',
+      projectId: process.env.FIREBASE_PROJECT_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
       storage: {
         rules: fs.readFileSync(path.resolve(process.cwd(), 'storage.rules'), 'utf8'),
         host: '127.0.0.1',
