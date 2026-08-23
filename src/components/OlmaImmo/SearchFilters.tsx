@@ -265,7 +265,23 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
       </div>
 
-      {showMoreFilters && <AdvancedFiltersPanel filters={filters} onChange={onChange} />}
+      {showMoreFilters && (
+        <AdvancedFiltersPanel
+          roomsFilter={filters.minRooms || 'all'}
+          setRoomsFilter={(rooms) => handleMinRoomsChange(rooms === 'all' ? undefined : rooms)}
+          selectedAmenities={filters.features || []}
+          toggleAmenity={(amenity) => {
+            const current = filters.features || [];
+            const next = current.includes(amenity)
+              ? current.filter((a) => a !== amenity)
+              : [...current, amenity];
+            onChange({ ...filters, features: next });
+          }}
+          areaRange={[filters.minArea || 20, 500]}
+          setAreaRange={(range) => onChange({ ...filters, minArea: range[0] })}
+          onReset={onReset}
+        />
+      )}
     </div>
   );
 };

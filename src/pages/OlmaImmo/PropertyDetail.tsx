@@ -385,10 +385,9 @@ export const PropertyDetail: React.FC = () => {
             type: 'REAL_ESTATE_INQUIRY',
             recipientId: property.ownerId || '',
             context: {
-              propertyId: property.id,
-              referenceTitle: property.title,
-              referenceImageUrl: property.images?.[0]
-            }
+              propertyId: property.id
+            },
+            initialMessage: ''
           }}
         />
       )}

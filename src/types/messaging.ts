@@ -122,6 +122,8 @@ export interface ResolveNegotiationDTO {
   counterAmountDZD?: number;
 }
 
+export type ResolveNegotiationPayload = ResolveNegotiationDTO;
+
 export interface ReportMessageDTO {
   reason: string;
   description?: string;

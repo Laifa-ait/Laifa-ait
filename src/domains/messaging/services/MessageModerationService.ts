@@ -7,9 +7,14 @@ export interface ModerationResult {
 }
 
 export class MessageModerationService {
-  private static readonly PHONE_REGEX = /(0[5672349][0-9]{8}|(\+213|00213)[5672349][0-9]{8})/g;
-  private static readonly SOCIAL_REGEX = /(whatsapp|viber|telegram|instagram|insta|facebook|fb|appel[e]?\s*moi)/gi;
-  private static readonly URL_REGEX = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+  private static readonly PHONE_TEST = /(0[5672349][0-9]{8}|(\+213|00213)[5672349][0-9]{8})/;
+  private static readonly PHONE_REPLACE = /(0[5672349][0-9]{8}|(\+213|00213)[5672349][0-9]{8})/g;
+
+  private static readonly SOCIAL_TEST = /(whatsapp|viber|telegram|instagram|insta|facebook|fb|appel[e]?\s*moi)/i;
+  private static readonly SOCIAL_REPLACE = /(whatsapp|viber|telegram|instagram|insta|facebook|fb|appel[e]?\s*moi)/gi;
+
+  private static readonly URL_TEST = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/i;
+  private static readonly URL_REPLACE = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
 
   /**
    * Scans and sanitizes message text against platform DLP rules.
@@ -19,21 +24,21 @@ export class MessageModerationService {
     const violationReasons: string[] = [];
 
     // 1. Phone number filter
-    if (this.PHONE_REGEX.test(cleanText)) {
+    if (this.PHONE_TEST.test(cleanText)) {
       violationReasons.push("PHONE_NUMBER_DETECTED");
-      cleanText = cleanText.replace(this.PHONE_REGEX, "[NUMÉRO MASQUÉ]");
+      cleanText = cleanText.replace(this.PHONE_REPLACE, "[NUMÉRO MASQUÉ]");
     }
 
     // 2. External social media filter
-    if (this.SOCIAL_REGEX.test(cleanText)) {
+    if (this.SOCIAL_TEST.test(cleanText)) {
       violationReasons.push("SOCIAL_MEDIA_KEYWORD");
-      cleanText = cleanText.replace(this.SOCIAL_REGEX, "[MOT INTERDIT]");
+      cleanText = cleanText.replace(this.SOCIAL_REPLACE, "[MOT INTERDIT]");
     }
 
     // 3. External URLs filter
-    if (this.URL_REGEX.test(cleanText)) {
+    if (this.URL_TEST.test(cleanText)) {
       violationReasons.push("EXTERNAL_URL_DETECTED");
-      cleanText = cleanText.replace(this.URL_REGEX, "[LIEN INTERDIT]");
+      cleanText = cleanText.replace(this.URL_REPLACE, "[LIEN INTERDIT]");
     }
 
     const violationDetected = violationReasons.length > 0;

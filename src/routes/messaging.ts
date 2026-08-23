@@ -10,6 +10,7 @@ import {
 } from "../schemas/messaging";
 import { MessagingService } from "../domains/messaging/services/MessagingService";
 import { NegotiationService } from "../domains/messaging/services/NegotiationService";
+import { PushNotificationService } from "../domains/notifications/services/PushNotificationService";
 
 const router = Router();
 
@@ -429,6 +430,60 @@ router.post("/messages/:id/report", authenticateToken, async (req: Authenticated
     return res.status(200).json({
       success: true,
       message: "Message signalé avec succès à l'équipe de modération."
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({ error: `Erreur serveur : ${errorMsg}` });
+  }
+});
+
+/**
+ * POST /api/v1/messaging/push-token
+ * Register or update an FCM push token for the authenticated user
+ */
+router.post("/push-token", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const callerUid = req.user?.uid;
+    if (!callerUid) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+
+    const { token, deviceType } = req.body || {};
+    if (!token || typeof token !== "string" || !token.trim()) {
+      return res.status(400).json({ error: "Jeton PUSH FCM invalide" });
+    }
+
+    await PushNotificationService.registerPushToken(callerUid, token.trim(), deviceType);
+    return res.status(200).json({
+      success: true,
+      message: "Jeton PUSH enregistré avec succès."
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({ error: `Erreur serveur : ${errorMsg}` });
+  }
+});
+
+/**
+ * DELETE /api/v1/messaging/push-token
+ * Unregister an FCM push token for the authenticated user
+ */
+router.delete("/push-token", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const callerUid = req.user?.uid;
+    if (!callerUid) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+
+    const { token } = req.body || {};
+    if (!token || typeof token !== "string" || !token.trim()) {
+      return res.status(400).json({ error: "Jeton PUSH FCM invalide" });
+    }
+
+    await PushNotificationService.unregisterPushToken(callerUid, token.trim());
+    return res.status(200).json({
+      success: true,
+      message: "Jeton PUSH supprimé avec succès."
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);

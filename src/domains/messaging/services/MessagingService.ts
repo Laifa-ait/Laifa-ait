@@ -7,6 +7,7 @@ import {
   SendMessageDTO
 } from "../../../types/messaging";
 import { MessageModerationService } from "./MessageModerationService";
+import { PushNotificationService } from "../../notifications/services/PushNotificationService";
 
 export interface PaginationOptions {
   limit?: number;
@@ -81,9 +82,10 @@ export class MessagingService {
       throw new Error("FORBIDDEN_NOT_PARTICIPANT");
     }
 
+    const { id: _docId, ...rest } = data;
     return {
       id: snap.id,
-      ...data
+      ...rest
     };
   }
 
@@ -312,6 +314,13 @@ export class MessagingService {
       updatedAt: nowIso
     });
 
+    // Fire push notification asynchronously
+    PushNotificationService.sendMessagingPush(conversationId, callerUid, verifiedRecipientId, {
+      messageId: initialMsgData.id,
+      text: moderation.cleanText,
+      violationDetected: moderation.violationDetected
+    }).catch(() => {});
+
     return {
       conversation: conversationDoc,
       initialMessage: initialMsgData
@@ -384,6 +393,17 @@ export class MessagingService {
       throw new Error("CONVERSATION_ARCHIVED");
     }
 
+    // Validate attachments match conversation path in Storage
+    if (payload.attachments && payload.attachments.length > 0) {
+      const encodedPath = `chat_attachments%2F${conversationId}%2F`;
+      const rawPath = `chat_attachments/${conversationId}/`;
+      for (const att of payload.attachments) {
+        if (!att.url.includes(encodedPath) && !att.url.includes(rawPath)) {
+          throw new Error("INVALID_ATTACHMENT_CONVERSATION_MISMATCH");
+        }
+      }
+    }
+
     const recipientId = conv.participants.find((uid) => uid !== callerUid);
     if (!recipientId) {
       throw new Error("RECIPIENT_NOT_FOUND");
@@ -429,6 +449,13 @@ export class MessagingService {
       [`participantDetails.${recipientId}.unreadCount`]: admin.firestore.FieldValue.increment(1),
       updatedAt: nowIso
     });
+
+    // Fire push notification asynchronously
+    PushNotificationService.sendMessagingPush(conversationId, callerUid, recipientId, {
+      messageId: messageDoc.id,
+      text: moderation.cleanText,
+      violationDetected: moderation.violationDetected
+    }).catch(() => {});
 
     return messageDoc;
   }

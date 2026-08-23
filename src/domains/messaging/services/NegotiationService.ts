@@ -4,6 +4,7 @@ import {
   NegotiationOfferPayload,
   ResolveNegotiationDTO
 } from "../../../types/messaging";
+import { PushNotificationService } from "../../notifications/services/PushNotificationService";
 
 export interface CreateNegotiationParams {
   callerUid: string;
@@ -33,7 +34,7 @@ export class NegotiationService {
     const conversationRef = db.collection("conversations").doc(conversationId);
     const messagesCollRef = conversationRef.collection("messages");
 
-    return await db.runTransaction(async (transaction) => {
+    const result = await db.runTransaction(async (transaction) => {
       const convSnap = await transaction.get(conversationRef);
       if (!convSnap.exists) {
         throw new Error("CONVERSATION_NOT_FOUND");
@@ -118,6 +119,14 @@ export class NegotiationService {
 
       return newOffer;
     });
+
+    PushNotificationService.sendNegotiationPush(conversationId, result.proposedByUid, result.targetUid, {
+      offerId: result.offerId,
+      amountDZD: result.amountDZD,
+      action: "NEW_OFFER"
+    }).catch(() => {});
+
+    return result;
   }
 
   /**
@@ -132,7 +141,7 @@ export class NegotiationService {
     const conversationRef = db.collection("conversations").doc(conversationId);
     const messagesCollRef = conversationRef.collection("messages");
 
-    return await db.runTransaction(async (transaction) => {
+    const result = await db.runTransaction(async (transaction) => {
       const convSnap = await transaction.get(conversationRef);
       if (!convSnap.exists) {
         throw new Error("CONVERSATION_NOT_FOUND");
@@ -268,6 +277,20 @@ export class NegotiationService {
 
       return updatedOffer;
     });
+
+    const actionMap: Record<string, "ACCEPTED" | "REJECTED" | "COUNTERED"> = {
+      ACCEPT: "ACCEPTED",
+      REJECT: "REJECTED",
+      COUNTER: "COUNTERED"
+    };
+    const recipientId = result.proposedByUid === callerUid ? result.targetUid : result.proposedByUid;
+    PushNotificationService.sendNegotiationPush(conversationId, callerUid, recipientId, {
+      offerId: result.offerId,
+      amountDZD: result.amountDZD,
+      action: actionMap[payload.action] || "NEW_OFFER"
+    }).catch(() => {});
+
+    return result;
   }
 
   /**
@@ -281,7 +304,7 @@ export class NegotiationService {
     const conversationRef = db.collection("conversations").doc(conversationId);
     const messagesCollRef = conversationRef.collection("messages");
 
-    return await db.runTransaction(async (transaction) => {
+    const result = await db.runTransaction(async (transaction) => {
       const convSnap = await transaction.get(conversationRef);
       if (!convSnap.exists) {
         throw new Error("CONVERSATION_NOT_FOUND");
@@ -341,5 +364,13 @@ export class NegotiationService {
 
       return updatedOffer;
     });
+
+    PushNotificationService.sendNegotiationPush(conversationId, callerUid, result.targetUid, {
+      offerId: result.offerId,
+      amountDZD: result.amountDZD,
+      action: "CANCELLED"
+    }).catch(() => {});
+
+    return result;
   }
 }
