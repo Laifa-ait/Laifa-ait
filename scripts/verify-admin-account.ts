@@ -1,6 +1,6 @@
 import { admin, db } from "../src/config/firebase-admin";
 import { authorizeAdmin } from "../src/middlewares/auth";
-import type { Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 
 async function verify() {
   console.log("================================================================================");
@@ -19,7 +19,7 @@ async function verify() {
     console.log(`   Email: ${userRecord.email}`);
     console.log(`   Email Verified: ${userRecord.emailVerified}`);
     console.log(`   Custom Claims actuels:`, userRecord.customClaims || "Aucun");
-  } catch (err: any) {
+  } catch {
     console.log(`⚠️ Utilisateur ${targetEmail} non trouvé directement par email. Recherche dans la liste des utilisateurs...`);
     const listResult = await admin.auth().listUsers(100);
     const found = listResult.users.find(u => u.email?.toLowerCase() === targetEmail.toLowerCase());
@@ -51,30 +51,27 @@ async function verify() {
 
   // Simulation authorizeAdmin
   let statusReceived: number | null = null;
-  let jsonReceived: any = null;
   let nextCalled = false;
 
-  const mockRes: any = {
+  const mockRes = {
     status: (code: number) => {
       statusReceived = code;
       return {
-        json: (data: any) => {
-          jsonReceived = data;
-        }
+        json: (_data: unknown) => {}
       };
     }
-  };
+  } as unknown as Response;
   const mockNext = () => {
     nextCalled = true;
   };
 
-  const reqInitial: any = {
+  const reqInitial = {
     user: {
       uid,
       email: userRecord.email,
       role: tokenRole
     }
-  };
+  } as unknown as Request;
 
   authorizeAdmin(reqInitial, mockRes as Response, mockNext as NextFunction);
   console.log(`   Résultat authorizeAdmin initial :`, nextCalled ? "✅ ACCÈS AUTORISÉ (next() appelé)" : `❌ ACCÈS REFUSÉ (Status ${statusReceived})`);
@@ -115,23 +112,23 @@ async function verify() {
   console.log(`\n--- Étape 5 & 6 : Test de la chaîne d'authentification et d'autorisation ---`);
   let promotedStatus: number | null = null;
   let promotedNext = false;
-  const mockResPromoted: any = {
+  const mockResPromoted = {
     status: (code: number) => {
       promotedStatus = code;
-      return { json: () => {} };
+      return { json: (_data: unknown) => {} };
     }
-  };
+  } as unknown as Response;
   const mockNextPromoted = () => {
     promotedNext = true;
   };
 
-  const reqPromoted: any = {
+  const reqPromoted = {
     user: {
       uid,
       email: refreshedUser.email,
       role: refreshedUser.customClaims?.role
     }
-  };
+  } as unknown as Request;
 
   authorizeAdmin(reqPromoted, mockResPromoted as Response, mockNextPromoted as NextFunction);
   console.log(`1. AuthenticateToken : req.user.role = '${reqPromoted.user.role}'`);
@@ -143,23 +140,23 @@ async function verify() {
   
   let demotedStatus: number | null = null;
   let demotedNext = false;
-  const mockResDemoted: any = {
+  const mockResDemoted = {
     status: (code: number) => {
       demotedStatus = code;
-      return { json: () => {} };
+      return { json: (_data: unknown) => {} };
     }
-  };
+  } as unknown as Response;
   const mockNextDemoted = () => {
     demotedNext = true;
   };
 
-  const reqDemoted: any = {
+  const reqDemoted = {
     user: {
       uid,
       email: targetEmail, // L'adresse email est présente
       role: "buyer"       // Mais le rôle n'est PAS admin
     }
-  };
+  } as unknown as Request;
 
   authorizeAdmin(reqDemoted, mockResDemoted as Response, mockNextDemoted as NextFunction);
 

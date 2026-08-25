@@ -127,7 +127,7 @@ export interface Order {
   updatedAt?: AppTimestamp;
 }
 
-import { Transaction, DocumentReference } from 'firebase-admin/firestore';
+import type { Transaction, DocumentReference } from 'firebase-admin/firestore';
 
 export interface OrderTransactionContext {
   transaction: Transaction;

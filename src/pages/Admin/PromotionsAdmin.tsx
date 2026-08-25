@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Tag, Plus, AlertCircle, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -14,7 +14,7 @@ export const PromotionsAdmin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadCoupons = async () => {
+  const loadCoupons = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiGet<{ success: boolean; coupons: Coupon[] }>("/api/v1/admin/promotions/coupons");
@@ -26,21 +26,21 @@ export const PromotionsAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  const loadSellers = async () => {
+  const loadSellers = useCallback(async () => {
     try {
       const res = await apiGet<{ success: boolean; sellers: { id: string; name: string }[] }>("/api/v1/admin/sellers/list");
       setSellersList(res?.sellers || []);
     } catch (err: unknown) {
       console.error("Error fetching sellers for admin promotions page:", err instanceof Error ? err.message : err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadCoupons();
     loadSellers();
-  }, []);
+  }, [loadCoupons, loadSellers]);
 
   const toggleStatus = async (coupon: Coupon) => {
     try {

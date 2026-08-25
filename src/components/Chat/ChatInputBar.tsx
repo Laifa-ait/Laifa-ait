@@ -1,5 +1,5 @@
 import React from 'react';
-import { Send, Paperclip, DollarSign, Loader2 } from 'lucide-react';
+import { Send, Paperclip, DollarSign, Loader2, Calendar } from 'lucide-react';
 
 interface ChatInputBarProps {
   textInput: string;
@@ -12,7 +12,17 @@ interface ChatInputBarProps {
   isUploading: boolean;
   hasActiveNegotiation: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  isRealEstate?: boolean;
+  onSelectQuickChip?: (text: string) => void;
+  onRequestVisit?: () => void;
 }
+
+const REAL_ESTATE_QUICK_CHIPS = [
+  "Ce bien m'intéresse",
+  "Est-il toujours disponible ?",
+  "Peut-on organiser une visite ?",
+  "Le prix est-il négociable ?",
+];
 
 export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   textInput,
@@ -24,12 +34,15 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   isSending,
   isUploading,
   hasActiveNegotiation,
-  fileInputRef
+  fileInputRef,
+  isRealEstate = false,
+  onSelectQuickChip,
+  onRequestVisit
 }) => {
   if (isBlocked) {
     return (
-      <div className="p-3 border-t border-slate-800 bg-slate-900/90">
-        <div className="p-2 text-center text-xs text-red-400 bg-red-950/30 border border-red-900/40 rounded-xl">
+      <div className="p-3 border-t border-[#e8e2d4] bg-white">
+        <div className="p-2 text-center text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl">
           Cette conversation est bloquée.
         </div>
       </div>
@@ -37,7 +50,35 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   }
 
   return (
-    <div className="p-3 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md">
+    <div className="p-3 border-t border-[#e8e2d4] bg-white space-y-2">
+      {/* Real Estate Quick Action Chips */}
+      {isRealEstate && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+          {onRequestVisit && (
+            <button
+              type="button"
+              onClick={onRequestVisit}
+              className="shrink-0 px-3 py-1 rounded-full bg-[#1e3835] hover:bg-[#152725] text-white text-[11px] font-bold flex items-center gap-1 transition cursor-pointer shadow-xs"
+            >
+              <Calendar className="w-3 h-3 text-[#ebdcb8]" />
+              <span>Visite</span>
+            </button>
+          )}
+
+          {REAL_ESTATE_QUICK_CHIPS.map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => onSelectQuickChip ? onSelectQuickChip(chip) : onChangeText(chip)}
+              className="shrink-0 px-3 py-1 rounded-full bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835] border border-[#e8e2d4] text-[11px] font-medium transition cursor-pointer"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Primary Input Form */}
       <form onSubmit={onSubmit} className="flex items-center gap-2">
         <input
           type="file"
@@ -51,11 +92,11 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="p-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition disabled:opacity-50 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+          className="p-2.5 rounded-xl hover:bg-[#f4ecd8] text-slate-500 hover:text-[#1e3835] transition disabled:opacity-50 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center border border-[#e8e2d4]"
           title="Joindre une photo ou un document PDF (max 5 Mo)"
         >
           {isUploading ? (
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+            <Loader2 className="w-4 h-4 animate-spin text-[#1e3835]" />
           ) : (
             <Paperclip className="w-4 h-4" />
           )}
@@ -65,10 +106,10 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           <button
             type="button"
             onClick={onToggleNegotiate}
-            className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition text-xs font-bold flex items-center gap-1 cursor-pointer min-h-[38px]"
+            className="p-2 rounded-xl bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835] border border-[#e8e2d4] transition text-xs font-bold flex items-center gap-1 cursor-pointer min-h-[38px]"
             title="Faire une offre de prix"
           >
-            <DollarSign className="w-3.5 h-3.5" />
+            <DollarSign className="w-3.5 h-3.5 text-[#7a824e]" />
             <span className="hidden sm:inline">Négocier</span>
           </button>
         )}
@@ -77,23 +118,24 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           type="text"
           value={textInput}
           onChange={(e) => onChangeText(e.target.value)}
-          placeholder="Votre message..."
+          placeholder={isRealEstate ? "Votre message concernant ce bien..." : "Votre message..."}
           disabled={isSending}
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 transition min-h-[38px]"
+          className="flex-1 bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-[#1e3835] transition min-h-[38px]"
         />
 
         <button
           type="submit"
           disabled={isSending || !textInput.trim()}
-          className="p-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white rounded-xl transition flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px]"
+          className="p-2.5 bg-[#1e3835] hover:bg-[#152725] disabled:opacity-40 text-white rounded-xl transition flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] shadow-xs"
         >
           {isSending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin text-[#ebdcb8]" />
           ) : (
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4 text-[#ebdcb8]" />
           )}
         </button>
       </form>
     </div>
   );
 };
+

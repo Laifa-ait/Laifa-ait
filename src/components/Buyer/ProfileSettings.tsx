@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Settings, User, Phone, Check, RefreshCw, Sparkles } from "lucide-react";
+import { User, Phone, Check, RefreshCw, Sparkles } from "lucide-react";
 import { User as FirebaseUser, updateProfile } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { RETRO_AVATARS, getRetroAvatar } from "../../utils/avatar";

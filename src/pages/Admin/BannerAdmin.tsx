@@ -78,7 +78,6 @@ export const BannerAdmin: React.FC = () => {
         <TagManagerSection
           tags={tags}
           tagName={tagName}
-          setTagName={setTagName}
           tagSlug={tagSlug}
           setTagSlug={setTagSlug}
           handleCreateTag={handleCreateTag}

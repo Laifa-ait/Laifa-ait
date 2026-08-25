@@ -1,8 +1,6 @@
 import React from "react";
-import { X, Truck, Printer, RefreshCw, ExternalLink } from "lucide-react";
+import { X, Truck, Printer, ExternalLink } from "lucide-react";
 import { Order, OrderStatus } from "../../../domains/order/order.types";
-import { auth } from "../../../lib/firebase";
-import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
   OrderClientProfileCard,
@@ -19,7 +17,7 @@ interface OrderDetailsModalProps {
   handleUpdateOrderStatus: (orderId: string, newStatus: OrderStatus) => void;
   setSelectedOrderIds: (ids: string[]) => void;
   handleBulkPrint: () => void;
-  setRefreshTrigger: React.Dispatch<React.SetStateAction<number>>;
+  setRefreshTrigger?: React.Dispatch<React.SetStateAction<number>>;
   getOrderDate: (val: unknown) => Date | null;
 }
 
@@ -32,7 +30,6 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   handleUpdateOrderStatus,
   setSelectedOrderIds,
   handleBulkPrint,
-  setRefreshTrigger,
   getOrderDate,
 }) => {
   const { t } = useTranslation();

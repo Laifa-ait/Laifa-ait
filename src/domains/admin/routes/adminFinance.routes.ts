@@ -53,4 +53,16 @@ router.get("/admin/finances/summary", authenticateToken, authorizeAdmin, async (
   }
 });
 
+// GET /api/v1/admin/finances/chart
+router.get("/admin/finances/chart", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string, 10) || 30;
+    const chartData = await AdminFinanceService.getChartData(days);
+    res.json({ success: true, chartData });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Erreur serveur";
+    res.status(500).json({ error: message });
+  }
+});
+
 export default router;

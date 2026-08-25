@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeSeller, AuthenticatedRequest } from "../../../middlewares/auth";
+import type { ReviewDocument } from "../../review/review.types";
 
 const router = Router();
 
@@ -43,11 +44,11 @@ router.get("/api/v1/seller/reviews", authenticateToken, authorizeSeller, async (
     );
 
     const querySnapshots = await Promise.all(queries);
-    const allReviewDocs: any[] = [];
+    const allReviewDocs: Array<ReviewDocument & { id: string }> = [];
 
     querySnapshots.forEach(snap => {
       snap.docs.forEach(doc => {
-        allReviewDocs.push({ id: doc.id, ...doc.data() });
+        allReviewDocs.push({ id: doc.id, ...(doc.data() as ReviewDocument) });
       });
     });
 
@@ -61,11 +62,21 @@ router.get("/api/v1/seller/reviews", authenticateToken, authorizeSeller, async (
 
     // Sort combined reviews by createdAt descending safely
     reviews.sort((a, b) => {
-      const getTimestamp = (val: any) => {
+      const getTimestamp = (val: unknown): number => {
         if (!val) return 0;
-        if (typeof val.toDate === "function") return val.toDate().getTime();
-        if (typeof val._seconds === "number") return val._seconds * 1000;
-        return new Date(val).getTime() || 0;
+        if (typeof val === "object" && val !== null) {
+          if ("toDate" in val && typeof (val as { toDate: () => Date }).toDate === "function") {
+            return (val as { toDate: () => Date }).toDate().getTime();
+          }
+          if ("_seconds" in val && typeof (val as { _seconds: number })._seconds === "number") {
+            return (val as { _seconds: number })._seconds * 1000;
+          }
+        }
+        if (typeof val === "string" || typeof val === "number" || val instanceof Date) {
+          const time = new Date(val).getTime();
+          return isNaN(time) ? 0 : time;
+        }
+        return 0;
       };
       return getTimestamp(b.createdAt) - getTimestamp(a.createdAt);
     });

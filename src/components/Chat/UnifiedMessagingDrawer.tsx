@@ -13,6 +13,7 @@ import { ChatInputBar } from './ChatInputBar';
 import { ReportMessageModal } from './ReportMessageModal';
 import { CreateNegotiationForm } from './CreateNegotiationForm';
 import { UnifiedMessagingHeader } from './UnifiedMessagingHeader';
+import { VisitRequestModal } from '../OlmaImmo/VisitRequestModal';
 import toast from 'react-hot-toast';
 
 interface UnifiedMessagingDrawerProps {
@@ -29,25 +30,16 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
   initialConversationId
 }) => {
   const {
-    currentUser,
-    conversations,
-    selectedConversation,
-    setSelectedConversation,
-    messages,
-    setMessages,
-    loadingConversations,
-    loadingMessages,
-    hasMoreMessages,
-    hasMoreConversations,
-    loadingAction,
-    setLoadingAction,
-    loadConversations,
-    loadMessages
+    currentUser, conversations, selectedConversation, setSelectedConversation,
+    messages, setMessages, loadingConversations, loadingMessages,
+    hasMoreMessages, hasMoreConversations, loadingAction, setLoadingAction,
+    loadConversations, loadMessages
   } = useMessaging(isOpen, initialContext, initialConversationId);
 
   const [textInput, setTextInput] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showCreateNegotiation, setShowCreateNegotiation] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
@@ -57,24 +49,21 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedConversation || !textInput.trim() || sendingMessage || !currentUser) return;
+  const isRealEstate =
+    selectedConversation?.type === 'REAL_ESTATE_INQUIRY' ||
+    Boolean(selectedConversation?.context?.propertyId);
+
+  const handleSendMessageText = async (contentToSend: string) => {
+    if (!selectedConversation || !contentToSend.trim() || sendingMessage || !currentUser) return;
     setSendingMessage(true);
-    const content = textInput.trim();
     setTextInput('');
     try {
-      const res = await messagingApi.sendMessage(selectedConversation.id, { text: content });
-      if (res.success && res.data) {
-        setMessages((prev) => [...prev, res.data]);
-        scrollToBottom();
-      }
-    } catch {
-      toast.error("Erreur lors de l'envoi.");
-    } finally {
-      setSendingMessage(false);
-    }
+      const res = await messagingApi.sendMessage(selectedConversation.id, { text: contentToSend.trim() });
+      if (res.success && res.data) { setMessages((prev) => [...prev, res.data]); scrollToBottom(); }
+    } catch { toast.error("Erreur lors de l'envoi."); } finally { setSendingMessage(false); }
   };
+
+  const handleSendMessage = (e: React.FormEvent) => { e.preventDefault(); handleSendMessageText(textInput); };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,16 +80,9 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
         text: isPdf ? `[Document PDF : ${file.name}]` : 'Photo partagée',
         attachments: [{ type: isPdf ? 'pdf' : 'image', url: downloadUrl, fileName: file.name, fileSizeBytes: file.size }]
       });
-      if (res.success && res.data) {
-        setMessages((prev) => [...prev, res.data]);
-        scrollToBottom();
-      }
-    } catch {
-      toast.error("Erreur lors de l'envoi du fichier.");
-    } finally {
-      setUploadingAttachment(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+      if (res.success && res.data) { setMessages((prev) => [...prev, res.data]); scrollToBottom(); }
+    } catch { toast.error("Erreur lors de l'envoi du fichier."); }
+    finally { setUploadingAttachment(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   const handleCreateNegotiation = async (e: React.FormEvent) => {
@@ -113,16 +95,11 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
       const res = await messagingApi.createNegotiation(selectedConversation.id, parsed, '');
       if (res.success && res.data) {
         setSelectedConversation((prev) => (prev ? { ...prev, activeNegotiation: res.data } : null));
-        setShowCreateNegotiation(false);
-        setOfferAmount('');
-        toast.success('Offre envoyée.');
+        setShowCreateNegotiation(false); setOfferAmount(''); toast.success('Offre envoyée.');
         await loadMessages(selectedConversation.id);
       }
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Erreur');
-    } finally {
-      setLoadingAction(null);
-    }
+    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Erreur'); }
+    finally { setLoadingAction(null); }
   };
 
   const handleResolveOffer = async (action: 'ACCEPT' | 'REJECT', offerId: string) => {
@@ -145,8 +122,8 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-xs" />
-        <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-slate-900 border-l border-slate-800 text-slate-100 flex flex-col h-full shadow-2xl z-10">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
+        <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-[#faf8f5] border-l border-[#e8e2d4] text-slate-800 flex flex-col h-full shadow-2xl z-10">
           <UnifiedMessagingHeader
             selectedConversation={selectedConversation}
             onBack={() => setSelectedConversation(null)}
@@ -178,7 +155,7 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
                 />
               </div>
             ) : (
-              <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 flex flex-col overflow-hidden bg-[#faf8f5]">
                 {selectedConversation.activeNegotiation && (
                   <div className="px-4">
                     <NegotiationPanel
@@ -201,13 +178,13 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {hasMoreMessages && (
                     <div className="text-center py-2">
-                      <button type="button" onClick={() => messages.length > 0 && loadMessages(selectedConversation.id, messages[0].createdAt)} className="text-xs text-emerald-400 hover:underline cursor-pointer">
+                      <button type="button" onClick={() => messages.length > 0 && loadMessages(selectedConversation.id, messages[0].createdAt)} className="text-xs text-[#1e3835] font-bold hover:underline cursor-pointer">
                         Charger messages anciens
                       </button>
                     </div>
                   )}
                   {loadingMessages ? (
-                    <div className="flex items-center justify-center p-8 text-slate-500"><Loader2 className="w-6 h-6 animate-spin" /></div>
+                    <div className="flex items-center justify-center p-8 text-slate-400"><Loader2 className="w-6 h-6 animate-spin text-[#1e3835]" /></div>
                   ) : (
                     messages.map((msg) => <MessageBubble key={msg.id} msg={msg} isMe={msg.senderId === currentUser?.uid} onReport={(id) => setReportingMessageId(id)} />)
                   )}
@@ -218,12 +195,42 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
                   <CreateNegotiationForm offerAmount={offerAmount} setOfferAmount={setOfferAmount} onSubmit={handleCreateNegotiation} onCancel={() => setShowCreateNegotiation(false)} />
                 )}
 
-                <ChatInputBar textInput={textInput} onChangeText={setTextInput} onSubmit={handleSendMessage} onSelectFile={handleFileUpload} onToggleNegotiate={() => setShowCreateNegotiation((p) => !p)} isBlocked={selectedConversation.isBlocked} isSending={sendingMessage} isUploading={uploadingAttachment} hasActiveNegotiation={Boolean(selectedConversation.activeNegotiation)} fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>} />
+                <ChatInputBar
+                  textInput={textInput}
+                  onChangeText={setTextInput}
+                  onSubmit={handleSendMessage}
+                  onSelectFile={handleFileUpload}
+                  onToggleNegotiate={() => setShowCreateNegotiation((p) => !p)}
+                  isBlocked={selectedConversation.isBlocked}
+                  isSending={sendingMessage}
+                  isUploading={uploadingAttachment}
+                  hasActiveNegotiation={Boolean(selectedConversation.activeNegotiation)}
+                  fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
+                  isRealEstate={isRealEstate}
+                  onSelectQuickChip={(text) => handleSendMessageText(text)}
+                  onRequestVisit={() => setShowVisitModal(true)}
+                />
               </div>
             )}
           </div>
 
-          <ReportMessageModal messageId={reportingMessageId} onClose={() => setReportingMessageId(null)} onSubmit={async (msgId, reason, desc) => { await messagingApi.reportMessage(msgId, reason, desc); toast.success('Signalement envoyé.'); }} />
+          <ReportMessageModal
+            messageId={reportingMessageId}
+            onClose={() => setReportingMessageId(null)}
+            onSubmit={async (msgId, reason, desc) => {
+              await messagingApi.reportMessage(msgId, reason, desc);
+              toast.success('Signalement envoyé.');
+            }}
+          />
+
+          {selectedConversation?.context?.propertyId && (
+            <VisitRequestModal
+              isOpen={showVisitModal}
+              onClose={() => setShowVisitModal(false)}
+              propertyId={selectedConversation.context.propertyId}
+              propertyTitle={selectedConversation.context.referenceTitle || 'Annonce'}
+            />
+          )}
         </motion.div>
       </div>
     </AnimatePresence>

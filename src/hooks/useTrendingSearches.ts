@@ -7,19 +7,18 @@ const CACHE_EXPIRATION_MS = 1 * 60 * 60 * 1000; // 1 hour
 
 export const useTrendingSearches = () => {
   const { t } = useTranslation();
-
-  const getFallbackTrends = () => [
-    t("trending.tapis", "Tapis Berbère"),
-    t("trending.robe", "Robe Kabyle"),
-    t("trending.poterie", "Poterie"),
-    t("trending.bijoux", "Bijoux en Argent"),
-    t("trending.burnous", "Burnous"),
-    t("trending.tajine", "Tajine Algérien")
-  ];
-
   const [trends, setTrends] = useState<string[]>([]);
 
   useEffect(() => {
+    const getFallbackTrends = () => [
+      t("trending.tapis", "Tapis Berbère"),
+      t("trending.robe", "Robe Kabyle"),
+      t("trending.poterie", "Poterie"),
+      t("trending.bijoux", "Bijoux en Argent"),
+      t("trending.burnous", "Burnous"),
+      t("trending.tajine", "Tajine Algérien")
+    ];
+
     setTrends(getFallbackTrends());
 
     const fetchTrends = async () => {

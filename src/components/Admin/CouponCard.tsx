@@ -1,5 +1,5 @@
 import React from "react";
-import { Tag, Percent, Trash2, Power, PowerOff, Copy, User, Check, Layers, UserCheck } from "lucide-react";
+import { Tag, Percent, Trash2, Power, PowerOff, Copy, User, Layers, UserCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr, arDZ } from "date-fns/locale";
@@ -159,7 +159,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({
           </span>
           <span className="font-semibold text-zinc-800 text-end break-all line-clamp-2">
             {coupon.limitedToCategories && coupon.limitedToCategories.length > 0 ? (
-              coupon.limitedToCategories.map((cat, i) => (
+              coupon.limitedToCategories.map((cat) => (
                 <span
                   key={cat}
                   className="inline-block bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded-md text-[10px] m-0.5 font-bold uppercase"

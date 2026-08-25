@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { ShoppingBag, Package, ArrowRight, X, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingBag, Package, ArrowRight, Trash2, Plus, Minus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";

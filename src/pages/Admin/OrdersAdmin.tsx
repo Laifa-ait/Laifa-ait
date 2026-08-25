@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   ShoppingCart,
   Package,
@@ -115,7 +115,7 @@ export const OrdersAdmin: React.FC = () => {
   };
 
   // Fetch orders via Express API
-  const fetchOrders = async (_isLoadMore = false) => {
+  const fetchOrders = useCallback(async (_isLoadMore = false) => {
     setLoading(true);
     try {
       const token = await currentUser?.getIdToken();
@@ -137,7 +137,7 @@ export const OrdersAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, t]);
 
   const extractWilayas = (ordersData: Order[]) => {
     const wilayas = Array.from(new Set(ordersData.map((o) => o.shippingAddress?.wilaya).filter(Boolean))) as string[];
@@ -148,7 +148,7 @@ export const OrdersAdmin: React.FC = () => {
     setLastVisible(null);
     setHasMore(true);
     fetchOrders(false);
-  }, [refreshTrigger, startDate, endDate]);
+  }, [refreshTrigger, startDate, endDate, fetchOrders]);
 
   // Reactive filtering
   const filteredOrders = React.useMemo(() => orders.filter((order) => {
@@ -255,7 +255,7 @@ export const OrdersAdmin: React.FC = () => {
       calculateCommissions();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [filteredOrders]);
+  }, [filteredOrders, currentUser]);
 
   // Mass action check selection helpers
   const handleSelectAll = (checked: boolean) => {

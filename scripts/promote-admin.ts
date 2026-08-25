@@ -81,8 +81,9 @@ async function run() {
 
     console.log(`[Admin CLI] 🚀 SUCCESS: User [${targetUid}] successfully configured with role '${targetRole}'.`);
     process.exit(0);
-  } catch (error: any) {
-    console.error(`❌ ERROR while managing admin role:`, error.message);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`❌ ERROR while managing admin role:`, errorMsg);
     process.exit(1);
   }
 }

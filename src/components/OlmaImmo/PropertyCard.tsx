@@ -109,91 +109,52 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           }}
         />
 
-        {/* Top Badges overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-bold shadow-md uppercase tracking-wider ${listingBadge.color}`}
-            >
-              {listingBadge.label}
-            </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900/70 backdrop-blur-md text-white shadow-md">
-              {getPropertyTypeLabel(property.propertyType)}
-            </span>
-          </div>
-
+        {/* Top Heart Badge overlay */}
+        <div className="absolute top-3 right-3 pointer-events-none">
           <button
             onClick={handleFavoriteClick}
             aria-label="Ajouter aux favoris"
-            className="pointer-events-auto p-2.5 rounded-full bg-white/90 backdrop-blur-md text-slate-700 hover:text-rose-600 shadow-md transition-all active:scale-90 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 shadow-md hover:scale-110 transition-all active:scale-95 cursor-pointer flex items-center justify-center min-w-[38px] min-h-[38px]"
           >
             <Heart
-              className={`w-5 h-5 transition-colors ${
-                isFav ? 'fill-rose-500 text-rose-500' : 'text-slate-600 hover:text-rose-500'
+              className={`w-4 h-4 transition-colors ${
+                isFav ? 'fill-rose-600 text-rose-600' : 'text-slate-700'
               }`}
             />
           </button>
         </div>
 
-        {/* Price Tag Overlay at Bottom of Image */}
-        <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md text-white px-3 py-1.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-1">
-          <span className="text-emerald-400 font-extrabold">{formatPrice(property.price, property.pricePeriod)}</span>
+        {/* Price Tag Overlay at Bottom Left of Image */}
+        <div className="absolute bottom-3 left-3 bg-[#1e3835]/95 backdrop-blur-md text-white px-3 py-1.5 rounded-xl font-bold text-sm shadow-md">
+          <span>{formatPrice(property.price, property.pricePeriod)}</span>
         </div>
       </div>
 
       {/* Card Details Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+      <div className="p-3.5 flex-1 flex flex-col justify-between gap-1.5">
         <div>
-          <h3 className="font-semibold text-slate-900 text-base line-clamp-1 group-hover:text-emerald-700 transition-colors">
-            {property.title}
-          </h3>
-
-          <div className="flex items-center text-slate-500 text-xs mt-1.5">
-            <MapPin className="w-3.5 h-3.5 me-1 text-emerald-600 shrink-0" />
-            <span className="truncate font-medium">
-              {commune}, {wilaya}
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-bold text-slate-900 text-base line-clamp-1 group-hover:text-[#1e3835] transition-colors">
+              {property.title}
+            </h3>
+            <span className="w-4 h-4 rounded-full bg-[#1e3835] text-white flex items-center justify-center text-[9px] shrink-0" title="Annonce vérifiée">
+              ✓
             </span>
-            {'distanceKm' in property && typeof property.distanceKm === 'number' && (
-              <span className="ms-auto text-emerald-700 font-semibold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-md">
-                {property.distanceKm < 1 ? `${Math.round(property.distanceKm * 1000)} m` : `${property.distanceKm.toFixed(1)} km`}
-              </span>
-            )}
           </div>
+
+          <p className="text-slate-500 text-xs mt-0.5 font-medium">
+            {commune} · {wilaya}
+          </p>
         </div>
 
-        {/* Specs Grid */}
-        <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100 text-xs text-slate-600">
-          <div className="flex items-center gap-1">
-            <Bed className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="font-semibold text-slate-800">{property.rooms ? `F${property.rooms}` : 'N/A'}</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Maximize className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="font-semibold text-slate-800">{property.areaSquareMeters} m²</span>
-          </div>
-
-          <div className="flex items-center gap-1 justify-end">
-            {'bathrooms' in property && property.bathrooms ? (
-              <>
-                <Bath className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="font-semibold text-slate-800">{property.bathrooms} sdb</span>
-              </>
-            ) : 'viewsCount' in property ? (
-              <>
-                <Eye className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="font-semibold text-slate-800">{property.viewsCount} vues</span>
-              </>
-            ) : (
-              <span className="text-slate-400">-</span>
-            )}
-          </div>
-        </div>
+        <p className="text-slate-600 text-xs mt-1 font-normal">
+          {property.rooms ? `${property.rooms} chambres` : 'Non précisé'} · {'bathrooms' in property && property.bathrooms ? `${property.bathrooms} sdb` : '1 sdb'} · {property.areaSquareMeters} m²
+        </p>
 
         {/* View Details Link */}
         <Link
           to={`/immo/property/${property.id}`}
-          className="w-full text-center py-2.5 px-4 bg-slate-50 hover:bg-emerald-600 text-slate-700 hover:text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          className="mt-2 w-full text-center py-2 px-3 bg-[#f2eee5] hover:bg-[#1e3835] text-[#1e3835] hover:text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center cursor-pointer"
         >
           Voir l'annonce
         </Link>

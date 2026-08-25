@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/api";
 import { AdminPageHeader } from "../../components/ui/Admin/AdminPageHeader";
@@ -128,7 +128,7 @@ export const UsersAdmin: React.FC = () => {
     }
   };
 
-  const fetchUsers = async (isLoadMore = false) => {
+  const fetchUsers = useCallback(async (isLoadMore = false) => {
     if (!isLoadMore) setLoading(true);
     else setLoadingMore(true);
 
@@ -164,11 +164,11 @@ export const UsersAdmin: React.FC = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [roleFilter, lastVisible]);
 
   useEffect(() => {
     fetchUsers(false);
-  }, [roleFilter]);
+  }, [fetchUsers]);
 
   const handleUpdateClientType = async (userId: string, newType: string) => {
     try {

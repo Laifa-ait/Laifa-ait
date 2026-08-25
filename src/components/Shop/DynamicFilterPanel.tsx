@@ -4,7 +4,6 @@ import { X, SlidersHorizontal, RotateCcw, ShieldCheck, MapPin, Tag, Palette, Che
 import { useTranslation } from "react-i18next";
 import { getCategoryTranslation } from "../../utils/translations";
 import { AvailableFacets, SelectedFacets } from "../../hooks/useFacetedFilters";
-import { formatPrice } from "../../utils/format";
 
 interface DynamicFilterPanelProps {
   isOpen: boolean;

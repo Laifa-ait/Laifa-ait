@@ -14,6 +14,7 @@ import { RecentlyViewedDrawer } from "../RecentlyViewed/RecentlyViewedDrawer";
 import { useAuth } from "../../context/AuthContext";
 import { AlertCircle, ArrowRight, ShieldCheck, WifiOff } from "lucide-react";
 import { VerificationModal } from "../Auth/VerificationModal";
+import { AuthModal } from "../Auth/AuthModal";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 
 interface LayoutProps {
@@ -109,6 +110,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
       <ComparatorDrawer />
       <MobileMenu />
+      <AuthModal />
+      <VerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        method={verificationMethod}
+      />
     </div>
   );
 };

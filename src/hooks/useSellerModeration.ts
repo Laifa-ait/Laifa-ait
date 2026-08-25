@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -41,42 +41,45 @@ export function useSellerModeration() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<unknown>(null);
 
-  const fetchSellersApi = async (
-    pageUrl: number,
-    statusUrl: string,
-    searchUrl: string,
-    sortByUrl: string,
-    sortOrderUrl: string
-  ) => {
-    if (!currentUser) return;
-    setLoading(true);
-    try {
-      const queryParams = new URLSearchParams({
-        page: pageUrl.toString(),
-        limit: SELLERS_PER_PAGE.toString(),
-        sortBy: sortByUrl,
-        sortOrder: sortOrderUrl
-      });
-      if (statusUrl) queryParams.append('status', statusUrl);
-      if (searchUrl) queryParams.append('search', searchUrl);
+  const fetchSellersApi = useCallback(
+    async (
+      pageUrl: number,
+      statusUrl: string,
+      searchUrl: string,
+      sortByUrl: string,
+      sortOrderUrl: string
+    ) => {
+      if (!currentUser) return;
+      setLoading(true);
+      try {
+        const queryParams = new URLSearchParams({
+          page: pageUrl.toString(),
+          limit: SELLERS_PER_PAGE.toString(),
+          sortBy: sortByUrl,
+          sortOrder: sortOrderUrl
+        });
+        if (statusUrl) queryParams.append('status', statusUrl);
+        if (searchUrl) queryParams.append('search', searchUrl);
 
-      const data = await apiGet<{ sellers: Seller[]; totalPages: number; total: number }>(
-        `/api/v1/admin/sellers?${queryParams.toString()}`
-      );
+        const data = await apiGet<{ sellers: Seller[]; totalPages: number; total: number }>(
+          `/api/v1/admin/sellers?${queryParams.toString()}`
+        );
 
-      setSellers(data.sellers || []);
-      setTotalPages(data.totalPages || 1);
-      setTotalCount(data.total || 0);
-    } catch (err: unknown) {
-      console.error('[useSellerModeration] Fetch sellers API error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setSellers(data.sellers || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.total || 0);
+      } catch (err: unknown) {
+        console.error('[useSellerModeration] Fetch sellers API error:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentUser]
+  );
 
   useEffect(() => {
     fetchSellersApi(pageParam, statusParam, searchParam, sortByParam, sortOrderParam);
-  }, [pageParam, statusParam, searchParam, sortByParam, sortOrderParam, currentUser]);
+  }, [pageParam, statusParam, searchParam, sortByParam, sortOrderParam, currentUser, fetchSellersApi]);
 
   useEffect(() => {
     const handler = setTimeout(() => {

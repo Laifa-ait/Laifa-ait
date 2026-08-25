@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { apiGet, apiPost } from "../lib/api";
@@ -42,6 +42,9 @@ export function useUserHabits() {
     return { historique_recherches: [], categories_visitees: {} };
   });
 
+  const habitudesRef = useRef(habitudes);
+  habitudesRef.current = habitudes;
+
   // NEW: Sync with Server for authenticated users
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -67,7 +70,7 @@ export function useUserHabits() {
             });
           } else {
             // First time user, upload local habits
-            await apiPost("/api/v1/auth/user-habits", habitudes);
+            await apiPost("/api/v1/auth/user-habits", habitudesRef.current);
           }
         } catch (e) {
           console.error("Server habits sync error:", e);

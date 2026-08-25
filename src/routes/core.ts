@@ -4,10 +4,7 @@ import { ai } from "../config/gemini";
 import { authenticateToken, optionalAuthenticateToken, AuthenticatedRequest } from "../middlewares/auth";
 import { CouponService } from "../domains/marketing/coupon.service";
 
-import fs from "fs";
-import path from "path";
 import nodeCache from "node-cache";
-import rateLimit from "express-rate-limit";
 
 // Import split sub-routers
 import sellerRouter from "./seller";
@@ -39,7 +36,7 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(videoUrl);
-    } catch (e) {
+    } catch {
       return res.status(400).send("Malformed URL");
     }
 
@@ -111,7 +108,7 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
           }
           res.write(value);
           push();
-        } catch (e) {
+        } catch {
           res.end();
         }
       };
@@ -529,7 +526,7 @@ router.get("/api/v1/public/home-data", async (req, res) => {
   try {
     const data = await CoreService.getHomeData();
     return res.json(data);
-  } catch (err: unknown) {
+  } catch {
     return res.status(500).json({ error: "Failed to load homepage data" });
   }
 });
@@ -930,7 +927,7 @@ router.get("/api/v1/public/shops/:sellerId/products", async (req: Request, res: 
           snap.docs.forEach(doc => {
             productMap.set(doc.id, { id: doc.id, ...doc.data() });
           });
-        } catch (e) {
+        } catch {
           // Ignore individual field query errors
         }
       }
@@ -946,7 +943,7 @@ router.get("/api/v1/public/shops/:sellerId/products", async (req: Request, res: 
             snap.docs.forEach(doc => {
               productMap.set(doc.id, { id: doc.id, ...doc.data() });
             });
-          } catch (e) {
+          } catch {
             // Ignore individual field query errors
           }
         }

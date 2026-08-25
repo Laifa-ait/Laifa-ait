@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -53,7 +53,7 @@ export const ProductModeration: React.FC = () => {
     t("Absence d'informations obligatoires (ex: Guide des tailles, fiche technique)"),
   ];
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const token = await currentUser?.getIdToken(true);
@@ -79,7 +79,7 @@ export const ProductModeration: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, activeTab, selectedCategory]);
 
   const loadMore = async () => {
     if (!lastVisible) return;
@@ -110,7 +110,7 @@ export const ProductModeration: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [activeTab, selectedCategory]);
+  }, [fetchProducts]);
 
   const handleApprove = async (product: Product) => {
     if (!currentUser || userProfile?.role !== 'admin') {

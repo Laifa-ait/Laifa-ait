@@ -71,7 +71,8 @@ export function useHomepageVersions() {
       const savedSections = version.sections || [];
 
       for (const item of savedSections) {
-        const { id, ...payload } = item;
+        const payload = { ...item };
+        delete (payload as Record<string, unknown>).id;
         await addDoc(collection(db, "homepage_sections"), payload);
       }
 

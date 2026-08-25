@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Bot, 
   Mail, 
@@ -75,7 +75,7 @@ export const AgentsAdmin: React.FC = () => {
   const [isSendingChat, setIsSendingChat] = useState(false);
 
   // Load configurations from backend
-  const loadConfigs = async () => {
+  const loadConfigs = useCallback(async () => {
     if (!currentUser) return;
     try {
       setLoading(true);
@@ -94,7 +94,7 @@ export const AgentsAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, t]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -104,7 +104,7 @@ export const AgentsAdmin: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, [currentUser]);
+  }, [currentUser, loadConfigs]);
 
   // Toggle active status
   const toggleAgent = async (agentKey: AgentKey) => {

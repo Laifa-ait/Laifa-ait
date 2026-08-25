@@ -3,7 +3,6 @@ import { Router } from "express";
 import { admin, db } from "../../config/firebase-admin";
 import { HomepageSection, Banner } from "../home/homepage.types";
 import { Product } from "./product.types";
-import Fuse from "fuse.js";
 import he from "he";
 import NodeCache from "node-cache";
 
@@ -30,7 +29,7 @@ router.get("/api/v1/public/home-endless-grid", async (req, res) => {
       
       const snap = await finalQ.get();
       products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-    } catch (idxError) {
+    } catch {
       console.warn("Index not found or failed for home-endless-grid. Falling back to in-memory query.");
       const snap = await db.collection("products").limit(200).get();
       products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
@@ -54,7 +53,7 @@ router.get("/api/v1/public/home-endless-grid", async (req, res) => {
   }
 });
 
-router.get("/api/v1/products", async (req, res, next) => {
+router.get("/api/v1/products", async (req, res) => {
   const { ids, tag, category, limit: queryLimit, featured, flash, premium, offset: queryOffset } = req.query;
   const parsedLimit = queryLimit ? parseInt(String(queryLimit), 10) : 50;
   const parsedOffset = queryOffset ? parseInt(String(queryOffset), 10) : 0;
@@ -90,6 +89,7 @@ router.get("/api/v1/products", async (req, res, next) => {
 
   const isFeatured = featured === "true";
   const isPremium = premium === "true";
+  const isFlash = flash === "true" || req.query.flashSaleActive === "true";
 
   const cacheKey = tag 
     ? `products_tag_${tag}_o${parsedOffset}` 
@@ -99,7 +99,9 @@ router.get("/api/v1/products", async (req, res, next) => {
         ? `products_featured_${parsedLimit}_o${parsedOffset}`
         : isPremium
           ? `products_premium_${parsedLimit}_o${parsedOffset}`
-          : `products_all_${parsedLimit}_o${parsedOffset}`;
+          : isFlash
+            ? `products_flash_${parsedLimit}_o${parsedOffset}`
+            : `products_all_${parsedLimit}_o${parsedOffset}`;
 
   const cachedData = cache.get(cacheKey);
   if (cachedData) {
@@ -168,7 +170,7 @@ router.get("/api/v1/products", async (req, res, next) => {
           .orderBy("salesCount", "desc");
         const snap = await applyLimitOffset(q).get();
         products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-      } catch (idxError) {
+      } catch {
         console.warn("Index not found or failed for featured query. Falling back to in-memory sorting.");
         const snap = await db.collection("products")
           .where("status", "==", "approved")
@@ -193,7 +195,7 @@ router.get("/api/v1/products", async (req, res, next) => {
           .where("isPremium", "==", true);
         const snap = await applyLimitOffset(q).get();
         products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-      } catch (idxError) {
+      } catch {
         console.warn("Index not found or failed for premium query. Falling back to in-memory filtering.");
         const snap = await db.collection("products")
           .where("status", "==", "approved")
@@ -208,6 +210,30 @@ router.get("/api/v1/products", async (req, res, next) => {
     } catch (error: unknown) {
       return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
     }
+  } else if (isFlash) {
+    try {
+      let products: Product[] = [];
+      try {
+        const q = db.collection("products")
+          .where("status", "==", "approved")
+          .where("flashSaleActive", "==", true);
+        const snap = await applyLimitOffset(q).get();
+        products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
+      } catch {
+        console.warn("Index not found or failed for flash query. Falling back to in-memory filtering.");
+        const snap = await db.collection("products")
+          .where("status", "==", "approved")
+          .limit(200)
+          .get();
+        products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
+        products = products.filter(p => p.flashSaleActive === true).slice(parsedOffset, parsedOffset + parsedLimit);
+      }
+      const responseData = { products };
+      cache.set(cacheKey, responseData, 120);
+      return res.json(responseData);
+    } catch (error: unknown) {
+      return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+    }
   } else {
     try {
       let products: Product[] = [];
@@ -215,12 +241,12 @@ router.get("/api/v1/products", async (req, res, next) => {
         const q = db.collection("products").orderBy("created_at", "desc");
         const snap = await applyLimitOffset(q).get();
         products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-      } catch (e1) {
+      } catch {
         try {
           const q = db.collection("products").orderBy("createdAt", "desc");
           const snap = await applyLimitOffset(q).get();
           products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-        } catch (e2) {
+        } catch {
           const snap = await db.collection("products").limit(200).get();
           products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
           products.sort((a, b) => {
@@ -447,7 +473,7 @@ router.get("/api/v1/products-by-tag", async (req, res) => {
 });
 
 // PUBLIC: Advanced Search using Fuse.js (Memory Cached with pagination, synonyms, and logs)
-router.get("/api/v1/search", async (req, res, next) => {
+router.get("/api/v1/search", async (req, res) => {
   try {
     const data = await ProductSearchService.performSearch(req);
     return res.json(data);
@@ -586,7 +612,7 @@ router.get("/sitemap.xml", async (req, res) => {
             return d.toISOString();
           }
         }
-      } catch (err) {
+      } catch {
         // Fallback to empty
       }
       return "";
@@ -793,7 +819,7 @@ router.get("/api/v1/stores/:sellerId", async (req, res) => {
       let prodSnap = null;
       try {
         prodSnap = await db.collection("products").where("sellerId", "==", sellerId).limit(50).get();
-      } catch (err) {
+      } catch {
         // Ignored
       }
       if (prodSnap && !prodSnap.empty) {
@@ -879,9 +905,9 @@ router.get("/api/v1/collections/:collectionId", async (req, res) => {
 
     // 1. Fetch active homepage sections to find matching one
     const sectionsSnap = await db.collection("homepage_sections").limit(50).get();
-    let matchingSection: HomepageSection | any = null;
+    let matchingSection: HomepageSection | null = null;
     
-    sectionsSnap.forEach((doc) => {
+    for (const doc of sectionsSnap.docs) {
       const data = doc.data();
       const docIdNorm = normalizeStr(doc.id);
       const titleNorm = normalizeStr(data.title || "");
@@ -898,14 +924,15 @@ router.get("/api/v1/collections/:collectionId", async (req, res) => {
         nameNorm === normalizedCollection
       ) {
         matchingSection = { id: doc.id, ...data } as HomepageSection;
+        break;
       }
-    });
+    }
 
     // 2. Fetch banners
     const bannersSnap = await db.collection("banners").limit(30).get();
-    let matchingBanner: Banner | any = null;
+    let matchingBanner: Banner | null = null;
 
-    bannersSnap.forEach((doc) => {
+    for (const doc of bannersSnap.docs) {
       const data = doc.data();
       const docIdNorm = normalizeStr(doc.id);
       const titleNorm = normalizeStr(data.title || "");
@@ -922,8 +949,9 @@ router.get("/api/v1/collections/:collectionId", async (req, res) => {
         nameNorm === normalizedCollection
       ) {
         matchingBanner = { id: doc.id, ...data } as Banner;
+        break;
       }
-    });
+    }
 
     let title = decodedName;
     let bannerImage = "/images/placeholders/product.svg";

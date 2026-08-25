@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { HelpCircle, Sparkles, Zap, TrendingUp, CheckCircle2, Clock } from "lucide-react";
+import { HelpCircle, Sparkles, Zap, TrendingUp, Clock } from "lucide-react";
 
 export const SponsorshipGuideSection: React.FC = () => {
   const { t } = useTranslation();

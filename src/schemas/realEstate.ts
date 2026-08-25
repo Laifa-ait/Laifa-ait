@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-export const PropertyTypeEnum = z.enum(['apartment', 'villa', 'studio', 'commercial', 'land']);
+export const PropertyTypeEnum = z.enum(['apartment', 'villa', 'house', 'studio', 'commercial', 'land', 'office', 'room', 'building']);
 export const ListingTypeEnum = z.enum(['sale', 'rent_long', 'rent_short']);
-export const PropertyStatusEnum = z.enum(['draft', 'active', 'rented', 'sold', 'archived']);
+export const PropertyStatusEnum = z.enum(['draft', 'pending', 'active', 'paused', 'rented', 'sold', 'archived', 'rejected']);
 export const PricePeriodEnum = z.enum(['night', 'month', 'total']);
 export const VisitStatusEnum = z.enum(['pending', 'accepted', 'declined', 'completed']);
-export const BookingStatusEnum = z.enum(['pending', 'confirmed', 'cancelled', 'rejected']);
+export const BookingStatusEnum = z.enum(['pending', 'confirmed', 'cancelled', 'rejected', 'completed']);
 
 export const GeoPointLocationSchema = z.object({
   lat: z.number().min(-90, "Latitude invalide").max(90, "Latitude invalide"),
@@ -23,6 +23,8 @@ export const PropertyCreateSchema = z.object({
   listingType: ListingTypeEnum,
   price: z.number().positive("Le prix doit être un nombre positif (DZD)"),
   pricePeriod: PricePeriodEnum.optional(),
+  cleaningFee: z.number().min(0, "Les frais de ménage ne peuvent pas être négatifs").optional().default(0),
+  serviceFee: z.number().min(0, "Les frais de service ne peuvent pas être négatifs").optional().default(0),
   areaSquareMeters: z.number().positive("La superficie doit être supérieure à 0 m²"),
   rooms: z.number().int().min(0, "Le nombre de pièces ne peut être négatif").max(100),
   bathrooms: z.number().int().min(0, "Le nombre de salles de bain ne peut être négatif").max(50),
@@ -94,10 +96,16 @@ export const PropertySearchQuerySchema = z.object({
   }
 });
 
+export const BookingGuestsSchema = z.object({
+  adults: z.number().int().min(1, "Au moins 1 adulte requis").max(30, "Nombre maximum d'adultes dépassé").default(1),
+  children: z.number().int().min(0).max(30, "Nombre maximum d'enfants dépassé").default(0),
+});
+
 export const BookingCreateSchema = z.object({
   propertyId: z.string().min(1, "L'identifiant de la propriété est requis"),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date de début invalide (AAAA-MM-JJ)"),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date de fin invalide (AAAA-MM-JJ)"),
+  guests: BookingGuestsSchema.optional().default({ adults: 1, children: 0 }),
 }).superRefine((data, ctx) => {
   const start = new Date(data.startDate);
   const end = new Date(data.endDate);
@@ -112,10 +120,18 @@ export const BookingCreateSchema = z.object({
   }
 });
 
+export const BookingStatusUpdateSchema = z.object({
+  status: BookingStatusEnum,
+});
+
 export const PropertyVisitCreateSchema = z.object({
   propertyId: z.string().min(1, "L'identifiant de la propriété est requis"),
   visitorName: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
   visitorPhone: z.string().min(8, "Numéro de téléphone invalide").max(20),
   preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (AAAA-MM-JJ)"),
   timeSlot: z.string().min(3, "Créneau horaire invalide").max(50),
+});
+
+export const PropertyVisitUpdateStatusSchema = z.object({
+  status: z.enum(['pending', 'accepted', 'declined', 'cancelled']),
 });

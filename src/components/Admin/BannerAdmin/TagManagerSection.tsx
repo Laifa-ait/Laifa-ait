@@ -11,7 +11,6 @@ interface Tag {
 interface TagManagerSectionProps {
   tags: Tag[];
   tagName: string;
-  setTagName: (val: string) => void;
   tagSlug: string;
   setTagSlug: (val: string) => void;
   handleCreateTag: (e: React.FormEvent) => void;
@@ -22,7 +21,6 @@ interface TagManagerSectionProps {
 export const TagManagerSection: React.FC<TagManagerSectionProps> = ({
   tags,
   tagName,
-  setTagName,
   tagSlug,
   setTagSlug,
   handleCreateTag,

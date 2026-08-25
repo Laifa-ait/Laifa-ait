@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Mail, Key, User, CheckCircle2, Eye, EyeOff, ShieldCheck, ScrollText } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -21,6 +21,8 @@ import { apiGet } from "../../lib/api";
 export const Auth: React.FC = () => {
   const { currentUser, signUpWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
   const { t } = useTranslation();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -98,6 +100,11 @@ export const Auth: React.FC = () => {
         return;
       }
       
+      if (redirectPath) {
+        navigate(redirectPath);
+        return;
+      }
+
       if (!isLogin) {
          navigate('/');
       } else {
@@ -108,7 +115,7 @@ export const Auth: React.FC = () => {
          }
       }
     }
-  }, [currentUser, navigate, isLogin]);
+  }, [currentUser, navigate, isLogin, redirectPath]);
 
   if (currentUser) return null;
 

@@ -1,9 +1,7 @@
 import React from "react";
-import { FileText, Phone, Printer, RefreshCw, Truck } from "lucide-react";
+import { FileText, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { auth } from "../../../lib/firebase";
-import { toast } from "react-hot-toast";
-import { Order, OrderStatus, OrderItem } from "../../../domains/order/order.types";
+import { Order, OrderItem } from "../../../domains/order/order.types";
 import { formatPrice } from "../../../utils/format";
 
 export const OrderClientProfileCard: React.FC<{ selectedOrder: Order }> = ({ selectedOrder }) => {

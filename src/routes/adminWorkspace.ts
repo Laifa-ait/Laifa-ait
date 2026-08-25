@@ -17,16 +17,6 @@ router.post(
 
     try {
       const orderRef = db.collection("orders").doc(orderId);
-      
-      let globalCommissionRate = 0;
-      try {
-         const commDoc = await db.collection("settings").doc("commission").get();
-         if (commDoc && commDoc.exists) {
-            globalCommissionRate = commDoc.data()?.globalRate ?? 0;
-         }
-      } catch (err) {
-         console.warn("Could not fetch global commission rate", err);
-      }
 
       await db.runTransaction(async (transaction) => {
         const orderDoc = await transaction.get(orderRef);
@@ -105,7 +95,6 @@ router.post(
 // --- Admin OCR ---
 router.post("/api/v1/admin/sellers/:id/ocr", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const sellerId = req.params.id;
     const { documentUrl } = req.body;
     
     if (!documentUrl) {
@@ -150,7 +139,7 @@ Retourne UNIQUEMENT un objet JSON valide avec les clés suivantes :
     let parsed = {};
     try {
       parsed = JSON.parse(extractedJson);
-    } catch(e) {
+    } catch {
       console.error("Failed to parse Gemini OCR response:", responseText);
       parsed = { error: "Failed to parse JSON" };
     }

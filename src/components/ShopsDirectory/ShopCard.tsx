@@ -27,7 +27,6 @@ export const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     ? getOptimizedImageUrl(shop.logoUrl, 120)
     : fallbackLogo;
 
-  const trustScore = shop.sellerTrustScore ?? 90;
   const hasRating = shop.rating !== null && shop.rating !== undefined && shop.rating > 0;
   const ratingValue = hasRating ? shop.rating!.toFixed(1) : null;
   const reviewsCount = shop.reviewsCount !== undefined ? shop.reviewsCount : 0;

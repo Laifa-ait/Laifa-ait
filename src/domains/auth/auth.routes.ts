@@ -451,7 +451,12 @@ router.delete("/following/:shopId", authenticateToken, async (req: Authenticated
 router.post("/profile", authenticateToken, require2FA, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const uid = req.user?.uid || "";
-    const { role, isAdmin, customClaims, permissions, status, ...safeProfileUpdate } = req.body;
+    const safeProfileUpdate = { ...req.body };
+    delete safeProfileUpdate.role;
+    delete safeProfileUpdate.isAdmin;
+    delete safeProfileUpdate.customClaims;
+    delete safeProfileUpdate.permissions;
+    delete safeProfileUpdate.status;
     await db.collection("users").doc(uid).set(safeProfileUpdate, { merge: true });
     return res.json({ success: true });
   } catch (error: unknown) {

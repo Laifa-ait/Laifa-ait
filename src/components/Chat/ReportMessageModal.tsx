@@ -30,31 +30,31 @@ export const ReportMessageModal: React.FC<ReportMessageModalProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-20">
+    <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-20">
       <form
         onSubmit={handleSubmit}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-4 w-full max-w-sm space-y-3 shadow-xl"
+        className="bg-white border border-[#e8e2d4] rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-xl text-slate-800"
       >
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-            <Flag className="w-4 h-4 text-red-400" />
+          <h4 className="text-sm font-bold text-[#1e3835] flex items-center gap-2">
+            <Flag className="w-4 h-4 text-rose-600" />
             <span>Signaler ce message</span>
           </h4>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white cursor-pointer"
+            className="p-1 rounded-lg hover:bg-[#f4ecd8] text-slate-400 hover:text-[#1e3835] cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="space-y-2 text-xs">
-          <label className="block text-slate-300 font-medium">Motif du signalement :</label>
+        <div className="space-y-2.5 text-xs">
+          <label className="block text-slate-700 font-bold">Motif du signalement :</label>
           <select
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-hidden focus:border-emerald-500"
+            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl p-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
           >
             <option value="PROFANITY_OR_ABUSE">Propos abusifs ou insultants</option>
             <option value="CONTACT_EXCHANGE_ATTEMPT">Tentative d'échange de contact hors plateforme</option>
@@ -67,22 +67,22 @@ export const ReportMessageModal: React.FC<ReportMessageModalProps> = ({
             value={reportDescription}
             onChange={(e) => setReportDescription(e.target.value)}
             placeholder="Précisions supplémentaires (optionnel)..."
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 h-20 resize-none"
+            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-[#1e3835] h-20 resize-none"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e8e2d4]">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl text-xs hover:bg-slate-700 cursor-pointer"
+            className="px-3.5 py-2 bg-[#f4ecd8] text-[#1e3835] rounded-xl text-xs font-bold hover:bg-[#ebdcb8] cursor-pointer"
           >
             Annuler
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-xs"
           >
             Confirmer le signalement
           </button>

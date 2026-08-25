@@ -3,12 +3,12 @@ import { Product } from "../domains/product/product.types";
 import { PRODUCT_HIERARCHY } from "../constants";
 import { apiGet, apiPost } from "../lib/api";
 
-class LocalMemoryCache {
-  private cache: Record<string, { data: any; expiry: number }> = {};
-  set(key: string, data: any, durationMs = 300000) {
+class LocalMemoryCache<T = unknown> {
+  private cache: Record<string, { data: T; expiry: number }> = {};
+  set(key: string, data: T, durationMs = 300000) {
     this.cache[key] = { data, expiry: Date.now() + durationMs };
   }
-  get(key: string): any | null {
+  get(key: string): T | null {
     const item = this.cache[key];
     if (item && Date.now() < item.expiry) {
       return item.data;
@@ -20,7 +20,7 @@ class LocalMemoryCache {
     this.cache = {};
   }
 }
-const cacheEngine = new LocalMemoryCache();
+const cacheEngine = new LocalMemoryCache<Product[]>();
 
 function handleDevQuotaLogger(context: string, isFromCache: boolean) {
   if (import.meta.env.DEV) {

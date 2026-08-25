@@ -68,7 +68,7 @@ interface SectionErrorBoundaryProps {
   fallback?: React.ReactNode;
 }
 
-class SectionErrorBoundary extends React.Component<
+export class SectionErrorBoundary extends React.Component<
   SectionErrorBoundaryProps,
   { hasError: boolean }
 > {

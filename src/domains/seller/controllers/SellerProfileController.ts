@@ -89,7 +89,7 @@ router.put(
         const productsSnap = await db.collection("products").where("sellerId", "==", uid).get().catch(() => null);
         if (productsSnap && !productsSnap.empty) {
           const batch = db.batch();
-          const prodUpdate: Record<string, any> = {};
+          const prodUpdate: Record<string, string | admin.firestore.FieldValue> = {};
           if (shopName) {
             prodUpdate.sellerName = shopName;
             prodUpdate.storeName = shopName;

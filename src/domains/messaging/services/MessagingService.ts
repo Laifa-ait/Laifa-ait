@@ -82,10 +82,9 @@ export class MessagingService {
       throw new Error("FORBIDDEN_NOT_PARTICIPANT");
     }
 
-    const { id: _docId, ...rest } = data;
     return {
+      ...data,
       id: snap.id,
-      ...rest
     };
   }
 

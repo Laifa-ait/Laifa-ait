@@ -4,9 +4,6 @@ import {
   collection,
   doc,
   getDocs,
-  updateDoc,
-  deleteDoc,
-  addDoc,
   query,
   orderBy,
   serverTimestamp,
@@ -24,7 +21,7 @@ export const useFirebaseHomepage = () => {
       const q = query(collection(db, collectionName), orderBy("orderIndex", "asc"));
       const snap = await withTimeout(getDocs(q));
       return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    } catch (err) {
+    } catch {
       toast.error("Erreur de chargement");
       return [];
     } finally {

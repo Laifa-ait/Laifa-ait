@@ -1,26 +1,10 @@
-import { useState, useCallback } from "react";
-import {
-  collection,
-  doc,
-  deleteDoc,
-  addDoc,
-  updateDoc,
-  serverTimestamp,
-  setDoc,
-  getDocs,
-  query,
-  orderBy,
-  getDoc,
-  where,
-} from "firebase/firestore";
+import { useCallback } from "react";
+import { doc, deleteDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../lib/firebase";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 export const useHomepageBuilder = () => {
-  const { currentUser } = useAuth();
-
   const deleteItem = useCallback(async (_activeTab: string, id: string) => {
     try {
       const collectionName = "homepage_sections";
@@ -35,7 +19,7 @@ export const useHomepageBuilder = () => {
       }
 
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Erreur de suppression");
       return false;
     }

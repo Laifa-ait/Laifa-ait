@@ -39,17 +39,23 @@ router.post("/api/v1/seller/products", authenticateToken, authorizeSeller, async
     const wilaya = (pData?.wilaya || uData?.wilaya || "16 - Alger") as string;
 
     // Sanitize protected fields - Never trust client
-    const {
-      rating: _r,
-      sellerTrustScore: _sts,
-      reviewsCount: _rc,
-      commissionRate: _cr,
-      isSponsored: _is,
-      salesCount: _sc,
-      sellerId: _sid,
-      role: _role,
-      ...safeProductData
-    } = body;
+    const protectedFields = new Set([
+      "rating",
+      "sellerTrustScore",
+      "reviewsCount",
+      "commissionRate",
+      "isSponsored",
+      "salesCount",
+      "sellerId",
+      "role",
+    ]);
+
+    const safeProductData: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (!protectedFields.has(key)) {
+        safeProductData[key] = value;
+      }
+    }
 
     const productData: Record<string, unknown> = {
       ...safeProductData,
@@ -111,19 +117,25 @@ router.put("/api/v1/seller/products/:id", authenticateToken, authorizeSeller, as
     }
 
     // Strip protected fields from update payload
-    const {
-      sellerId: _sid,
-      rating: _r,
-      sellerTrustScore: _sts,
-      reviewsCount: _rc,
-      commissionRate: _cr,
-      isSponsored: _is,
-      salesCount: _sc,
-      role: _role,
-      owner: _o,
-      userId: _u,
-      ...safeUpdate
-    } = body;
+    const protectedUpdateFields = new Set([
+      "sellerId",
+      "rating",
+      "sellerTrustScore",
+      "reviewsCount",
+      "commissionRate",
+      "isSponsored",
+      "salesCount",
+      "role",
+      "owner",
+      "userId",
+    ]);
+
+    const safeUpdate: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (!protectedUpdateFields.has(key)) {
+        safeUpdate[key] = value;
+      }
+    }
 
     const productDataToSave: Record<string, unknown> = {
       ...safeUpdate,

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Check, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { X, Check, ShieldCheck, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SponsorshipPackConfig, SponsorshipTier } from "../../../domains/seller/sponsorship.types";
 

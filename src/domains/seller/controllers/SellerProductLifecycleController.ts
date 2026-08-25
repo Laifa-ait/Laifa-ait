@@ -22,7 +22,14 @@ router.post("/api/v1/seller/products/:id/duplicate", authenticateToken, authoriz
       return res.status(403).json({ error: "Accès refusé : vous n'êtes pas propriétaire de ce produit" });
     }
 
-    const { id: _id, createdAt: _c, updatedAt: _u, ...restData } = (data || {}) as Record<string, unknown>;
+    const rawData = (data || {}) as Record<string, unknown>;
+    const restData: Record<string, unknown> = {};
+    const excludedKeys = new Set(["id", "createdAt", "updatedAt"]);
+    for (const [key, value] of Object.entries(rawData)) {
+      if (!excludedKeys.has(key)) {
+        restData[key] = value;
+      }
+    }
     const duplicatedData = {
       ...restData,
       sellerId: uid,

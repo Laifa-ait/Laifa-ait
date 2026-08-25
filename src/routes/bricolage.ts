@@ -97,11 +97,21 @@ bricolageRouter.post('/bricolage/quotes', optionalAuthenticateToken, async (req:
     return res.status(400).json({ success: false, error: 'Champs obligatoires manquants.' });
   }
 
-  // Sanitize payload: never allow client to force arbitrary customerId in body
-  const { customerId: _incomingCustomerId, ...cleanPayload } = payload as any;
+  const categoryDoc = BRICOLAGE_CATEGORIES.find(c => c.id === payload.serviceCategoryId) || BRICOLAGE_CATEGORIES[0];
+
+  const cleanPayload: QuoteRequestPayload = {
+    customerName: payload.customerName,
+    customerPhone: payload.customerPhone,
+    serviceCategoryId: payload.serviceCategoryId,
+    serviceName: payload.serviceName || (categoryDoc?.name?.fr || ''),
+    wilaya: payload.wilaya,
+    commune: payload.commune,
+    description: payload.description,
+    urgency: payload.urgency || 'normal',
+    projectPhotos: payload.projectPhotos,
+  };
   const customerId = req.user?.uid || null;
 
-  const categoryDoc = BRICOLAGE_CATEGORIES.find(c => c.id === payload.serviceCategoryId) || BRICOLAGE_CATEGORIES[0];
   const requestId = `QUOTE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   try {

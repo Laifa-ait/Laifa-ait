@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { db, handleFirestoreError, OperationType } from "../../lib/firebase";
 import {
@@ -88,7 +88,7 @@ export const Curation: React.FC = () => {
   }, [shopHierarchy]);
 
   // Fetch pending products
-  const fetchPendingProducts = async () => {
+  const fetchPendingProducts = useCallback(async () => {
     try {
       setLoading(true);
       const q = query(collection(db, "products"), where("status", "==", "pending"));
@@ -97,27 +97,24 @@ export const Curation: React.FC = () => {
       setProducts(data);
       
       // If a product was already selected, update it or clear if no longer pending
-      if (selectedProduct) {
-        const stillPending = data.find((p) => p.id === selectedProduct.id);
-        if (stillPending) {
-          setSelectedProduct(stillPending);
-        } else {
-          setSelectedProduct(data[0] || null);
+      setSelectedProduct((prev) => {
+        if (prev) {
+          const stillPending = data.find((p) => p.id === prev.id);
+          return stillPending || data[0] || null;
         }
-      } else if (data.length > 0) {
-        setSelectedProduct(data[0]);
-      }
+        return data[0] || null;
+      });
     } catch (error) {
       handleFirestoreError(error, OperationType.GET, "products");
       toast.error(t("Erreur de chargement des produits"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchPendingProducts();
-  }, []);
+  }, [fetchPendingProducts]);
 
   // Fetch related active products in the same category for duplicate check
   useEffect(() => {
@@ -145,7 +142,7 @@ export const Curation: React.FC = () => {
     setIsRejecting(false);
     setRejectionReason("");
     setActiveImageIndex(0);
-  }, [selectedProduct?.id]);
+  }, [selectedProduct?.id, selectedProduct?.category]);
 
   // Initialize edit form
   useEffect(() => {

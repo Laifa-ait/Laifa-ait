@@ -19,7 +19,6 @@ export interface AuthenticatedRequest extends Request {
 import { Router } from "express";
 import {
   authenticateToken,
-  optionalAuthenticateToken,
   authorizeSeller,
   authorizeAdmin,
 } from "../middlewares/auth";
@@ -930,7 +929,7 @@ router.post("/seller/analyze-image", authenticateToken, authorizeSeller, async (
     if (!req.body.imageUrl) return res.status(400).json({ error: "imageUrl requis" });
     const result = await AiService.analyzeSellerImage(req.body.imageUrl);
     res.json(result);
-  } catch (err) {
+  } catch {
     res.json({ safe: true, reason: "Check failed, safely bypassed" });
   }
 });

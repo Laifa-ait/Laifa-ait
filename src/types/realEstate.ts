@@ -1,7 +1,39 @@
-export type PropertyType = 'apartment' | 'villa' | 'studio' | 'commercial' | 'land';
+export type PropertyType = 'apartment' | 'villa' | 'house' | 'studio' | 'commercial' | 'land' | 'office' | 'room' | 'building';
 export type ListingType = 'sale' | 'rent_long' | 'rent_short';
-export type PropertyStatus = 'draft' | 'active' | 'rented' | 'sold' | 'archived';
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'rejected';
+export type PropertyStatus = 'draft' | 'pending' | 'active' | 'paused' | 'rented' | 'sold' | 'archived' | 'rejected';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'completed';
+
+export interface BookingGuests {
+  adults: number;
+  children: number;
+}
+
+export interface BookingShort {
+  id: string;
+  propertyId: string;
+  propertyTitle?: string;
+  propertyLocation?: string;
+  propertyImage?: string;
+  ownerId: string;
+  tenantId: string; // guestId
+  startDate: string; // ISO YYYY-MM-DD
+  endDate: string;   // ISO YYYY-MM-DD
+  checkIn?: string;  // Alias for startDate
+  checkOut?: string; // Alias for endDate
+  guests?: BookingGuests;
+  totalNights: number;
+  nightlyPrice?: number;
+  subtotal?: number;
+  cleaningFee?: number;
+  serviceFee?: number;
+  totalPriceDZD: number;
+  currency?: string; // Default "DZD"
+  status: BookingStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PropertyBooking = BookingShort;
 
 export interface GeoPointLocation {
   lat: number;
@@ -21,6 +53,8 @@ export interface Property {
   listingType: ListingType;
   price: number; // DZD
   pricePeriod?: 'night' | 'month' | 'total';
+  cleaningFee?: number;
+  serviceFee?: number;
   deposit?: number;
   contactPhone?: string;
   areaSquareMeters: number;
@@ -45,6 +79,8 @@ export interface PropertyFormData {
   listingType: ListingType;
   price: number;
   pricePeriod: 'night' | 'month' | 'total';
+  cleaningFee?: number;
+  serviceFee?: number;
   deposit?: number;
   contactPhone?: string;
   areaSquareMeters: number;
@@ -60,20 +96,6 @@ export interface PropertyFormData {
   status?: PropertyStatus;
 }
 
-export interface BookingShort {
-  id: string;
-  propertyId: string;
-  ownerId: string;
-  tenantId: string;
-  startDate: string; // ISO YYYY-MM-DD
-  endDate: string;   // ISO YYYY-MM-DD
-  totalNights: number;
-  totalPriceDZD: number;
-  status: BookingStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface PropertyVisit {
   id: string;
   propertyId: string;
@@ -84,6 +106,7 @@ export interface PropertyVisit {
   preferredDate: string; // ISO YYYY-MM-DD
   timeSlot: string;      // e.g. "10:00 - 12:00"
   status: 'pending' | 'accepted' | 'declined' | 'completed';
+  visitorNotes?: string;
   createdAt: string;
 }
 
@@ -132,4 +155,49 @@ export interface VisitResponse {
   success: boolean;
   data?: PropertyVisit;
   error?: string;
+}
+
+export interface PublicOwnerProfile {
+  uid: string;
+  displayName: string;
+  photoURL?: string;
+  role: string;
+  shopName?: string;
+  sellerType?: string;
+  verificationStatus: 'pending' | 'approved' | 'rejected' | 'action_required' | 'unverified';
+  joinedAt?: string;
+}
+
+export interface PublicOwnerProfileResponse {
+  success: boolean;
+  data?: PublicOwnerProfile;
+  error?: string;
+}
+
+export type ImmoAccountType = 'individual' | 'pro' | 'agency';
+export type ProVerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
+
+export interface ProApplicationData {
+  id?: string;
+  userId: string;
+  accountType: 'pro' | 'agency';
+  companyName: string;
+  tradeRegisterNumber: string; // N° Registre de Commerce (RC)
+  agencyLicenseNumber?: string; // N° Agrément Ministériel pour agence
+  taxIdentificationNumber?: string; // NIF / NIS
+  contactPhone: string;
+  wilaya: string;
+  address: string;
+  description: string;
+  status: ProVerificationStatus;
+  rejectionReason?: string;
+  submittedAt: string;
+  reviewedAt?: string;
+}
+
+export interface ProApplicationResponse {
+  success: boolean;
+  data?: ProApplicationData | null;
+  error?: string;
+  message?: string;
 }

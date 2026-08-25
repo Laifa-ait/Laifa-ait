@@ -8,7 +8,6 @@ import {
   Store,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   X,
   ExternalLink,
 } from "lucide-react";

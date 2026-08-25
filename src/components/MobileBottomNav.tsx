@@ -1,6 +1,5 @@
 import React from "react";
 import { Home, Heart, ShoppingBag, User as UserIcon, LayoutGrid } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
@@ -10,7 +9,6 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
   const { currentUser, userProfile } = useAuth();
   const { cart, wishlist } = useCart();
   const { setIsCartOpen, setIsWishlistOpen } = useUI();
-  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 

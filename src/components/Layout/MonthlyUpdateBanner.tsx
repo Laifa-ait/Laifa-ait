@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { apiGet } from "../../lib/api";
-import { X, Sparkles, Megaphone, ArrowRight } from "lucide-react";
+import { X, Sparkles, Megaphone } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 interface MonthlyUpdate {

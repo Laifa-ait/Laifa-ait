@@ -1,7 +1,7 @@
 import { Response, Router } from "express";
 import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
-import { authenticateToken, optionalAuthenticateToken, AuthenticatedRequest } from "../../../middlewares/auth";
+import { optionalAuthenticateToken, AuthenticatedRequest } from "../../../middlewares/auth";
 import { validateRequest } from "../../../middlewares/validation";
 import { ALGERIA_SHIPPING_DATA } from "../../../constants";
 import { placeOrderSchema } from "../../../utils/validation";
@@ -35,6 +35,58 @@ const sendLowStockEmail = async (sellerEmail: string, message: string) => {
     });
   } catch (err) {
     console.error("Failed to send stock alert email", err);
+  }
+};
+
+const sendOrderConfirmationEmails = async (
+  buyerEmail: string,
+  buyerName: string,
+  orderId: string,
+  grandTotal: number,
+  subOrders: Array<{ sellerId: string; subOrderId: string; items: any[]; total: number }>
+) => {
+  try {
+    if (!process.env.SMTP_USER) {
+      console.log(`Mock Email Sent (SMTP not configured). To: ${buyerEmail} (Buyer) - Order: ${orderId}`);
+      return;
+    }
+
+    // Email to the buyer
+    if (buyerEmail) {
+      await transporter.sendMail({
+        from: '"Olmart" <noreply@olmart.dz>',
+        to: buyerEmail,
+        subject: `Confirmation de votre commande #${orderId} - Olmart`,
+        html: `<h2>Merci pour votre commande, ${buyerName} !</h2>
+               <p>Votre commande porte la référence <strong>#${orderId}</strong> a bien été enregistrée.</p>
+               <p>Montant total : <strong>${grandTotal} DZD</strong> (Paiement à la livraison).</p>
+               <p>Nos vendeurs préparent vos articles.</p>
+               <br/><p>L'équipe Olmart</p>`,
+      });
+    }
+
+    // Email to the sellers
+    for (const so of subOrders) {
+      const userSnap = await admin.firestore().collection("users").doc(so.sellerId).get();
+      const sellerEmail = userSnap.data()?.email;
+      
+      if (sellerEmail) {
+        const itemsHtml = so.items.map(i => `<li>${i.quantity}x ${i.name}</li>`).join("");
+        await transporter.sendMail({
+          from: '"Olmart" <noreply@olmart.dz>',
+          to: sellerEmail,
+          subject: `Nouvelle commande reçue #${so.subOrderId} - Olmart`,
+          html: `<h2>Bonjour, vous avez reçu une nouvelle commande !</h2>
+                 <p>La référence de la sous-commande est <strong>#${so.subOrderId}</strong>.</p>
+                 <p>Produits commandés :</p>
+                 <ul>${itemsHtml}</ul>
+                 <p>Total à préparer : <strong>${so.total} DZD</strong>.</p>
+                 <br/><p>Connectez-vous à votre espace vendeur pour la traiter.</p>`,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to send order confirmation emails", err);
   }
 };
 
@@ -188,12 +240,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
             productDocs.push({ cartItem, productSnap: snap, productRef: ref });
           }
 
-          // 1.4 Lecture des données de l'acheteur
-          const userRef = db.collection("users").doc(userId);
-          const userSnap = await t.get(userRef);
-          const userData = userSnap.exists ? userSnap.data() : {};
-
-          // 1.5 Lecture du coupon si fourni (avant TOUTE écriture ou validation)
+          // 1.4 Lecture du coupon si fourni (avant TOUTE écriture ou validation)
           if (couponCode) {
             const couponQuery = await t.get(db.collection("coupons").where("code", "==", couponCode.toUpperCase()));
             const resolveResult = CouponService.resolveActiveCouponFromDocs(couponQuery.docs);
@@ -203,10 +250,6 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
               throw new Error(resolveResult.error || "Code promo invalide.");
             }
           }
-
-          // 1.6 Lecture de l'historique des commandes de l'acheteur
-          const previousOrdersQuery = await t.get(db.collection("orders").where("userId", "==", userId));
-          const previousOrders = previousOrdersQuery.docs.map((d) => d.data());
 
           // =========================================================================
           // PHASE 2 — TOUTES LES VALIDATIONS ET CALCULS (ZERO ÉCRITURE ICI)
@@ -468,7 +511,6 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
 
           const parentOrderId = db.collection("orders").doc().id;
           const subOrdersToCreate: { ref: firestore.DocumentReference; data: Record<string, unknown> }[] = [];
-          let groupIndex = 0;
           let totalShipping = 0;
 
           // Pre-calculate pro-rata discount breakdown dictionary across all sellers for eligible items
@@ -553,7 +595,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
                 rawMethodPrice = ALGERIA_SHIPPING_DATA[cleanWilaya].price;
               }
               const methodPrice =
-                req.body.deliveryMethod === "domicile" ? rawMethodPrice : Math.max(400, rawMethodPrice - 200);
+                deliveryMethod === "domicile" ? rawMethodPrice : Math.max(400, rawMethodPrice - 200);
               sellerShippingCost = Math.round(methodPrice / 10) * 10;
             }
             totalShipping += sellerShippingCost;
@@ -597,7 +639,6 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
             };
 
             subOrdersToCreate.push({ ref: subOrderRef, data: subOrderData });
-            groupIndex++;
           }
 
           const grandTotal = Math.max(0, subtotal - discountAmount - cashbackApplied) + totalShipping;
@@ -653,6 +694,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
 
           // 3.3 Création du profil invité si nécessaire
           if (isGuest) {
+            const userRef = db.collection("users").doc(userId);
             t.set(userRef, {
               uid: userId,
               email: shippingAddress.email || "",
@@ -685,7 +727,18 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
             t.set(push.ref, push.data);
           }
 
-          return { orderId: subOrdersToCreate[0].ref.id, total: grandTotal, codAmount, userId };
+          return { 
+            orderId: subOrdersToCreate[0].ref.id, 
+            total: grandTotal, 
+            codAmount, 
+            userId,
+            subOrdersForEmail: subOrdersToCreate.map(so => ({
+              sellerId: (so.data.sellerIds as string[])[0],
+              subOrderId: so.ref.id,
+              items: so.data.items as any[],
+              total: so.data.total as number
+            }))
+          };
         }),
       userId
     );
@@ -706,6 +759,15 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
         console.error("Failed to store idempotency key in idempotency_keys:", e);
       }
     }
+
+    // Process order confirmation emails asynchronously
+    sendOrderConfirmationEmails(
+      shippingAddress.email || "",
+      shippingAddress.fullName || "",
+      result.orderId,
+      result.total,
+      result.subOrdersForEmail
+    ).catch(console.error);
 
     // Process out-of-band email alerts asynchronously
     if (emailAlerts.length > 0) {

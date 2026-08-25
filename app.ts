@@ -6,7 +6,7 @@ import express, { Request, Response, NextFunction } from "express";
 import compression from "compression";
 import swaggerUi from "swagger-ui-express";
 
-import { admin, verifyAndFixDb } from "./src/config/firebase-admin";
+import { verifyAndFixDb } from "./src/config/firebase-admin";
 import { startProductPublisherWorker, stopProductPublisherWorker } from "./src/workers/productPublisher";
 import { apiLimiter, debugLimiter } from "./src/middlewares/rateLimiters";
 import { helmetMiddleware, corsMiddleware } from "./src/middlewares/security";
@@ -46,8 +46,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const PORT = Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 3000;
+const PORT = 3000;
 const httpServer = http.createServer(app);
 
 // Express running behind Cloud Run / Nginx reverse proxy (1 hop).

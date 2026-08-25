@@ -30,45 +30,10 @@ interface OrderDoc {
 import { Router } from "express";
 import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
-import { authenticateToken, optionalAuthenticateToken, authorizeSeller } from "../../../middlewares/auth";
-import { Order, OrderStatus, StockUpdatePayload, OrderSnapshot, OrderTransactionContext } from "../order.types";
-import { validateRequest } from "../../../middlewares/validation";
-import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../../constants";
-import { placeOrderSchema } from "../../../utils/validation";
-import { checkSellerVelocityLimit } from "../../../utils/velocity";
-import { orderBreaker } from "../../../utils/circuitBreaker";
-import { calculateOrderCommission } from "../../../utils/orderCalculations";
-import nodemailer from "nodemailer";
-import crypto from "crypto";
-import { GoogleGenAI } from "@google/genai";
+import { authenticateToken } from "../../../middlewares/auth";
+import { GoogleGenAI, Part } from "@google/genai";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.ethereal.email",
-  port: Number(process.env.SMTP_PORT) || 587,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-const sendLowStockEmail = async (sellerEmail: string, message: string) => {
-  try {
-    if (!process.env.SMTP_USER) {
-      console.log("Mock Email Sent (SMTP not configured). To:", sellerEmail, "Message:", message);
-      return;
-    }
-    await transporter.sendMail({
-      from: '"Olmart" <noreply@olmart.dz>',
-      to: sellerEmail,
-      subject: "⚠️ Alerte Stock Critique - Olmart",
-      text: message,
-    });
-  } catch (err) {
-    console.error("Failed to send stock alert email", err);
-  }
-};
-
-async function getGeminiImagePart(photoStr: string) {
+async function getGeminiImagePart(photoStr: string): Promise<Part | null> {
   try {
     if (photoStr.startsWith("data:")) {
       const match = photoStr.match(/^data:([^;]+);base64,(.+)$/);
@@ -245,7 +210,7 @@ router.post("/buyer/orders/dispute", authenticateToken, async (req: Authenticate
              httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
           });
           
-          const parts: any[] = [];
+          const parts: Part[] = [];
           
           const systemInstruction = `Vous êtes l'assistant de médiation officiel d'OLMART, la marketplace leader en Algérie.
 Votre rôle est d'analyser de manière objective le litige ouvert par l'acheteur et de produire instantanément un Rapport d'Analyse IA structuré pour l'administrateur afin de l'aider à résoudre ce litige.

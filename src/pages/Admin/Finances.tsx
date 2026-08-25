@@ -94,8 +94,16 @@ export const Finances: React.FC = () => {
            console.error("Failed to load financial summary", e);
         }
         
-        // No mock chart data. Set to empty array to display a clean empty state
-        setChartData([]);
+        // Fetch chart data via Express v1 API
+        try {
+           const chartRes = await apiGet<{ success: boolean; chartData: {date: string, revenu: number, commission: number}[] }>(`/api/v1/admin/finances/chart?days=${dateFilter}`);
+           if (chartRes?.chartData) {
+              setChartData(chartRes.chartData);
+           }
+        } catch (e) {
+           console.error("Failed to load chart data", e);
+           setChartData([]);
+        }
 
       } catch (err) {
         console.error(err);

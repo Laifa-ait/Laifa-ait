@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ImageMagnifier } from "../ImageMagnifier";
-import { Play, ArrowLeft } from "lucide-react";
+import { Play } from "lucide-react";
 import { getOptimizedImageUrl } from "../../../utils/imageUtils";
 import { OptimizedImage } from "../../ui/OptimizedImage";
 

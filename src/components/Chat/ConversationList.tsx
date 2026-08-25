@@ -22,13 +22,13 @@ interface ConversationListProps {
 const getContextIcon = (type: ConversationType) => {
   switch (type) {
     case 'REAL_ESTATE_INQUIRY':
-      return <Building2 className="w-4 h-4 text-emerald-400" />;
+      return <Building2 className="w-4 h-4 text-[#1e3835]" />;
     case 'ORDER_SUPPORT':
-      return <ShoppingBag className="w-4 h-4 text-blue-400" />;
+      return <ShoppingBag className="w-4 h-4 text-[#7a824e]" />;
     case 'BRICOLAGE_QUOTE':
-      return <Wrench className="w-4 h-4 text-amber-400" />;
+      return <Wrench className="w-4 h-4 text-[#b88c49]" />;
     default:
-      return <MessageSquare className="w-4 h-4 text-purple-400" />;
+      return <MessageSquare className="w-4 h-4 text-[#1e3835]" />;
   }
 };
 
@@ -61,20 +61,20 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   if (conversations.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3">
-        <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+      <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500 space-y-3">
+        <div className="w-14 h-14 rounded-2xl bg-[#f4ecd8] border border-[#e8e2d4] flex items-center justify-center text-[#1e3835]">
           <MessageSquare className="w-6 h-6" />
         </div>
-        <p className="text-sm font-semibold text-slate-300">Aucune conversation active</p>
-        <p className="text-xs text-slate-500 max-w-[200px]">
-          Vos échanges avec les vendeurs, propriétaires ou artisans s'afficheront ici.
+        <p className="text-sm font-bold text-[#1e3835]">Aucune conversation active</p>
+        <p className="text-xs text-slate-500 max-w-[220px]">
+          Vos échanges avec les propriétaires, agences ou acheteurs s'afficheront ici.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col divide-y divide-slate-800/80 overflow-y-auto">
+    <div className="flex flex-col divide-y divide-[#f0ebd8] overflow-y-auto bg-white">
       {conversations.map((conv) => {
         const isSelected = selectedId === conv.id;
         const otherParticipantUid = conv.participants.find((uid) => uid !== currentUserId) || conv.participants[0];
@@ -92,13 +92,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             onClick={() => onSelect(conv)}
             className={`w-full text-left p-3.5 transition-all flex items-start gap-3 cursor-pointer ${
               isSelected
-                ? 'bg-slate-800/90 border-l-4 border-emerald-500'
-                : 'hover:bg-slate-800/40'
+                ? 'bg-[#f8f5ee] border-l-4 border-[#1e3835]'
+                : 'hover:bg-[#faf7f2]'
             }`}
           >
             {/* Avatar or Context Icon */}
             <div className="relative shrink-0 mt-0.5">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+              <div className="w-11 h-11 rounded-2xl bg-[#f4ecd8] border border-[#e8e2d4] flex items-center justify-center overflow-hidden">
                 {conv.context.referenceImageUrl ? (
                   <img
                     src={conv.context.referenceImageUrl}
@@ -110,7 +110,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 )}
               </div>
               {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-emerald-500 text-white rounded-full text-[10px] font-extrabold min-w-[18px] text-center shadow">
+                <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-[#1e3835] text-white rounded-full text-[10px] font-extrabold min-w-[18px] text-center shadow-xs">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
@@ -118,27 +118,27 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
             {/* Conversation Summary */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1 mb-1">
-                <h4 className="text-xs font-bold text-slate-200 truncate">
+              <div className="flex items-center justify-between gap-1 mb-0.5">
+                <h4 className="text-xs font-bold text-[#1e3835] truncate">
                   {otherParticipant.displayName}
                 </h4>
                 {conv.updatedAt && (
-                  <span className="text-[10px] text-slate-500 shrink-0">
+                  <span className="text-[10px] text-slate-400 shrink-0 font-medium">
                     {formatTimeAgo(conv.updatedAt)}
                   </span>
                 )}
               </div>
 
               {/* Reference Title */}
-              <div className="text-[11px] text-emerald-400/90 font-medium truncate mb-1">
-                {conv.context.referenceTitle || 'Échange Olmart'}
+              <div className="text-[11px] text-[#7a824e] font-bold truncate mb-1">
+                {conv.context.referenceTitle || 'Échange Olma'}
               </div>
 
               {/* Last Message or Status */}
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] text-slate-400 truncate">
+                <p className="text-[11px] text-slate-500 truncate">
                   {conv.activeNegotiation?.status === 'PENDING' ? (
-                    <span className="text-amber-400 font-medium">Offre en cours ({conv.activeNegotiation.amountDZD.toLocaleString()} DZD)</span>
+                    <span className="text-[#99621e] font-bold">Offre en cours ({conv.activeNegotiation.amountDZD.toLocaleString()} DZD)</span>
                   ) : conv.lastMessage ? (
                     conv.lastMessage.text
                   ) : (
@@ -148,10 +148,10 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
                 {/* Flags */}
                 {conv.isBlocked && (
-                  <Ban className="w-3 h-3 text-red-400 shrink-0" />
+                  <Ban className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                 )}
                 {conv.isArchived && (
-                  <Archive className="w-3 h-3 text-slate-500 shrink-0" />
+                  <Archive className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
               </div>
             </div>
@@ -165,7 +165,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             type="button"
             onClick={onLoadMore}
             disabled={isLoading}
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-medium py-1.5 px-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 disabled:opacity-50 transition cursor-pointer"
+            className="text-xs text-[#1e3835] hover:text-black font-bold py-2 px-4 rounded-xl bg-[#f4ecd8] hover:bg-[#ebdcb8] disabled:opacity-50 transition cursor-pointer"
           >
             {isLoading ? 'Chargement...' : 'Charger les conversations précédentes'}
           </button>

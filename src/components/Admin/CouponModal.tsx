@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { X, Check, AlertCircle, Search, Layers, User, HelpCircle, CheckSquare, Square } from "lucide-react";
+import { X, Check, AlertCircle, Search, Layers, User, CheckSquare, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { apiGet, apiPost } from "../../lib/api";
 import { Coupon, CouponDiscountType } from "../../domains/marketing/coupon.types";

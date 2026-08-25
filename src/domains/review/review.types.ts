@@ -1,4 +1,4 @@
-import { admin } from "../../config/firebase-admin";
+import type { admin } from "../../config/firebase-admin";
 
 export interface ReviewDocument {
   id?: string;

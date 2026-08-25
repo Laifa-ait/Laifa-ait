@@ -279,6 +279,15 @@ const PropertyOwnerDashboard = React.lazy(() =>
 const PropertyEditor = React.lazy(() =>
   import("./pages/OlmaImmo/PropertyEditor").then((m) => ({ default: m.PropertyEditor }))
 );
+const MyBookings = React.lazy(() =>
+  import("./pages/OlmaImmo/MyBookings").then((m) => ({ default: m.MyBookings }))
+);
+const OlmaImmoProfile = React.lazy(() =>
+  import("./pages/OlmaImmo/OlmaImmoProfile").then((m) => ({ default: m.OlmaImmoProfile }))
+);
+const BricolageProfile = React.lazy(() =>
+  import("./pages/Public/BricolageProfile").then((m) => ({ default: m.BricolageProfile }))
+);
 
 const ProductFilterPage = React.lazy(() =>
   import("./pages/Public/ProductFilterPage").then((m) => ({
@@ -595,6 +604,30 @@ export const AppRouter: React.FC = () => {
                 element={
                   <PageWrapper>
                     <PropertyEditor />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/my-bookings"
+                element={
+                  <PageWrapper>
+                    <MyBookings />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/immo/profile"
+                element={
+                  <PageWrapper>
+                    <OlmaImmoProfile />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/bricolage/profile"
+                element={
+                  <PageWrapper>
+                    <BricolageProfile />
                   </PageWrapper>
                 }
               />

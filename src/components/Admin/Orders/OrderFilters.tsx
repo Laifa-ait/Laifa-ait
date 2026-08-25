@@ -1,7 +1,6 @@
 import React from "react";
 import { Filter, Search, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ALGERIA_WILAYAS } from "../../../constants";
 
 interface OrderFiltersProps {
   searchId: string;

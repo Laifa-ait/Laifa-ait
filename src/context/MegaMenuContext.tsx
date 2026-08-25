@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { defaultCategoriesData } from "../data/megaMenuData";
 import { useShop } from "./ShopContext";
 import { apiGet, apiPost } from "../lib/api";
 import toast from "react-hot-toast";

@@ -2,6 +2,8 @@ import { Request, Response, Router } from "express";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../../middlewares/auth";
 import { ProductApprovalSchema, ProductRejectionSchema } from "../../../validators/adminValidators";
 import { AdminProductService } from "../services/adminProduct.service";
+import * as admin from "firebase-admin";
+import { db } from "../../../lib/firebase";
 
 const router = Router();
 
@@ -144,6 +146,27 @@ router.put("/admin/categories/:id", authenticateToken, authorizeAdmin, async (re
     res.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.put("/admin/categories/hierarchy", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { hierarchy } = req.body;
+    if (!Array.isArray(hierarchy)) {
+      return res.status(400).json({ error: "Format invalide" });
+    }
+    const batch = admin.firestore().batch();
+    hierarchy.forEach((item) => {
+      if (item.id) {
+        const ref = admin.firestore().collection("categories").doc(item.id);
+        batch.update(ref, { order: item.order, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      }
+    });
+    await batch.commit();
+    res.json({ success: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur";
     res.status(500).json({ error: message });
   }
 });

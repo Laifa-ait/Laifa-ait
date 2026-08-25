@@ -47,6 +47,8 @@ export interface HomepageSection {
   limit?: number;
   tag?: string;
   category?: string;
+  imageUrl?: string;
+  bannerImage?: string;
   manualProducts?: string[]; // IDs or URLs of the products to display manually
   style?: string;
   rules?: {

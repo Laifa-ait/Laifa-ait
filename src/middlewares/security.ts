@@ -1,8 +1,6 @@
 import helmet from "helmet";
 import cors from "cors";
 
-const isProd = process.env.NODE_ENV === "production";
-
 export const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin) return callback(null, true);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Sparkles, Search, Layers, ShieldCheck, Settings, Rocket } from "lucide-react";
+import { Sparkles, Search, Layers, Settings, Rocket } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { OlmaAppModule } from "../types/olmaUnivers";
 import { fetchOlmaUniversApps } from "../services/olmaUnivers.api";

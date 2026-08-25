@@ -17,12 +17,12 @@ interface CalculatedOrder {
 
 interface OrderTableProps {
   loading: boolean;
-  ordersCount: number;
+  ordersCount?: number;
   filteredOrders: Order[];
   selectedOrderIds: string[];
   calculatedOrdersMap: Record<string, CalculatedOrder>;
   statusLabels: Record<string, string>;
-  statusColors: Record<string, string>;
+  statusColors?: Record<string, string>;
   handleSelectAll: (checked: boolean) => void;
   handleSelectOrder: (orderId: string, checked: boolean) => void;
   setSelectedOrder: (order: Order | null) => void;
@@ -31,12 +31,10 @@ interface OrderTableProps {
 
 export const OrderTable: React.FC<OrderTableProps> = ({
   loading,
-  ordersCount,
   filteredOrders,
   selectedOrderIds,
   calculatedOrdersMap,
   statusLabels,
-  statusColors,
   handleSelectAll,
   handleSelectOrder,
   setSelectedOrder,

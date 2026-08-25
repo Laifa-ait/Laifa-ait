@@ -3,15 +3,13 @@ import { useTranslation } from "react-i18next";
 import { apiGet } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useUI } from "../context/UIContext";
-import { useShop } from "../context/ShopContext";
 import { useNavigate } from "react-router-dom";
 
 export const useMobileMenu = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, logout, userProfile } = useAuth();
   const { isMobileMenuOpen, setIsMobileMenuOpen, setIsWishlistOpen } = useUI();
-  const { setActiveCategory } = useShop();
 
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [aboutText, setAboutText] = useState("");

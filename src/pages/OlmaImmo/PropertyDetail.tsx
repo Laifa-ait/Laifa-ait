@@ -1,79 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
-import { Property } from '../../types/realEstate';
-import { apiGet } from '../../lib/api';
+import { ImageGalleryLightbox } from '../../components/OlmaImmo/ImageGalleryLightbox';
 import { VisitRequestModal } from '../../components/OlmaImmo/VisitRequestModal';
 import { BookingRequestModal } from '../../components/OlmaImmo/BookingRequestModal';
-import { InteractiveMap } from '../../components/OlmaImmo/InteractiveMap';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
-import { useAuth } from '../../context/AuthContext';
-import {
-  ArrowLeft,
-  MapPin,
-  Bed,
-  Bath,
-  Maximize,
-  Phone,
-  MessageSquare,
-  Calendar,
-  Eye,
-  CheckCircle,
-  Building2,
-  Share2,
-  Heart
-} from 'lucide-react';
+import { Property, PublicOwnerProfile } from '../../types/realEstate';
+import { apiGet } from '../../lib/api';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
 import toast from 'react-hot-toast';
+import { Building2, ArrowLeft } from 'lucide-react';
+
+import { DetailHeader } from '../../components/OlmaImmo/PropertyDetail/DetailHeader';
+import { DetailGallery } from '../../components/OlmaImmo/PropertyDetail/DetailGallery';
+import { DetailSpecs } from '../../components/OlmaImmo/PropertyDetail/DetailSpecs';
+import { DetailDescription } from '../../components/OlmaImmo/PropertyDetail/DetailDescription';
+import { DetailLocation } from '../../components/OlmaImmo/PropertyDetail/DetailLocation';
+import { DetailSidebar } from '../../components/OlmaImmo/PropertyDetail/DetailSidebar';
+import { DetailSimilar } from '../../components/OlmaImmo/PropertyDetail/DetailSimilar';
 
 export const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { currentUser, openAuthModal } = useAuth();
-
   const [property, setProperty] = useState<Property | null>(null);
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFav, setIsFav] = useState(false);
+
+  // Owner State
+  const [ownerProfile, setOwnerProfile] = useState<PublicOwnerProfile | null>(null);
+  const [isOwnerLoading, setIsOwnerLoading] = useState(false);
+  const [ownerError, setOwnerError] = useState(false);
+
+  // Gallery state
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Modal states
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDirectChatOpen, setIsDirectChatOpen] = useState(false);
 
+  // Short-Term Booking selection
+  const [bookingSummary, setBookingSummary] = useState({
+    startDate: '',
+    endDate: '',
+    totalNights: 0,
+    guests: { adults: 2, children: 1 },
+    subtotal: 0,
+    cleaningFee: 10000,
+    serviceFee: 5000,
+    totalPriceDZD: 0,
+  });
+
   useEffect(() => {
     if (!id) return;
 
-    const fetchPropertyDetail = async () => {
+    const fetchPropertyData = async () => {
       setIsLoading(true);
       try {
         const response = await apiGet<{ success: boolean; data?: Property }>(
           `/api/v1/real-estate/properties/${id}`
         );
+
         if (response.success && response.data) {
           setProperty(response.data);
           setIsFav(isFavoritePropertyId(response.data.id));
+
+          setIsOwnerLoading(true);
+          setOwnerError(false);
+          apiGet<{ success: boolean; data?: PublicOwnerProfile }>(
+            `/api/v1/real-estate/properties/${response.data.id}/owner`
+          ).then((res) => {
+            if (res.success && res.data) setOwnerProfile(res.data);
+            else setOwnerError(true);
+          }).catch(() => setOwnerError(true))
+            .finally(() => setIsOwnerLoading(false));
+
+          try {
+            const similarRes = await apiGet<{ success: boolean; data?: Property[] }>(
+              `/api/v1/real-estate/properties/${response.data.id}/similar`
+            );
+            if (similarRes.success && similarRes.data) {
+              setSimilarProperties(similarRes.data);
+            }
+          } catch {
+            // Non-blocking fallback
+          }
         } else {
-          toast.error('Annonce introuvable ou indisponible');
+          toast.error('Annonce introuvable');
         }
-      } catch (err) {
-        console.error('Error fetching property detail:', err);
-        toast.error('Erreur lors du chargement de l\'annonce');
+      } catch {
+        toast.error("Erreur lors du chargement de l'annonce");
       } finally {
         setIsLoading(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
 
-    fetchPropertyDetail();
+    fetchPropertyData();
   }, [id]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <div className="min-h-screen bg-[#faf8f5] flex flex-col font-sans">
         <OlmaImmoNavbar />
-        <div className="max-w-5xl mx-auto px-4 py-12 flex-1 w-full animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 rounded-xl w-1/3" />
-          <div className="h-96 bg-slate-200 rounded-3xl" />
-          <div className="h-24 bg-slate-200 rounded-2xl" />
+        <div className="max-w-7xl mx-auto px-4 py-12 flex-1 w-full animate-pulse space-y-6">
+          <div className="h-10 bg-slate-200/80 rounded-2xl w-1/4" />
+          <div className="h-96 bg-slate-200/80 rounded-3xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-64 bg-slate-200/80 rounded-3xl" />
+            <div className="h-64 bg-slate-200/80 rounded-3xl" />
+          </div>
         </div>
       </div>
     );
@@ -81,18 +119,20 @@ export const PropertyDetail: React.FC = () => {
 
   if (!property) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <div className="min-h-screen bg-[#faf8f5] flex flex-col font-sans">
         <OlmaImmoNavbar />
-        <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
-          <Building2 className="w-12 h-12 text-slate-400 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-900">Annonce introuvable</h2>
-          <p className="text-xs text-slate-500">Cette annonce n'existe plus ou a été retirée par son propriétaire.</p>
+        <div className="max-w-md mx-auto px-4 py-24 text-center space-y-4 flex-1 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mb-2 border border-[#e8e2d4]">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">Annonce introuvable</h2>
+          <p className="text-sm text-slate-600">Cette annonce n'existe plus ou a été retirée par son annonceur.</p>
           <Link
             to="/immo"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-semibold"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retourner aux recherches
+            <span>Explorer les annonces</span>
           </Link>
         </div>
       </div>
@@ -109,290 +149,120 @@ export const PropertyDetail: React.FC = () => {
     if (navigator.share) {
       navigator.share({
         title: property.title,
-        text: `${property.title} - ${property.location.wilaya}`,
+        text: `${property.title} - ${property.location.wilaya} sur Olma Immo`,
         url: window.location.href,
       }).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success('Lien copié dans le presse-papier !');
+      toast.success("Lien de l'annonce copié !");
     }
   };
 
-  const images = property.images && property.images.length > 0
-    ? property.images
-    : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80'];
-
-  const formatPrice = (price: number, period?: string) => {
-    const formatted = new Intl.NumberFormat('fr-DZ', { maximumFractionDigits: 0 }).format(price);
-    let suffix = '';
-    if (period === 'night') suffix = ' / nuit';
-    else if (period === 'month') suffix = ' / mois';
-    return `${formatted} DA${suffix}`;
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-[#faf8f5] text-slate-900 flex flex-col font-sans pb-24 md:pb-12">
       <OlmaImmoNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
-        {/* Navigation Top Bar */}
-        <div className="flex items-center justify-between">
-          <Link
-            to="/immo"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-800 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-2xs transition-colors min-h-[44px]"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour aux annonces
-          </Link>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
+        <DetailHeader
+          property={property}
+          isFav={isFav}
+          onFavoriteClick={handleFavoriteClick}
+          onShare={handleShare}
+        />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleShare}
-              className="p-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
-              title="Partager"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
+        <DetailGallery
+          images={property.images || []}
+          title={property.title}
+          selectedImageIndex={selectedImageIndex}
+          onSelectImage={setSelectedImageIndex}
+          onOpenLightbox={() => setIsLightboxOpen(true)}
+        />
 
-            <button
-              onClick={handleFavoriteClick}
-              className="p-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
-              title="Favoris"
-            >
-              <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-500 text-rose-500' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Header Title & Pricing Banner */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="px-3 py-1 bg-emerald-700 text-white font-bold text-xs rounded-full uppercase tracking-wider">
-                {property.listingType === 'sale' ? 'Vente' : property.listingType === 'rent_long' ? 'Location' : 'Séjour'}
-              </span>
-              <span className="px-3 py-1 bg-slate-100 text-slate-800 font-semibold text-xs rounded-full">
-                {property.propertyType}
-              </span>
-              <span className="px-2.5 py-1 bg-slate-50 text-slate-500 text-xs rounded-full flex items-center gap-1">
-                <Eye className="w-3.5 h-3.5 text-slate-400" />
-                {property.viewsCount || 1} vues
-              </span>
-            </div>
-
-            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900">{property.title}</h1>
-
-            <div className="flex items-center text-slate-600 text-xs sm:text-sm mt-2">
-              <MapPin className="w-4 h-4 me-1 text-emerald-600 shrink-0" />
-              <span>
-                {property.location.address}, {property.location.commune}, Wilaya de {property.location.wilaya}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-lg shrink-0 text-center md:text-end">
-            <span className="block text-[11px] text-slate-400 uppercase font-bold tracking-wider">Prix demandé</span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
-              {formatPrice(property.price, property.pricePeriod)}
-            </span>
-          </div>
-        </div>
-
-        {/* Gallery Section */}
-        <div className="space-y-3">
-          <div className="aspect-[16/9] sm:aspect-[21/9] bg-slate-900 rounded-3xl overflow-hidden shadow-md relative">
-            <img
-              src={images[selectedImageIndex]}
-              alt={property.title}
-              className="w-full h-full object-cover transition-all duration-300"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-6">
+            <DetailSpecs property={property} />
+            <DetailDescription property={property} />
+            <DetailLocation
+              location={property.location}
+              title={property.title}
+              price={property.price}
             />
           </div>
 
-          {images.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImageIndex(idx)}
-                  className={`w-24 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                    selectedImageIndex === idx ? 'border-emerald-600 ring-2 ring-emerald-500/30' : 'border-transparent opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Main Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Main Information Column */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Key Specs Bar */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs grid grid-cols-3 gap-4 text-center">
-              <div className="space-y-1">
-                <Bed className="w-5 h-5 text-emerald-600 mx-auto" />
-                <span className="block text-xs text-slate-500">Pièces</span>
-                <span className="font-extrabold text-slate-900 text-base">F{property.rooms}</span>
-              </div>
-
-              <div className="space-y-1 border-x border-slate-100">
-                <Maximize className="w-5 h-5 text-emerald-600 mx-auto" />
-                <span className="block text-xs text-slate-500">Superficie</span>
-                <span className="font-extrabold text-slate-900 text-base">{property.areaSquareMeters} m²</span>
-              </div>
-
-              <div className="space-y-1">
-                <Bath className="w-5 h-5 text-emerald-600 mx-auto" />
-                <span className="block text-xs text-slate-500">Salles de bain</span>
-                <span className="font-extrabold text-slate-900 text-base">{property.bathrooms || 1}</span>
-              </div>
-            </div>
-
-            {/* Description Card */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <h2 className="text-lg font-bold text-slate-900">Description du bien</h2>
-              <p className="text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                {property.description}
-              </p>
-            </div>
-
-            {/* Features / Amenities */}
-            {property.features && property.features.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-                <h2 className="text-lg font-bold text-slate-900">Équipements & Atouts</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {property.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Location Map Container */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <h2 className="text-lg font-bold text-slate-900">Localisation</h2>
-              <InteractiveMap
-                properties={[
-                  {
-                    id: property.id,
-                    title: property.title,
-                    lat: property.location.lat,
-                    lng: property.location.lng,
-                    price: property.price,
-                    pricePeriod: property.pricePeriod,
-                    listingType: property.listingType,
-                    propertyType: property.propertyType,
-                    commune: property.location.commune,
-                    wilaya: property.location.wilaya,
-                    mainImage: property.images?.[0] || '',
-                    rooms: property.rooms,
-                    areaSquareMeters: property.areaSquareMeters,
-                  },
-                ]}
-                centerLat={property.location.lat}
-                centerLng={property.location.lng}
-                zoom={14}
-                className="w-full h-80"
-              />
-            </div>
-          </div>
-
-          {/* Right Action Sidebar */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-md space-y-4 sticky top-20">
-              <h3 className="font-bold text-slate-900 text-base">Contact & Action</h3>
-
-              {/* Visit Request Modal Trigger */}
-              <button
-                onClick={() => setIsVisitModalOpen(true)}
-                className="w-full py-3 px-4 bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Demander une visite</span>
-              </button>
-
-              {/* Direct Messaging & Negotiation Trigger */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (!currentUser) {
-                    if (openAuthModal) openAuthModal();
-                    else navigate('/auth');
-                    return;
-                  }
-                  setIsDirectChatOpen(true);
-                }}
-                className="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-800/20 transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
-              >
-                <MessageSquare className="w-4 h-4 text-emerald-300" />
-                <span>Messagerie & Négocier le prix</span>
-              </button>
-
-              {/* Short Term Booking Trigger */}
-              {property.listingType === 'rent_short' && (
-                <button
-                  onClick={() => setIsBookingModalOpen(true)}
-                  className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>Réserver un séjour</span>
-                </button>
-              )}
-
-              <hr className="border-slate-100" />
-
-              <div className="space-y-2">
-                <a
-                  href={`tel:0550000000`}
-                  className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 min-h-[44px]"
-                >
-                  <Phone className="w-4 h-4 text-emerald-700" />
-                  <span>Appeler le propriétaire</span>
-                </a>
-              </div>
-            </div>
+          <div className="lg:col-span-4">
+            <DetailSidebar
+              property={property}
+              ownerProfile={ownerProfile}
+              isOwnerLoading={isOwnerLoading}
+              ownerError={ownerError}
+              onOpenVisitModal={() => setIsVisitModalOpen(true)}
+              onOpenBookingModal={() => setIsBookingModalOpen(true)}
+              onOpenDirectChat={() => setIsDirectChatOpen(true)}
+              onBookingSummaryChange={setBookingSummary}
+            />
           </div>
         </div>
+
+        <DetailSimilar similarProperties={similarProperties} />
       </main>
 
-      {/* Action Modals */}
-      <VisitRequestModal
-        isOpen={isVisitModalOpen}
-        onClose={() => setIsVisitModalOpen(false)}
-        propertyId={property.id}
-        propertyTitle={property.title}
-      />
+      <OlmaImmoBottomNav />
 
-      <BookingRequestModal
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        propertyId={property.id}
-        propertyTitle={property.title}
-        pricePerNight={property.price}
-      />
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <ImageGalleryLightbox
+          images={property.images || []}
+          initialIndex={selectedImageIndex}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      )}
 
-      {/* Unified Messaging Drawer with initial context */}
-      {isDirectChatOpen && property && (
+      {/* Visit Modal */}
+      {isVisitModalOpen && (
+        <VisitRequestModal
+          propertyId={property.id}
+          propertyTitle={property.title}
+          ownerId={property.ownerId}
+          isOpen={isVisitModalOpen}
+          onClose={() => setIsVisitModalOpen(false)}
+        />
+      )}
+
+      {/* Booking Modal */}
+      {isBookingModalOpen && (
+        <BookingRequestModal
+          propertyId={property.id}
+          propertyTitle={property.title}
+          propertyLocation={`${property.location.commune}, ${property.location.wilaya}`}
+          propertyImage={property.images?.[0] || ''}
+          ownerId={property.ownerId}
+          startDate={bookingSummary.startDate}
+          endDate={bookingSummary.endDate}
+          totalNights={bookingSummary.totalNights}
+          nightlyPrice={property.price}
+          cleaningFee={bookingSummary.cleaningFee}
+          serviceFee={bookingSummary.serviceFee}
+          totalPriceDZD={bookingSummary.totalPriceDZD}
+          guests={bookingSummary.guests}
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+        />
+      )}
+
+      {/* Unified Messaging Drawer */}
+      {isDirectChatOpen && (
         <UnifiedMessagingDrawer
           isOpen={isDirectChatOpen}
           onClose={() => setIsDirectChatOpen(false)}
           initialContext={{
-            type: 'REAL_ESTATE_INQUIRY',
-            recipientId: property.ownerId || '',
-            context: {
-              propertyId: property.id
-            },
-            initialMessage: ''
+            propertyId: property.id,
+            propertyTitle: property.title,
+            ownerId: property.ownerId,
+            price: property.price,
+            wilaya: property.location.wilaya,
           }}
         />
       )}
-
-      <OlmaImmoBottomNav />
     </div>
   );
 };

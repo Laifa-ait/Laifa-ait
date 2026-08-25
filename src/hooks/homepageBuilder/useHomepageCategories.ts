@@ -107,7 +107,7 @@ export function useHomepageCategories() {
       sessionStorage.removeItem("home_custom_categories");
       toast.success("Catégorie mise à jour avec succès !");
       reloadFn();
-    } catch (err) {
+    } catch {
       toast.error("Erreur lors de la sauvegarde de la catégorie");
     } finally {
       setIsSavingCategory(false);

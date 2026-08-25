@@ -16,7 +16,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
   if (msg.isSystem) {
     return (
       <div className="text-center my-2">
-        <span className="inline-block px-3 py-1 bg-slate-800 text-slate-400 rounded-full text-[10px] font-medium border border-slate-700/50">
+        <span className="inline-block px-3.5 py-1 bg-[#f4ecd8] text-[#1e3835] rounded-full text-[11px] font-bold border border-[#e8e2d4]">
           {msg.text}
         </span>
       </div>
@@ -28,8 +28,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
       <div
         className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed shadow-xs relative ${
           isMe
-            ? 'bg-emerald-600 text-white rounded-br-xs'
-            : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-xs'
+            ? 'bg-[#1e3835] text-white rounded-br-xs'
+            : 'bg-white text-slate-800 border border-[#e8e2d4] rounded-bl-xs'
         }`}
       >
         <p className="whitespace-pre-wrap break-words">{msg.text}</p>
@@ -43,7 +43,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
                     href={att.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-xl overflow-hidden border border-white/20 hover:opacity-90 transition cursor-pointer"
+                    className="block rounded-xl overflow-hidden border border-[#e8e2d4] hover:opacity-90 transition cursor-pointer"
                   >
                     <img
                       src={att.url}
@@ -56,9 +56,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
                     href={att.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2 bg-black/20 rounded-xl hover:bg-black/30 transition text-xs font-semibold text-white cursor-pointer"
+                    className={`flex items-center gap-2 p-2 rounded-xl transition text-xs font-bold cursor-pointer ${
+                      isMe
+                        ? 'bg-white/10 hover:bg-white/20 text-white'
+                        : 'bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835]'
+                    }`}
                   >
-                    <FileText className="w-4 h-4 text-amber-300" />
+                    <FileText className={`w-4 h-4 ${isMe ? 'text-[#ebdcb8]' : 'text-[#7a824e]'}`} />
                     <span className="truncate">{att.fileName}</span>
                   </a>
                 )}
@@ -68,14 +72,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
         )}
 
         {msg.violation && (
-          <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-300 font-medium">
+          <div className={`mt-1.5 flex items-center gap-1 text-[10px] font-bold ${isMe ? 'text-[#ebdcb8]' : 'text-amber-700'}`}>
             <AlertTriangle className="w-3 h-3 shrink-0" />
             <span>Coordonnées masquées par sécurité</span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-slate-500">
+      <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-slate-400 font-medium">
         <span>
           {new Date(msg.createdAt).toLocaleTimeString('fr-DZ', {
             hour: '2-digit',
@@ -86,7 +90,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
           <button
             type="button"
             onClick={() => onReport(msg.id)}
-            className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 hover:text-rose-600 transition cursor-pointer"
             title="Signaler ce message"
           >
             <Flag className="w-2.5 h-2.5" />

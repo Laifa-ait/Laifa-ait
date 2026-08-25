@@ -11,14 +11,14 @@ export interface IReviewRepository {
   deleteReview(id: string): Promise<void>;
 }
 
-function getSafeNumber(val: any, fallback = 0): number {
+function getSafeNumber(val: unknown, fallback = 0): number {
   if (typeof val === "number" && Number.isFinite(val) && !Number.isNaN(val)) {
     return val;
   }
   return fallback;
 }
 
-function getSafeRating(val: any): number | null {
+function getSafeRating(val: unknown): number | null {
   if (typeof val === "number" && Number.isFinite(val) && !Number.isNaN(val) && val >= 1 && val <= 5) {
     return val;
   }
@@ -202,7 +202,7 @@ export class FirebaseReviewRepository implements IReviewRepository {
         flags: getSafeNumber(existingReview.flags || 0, 0) + 1,
         status: "flagged",
         lastReportedReason: reason,
-        lastReportedAt: admin.firestore.FieldValue.serverTimestamp() as any
+        lastReportedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 
       t.update(reviewRef, patch);

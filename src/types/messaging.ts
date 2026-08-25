@@ -57,6 +57,8 @@ export interface ConversationContext {
   quoteRequestId?: string;
   referenceTitle: string;
   referenceImageUrl?: string;
+  referenceImage?: string;
+  referencePriceDZD?: number;
 }
 
 export interface ConversationDocument {

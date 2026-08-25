@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { User as FirebaseUser } from "firebase/auth";
-import { Product, CartItem, ProductVariant } from "../domains/product/product.types";
+import { Product, CartItem } from "../domains/product/product.types";
 import { useAuth } from "./AuthContext";
 import { analyticsEngine } from "../utils/analyticsEngine";
 import { apiGet, apiPost } from "../lib/api";
@@ -23,11 +23,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const getWishlistKey = (uid?: string | null) => (uid ? `olma_wishlist_${uid}` : "olma_wishlist_guest");
+const getCartKey = (uid?: string | null) => (uid ? `olma_cart_${uid}` : "olma_cart_guest");
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const auth = useAuth();
   const prevUserRef = useRef<FirebaseUser | null>(null);
-  const getWishlistKey = () => (auth.currentUser ? `olma_wishlist_${auth.currentUser.uid}` : "olma_wishlist_guest");
-  const getCartKey = () => (auth.currentUser ? `olma_cart_${auth.currentUser.uid}` : "olma_cart_guest");
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -84,7 +85,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const safeParse = <T,>(data: string | null, fallback: T): T => {
         try {
           return data ? JSON.parse(data) : fallback;
-        } catch (e) {
+        } catch {
           return fallback;
         }
       };
@@ -97,8 +98,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         if (auth.currentUser) {
           // User is logged in
-          const userCartKey = getCartKey();
-          const userWishlistKey = getWishlistKey();
+          const userCartKey = getCartKey(auth.currentUser.uid);
+          const userWishlistKey = getWishlistKey(auth.currentUser.uid);
 
           // Fetch user data from Cloud via secure REST endpoints
           let cloudCart: CartItem[] = [];
@@ -188,8 +189,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (!isInitialized) return;
 
-    const userCartKey = getCartKey();
-    const userWishlistKey = getWishlistKey();
+    const userCartKey = getCartKey(auth.currentUser?.uid);
+    const userWishlistKey = getWishlistKey(auth.currentUser?.uid);
 
     localStorage.setItem(userCartKey, JSON.stringify(cart));
     localStorage.setItem(userWishlistKey, JSON.stringify(wishlist));

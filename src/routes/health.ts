@@ -33,7 +33,7 @@ async function checkReadiness(): Promise<{ ready: boolean; firebase: string; fro
       db.collection("_health").doc("probe").get(),
       timeoutPromise
     ]);
-  } catch (_err: unknown) {
+  } catch {
     firebaseStatus = "unavailable";
   }
 

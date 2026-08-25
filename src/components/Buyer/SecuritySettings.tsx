@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShieldCheck, Mail, Key, Eye, EyeOff } from "lucide-react";
+import { Mail, Key, Eye, EyeOff } from "lucide-react";
 import {
   User,
   EmailAuthProvider,

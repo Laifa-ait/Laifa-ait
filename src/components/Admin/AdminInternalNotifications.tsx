@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bell, ShieldAlert, Check, X, FileText, UserCheck, AlertTriangle } from "lucide-react";
+import { Bell, ShieldAlert, FileText, UserCheck, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPut } from "../../lib/api";
 import { useTranslation } from "react-i18next";

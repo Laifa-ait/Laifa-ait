@@ -11,7 +11,6 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
-import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../constants";
 import { UserProfile } from "../domains/user/user.types";
 import toast from "react-hot-toast";
 import { apiGet, apiPost } from "../lib/api";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Save, Sparkles, Sliders } from "lucide-react";
+import { X, Save, Sliders } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SponsorshipPackConfig, SponsorshipTier } from "../../../domains/seller/sponsorship.types";
 

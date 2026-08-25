@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Tag, Settings, ImageIcon } from "lucide-react";
+import { Plus, Tag, ImageIcon } from "lucide-react";
 
 interface BannerAdminHeaderProps {
   activeTab: string;
