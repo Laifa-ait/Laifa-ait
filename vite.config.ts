@@ -18,6 +18,12 @@ export default defineConfig(({mode}) => {
         NODE_ENV: JSON.stringify(mode),
       }
     },
+    esbuild: {
+      target: 'es2022',
+      supported: {
+        destructuring: true,
+      },
+    },
     plugins: [
       react(), 
       tailwindcss(),
@@ -117,6 +123,7 @@ export default defineConfig(({mode}) => {
     ],
     base: '/',
     build: {
+      target: 'es2022',
       outDir: 'dist',
       emptyOutDir: true,
       sourcemap: false,
@@ -216,7 +223,15 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    optimizeDeps: { include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts'] },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'es2022',
+        supported: {
+          destructuring: true,
+        },
+      },
+      include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts']
+    },
     server: {
       hmr: {
         protocol: 'wss',

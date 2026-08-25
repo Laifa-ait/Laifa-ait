@@ -19,9 +19,15 @@ node_modules
 *.suo
 
 # Build outputs
+dist
+dist-ssr
 *.tsbuildinfo
 patch*.cjs
 tsc_output.txt
+test-results
+playwright-report
+blob-report
+coverage
 
 # Environment and Secrets
 firebase-applet-config.json

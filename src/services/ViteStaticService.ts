@@ -23,6 +23,20 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: false },
       appType: "spa",
+      esbuild: {
+        target: "es2022",
+        supported: {
+          destructuring: true,
+        },
+      },
+      optimizeDeps: {
+        esbuildOptions: {
+          target: "es2022",
+          supported: {
+            destructuring: true,
+          },
+        },
+      },
     });
     app.use(vite.middlewares);
 
