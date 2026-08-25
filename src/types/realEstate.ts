@@ -16,6 +16,8 @@ export interface BookingShort {
   propertyImage?: string;
   ownerId: string;
   tenantId: string; // guestId
+  travelerName?: string;
+  travelerPhone?: string;
   startDate: string; // ISO YYYY-MM-DD
   endDate: string;   // ISO YYYY-MM-DD
   checkIn?: string;  // Alias for startDate
@@ -34,6 +36,9 @@ export interface BookingShort {
 }
 
 export type PropertyBooking = BookingShort;
+export type Booking = BookingShort;
+export type VisitRequest = PropertyVisit;
+export type VisitStatus = 'pending' | 'accepted' | 'declined' | 'completed';
 
 export interface GeoPointLocation {
   lat: number;
@@ -99,6 +104,7 @@ export interface PropertyFormData {
 export interface PropertyVisit {
   id: string;
   propertyId: string;
+  propertyTitle?: string;
   ownerId: string;
   visitorId: string | null;
   visitorName: string;

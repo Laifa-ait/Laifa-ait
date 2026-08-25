@@ -45,10 +45,11 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
           </div>
 
           <ShortTermBookingCalendar
-            propertyPricePerNight={property.price}
+            propertyId={property.id}
+            nightlyPrice={property.price}
             cleaningFee={property.cleaningFee || 10000}
             serviceFee={property.serviceFee || 5000}
-            onSelectDates={onBookingSummaryChange}
+            onSelectBooking={onBookingSummaryChange}
           />
 
           <button
@@ -118,10 +119,9 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
 
       {/* Owner / Host Profile Card */}
       <OwnerTrustCard
-        ownerProfile={ownerProfile}
+        owner={ownerProfile}
         isLoading={isOwnerLoading}
         error={ownerError}
-        onContact={onOpenDirectChat}
       />
     </div>
   );

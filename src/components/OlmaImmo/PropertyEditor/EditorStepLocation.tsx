@@ -25,7 +25,7 @@ export const EditorStepLocation: React.FC<EditorStepLocationProps> = ({
       </div>
 
       <LocationPicker
-        value={location}
+        location={location}
         onChange={setLocation}
       />
     </div>

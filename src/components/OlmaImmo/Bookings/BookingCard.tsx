@@ -119,7 +119,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 <span className="text-[10px] text-slate-400 block font-bold uppercase">Voyageurs</span>
                 <span className="font-semibold">
                   {booking.guests?.adults || 1} adulte(s)
-                  {(booking.guests?.children || 0) > 0 ? `, ${booking.guests.children} enfant(s)` : ''}
+                  {(booking.guests?.children ?? 0) > 0 ? `, ${booking.guests?.children} enfant(s)` : ''}
                 </span>
               </div>
             </div>

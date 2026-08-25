@@ -55,7 +55,7 @@ export interface ConversationContext {
   propertyId?: string;
   productId?: string;
   quoteRequestId?: string;
-  referenceTitle: string;
+  referenceTitle?: string;
   referenceImageUrl?: string;
   referenceImage?: string;
   referencePriceDZD?: number;
@@ -99,12 +99,7 @@ export interface ChatMessageDocument {
 export interface InitiateConversationDTO {
   type: ConversationType;
   recipientId: string;
-  context: {
-    propertyId?: string;
-    orderId?: string;
-    productId?: string;
-    quoteRequestId?: string;
-  };
+  context: ConversationContext;
   initialMessage: string;
 }
 

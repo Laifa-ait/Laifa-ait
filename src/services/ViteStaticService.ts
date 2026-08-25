@@ -25,6 +25,21 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
       appType: "spa",
     });
     app.use(vite.middlewares);
+
+    app.get("*", async (req, res, next) => {
+      if (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/api-docs")) {
+        return next();
+      }
+      try {
+        const indexHtmlPath = path.resolve(process.cwd(), "index.html");
+        let template = await fsPromises.readFile(indexHtmlPath, "utf-8");
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).setHeader("Content-Type", "text/html; charset=utf-8").send(template);
+      } catch (e: unknown) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
     return;
   }
 

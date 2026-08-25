@@ -3,6 +3,7 @@ import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
 import { Booking } from '../../types/realEstate';
+import { InitiateConversationDTO } from '../../types/messaging';
 import { apiGet, apiPut } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Palmtree, UserX, LogIn } from 'lucide-react';
@@ -13,16 +14,12 @@ import { BookingFilterTabs } from '../../components/OlmaImmo/Bookings/BookingFil
 import { BookingEmptyState } from '../../components/OlmaImmo/Bookings/BookingEmptyState';
 
 export const MyBookings: React.FC = () => {
-  const { currentUser, authLoading } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
 
-  const [activeChatContext, setActiveChatContext] = useState<{
-    propertyId: string;
-    propertyTitle: string;
-    ownerId?: string;
-  } | null>(null);
+  const [activeChatContext, setActiveChatContext] = useState<InitiateConversationDTO | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
@@ -67,10 +64,17 @@ export const MyBookings: React.FC = () => {
   };
 
   const handleOpenChat = (booking: Booking) => {
+    if (!booking.ownerId) return;
     setActiveChatContext({
-      propertyId: booking.propertyId,
-      propertyTitle: booking.propertyTitle || 'Hébergement',
-      ownerId: booking.ownerId,
+      type: 'REAL_ESTATE_INQUIRY',
+      recipientId: booking.ownerId,
+      context: {
+        propertyId: booking.propertyId,
+        referenceTitle: booking.propertyTitle || 'Hébergement',
+        referenceImageUrl: booking.propertyImage,
+        referencePriceDZD: booking.totalPriceDZD,
+      },
+      initialMessage: `Bonjour, je vous contacte concernant ma réservation du ${booking.startDate} au ${booking.endDate}.`,
     });
     setIsChatOpen(true);
   };

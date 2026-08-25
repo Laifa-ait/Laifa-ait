@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapPin, Compass } from 'lucide-react';
-import { GeoPointLocation } from '../../../types/realEstate';
+import { GeoPointLocation, PropertyMapResult } from '../../../types/realEstate';
 import { PropertyMapPreview } from '../PropertyMapPreview';
 
 interface DetailLocationProps {
@@ -10,6 +10,21 @@ interface DetailLocationProps {
 }
 
 export const DetailLocation: React.FC<DetailLocationProps> = ({ location, title, price }) => {
+  const mapProperty: PropertyMapResult = {
+    id: 'current-property',
+    title,
+    propertyType: 'apartment',
+    listingType: 'sale',
+    price,
+    lat: location.lat,
+    lng: location.lng,
+    commune: location.commune,
+    wilaya: location.wilaya,
+    mainImage: '',
+    rooms: 0,
+    areaSquareMeters: 0,
+  };
+
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-4">
       <div className="flex items-center justify-between">
@@ -24,14 +39,7 @@ export const DetailLocation: React.FC<DetailLocationProps> = ({ location, title,
       </div>
 
       <div className="rounded-2xl overflow-hidden border border-[#e8e2d4] shadow-2xs">
-        <PropertyMapPreview
-          lat={location.lat}
-          lng={location.lng}
-          title={title}
-          price={price}
-          commune={location.commune}
-          wilaya={location.wilaya}
-        />
+        <PropertyMapPreview property={mapProperty} />
       </div>
 
       <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f0eae0] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-slate-700">

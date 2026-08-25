@@ -3,6 +3,7 @@ import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
 import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
+import { InitiateConversationDTO } from '../../types/messaging';
 import { apiGet, apiPut } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -14,7 +15,7 @@ import { OwnerBookingsList } from '../../components/OlmaImmo/OwnerDashboard/Owne
 import { OwnerProBadge } from '../../components/OlmaImmo/OwnerDashboard/OwnerProBadge';
 
 export const PropertyOwnerDashboard: React.FC = () => {
-  const { currentUser, authLoading } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'properties' | 'visits' | 'bookings'>('properties');
 
   const [properties, setProperties] = useState<Property[]>([]);
@@ -22,7 +23,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [chatContext, setChatContext] = useState<any>(null);
+  const [chatContext, setChatContext] = useState<InitiateConversationDTO | undefined>(undefined);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
     try {
       const res = await apiPut<{ success: boolean }>(`/api/v1/real-estate/visits/${visitId}/status`, { status });
       if (res.success) {
-        toast.success(status === 'confirmed' ? 'Visite confirmée' : 'Visite refusée');
+        toast.success(status === 'accepted' ? 'Visite acceptée' : 'Visite refusée');
         setVisits((prev) => prev.map((v) => (v.id === visitId ? { ...v, status } : v)));
       }
     } catch {
@@ -154,13 +155,18 @@ export const PropertyOwnerDashboard: React.FC = () => {
             isLoading={isLoading}
             onUpdateStatus={handleUpdateVisitStatus}
             onOpenChat={(visit) => {
-              setChatContext({
-                propertyId: visit.propertyId,
-                propertyTitle: visit.propertyTitle,
-                visitorId: visit.visitorId,
-                visitorName: visit.visitorName,
-              });
-              setIsChatOpen(true);
+              if (visit.visitorId) {
+                setChatContext({
+                  type: 'REAL_ESTATE_INQUIRY',
+                  recipientId: visit.visitorId,
+                  context: {
+                    propertyId: visit.propertyId,
+                    referenceTitle: 'Demande de visite',
+                  },
+                  initialMessage: `Bonjour ${visit.visitorName}, suite à votre demande de visite pour le ${visit.preferredDate} (${visit.timeSlot})...`,
+                });
+                setIsChatOpen(true);
+              }
             }}
           />
         )}
@@ -171,13 +177,20 @@ export const PropertyOwnerDashboard: React.FC = () => {
             isLoading={isLoading}
             onUpdateStatus={handleUpdateBookingStatus}
             onOpenChat={(booking) => {
-              setChatContext({
-                propertyId: booking.propertyId,
-                propertyTitle: booking.propertyTitle,
-                travelerId: booking.travelerId,
-                travelerName: booking.travelerName,
-              });
-              setIsChatOpen(true);
+              if (booking.tenantId) {
+                setChatContext({
+                  type: 'REAL_ESTATE_INQUIRY',
+                  recipientId: booking.tenantId,
+                  context: {
+                    propertyId: booking.propertyId,
+                    referenceTitle: booking.propertyTitle || 'Réservation',
+                    referenceImageUrl: booking.propertyImage,
+                    referencePriceDZD: booking.totalPriceDZD,
+                  },
+                  initialMessage: `Bonjour, concernant votre réservation de séjour du ${booking.startDate} au ${booking.endDate}...`,
+                });
+                setIsChatOpen(true);
+              }
             }}
           />
         )}

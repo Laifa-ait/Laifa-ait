@@ -209,45 +209,34 @@ export const PropertyDetail: React.FC = () => {
       <OlmaImmoBottomNav />
 
       {/* Lightbox Modal */}
-      {isLightboxOpen && (
-        <ImageGalleryLightbox
-          images={property.images || []}
-          initialIndex={selectedImageIndex}
-          onClose={() => setIsLightboxOpen(false)}
-        />
-      )}
+      <ImageGalleryLightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        images={property.images || []}
+        currentIndex={selectedImageIndex}
+        onIndexChange={setSelectedImageIndex}
+        title={property.title}
+      />
 
       {/* Visit Modal */}
-      {isVisitModalOpen && (
-        <VisitRequestModal
-          propertyId={property.id}
-          propertyTitle={property.title}
-          ownerId={property.ownerId}
-          isOpen={isVisitModalOpen}
-          onClose={() => setIsVisitModalOpen(false)}
-        />
-      )}
+      <VisitRequestModal
+        propertyId={property.id}
+        propertyTitle={property.title}
+        isOpen={isVisitModalOpen}
+        onClose={() => setIsVisitModalOpen(false)}
+      />
 
       {/* Booking Modal */}
-      {isBookingModalOpen && (
-        <BookingRequestModal
-          propertyId={property.id}
-          propertyTitle={property.title}
-          propertyLocation={`${property.location.commune}, ${property.location.wilaya}`}
-          propertyImage={property.images?.[0] || ''}
-          ownerId={property.ownerId}
-          startDate={bookingSummary.startDate}
-          endDate={bookingSummary.endDate}
-          totalNights={bookingSummary.totalNights}
-          nightlyPrice={property.price}
-          cleaningFee={bookingSummary.cleaningFee}
-          serviceFee={bookingSummary.serviceFee}
-          totalPriceDZD={bookingSummary.totalPriceDZD}
-          guests={bookingSummary.guests}
-          isOpen={isBookingModalOpen}
-          onClose={() => setIsBookingModalOpen(false)}
-        />
-      )}
+      <BookingRequestModal
+        propertyId={property.id}
+        propertyTitle={property.title}
+        propertyLocation={`${property.location.commune}, ${property.location.wilaya}`}
+        propertyImage={property.images?.[0] || ''}
+        ownerId={property.ownerId}
+        bookingSummary={bookingSummary}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
 
       {/* Unified Messaging Drawer */}
       {isDirectChatOpen && (
@@ -255,11 +244,15 @@ export const PropertyDetail: React.FC = () => {
           isOpen={isDirectChatOpen}
           onClose={() => setIsDirectChatOpen(false)}
           initialContext={{
-            propertyId: property.id,
-            propertyTitle: property.title,
-            ownerId: property.ownerId,
-            price: property.price,
-            wilaya: property.location.wilaya,
+            type: 'REAL_ESTATE_INQUIRY',
+            recipientId: property.ownerId,
+            context: {
+              propertyId: property.id,
+              referenceTitle: property.title,
+              referenceImageUrl: property.images?.[0],
+              referencePriceDZD: property.price,
+            },
+            initialMessage: `Bonjour, je suis intéressé par votre annonce "${property.title}".`,
           }}
         />
       )}

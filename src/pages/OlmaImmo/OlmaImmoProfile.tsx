@@ -20,7 +20,7 @@ import { ProApplicationSection } from '../../components/OlmaImmo/ProApplicationS
 import { ProfileFavoritesSection } from '../../components/OlmaImmo/ProfileFavoritesSection';
 
 export const OlmaImmoProfile: React.FC = () => {
-  const { currentUser, userProfile, logout, authLoading } = useAuth();
+  const { currentUser, userProfile, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'favorites' | 'stays' | 'pro' | 'settings'>('favorites');
 

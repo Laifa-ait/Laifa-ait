@@ -19,11 +19,10 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
     switch (status) {
       case 'pending':
         return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-[11px] font-bold rounded-full border border-amber-200">En attente de confirmation</span>;
-      case 'confirmed':
+      case 'accepted':
         return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 text-[11px] font-bold rounded-full border border-emerald-200">Visite confirmée</span>;
-      case 'cancelled':
       case 'declined':
-        return <span className="px-2.5 py-1 bg-rose-50 text-rose-800 text-[11px] font-bold rounded-full border border-rose-200">Refusée / Annulée</span>;
+        return <span className="px-2.5 py-1 bg-rose-50 text-rose-800 text-[11px] font-bold rounded-full border border-rose-200">Refusée</span>;
       case 'completed':
         return <span className="px-2.5 py-1 bg-blue-50 text-blue-800 text-[11px] font-bold rounded-full border border-blue-200">Visite effectuée</span>;
       default:
@@ -77,7 +76,7 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-700">
                   <div className="flex items-center gap-1.5 font-medium">
                     <Calendar className="w-3.5 h-3.5 text-[#1a3831]" />
-                    <span>Date: {visit.date}</span>
+                    <span>Date: {visit.preferredDate}</span>
                   </div>
                   <div className="flex items-center gap-1.5 font-medium">
                     <Clock className="w-3.5 h-3.5 text-[#1a3831]" />
@@ -89,9 +88,9 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
                   </div>
                 </div>
 
-                {visit.notes && (
+                {visit.visitorNotes && (
                   <p className="text-xs text-slate-500 italic bg-white p-2.5 rounded-xl border border-[#f0eae0]">
-                    "{visit.notes}"
+                    "{visit.visitorNotes}"
                   </p>
                 )}
               </div>
@@ -120,7 +119,7 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
                   <>
                     <button
                       type="button"
-                      onClick={() => onUpdateStatus(visit.id, 'confirmed')}
+                      onClick={() => onUpdateStatus(visit.id, 'accepted')}
                       className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />

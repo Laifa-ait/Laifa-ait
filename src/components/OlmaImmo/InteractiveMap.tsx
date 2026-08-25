@@ -133,8 +133,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       selectedPropertyId={selectedPropertyId}
       onSelectProperty={onSelectProperty}
       onBoundsChange={onBoundsChange}
-      centerLat={centerLat}
-      centerLng={centerLng}
       className={className}
     />
   );
