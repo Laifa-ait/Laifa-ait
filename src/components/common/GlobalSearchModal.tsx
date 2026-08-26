@@ -75,20 +75,20 @@ export const GlobalSearchModal: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const queryParam = encodeURIComponent(search.trim());
-        const [prodRes, storeRes] = await Promise.all([
-          apiGet<{ success: boolean; data: Product[] }>(`/api/v1/products/search?q=${queryParam}&limit=5`).catch(() => null),
-          apiGet<{ success: boolean; data: StoreResult[] }>(`/api/v1/sellers/search?q=${queryParam}&limit=3`).catch(() => null)
-        ]);
+        const searchRes = await apiGet<{
+          products?: Product[];
+          stores?: StoreResult[];
+        }>(`/api/v1/search?q=${queryParam}&limit=5`).catch(() => null);
 
         if (active) {
-          if (prodRes && prodRes.success && Array.isArray(prodRes.data)) {
-            setProducts(prodRes.data);
+          if (searchRes && Array.isArray(searchRes.products)) {
+            setProducts(searchRes.products);
           } else {
             setProducts([]);
           }
 
-          if (storeRes && storeRes.success && Array.isArray(storeRes.data)) {
-            setStores(storeRes.data);
+          if (searchRes && Array.isArray(searchRes.stores)) {
+            setStores(searchRes.stores);
           } else {
             setStores([]);
           }
@@ -212,8 +212,8 @@ export const GlobalSearchModal: React.FC = () => {
               >
                 {stores.map((store) => (
                   <Command.Item
-                    key={store.id || store.shopName}
-                    onSelect={() => handleSelect(() => navigate(`/shop/${store.id || store.shopName}`))}
+                    key={store.id || store.uid || store.shopName}
+                    onSelect={() => handleSelect(() => navigate(`/shop/${store.id || store.uid || store.shopName}`))}
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
