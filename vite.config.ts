@@ -18,11 +18,8 @@ export default defineConfig(({mode}) => {
         NODE_ENV: JSON.stringify(mode),
       }
     },
-    esbuild: {
+    oxc: {
       target: 'es2022',
-      supported: {
-        destructuring: true,
-      },
     },
     plugins: [
       react(), 
@@ -224,10 +221,9 @@ export default defineConfig(({mode}) => {
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: 'es2022',
-        supported: {
-          destructuring: true,
+      rolldownOptions: {
+        transform: {
+          target: 'es2022',
         },
       },
       include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts']
