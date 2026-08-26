@@ -7,7 +7,9 @@ import { AnimatePresence, motion } from "motion/react";
 interface MonthlyUpdate {
   month?: string;
   text_fr?: string;
-  [key: string]: any;
+  text_en?: string;
+  text_ar?: string;
+  [key: string]: string | number | Date | undefined;
   id: string;
   title: string;
   content: string;
@@ -44,8 +46,9 @@ export const MonthlyUpdateBanner: React.FC = () => {
             }
           }
         }
-      } catch (err: any) {
-        console.warn("Could not fetch monthly updates:", err?.message || err);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.warn("Could not fetch monthly updates:", errMsg);
       }
     };
 

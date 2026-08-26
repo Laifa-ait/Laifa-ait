@@ -10,6 +10,7 @@ import {
 import { MessagingService } from "../domains/messaging/services/MessagingService";
 import { NegotiationService } from "../domains/messaging/services/NegotiationService";
 import { ConversationDocument, NegotiationOfferPayload } from "../types/messaging";
+import { admin } from "../config/firebase-admin";
 
 // Mock Firebase Admin
 vi.mock("../config/firebase-admin", () => {
@@ -20,7 +21,7 @@ vi.mock("../config/firebase-admin", () => {
     delete: vi.fn(),
   };
 
-  const createMockDoc = (id = "mock_doc_id", data: any = {}) => ({
+  const createMockDoc = (id = "mock_doc_id", data: Record<string, unknown> = {}) => ({
     id,
     get: vi.fn().mockResolvedValue({
       exists: true,
@@ -121,13 +122,13 @@ describe("OLMA IMMO Phase 1.4 — Real Estate Messaging, Negotiation & Visits Se
 
       // Mock Firestore returning a conversation that caller is NOT part of
       const dbModule = await import("../config/firebase-admin");
-      (dbModule.db as any).doc = vi.fn().mockReturnValue({
+      vi.spyOn(dbModule.db, "doc").mockReturnValue({
         get: vi.fn().mockResolvedValue({
           exists: true,
           data: () => mockConversationDoc,
           id: "conv_immo_123",
         })
-      });
+      } as unknown as ReturnType<typeof dbModule.db.doc>);
 
       const unauthorizedCaller = "unauthorized_user_999";
       await expect(
@@ -253,7 +254,7 @@ describe("OLMA IMMO Phase 1.4 — Real Estate Messaging, Negotiation & Visits Se
         set: vi.fn(),
       };
 
-      dbModule.db.runTransaction = vi.fn(async (cb) => cb(mockTx as any));
+      dbModule.db.runTransaction = vi.fn(async (cb) => cb(mockTx as unknown as admin.firestore.Transaction));
 
       // Buyer (proposer) tries to accept their own offer
       await expect(

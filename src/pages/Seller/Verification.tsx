@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { ShieldCheck, Upload, FileText, CheckCircle2, Clock, XCircle, Info, FileImage } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { storage, auth } from '../../lib/firebase';
@@ -7,8 +6,22 @@ import { apiPut } from '../../lib/api';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
-import { systemUploadKYCToDrive } from '../../services/googleWorkspace';
 import { hasExternalChannel } from '../../utils/masking';
+
+interface SellerProfile {
+  brandName?: string;
+  designStyle?: string;
+  portfolioUrl?: string;
+  brandStory?: string;
+  rcNumber?: string;
+  nifNumber?: string;
+  rib?: string;
+  documents?: {
+    fileRC?: string;
+    fileId?: string;
+    fileRib?: string;
+  };
+}
 
 export const Verification: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -17,19 +30,21 @@ export const Verification: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState('');
   const isArabic = i18n.language === 'ar' || i18n.language?.startsWith('ar');
   
+  const profile = (userProfile as unknown) as SellerProfile;
+
   const [formData, setFormData] = useState({
     // Profil Artistique
-    brandName: (userProfile as any)?.brandName as string || '',
-    designStyle: (userProfile as any)?.designStyle as string || '',
-    portfolioUrl: (userProfile as any)?.portfolioUrl as string || '',
-    brandStory: (userProfile as any)?.brandStory as string || '',
+    brandName: profile?.brandName || '',
+    designStyle: profile?.designStyle || '',
+    portfolioUrl: profile?.portfolioUrl || '',
+    brandStory: profile?.brandStory || '',
     // Legal & Administrative
-    rcNumber: (userProfile as any)?.rcNumber as string || '',
-    nifNumber: (userProfile as any)?.nifNumber as string || '',
-    rib: (userProfile as any)?.rib as string || '',
-    fileRC: (userProfile as any)?.documents?.fileRC as string || '',
-    fileId: (userProfile as any)?.documents?.fileId as string || '',
-    fileRib: (userProfile as any)?.documents?.fileRib as string || '',
+    rcNumber: profile?.rcNumber || '',
+    nifNumber: profile?.nifNumber || '',
+    rib: profile?.rib || '',
+    fileRC: profile?.documents?.fileRC || '',
+    fileId: profile?.documents?.fileId || '',
+    fileRib: profile?.documents?.fileRib || '',
   });
 
   // Dummy line to replace original init
@@ -63,9 +78,10 @@ export const Verification: React.FC = () => {
        });
 
        toast.success(isArabic ? "نجحت المحاكاة! سيرى المشرف إخطارًا بالتحقق." : "Simulation réussie ! L'admin devrait voir une notification.", { id: "sim" });
-     } catch (err: any) {
+     } catch (err: unknown) {
        console.error("Simulation error detail:", err);
-       toast.error((isArabic ? "خطأ في المحاكاة: " : "Erreur simulation: ") + err.message, { id: "sim" });
+       const errMsg = err instanceof Error ? err.message : String(err);
+       toast.error((isArabic ? "خطأ في المحاكاة: " : "Erreur simulation: ") + errMsg, { id: "sim" });
      } finally {
        setLoading(false);
      }
@@ -142,11 +158,7 @@ export const Verification: React.FC = () => {
 
       setUploadProgress(isArabic ? "جاري حفظ البيانات..." : "Sauvegarde des données...");
       
-      const isRcChanged = formData.rcNumber !== (userProfile?.rcNumber || '') || selectedFileRC !== null;
-      const isNifChanged = formData.nifNumber !== (userProfile?.nifNumber || '') || selectedFileId !== null;
-      const isRibChanged = formData.rib !== (userProfile?.rib || '') || selectedFileRib !== null;
-      const shouldReverify = isRcChanged || isNifChanged || isRibChanged;
-      const finalStatus = shouldReverify ? 'pending_verification' : status;
+
 
       // Primary Write: User Profile
       (process.env.NODE_ENV === 'development' ? console.log : function(){})("Writing to users/", uid, { documents: { fileRC: !!finalFileRC, fileId: !!finalFileId, fileRib: !!finalFileRib } });
@@ -176,9 +188,10 @@ export const Verification: React.FC = () => {
       setSelectedFileRib(null);
       setUploadProgress('');
       toast.success(isArabic ? "تم إرسال المستندات للتحقق بنجاح!" : "Documents envoyés pour validation !");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Critical submission error:", err);
-      toast.error(isArabic ? `خطأ: ${err.message || "فشل إرسال المستندات"}` : `Erreur: ${err.message || "Impossible d'envoyer les documents"}`);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      toast.error(isArabic ? `خطأ: ${errMsg || "فشل إرسال المستندات"}` : `Erreur: ${errMsg || "Impossible d'envoyer les documents"}`);
       setUploadProgress('');
     } finally {
       setLoading(false);

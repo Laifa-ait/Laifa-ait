@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  ShieldCheck, ShieldAlert, KeyRound, Smartphone, Mail, 
-  Copy, Download, RefreshCw, CheckCircle2, X, Lock, AlertCircle, Laptop
+  ShieldCheck, ShieldAlert, KeyRound, Mail, 
+  Copy, Download, RefreshCw, CheckCircle2, X, Laptop
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -25,7 +25,7 @@ export const TwoFactorSecurityModal: React.FC<TwoFactorSecurityModalProps> = ({
   isInitiallyEnabled = false,
   onStatusChange,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar" || i18n.language?.startsWith("ar");
 
   const [step, setStep] = useState<"overview" | "enter_pin" | "backup_codes">(
@@ -270,7 +270,7 @@ export const TwoFactorSecurityModal: React.FC<TwoFactorSecurityModalProps> = ({
                 <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
                   <div className="flex items-center gap-3 text-xs font-bold text-zinc-700">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>{isArabic ? "حماية الضمان المالي ومحفظة Olmart" : "Protection des retraits et portefeuille DZD"}</span>
+                    <span>{isArabic ? "حماية الحساب والمتجر والمعاملات المالية" : "Protection du compte et des transactions financières"}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs font-bold text-zinc-700">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />

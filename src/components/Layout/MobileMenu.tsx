@@ -3,15 +3,11 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import {
   X,
-  Home,
   ShoppingBag,
   Heart,
-  User,
-  Settings,
   Info,
   Box,
   LogOut,
-  MapPin,
   Globe,
   ChevronRight,
 } from "lucide-react";

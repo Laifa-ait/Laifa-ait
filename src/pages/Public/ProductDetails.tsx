@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, Share2, ShieldCheck, Star, ShoppingBag, Info, Flame } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ShoppingBag, Flame } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { db } from "../../lib/firebase";
 import { useCart } from "../../context/CartContext";
 import { useShop } from "../../context/ShopContext";
-import { Product } from "../../domains/product/product.types";
+import { Product, ProductVariant } from "../../domains/product/product.types";
 import { Helmet } from "react-helmet-async";
 import { ProductGallery } from "../../components/Product/Details/ProductGallery";
 import { ProductInfo } from "../../components/Product/Details/ProductInfo";
@@ -20,7 +18,6 @@ import { Breadcrumbs } from "../../components/Layout/Breadcrumbs";
 
 import {
   getCategoryTranslation,
-  getTranslatedField,
 } from "../../utils/translations";
 
 export const ProductDetails: React.FC = () => {
@@ -64,7 +61,7 @@ export const ProductDetails: React.FC = () => {
       if (current) observer.unobserve(current);
       observer.disconnect();
     };
-  }, []);
+  }, [setShowStickyBuyBar]);
 
   useEffect(() => {
     const loadRecommendations = async () => {
@@ -121,7 +118,7 @@ export const ProductDetails: React.FC = () => {
 
   const selectedVariantObj = React.useMemo(() => {
     if (!product || !product.variants || !Array.isArray(product.variants)) return null;
-    return product.variants.find((v: any) => v.name === calculatedVariantKey) || null;
+    return product.variants.find((v: ProductVariant) => v.name === calculatedVariantKey) || null;
   }, [product, calculatedVariantKey]);
 
   const isCurrentSelectionOutOfStock = React.useMemo(() => {
@@ -148,24 +145,24 @@ export const ProductDetails: React.FC = () => {
     if (!product || !product.variants || !Array.isArray(product.variants) || product.variants.length === 0) {
       return false;
     }
-    const matchingVariants = product.variants.filter((v: any) => {
+    const matchingVariants = product.variants.filter((v: ProductVariant) => {
       const parts = v.name.split(" - ");
       return parts[0]?.toUpperCase() === c.toUpperCase();
     });
     if (matchingVariants.length === 0) return false;
-    return matchingVariants.every((v: any) => (parseInt(v.stock) || 0) <= 0);
+    return matchingVariants.every((v: ProductVariant) => (Number(v.stock) || 0) <= 0);
   }, [product]);
 
   const isSizeOutOfStock = React.useCallback((s: string) => {
     if (!product || !product.variants || !Array.isArray(product.variants) || product.variants.length === 0) {
       return false;
     }
-    const matchingVariants = product.variants.filter((v: any) => {
+    const matchingVariants = product.variants.filter((v: ProductVariant) => {
       const parts = v.name.split(" - ");
       return parts[1]?.toUpperCase() === s.toUpperCase() || parts[0]?.toUpperCase() === s.toUpperCase();
     });
     if (matchingVariants.length === 0) return false;
-    return matchingVariants.every((v: any) => (parseInt(v.stock) || 0) <= 0);
+    return matchingVariants.every((v: ProductVariant) => (Number(v.stock) || 0) <= 0);
   }, [product]);
 
   const handleAddToCart = async () => {
@@ -201,7 +198,7 @@ export const ProductDetails: React.FC = () => {
   const handleShare = async () => {
     try {
       if (product) await navigator.share({ title: product.name, url: window.location.href });
-    } catch (e) {
+    } catch {
       navigator.clipboard.writeText(window.location.href);
       toast.success(t("product.link_copied") || "Lien copié !");
     }

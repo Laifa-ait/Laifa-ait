@@ -5,20 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { 
   X, 
   CheckCircle, 
-  ShoppingBag, 
   Pin, 
   Star, 
   Plus, 
   Sparkles,
-  Award,
-  ShieldCheck,
-  Truck,
-  Check,
-  ArrowRight
 } from 'lucide-react';
 import { Product } from '../../domains/product/product.types';
 import { formatPrice } from '../../utils/format';
-import { useCart } from '../../context/CartContext';
 
 interface ComparatorTableProps {
   products: Product[];
@@ -28,7 +21,7 @@ interface ComparatorTableProps {
   onOpenAddModal: () => void;
   showOnlyDifferences: boolean;
   specFilter: string;
-  selectedCategory: string;
+  selectedCategory?: string;
   viewMode?: 'matrix' | 'cards';
 }
 
@@ -40,12 +33,11 @@ export const ComparatorTable: React.FC<ComparatorTableProps> = ({
   onOpenAddModal,
   showOnlyDifferences,
   specFilter,
-  selectedCategory,
+  selectedCategory: _selectedCategory,
   viewMode = 'matrix',
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   if (products.length === 0) return null;
 

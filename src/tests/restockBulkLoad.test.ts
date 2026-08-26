@@ -1,13 +1,19 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { Product, ProductVariant } from "../domains/product/product.types";
 
 interface FirestoreProduct extends Partial<Product> {
   hasOutOfStockVariants?: boolean;
 }
 
+interface OrderItem {
+  id: string;
+  quantity: number;
+  selectedVariant?: string;
+}
+
 // Mimics the exact business logic inside OrderStatusController.ts
 function runRestockLogic(
-  orderData: { items: any[]; restocked?: boolean },
+  orderData: { items: OrderItem[]; restocked?: boolean },
   productDatabase: Map<string, FirestoreProduct>
 ) {
   // 9. Already restocked check

@@ -11,6 +11,31 @@ import { useTranslation } from "react-i18next";
 import { CategoryHistorySection } from "./CategoryHistorySection";
 import { CategoryItemRow } from "./CategoryItemRow";
 
+interface CategoriesTabProps {
+  hierarchy: unknown[];
+  expandedCats: Record<string, boolean>;
+  setExpandedCats: (cats: Record<string, boolean>) => void;
+  expandedSubs: Record<string, boolean>;
+  setExpandedSubs: (subs: Record<string, boolean>) => void;
+  newCatName: string;
+  setNewCatName: (name: string) => void;
+  newSubcatNames: Record<string, string>;
+  setNewSubcatNames: (names: Record<string, string>) => void;
+  newSubSubcatNames: Record<string, string>;
+  setNewSubSubcatNames: (names: Record<string, string>) => void;
+  handleAddCategory: () => void;
+  handleAddSubcategory: (catName: string) => void;
+  handleAddSubSubcategory: (catName: string, subcatName: string) => void;
+  handleRemoveCategory: (catName: string) => void;
+  handleRemoveSubcategory: (catName: string, subcatName: string) => void;
+  handleRemoveSubSubcategory: (catName: string, subcatName: string, subSubcatName: string) => void;
+  startTranslateWorkflow: (catName: string, subcatName?: string, subSubcatName?: string) => void;
+  handleResetToDefault: () => void;
+  historyLogs: unknown[];
+  historyLoading: boolean;
+  handleRollback: (logId: string) => void;
+}
+
 export const CategoriesTab = ({
   hierarchy,
   expandedCats,
@@ -34,7 +59,7 @@ export const CategoriesTab = ({
   historyLogs,
   historyLoading,
   handleRollback,
-}: Record<string, any>) => {
+}: CategoriesTabProps) => {
   const { t } = useTranslation();
 
   const toggleCat = (catName: string) => {

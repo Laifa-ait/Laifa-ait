@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, MousePointerClick, TrendingUp, ShoppingBag, Coins, Zap } from "lucide-react";
+import { Eye, MousePointerClick, TrendingUp, ShoppingBag } from "lucide-react";
 import { getOptimizedImageUrl } from "../../../utils/imageUtils";
 import { SponsorshipRequest } from "../../../domains/seller/sponsorship.types";
 
@@ -34,7 +34,6 @@ export const SponsorshipHistoryList: React.FC<SponsorshipHistoryListProps> = ({ 
           const impressions = req.impressionsCount || 0;
           const clicks = req.clicksCount || 0;
           const sales = req.salesCount || 0;
-          const revenue = req.revenueGenerated || 0;
           const ctr = req.ctr ?? (impressions > 0 ? Math.round((clicks / impressions) * 1000) / 10 : 0);
 
           const tierBadge = req.tier === "gold" ? "bg-amber-500 text-zinc-950 font-black" :

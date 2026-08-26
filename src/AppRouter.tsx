@@ -133,11 +133,6 @@ const SponsorshipsAdmin = React.lazy(() =>
     default: module.SponsorshipsAdmin,
   }))
 );
-const Finances = React.lazy(() =>
-  import("./pages/Admin/Finances").then((module) => ({
-    default: module.Finances,
-  }))
-);
 const DBSeedAdmin = React.lazy(() =>
   import("./pages/Admin/DBSeedAdmin").then((module) => ({
     default: module.DBSeedAdmin,
@@ -747,7 +742,6 @@ export const AppRouter: React.FC = () => {
                 <Route path="sponsorships" element={<SponsorshipsAdmin />} />
                 <Route path="seed" element={<DBSeedAdmin />} />
                 <Route path="disputes" element={<DisputeManagement />} />
-                <Route path="finances" element={<Finances />} />
                 <Route path="marketing" element={<Marketing />} />
                 <Route path="newsletter" element={<Newsletter />} />
                 <Route path="megamenu" element={<MegaMenuSettings />} />

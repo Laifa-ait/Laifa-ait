@@ -193,7 +193,7 @@ export const TranslationDictionaryTab: React.FC<TranslationDictionaryTabProps> =
             return (
               <button
                 key={pill.id}
-                onClick={() => setStatusFilter(pill.id as any)}
+                onClick={() => setStatusFilter(pill.id as typeof statusFilter)}
                 className={`px-4 py-2.5 border rounded-xl text-[10px] font-black uppercase tracking-wider rtl:tracking-normal transition-all duration-200 flex items-center gap-2 cursor-pointer ${
                   isActive
                     ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'

@@ -11,13 +11,11 @@ import { CheckoutSummarySidebar } from "./Checkout/components/CheckoutSummarySid
 import { CheckoutSuccess } from "./Checkout/components/CheckoutSuccess";
 
 import { useCheckout } from "./Checkout/hooks/useCheckout";
-import { getCommunes } from "./Checkout/utils/checkoutHelpers";
 
 export const Checkout: React.FC = () => {
   const {
     navigate,
     t,
-    filterSellerId,
     activeCart,
     currentUser,
     userProfile,

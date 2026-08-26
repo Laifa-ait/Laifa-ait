@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
-import { Headphones, Package, Heart, LogOut, ChevronRight, Settings, ShoppingBag, Clock, ShieldCheck, ArrowLeft, Store, MapPin, Sparkles, RotateCcw, Star } from 'lucide-react';
+import { Headphones, Package, Heart, LogOut, ChevronRight, Settings, ShoppingBag, Clock, ShieldCheck, Store, Sparkles, RotateCcw, Star } from 'lucide-react';
 import { BuyerSupport } from './BuyerSupport';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -25,13 +24,13 @@ export interface BuyerOrder {
   userId: string;
   total: number;
   status: string;
-  createdAt: any;
+  createdAt: AppTimestamp;
   items: Array<{ name: string; quantity: number; price: number; image?: string }>;
   shippingAddress?: { wilaya: string; communes?: string; commune?: string };
   unreadBuyerMessages?: boolean;
   unreadSellerMessages?: boolean;
   lastMessageText?: string;
-  lastMessageAt?: any;
+  lastMessageAt?: AppTimestamp;
 }
 
 export const BuyerDashboard: React.FC = () => {

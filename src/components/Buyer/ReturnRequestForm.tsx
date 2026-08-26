@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion } from "motion/react";
-import { Camera, AlertCircle, X, Check, Loader2, Trash2 } from "lucide-react";
+import { Camera, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { storage } from "../../lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -107,7 +107,9 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
       });
       toast.success("Demande de retour envoyée avec succès.");
       onClose();
-    } catch (e) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("Return request submission error:", msg);
       toast.error("Erreur lors de l'envoi.");
     } finally {
       setLoading(false);

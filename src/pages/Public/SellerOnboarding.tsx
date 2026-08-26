@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { apiPost } from '../../lib/api';
 
 export const SellerOnboarding: React.FC = () => {
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -39,9 +39,10 @@ export const SellerOnboarding: React.FC = () => {
       });
       toast.success(t("Bienvenue sur votre espace vendeur !"));
       navigate('/dashboard/seller');
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error(t("Erreur lors de la finalisation."));
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      toast.error(errorMsg || t("Erreur lors de la finalisation."));
     } finally {
       setLoading(false);
     }

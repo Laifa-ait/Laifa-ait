@@ -29,7 +29,7 @@ export interface AgentMessage {
 }
 
 export const useTranslationAdmin = () => {
-  const { i18n, t } = useTranslation();
+  const { i18n } = useTranslation();
   const [auditState, setAuditState] = useState<AuditState>({
     static: { ar: 0, en: 0, total: 0 },
     products: { ar: 0, en: 0, total: 0 },
@@ -80,22 +80,22 @@ export const useTranslationAdmin = () => {
     setIsLoading(false);
     try {
       const ts = Date.now();
-      const [fr, ar, en] = await Promise.all([
+      const [fr, ar, en] = (await Promise.all([
         fetch(`/locales/fr.json?v=${ts}`).then((r) => r.json()).catch(() => ({})),
         fetch(`/locales/ar.json?v=${ts}`).then((r) => r.json()).catch(() => ({})),
         fetch(`/locales/en.json?v=${ts}`).then((r) => r.json()).catch(() => ({})),
-      ]);
+      ])) as [Record<string, string>, Record<string, string>, Record<string, string>];
 
       const frKeys = Object.keys(fr);
       const totalKeys = frKeys.length;
 
       const isMissingAr = (k: string) => {
-        const val = (ar as any)[k];
-        return !val || typeof val !== 'string' || val === '' || val === (fr as any)[k] || val.endsWith(' (AR)');
+        const val = ar[k];
+        return !val || val === '' || val === fr[k] || val.endsWith(' (AR)');
       };
       const isMissingEn = (k: string) => {
-        const val = (en as any)[k];
-        return !val || typeof val !== 'string' || val === '' || val === (fr as any)[k] || val.endsWith(' (EN)');
+        const val = en[k];
+        return !val || val === '' || val === fr[k] || val.endsWith(' (EN)');
       };
 
       const arMissing = frKeys.filter(isMissingAr).length;
@@ -125,7 +125,7 @@ export const useTranslationAdmin = () => {
 
       const monthlySnap = await getDocs(query(collection(db, 'site_content_monthly'), limit(20)));
       setMonthlyContent(monthlySnap.docs.map((d) => ({ id: d.id, ...d.data() } as MonthlyItem)));
-    } catch (error) {
+    } catch {
       console.error('Audit fail:', error);
     } finally {
       setIsLoading(false);
@@ -328,8 +328,11 @@ export const useTranslationAdmin = () => {
                   sub.subSubCategories.forEach((subSub: unknown) => {
                     if (typeof subSub === 'string') {
                       clientKeys.add(subSub.trim());
-                    } else if (subSub && (subSub as any).name) {
-                      clientKeys.add((subSub as any).name.trim());
+                    } else if (subSub && typeof subSub === 'object' && 'name' in subSub) {
+                      const name = (subSub as { name: string }).name;
+                      if (typeof name === 'string') {
+                        clientKeys.add(name.trim());
+                      }
                     }
                   });
                 }
@@ -568,7 +571,7 @@ export const useTranslationAdmin = () => {
       }
       toast.success(`${count} produits traduits avec succès !`, { id: toastId });
       runAudit();
-    } catch (error) {
+    } catch {
       console.error('Critical error in auto translate products:', error);
       toast.error('Erreur durant la traduction.', { id: toastId });
     } finally {
@@ -609,7 +612,7 @@ export const useTranslationAdmin = () => {
       toast.success('Contenu mensuel enregistré et traduit !', { id: toastId });
       setNewMonthlyText('');
       runAudit();
-    } catch (error) {
+    } catch {
       try {
         const month = new Date().toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
         const user = auth.currentUser;
@@ -635,7 +638,7 @@ export const useTranslationAdmin = () => {
         toast.success('Contenu mensuel ajouté !', { id: toastId });
         setNewMonthlyText('');
         runAudit();
-      } catch (e) {
+      } catch {
         toast.error("Échec de l'enregistrement.", { id: toastId });
       }
     }
@@ -696,7 +699,7 @@ export const useTranslationAdmin = () => {
         ]);
         setIsAgentTyping(false);
       }, 300);
-    } catch (error) {
+    } catch {
       setTimeout(() => {
         const dict: Record<string, string> = {
           boutique: 'متجر',

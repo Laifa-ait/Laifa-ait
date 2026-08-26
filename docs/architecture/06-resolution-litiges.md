@@ -56,12 +56,10 @@ sequenceDiagram
     API-->>Front: { success: true }
 ```
 
-## Note sur l'Architecture Financière (Portefeuille/Wallet)
+## Note sur l'Architecture Financière (Virements & Reversements)
 
-**Optimisation & Limites de Scalabilité :**
-Le diagramme mentionne un ajustement (optionnel) du solde du vendeur lors de la résolution du litige. Si la logique financière du portefeuille devient complexe (frais de plateforme, calculs de TVA, retenues), l'intégration de ces mises à jour dans la même transaction Firestore que la commande et le litige peut créer des goulots d'étranglement. 
+**Optimisation & Flux de Clôture :**
+Le diagramme modélise l'ajustement du statut de la commande lors de la résolution du litige. Pour les reversements marchands et les indemnisations éventuelles, la comptabilisation s'effectue directement sur le grand-livre de facturation de la commande sans dépendance à un solde électronique intermédiaire.
 
-Firestore a une limite stricte d'environ **1 écriture par seconde par document**. Pour des volumes importants, il est fortement recommandé de **désynchroniser** les calculs financiers.
-
-**Évolution recommandée (Dette Technique) :**
-Au lieu de mettre à jour le solde (Wallet) dans la transaction principale, l'API devrait déclencher un événement asynchrone (via **Google Cloud Pub/Sub** ou **Cloud Tasks**). Un worker ou une Cloud Function dédiée consommerait cet événement pour traiter les ajustements financiers de manière isolée et résiliente (avec un mécanisme de retry), protégeant ainsi le flux critique de résolution de litiges des limites d'écriture de Firestore.
+**Évolution recommandée :**
+Les événements financiers de clôture de litige émettent des notifications administratives permettant le traitement des flux de régularisation bancaire/CCP en toute conformité.

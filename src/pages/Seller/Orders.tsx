@@ -10,7 +10,6 @@ import { OrderDetailsDrawer } from "./components/orders/OrderDetailsDrawer";
 export const Orders: React.FC = () => {
   const {
     currentUser,
-    userProfile,
     commissionRate,
     orders,
     searchTerm,

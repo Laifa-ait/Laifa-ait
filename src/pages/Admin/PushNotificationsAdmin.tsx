@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BellRing, Send, Users, Smartphone } from 'lucide-react';
+import { BellRing, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 

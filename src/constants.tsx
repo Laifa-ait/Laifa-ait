@@ -31,7 +31,7 @@ const LipstickIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const PantsIcon = ({ className }: { className?: string }) => (
+export const PantsIcon = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
@@ -491,7 +491,7 @@ export const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: st
   "Scolaire & Bureau": BookOpen,
 };
 
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; activeBg: string; activeText: string }> = {
+export const CATEGORY_COLORS: Record<string, { bg: string; text: string; activeBg: string; activeText: string }> = {
   Tous: {
     bg: "bg-zinc-100",
     text: "text-zinc-700",
@@ -572,7 +572,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; activeBg: stri
   },
 };
 
-const CATEGORY_IMAGES: Record<string, string> = {
+export const CATEGORY_IMAGES: Record<string, string> = {
   Tous: "/images/placeholders/product.svg",
   "Maison & Déco": "/images/placeholders/product.svg",
   Électronique: "/images/placeholders/product.svg",
@@ -725,7 +725,7 @@ function cleanString(str: string): string {
     .trim();
 }
 
-function getProductSearchScore(product: Product, queryStr: string, lang: Language): number {
+export function getProductSearchScore(product: Product, queryStr: string, lang: Language): number {
   if (!queryStr) return 0;
 
   const query = cleanString(queryStr);

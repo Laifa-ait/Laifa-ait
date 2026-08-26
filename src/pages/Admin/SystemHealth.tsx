@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, Database, ShieldAlert, Cpu, HardDrive, Wifi, AlertTriangle } from 'lucide-react';
+import { Activity, Server, Database, ShieldAlert, Wifi, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const SystemHealth: React.FC = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     status: 'operational', // 'operational', 'degraded', 'outage'
     uptime: 100,
@@ -24,7 +23,6 @@ export const SystemHealth: React.FC = () => {
     const fetchLiveMetrics = async () => {
       const start = Date.now();
       try {
-        setLoading(true);
         const response = await fetch("/api/v1/health");
         const ping = Date.now() - start;
         if (response.ok) {
@@ -51,8 +49,6 @@ export const SystemHealth: React.FC = () => {
         }
       } catch (err) {
         console.error("Failed to load real-time system metrics", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchLiveMetrics();

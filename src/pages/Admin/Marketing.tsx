@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { PRODUCT_HIERARCHY } from "../../constants";
 import { db } from "../../lib/firebase";
 import { collection, query, orderBy, onSnapshot, doc, limit } from "firebase/firestore";
-import { useAuth } from "../../context/AuthContext";
-import { useMarketingData } from "../../hooks/useMarketingData";
-import { CategoriesTab } from "./Marketing/CategoriesTab";
-import { FeaturedTab } from "./Marketing/FeaturedTab";
 import { Tag, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Marketing: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
-  const { saveCategoryHierarchy, logAudit } = useMarketingData();
   const [activeTab, setActiveTab] = useState<"categories" | "featured">("categories");
 
   // Real-time hierarchy state with local persistence
@@ -35,11 +29,11 @@ export const Marketing: React.FC = () => {
 
   // Translations
   const [showTranslateModal, setShowTranslateModal] = useState(false);
-  const [translateTerms, setTranslateTerms] = useState<string[]>([]);
+  const translateTerms: string[] = [];
   const [proposedTranslations, setProposedTranslations] = useState<Record<string, { ar: string; en: string; isNew: boolean }>>({});
-  const [loadingTranslations, setLoadingTranslations] = useState(false);
-  const [translationError, setTranslationError] = useState<string | null>(null);
-  const [savingTranslations, setSavingTranslations] = useState(false);
+  const loadingTranslations = false;
+  const translationError: string | null = null;
+  const savingTranslations = false;
 
   useEffect(() => {
     const unsubCat = onSnapshot(doc(db, "settings", "categories"), (snap) => {
@@ -57,14 +51,14 @@ export const Marketing: React.FC = () => {
     return () => unsubHistory();
   }, [activeTab]);
 
-  const runHierarchyTransaction = async (desc: string, fn: unknown) => {};
+  const runHierarchyTransaction = async (_desc: string, _fn: unknown) => {};
   const handleAddCategory = () => {}; 
-  const handleAddSubcategory = (cat: string) => {}; 
-  const handleAddSubSubcategory = (cat: string, sub: string) => {};
-  const handleRemoveCategory = (cat: string) => {};
-  const handleRemoveSubcategory = (cat: string, sub: string) => {};
-  const handleRemoveSubSubcategory = (cat: string, sub: string, subsub: string) => {};
-  const handleRollback = (log: unknown) => {};
+  const handleAddSubcategory = (_cat: string) => {}; 
+  const handleAddSubSubcategory = (_cat: string, _sub: string) => {};
+  const handleRemoveCategory = (_cat: string) => {};
+  const handleRemoveSubcategory = (_cat: string, _sub: string) => {};
+  const handleRemoveSubSubcategory = (_cat: string, _sub: string, _subsub: string) => {};
+  const handleRollback = (_log: unknown) => {};
   const handleEditTranslation = () => {};
   const handleApplyTranslations = () => {};
 

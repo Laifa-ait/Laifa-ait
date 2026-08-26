@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
-import { X, Calendar, DollarSign, CheckCircle2, ShieldCheck, ArrowRight, MessageSquare, Building2, Users } from 'lucide-react';
+import { X, CheckCircle2, ShieldCheck, ArrowRight, MessageSquare, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiPost } from '../../lib/api';
 import toast from 'react-hot-toast';
+
+interface BookingMessagingContext {
+  type: string;
+  recipientId?: string;
+  recipientName?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  [key: string]: unknown;
+}
 
 interface BookingRequestModalProps {
   isOpen: boolean;
@@ -22,7 +31,7 @@ interface BookingRequestModalProps {
     serviceFee: number;
     totalPriceDZD: number;
   };
-  onOpenMessaging?: (context: any) => void;
+  onOpenMessaging?: (context: BookingMessagingContext) => void;
 }
 
 export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({

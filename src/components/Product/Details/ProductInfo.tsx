@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   Star,
-  Info,
   Store,
-  MapPin,
   Truck,
-  ShieldCheck,
-  Tag,
   Sparkles,
-  CalendarDays,
   Layers,
-  Undo2,
-  Maximize2,
   FileText,
   Check,
   UserPlus,
@@ -91,7 +84,6 @@ export const ProductInfo: React.FC<InfoProps> = ({
   const [bilingualMode, setBilingualMode] = useState(false);
 
   const [openAccordion, setOpenAccordion] = useState<string | null>("description");
-  const [isDescExpanded, setIsDescExpanded] = useState(false);
   const isProductFlashActive = false;
 
   const toggleAccordion = (section: string) => {
@@ -600,6 +592,12 @@ export const ProductInfo: React.FC<InfoProps> = ({
                     <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
                       <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Marque")}</span>
                       <span className="text-[#2C2C28] font-bold">{product.brand}</span>
+                    </div>
+                  )}
+                  {product.season && (
+                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Saison")}</span>
+                      <span className="text-[#2C2C28] font-bold">{getTranslatedSeason()}</span>
                     </div>
                   )}
                   <div className="pt-2 text-[10px] text-stone-500 italic">

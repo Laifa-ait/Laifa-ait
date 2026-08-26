@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { ShoppingBag, ArrowLeft, Heart, Tag, Sparkles } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Tag } from 'lucide-react';
 import { ProductCard } from '../../components/Product/ProductCard';
 import { Product } from "../../domains/product/product.types";
 import { useTranslation } from 'react-i18next';

@@ -17,7 +17,7 @@ export const CheckoutDeliveryMethods: React.FC<CheckoutDeliveryMethodsProps> = (
   setDeliveryMethod,
   selectedAgency,
   setSelectedAgency,
-  wilaya,
+  wilaya: _wilaya,
   availableCenters,
 }) => {
   const { t } = useTranslation();

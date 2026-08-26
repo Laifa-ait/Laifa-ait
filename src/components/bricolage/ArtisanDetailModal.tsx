@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShieldCheck, MapPin, Phone, Star, Award, Clock, Wrench, CheckCircle2 } from 'lucide-react';
+import { X, ShieldCheck, Phone, Star, Wrench, CheckCircle2 } from 'lucide-react';
 import { VerifiedArtisan } from '../../types/bricolage';
 
 interface ArtisanDetailModalProps {

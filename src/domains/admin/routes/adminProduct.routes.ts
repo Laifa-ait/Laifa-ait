@@ -1,9 +1,8 @@
 import { Request, Response, Router } from "express";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../../middlewares/auth";
-import { ProductApprovalSchema, ProductRejectionSchema } from "../../../validators/adminValidators";
+import { ProductApprovalSchema } from "../../../validators/adminValidators";
 import { AdminProductService } from "../services/adminProduct.service";
 import * as admin from "firebase-admin";
-import { db } from "../../../lib/firebase";
 
 const router = Router();
 
@@ -51,6 +50,27 @@ router.delete("/tags/:id", authenticateToken, authorizeAdmin, async (req: Authen
   }
 });
 
+// ADMIN ONLY: List Products for Moderation
+router.get("/admin/products", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const status = (req.query.status as "pending" | "active" | "rejected" | "pending_deletion") || "pending";
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 25;
+    const startAfter = req.query.startAfter as string | undefined;
+    const category = req.query.category as string | undefined;
+
+    const result = await AdminProductService.listProducts({
+      status,
+      limit,
+      startAfter,
+      category,
+    });
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur serveur";
+    res.status(500).json({ error: message });
+  }
+});
+
 // Recalculate Product Quality Scores
 router.post("/admin/products/recalculate-scores", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -91,14 +111,21 @@ router.post("/admin/products/:id/approve", authenticateToken, authorizeAdmin, as
 
 // ADMIN ONLY: Reject Product
 router.post("/admin/products/:id/reject", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
-  const parsed = ProductRejectionSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message });
+  let rejectionReasons: string[] = [];
+  let comment: string | undefined = undefined;
+
+  if (Array.isArray(req.body.rejectionReasons) && req.body.rejectionReasons.length > 0) {
+    rejectionReasons = req.body.rejectionReasons;
+    comment = req.body.comment;
+  } else if (typeof req.body.reason === "string" && req.body.reason.trim().length > 0) {
+    rejectionReasons = [req.body.reason.trim()];
+    comment = req.body.comment || req.body.reason.trim();
+  } else {
+    return res.status(400).json({ error: "Au moins une raison de rejet est requise" });
   }
 
   const productId = req.params.id;
   const adminId = req.user?.uid || "";
-  const { rejectionReasons, comment } = parsed.data;
 
   try {
     const result = await AdminProductService.rejectProduct({
@@ -107,6 +134,40 @@ router.post("/admin/products/:id/reject", authenticateToken, authorizeAdmin, asy
       rejectionReasons,
       comment,
     });
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur serveur";
+    if (message === "Produit non trouvé") {
+      return res.status(404).json({ error: "Produit non trouvé" });
+    }
+    res.status(500).json({ error: message });
+  }
+});
+
+// ADMIN ONLY: Soft Delete Product
+router.post("/admin/products/:id/delete", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const productId = req.params.id;
+  const adminId = req.user?.uid || "";
+
+  try {
+    const result = await AdminProductService.deleteProduct({ productId, adminId });
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur serveur";
+    if (message === "Produit non trouvé") {
+      return res.status(404).json({ error: "Produit non trouvé" });
+    }
+    res.status(500).json({ error: message });
+  }
+});
+
+// ADMIN ONLY: Deny Delete Request (Restore/Keep Product Active)
+router.post("/admin/products/:id/deny-delete", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const productId = req.params.id;
+  const adminId = req.user?.uid || "";
+
+  try {
+    const result = await AdminProductService.denyDeleteProduct({ productId, adminId });
     res.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur serveur";

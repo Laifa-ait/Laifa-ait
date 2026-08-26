@@ -4,15 +4,20 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+interface ProductComment {
+  id?: string;
+  stars?: number;
+  rating?: number;
+  comment?: string;
+  text?: string;
+  userName?: string;
+  name?: string;
+  createdAt?: string | number | Date | { seconds: number; nanoseconds?: number; toDate?: () => Date };
+  [key: string]: unknown;
+}
+
 interface ReviewsProps {
-  comments: {
-    id?: string;
-    rating?: number;
-    comment?: string;
-    userName?: string;
-    createdAt?: any;
-    [key: string]: any;
-  }[];
+  comments: ProductComment[];
   stats?: {
     reviewCount: number;
     averageRating: number;
@@ -51,7 +56,7 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
       };
     }
     if (comments.length > 0) {
-      const sum = comments.reduce((acc, c) => acc + c.stars, 0);
+      const sum = comments.reduce((acc, c) => acc + (c.stars ?? c.rating ?? 0), 0);
       return {
         average: sum / comments.length,
         count: comments.length,
@@ -63,7 +68,7 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
   const starDistribution = useMemo(() => {
     const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     comments.forEach(c => {
-       const s = Math.round(c.stars);
+       const s = Math.round(c.stars ?? c.rating ?? 0);
        if (s >= 1 && s <= 5) {
           dist[s as keyof typeof dist]++;
        }
@@ -73,7 +78,7 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
 
   const filteredComments = useMemo(() => {
     if (!filterStar) return comments;
-    return comments.filter(c => Math.round(c.stars) === filterStar);
+    return comments.filter(c => Math.round(c.stars ?? c.rating ?? 0) === filterStar);
   }, [comments, filterStar]);
 
   const renderStars = (rating: number, size = "w-4 h-4") => {
@@ -189,10 +194,10 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
                 </div>
                 
                 <div className="mb-3">
-                  {renderStars(c.stars)}
+                  {renderStars(c.stars ?? c.rating ?? 5)}
                 </div>
                 
-                <p className="text-gray-800 text-sm leading-relaxed mb-4">{c.text}</p>
+                <p className="text-gray-800 text-sm leading-relaxed mb-4">{c.text || c.comment || ""}</p>
                 
                 <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
                   <button className="flex items-center gap-1.5 hover:text-gray-900 transition-colors">

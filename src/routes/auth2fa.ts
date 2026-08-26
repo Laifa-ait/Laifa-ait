@@ -49,19 +49,9 @@ router.post(
     const { code } = req.body;
     const userId = req.user.uid;
 
-    // Mode dév: autoriser le code de test fixe
-    if (process.env.NODE_ENV !== "production" && code === "123456") {
-      try {
-        const userRef = db.collection("users").doc(userId);
-        await userRef.update({
-          "verification.verified": true,
-          "verification.verifiedAt": admin.firestore.Timestamp.fromMillis(Date.now()),
-        });
-        return res.json({ success: true });
-      } catch (error: unknown) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        return res.status(500).json({ error: errorMsg });
-      }
+    // Validation stricte du code reçu
+    if (!code || typeof code !== "string" || !/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: "Code requis et doit être un format de 6 chiffres." });
     }
 
     try {
@@ -69,10 +59,17 @@ router.post(
       const userDoc = await userRef.get();
       const userData = userDoc.data();
 
+      const verification = userData?.verification;
+      const dbCode = verification?.code;
+      const dbExpiresAt = verification?.expiresAt;
+
+      if (!verification || !dbCode || !dbExpiresAt) {
+        return res.status(403).json({ error: "Aucun code de vérification actif pour cet utilisateur." });
+      }
+
       if (
-        !userData?.verification ||
-        userData.verification.code !== code ||
-        userData.verification.expiresAt.toMillis() < Date.now()
+        dbCode !== code ||
+        dbExpiresAt.toMillis() < Date.now()
       ) {
         return res.status(403).json({ error: "Code invalide ou expiré" });
       }

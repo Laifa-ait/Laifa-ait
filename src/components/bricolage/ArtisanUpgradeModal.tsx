@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, HardHat, Send, CheckCircle2, ShieldCheck, Sparkles, User, AlertCircle } from 'lucide-react';
+import { X, HardHat, CheckCircle2, Sparkles, User, AlertCircle } from 'lucide-react';
 import { upgradeToArtisanProfile } from '../../services/bricolage.api';
 import { ActiveArtisanProfile } from '../../types/bricolage';
 import { useAuth } from '../../context/AuthContext';
@@ -34,7 +34,6 @@ export const ArtisanUpgradeModal: React.FC<ArtisanUpgradeModalProps> = ({
   const [fullName, setFullName] = useState(userProfile?.displayName || currentUser?.displayName || '');
   const [specialty, setSpecialty] = useState('Plomberie & Chauffage');
   const [wilaya, setWilaya] = useState(userProfile?.wilaya || '16 - Alger');
-  const [commune, setCommune] = useState('');
   const [phone, setPhone] = useState(userProfile?.phone || '');
   const [registryNumber, setRegistryNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState(5);

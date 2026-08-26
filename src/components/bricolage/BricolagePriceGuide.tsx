@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tag, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Tag, CheckCircle2 } from 'lucide-react';
 
 const PRICE_ITEMS = [
   { service: "Recharge Gaz Climatiseur R410a / R32", avgPrice: "4 500 - 7 000 DA", time: "1h00", guarantee: "Garantie 6 mois" },

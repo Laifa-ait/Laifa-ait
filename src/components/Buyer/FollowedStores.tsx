@@ -3,21 +3,17 @@ import {
   Store,
   UserCheck,
   Search,
-  ArrowRight,
   UserMinus,
   Sparkles,
   MapPin,
   Package,
-  Heart,
   RefreshCw,
-  Star,
   ArrowUpRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../../lib/api";
 import { toast } from "react-hot-toast";
 import { ConfirmModal } from "../ui/ConfirmModal";
-import { motion, AnimatePresence } from "motion/react";
 import { ALGERIA_WILAYAS } from "../../constants";
 import { useTranslation } from "react-i18next";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";

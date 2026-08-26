@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 interface OwnerHeaderStatsProps {
   propertiesCount: number;
-  totalViews: number;
+  totalViews?: number;
   visitsCount: number;
   bookingsCount: number;
   totalRevenueDZD: number;
@@ -12,7 +12,7 @@ interface OwnerHeaderStatsProps {
 
 export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
   propertiesCount,
-  totalViews,
+  totalViews: _totalViews,
   visitsCount,
   bookingsCount,
   totalRevenueDZD,

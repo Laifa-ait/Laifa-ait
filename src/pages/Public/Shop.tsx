@@ -1,33 +1,28 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, SlidersHorizontal, SearchX, Grid, List, ChevronDown, MapPin, X, MessageCircle, Sparkles, Truck, Star, ArrowDown } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, SlidersHorizontal, Grid, List, ChevronDown, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
 import { ProductCard } from '../../components/Product/ProductCard';
 import { ProductListCard } from '../../components/Product/ProductListCard';
-import { ALGERIA_WILAYAS, CATEGORY_ICONS } from '../../constants';
+import { CATEGORY_ICONS } from '../../constants';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-hot-toast';
 import { Product } from "../../domains/product/product.types";
 import { normalizeTimestamp } from '../../utils/date';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useQuery } from '@tanstack/react-query';
-import { handleDevQuotaLogger } from '../../utils/mockProducts';
 import { getCategoryTranslation } from '../../utils/translations';
-import { withExponentialBackoff } from '../../utils/retry';
 
 // ... (keep necessary imports)
 import { analyticsEngine } from '../../utils/analyticsEngine';
 import { useFacetedFilters } from '../../hooks/useFacetedFilters';
 import { DynamicFilterPanel } from '../../components/Shop/DynamicFilterPanel';
 import { Helmet } from 'react-helmet-async';
-import { UniversalFilterBar } from '../../components/Shop/UniversalFilterBar';
 import { useUI } from '../../context/UIContext';
 import { Breadcrumbs } from '../../components/Layout/Breadcrumbs';
 
 export const Shop: React.FC = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setIsSearchOpen } = useUI();
@@ -202,8 +197,13 @@ export const Shop: React.FC = () => {
         const response = await fetch(`/api/v1/search?q=${encodeURIComponent(debouncedSearch)}`, { signal });
         const data = await response.json();
         setSearchResults(data.products || []);
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err) {
+        if (err instanceof Error) {
+          if (err.name !== "AbortError") {
+            console.error("Search fetch error", err);
+            setSearchResults([]);
+          }
+        } else {
           console.error("Search fetch error", err);
           setSearchResults([]);
         }
@@ -576,7 +576,7 @@ export const Shop: React.FC = () => {
                   <p className="text-zinc-500 max-w-md font-medium">
                      {t('filters_not_applicable_desc', 'Nous rencontrons des difficultés à appliquer ces filtres précis (Index manquant). Le reste du catalogue est accessible.')}
                   </p>
-                  {(import.meta as any).env?.DEV && queryError.indexLink && (
+                  {import.meta.env?.DEV && queryError.indexLink && (
                     <div className="mt-4 p-5 bg-orange-50 border border-orange-200 rounded-xl text-left w-full max-w-lg">
                       <p className="text-xs font-bold text-orange-800 mb-2 uppercase tracking-wide">{t("⚠️ Action Requise (Dev Only)")}</p>
                       <p className="text-sm text-orange-900 mb-4">{t("Un index composite Firestore est requis pour cette combinaison de filtres et de tris.")}</p>

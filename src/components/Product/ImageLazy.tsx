@@ -14,8 +14,8 @@ export const ImageLazy: React.FC<ImageLazyProps> = ({
   src,
   alt = "",
   className = "",
-  rootMargin,
-  threshold,
+  rootMargin: _rootMargin,
+  threshold: _threshold,
   ...props
 }) => {
   const [loading, setLoading] = useState(true);
@@ -25,6 +25,17 @@ export const ImageLazy: React.FC<ImageLazyProps> = ({
   
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleImageError = React.useCallback(() => {
+    if (!hasTriedFallback && src && currentSrc !== src) {
+      setCurrentSrc(src);
+      setHasTriedFallback(true);
+      setLoading(true);
+    } else {
+      setLoading(false);
+      setError(true);
+    }
+  }, [hasTriedFallback, src, currentSrc]);
 
   // 2. Détecter le support WebP et configurer l'URL de l'image
   useEffect(() => {

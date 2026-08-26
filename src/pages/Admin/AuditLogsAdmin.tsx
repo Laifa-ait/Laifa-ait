@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { apiGet } from "../../lib/api";
-import { ShieldCheck, Clock, User, Activity } from "lucide-react";
-import { motion } from "motion/react";
+import { Clock, User, Activity } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "../../components/ui/Admin/AdminPageHeader";
 import { AdminDataTable } from "../../components/ui/Admin/AdminDataTable";

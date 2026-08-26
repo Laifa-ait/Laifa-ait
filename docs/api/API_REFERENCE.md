@@ -174,7 +174,7 @@ Pour se prémunir des injections de données et garantir l'intégrité logistiqu
 ### 2.3 Commandes & Logistique (`/api/v1/orders`)
 
 #### `POST /api/v1/orders/checkout`
-*   **Description :** Initie une transaction ACID pour débiter les avoirs de l'acheteur, valider les stocks et sécuriser la commande en séquestre (Escrow).
+*   **Description :** Initie une transaction ACID pour valider les stocks physiques et enregistrer la commande Cash-on-Delivery (COD).
 *   **Permissions :** Acheteur connecté (`role === "buyer"`).
 *   **Payload (JSON) :**
     ```json
@@ -185,8 +185,7 @@ Pour se prémunir des injections de données et garantir l'intégrité logistiqu
         "streetAddress": "34 Rue des Lions",
         "commune": "Oran",
         "wilayaCode": "31"
-      },
-      "useLoyaltyPoints": true
+      }
     }
     ```
 *   **Réponse de succès (200 OK) :**
@@ -195,15 +194,13 @@ Pour se prémunir des injections de données et garantir l'intégrité logistiqu
       "success": true,
       "data": {
         "orderId": "ord_2026_9817",
-        "amountDebitedFromWallet": 2000,
-        "amountRemainingCOD": 13300,
+        "totalAmountCOD": 15300,
         "status": "PAID_ESCROW"
       }
     }
     ```
 *   **Codes d'erreurs récurrents :**
     *   `INSUFFICIENT_STOCK` (HTTP 409)
-    *   `INSUFFICIENT_FUNDS_AND_COD_REFUSED` (HTTP 402)
 
 #### `POST /api/v1/orders/:orderId/returns`
 *   **Description :** Demande de retour (logistique inverse) pour non-conformité constatée.

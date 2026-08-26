@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Settings, MapPin, Save, Image as ImageIcon, Globe, Upload, ShieldCheck, KeyRound } from 'lucide-react';
+import { Save, Image as ImageIcon, Upload, ShieldCheck, KeyRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { apiPut } from '../../lib/api';
 import { ALGERIA_WILAYAS } from '../../constants';

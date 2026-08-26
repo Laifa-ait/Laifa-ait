@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiGet } from '../../lib/api';
 import { formatPrice } from '../../utils/format';
 import { useTranslation } from "react-i18next";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface AnalyticsChartItem {
   name: string;

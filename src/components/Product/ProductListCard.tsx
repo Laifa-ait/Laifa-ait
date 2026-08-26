@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "motion/react";
 import { Heart, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +16,7 @@ interface ProductListCardProps {
 }
 
 export const ProductListCard = React.memo(
-  ({ product, index = 0, onClick }: ProductListCardProps) => {
+  ({ product, index: _index = 0, onClick }: ProductListCardProps) => {
     const { t, i18n } = useTranslation();
     const { wishlist, toggleWishlist } = useCart();
     const navigate = useNavigate();

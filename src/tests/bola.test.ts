@@ -1,26 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { authorizeAdmin, authorizeSeller } from "../middlewares/auth";
+import { authorizeAdmin, authorizeSeller, AuthenticatedRequest } from "../middlewares/auth";
 import { NextFunction, Response } from "express";
 
-describe("BOLA and RBAC Authorization Security Policies", () => {
-  let mockStatus: any;
-  let mockJson: any;
+describe("OLMART — BOLA and RBAC Authorization Security Policies", () => {
+  let mockStatus: ReturnType<typeof vi.fn>;
+  let mockJson: ReturnType<typeof vi.fn>;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
 
   beforeEach(() => {
     mockJson = vi.fn();
-    mockStatus = vi.fn().mockReturnValue({ json: mockJson });
+    mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
       status: mockStatus,
+      json: mockJson,
     };
     mockNext = vi.fn();
   });
 
   describe("authorizeAdmin Middleware Validation", () => {
     it("A. rejects unauthenticated user with 403 Forbidden", () => {
-      const mockReq: any = {};
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      const mockReq = {} as Partial<AuthenticatedRequest>;
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith(
@@ -30,14 +31,15 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("B. rejects buyer role with 403 Forbidden", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "buyer123",
-          email: "buyer@example.com",
+          email: "client.buyer@olmart.dz",
           role: "buyer",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith(
@@ -47,14 +49,15 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("C. rejects seller role with 403 Forbidden", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "seller123",
-          email: "seller@example.com",
+          email: "seller.standard@olmart.dz",
           role: "seller",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith(
@@ -64,14 +67,14 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("D. rejects authenticated user with missing/invalid admin claims with 403 Forbidden", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "user123",
-          email: "user@example.com",
-          // no role or claims
+          email: "client.standard@olmart.dz",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith(
@@ -81,14 +84,15 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("E. allows authorized administrator through to the controller", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "admin123",
-          email: "admin@example.com",
+          email: "admin.manager@olmart.dz",
           role: "admin",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).not.toHaveBeenCalled();
       expect(mockJson).not.toHaveBeenCalled();
@@ -96,14 +100,15 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("F. allows authorized superadministrator through to the controller", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "superadmin123",
-          email: "super@example.com",
+          email: "admin.super@olmart.dz",
           role: "superadmin",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).not.toHaveBeenCalled();
       expect(mockJson).not.toHaveBeenCalled();
@@ -111,14 +116,15 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("G. rejects whitelisted admin email if role claim/database role is buyer/absent with 403 Forbidden", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "whitelisted123",
-          email: "laifa.ait@gmail.com",
+          email: "laifa.ait@olmart.dz",
           role: "buyer",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith(
@@ -128,19 +134,19 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
     });
 
     it("H. blocks privilege escalation via manipulation of req.body client properties", () => {
-      // Body-level role=admin or isAdmin=true must not be trusted
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "attacker123",
-          email: "attacker@example.com",
+          email: "security.attacker@olmart.dz",
           role: "buyer",
+          auth_time: Math.floor(Date.now() / 1000),
         },
         body: {
           role: "admin",
           isAdmin: true,
         },
       };
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockNext).not.toHaveBeenCalled();
@@ -149,42 +155,45 @@ describe("BOLA and RBAC Authorization Security Policies", () => {
 
   describe("authorizeSeller Middleware Validation", () => {
     it("rejects non-seller non-admin user with 403 Forbidden", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "buyer123",
-          email: "buyer@example.com",
+          email: "client.buyer@olmart.dz",
           role: "buyer",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeSeller(mockReq, mockRes as Response, mockNext);
+      authorizeSeller(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockNext).not.toHaveBeenCalled();
     });
 
     it("allows seller user through", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "seller123",
-          email: "seller@example.com",
+          email: "seller.standard@olmart.dz",
           role: "seller",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeSeller(mockReq, mockRes as Response, mockNext);
+      authorizeSeller(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).not.toHaveBeenCalled();
       expect(mockNext).toHaveBeenCalled();
     });
 
     it("allows admin user to access seller routes", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "admin123",
-          email: "admin@example.com",
+          email: "admin.manager@olmart.dz",
           role: "admin",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
-      authorizeSeller(mockReq, mockRes as Response, mockNext);
+      authorizeSeller(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).not.toHaveBeenCalled();
       expect(mockNext).toHaveBeenCalled();

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { checkSellerVelocityLimit } from '../utils/velocity';
-import { admin, db } from '../config/firebase-admin';
+import { db } from '../config/firebase-admin';
 
 vi.mock('../config/firebase-admin', () => {
   const updateMock = vi.fn();
@@ -25,7 +25,7 @@ vi.mock('../config/firebase-admin', () => {
         }
         if (col === 'orders') {
           return {
-            where: vi.fn((field, op, value) => {
+            where: vi.fn((field, _op, _value) => {
               return {
                 orderBy: vi.fn(() => ({
                   limit: vi.fn(() => ({
@@ -54,14 +54,14 @@ describe('Velocity Limits', () => {
     vi.clearAllMocks();
   });
 
-  const getDocMock = db.collection('users').doc('seller1').get as any;
-  const updateMock = db.collection('users').doc('seller1').update as any;
-  const addAlertMock = db.collection('admin_alerts').add as any;
+  const getDocMock = db.collection('users').doc('seller1').get as unknown as ReturnType<typeof vi.fn>;
+  const updateMock = db.collection('users').doc('seller1').update as unknown as ReturnType<typeof vi.fn>;
+  const addAlertMock = db.collection('admin_alerts').add as unknown as ReturnType<typeof vi.fn>;
   
   // Need to get the mocked `get` function for orders
-  const getOrdersMock = db.collection('orders').where('sellerIds', 'array-contains', 'seller1').orderBy('createdAt', 'desc').limit(300).get as any;
-  const getBuyerOrdersMock = db.collection('orders').where('userId', '==', 'buyer1').orderBy('createdAt', 'desc').limit(20).get as any;
-  const getBuyerMock = db.collection('users').doc('buyer1').get as any;
+  const getOrdersMock = db.collection('orders').where('sellerIds', 'array-contains', 'seller1').orderBy('createdAt', 'desc').limit(300).get as unknown as ReturnType<typeof vi.fn>;
+  const getBuyerOrdersMock = db.collection('orders').where('userId', '==', 'buyer1').orderBy('createdAt', 'desc').limit(20).get as unknown as ReturnType<typeof vi.fn>;
+  const getBuyerMock = db.collection('users').doc('buyer1').get as unknown as ReturnType<typeof vi.fn>;
 
   it('suspends seller when pending prepaid orders exceed 5', async () => {
     getDocMock.mockResolvedValue({

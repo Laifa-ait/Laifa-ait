@@ -15,10 +15,8 @@ import {
 import {
   ShieldCheck,
   XCircle,
-  Package,
   Image as ImageIcon,
   CheckCircle2,
-  ChevronRight,
   MessageSquareX,
   Edit2,
   Save,
@@ -26,21 +24,13 @@ import {
   Sparkles,
   CheckSquare,
   AlertTriangle,
-  Eye,
   Loader2,
-  ArrowRight,
-  RefreshCw,
   Layers,
-  Copy,
-  Trash2,
   Heart,
   MessageCircle,
-  ShoppingBag,
-  Send,
   X,
   Check,
   Info,
-  ChevronLeft,
   Truck
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -420,7 +410,7 @@ export const Curation: React.FC = () => {
 
       toast.success(t("Produit approuvé avec notifications transmises ! 🚀"), { id: toastId });
       await fetchPendingProducts();
-    } catch (error) {
+    } catch {
       toast.error(t("Erreur durant l'approbation du produit"), { id: toastId });
     } finally {
       setIsActionInProgress(false);
@@ -525,7 +515,7 @@ export const Curation: React.FC = () => {
       setIsRejecting(false);
       setRejectionReason("");
       await fetchPendingProducts();
-    } catch (error) {
+    } catch {
       toast.error(t("Erreur durant le traitement du refus"), { id: toastId });
     } finally {
       setIsActionInProgress(false);
@@ -594,7 +584,12 @@ export const Curation: React.FC = () => {
         </div>
 
         <div className="space-y-4 max-h-[60vh] lg:max-h-[70vh] overflow-y-auto pr-1">
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="bg-white rounded-3xl p-10 border border-zinc-100 flex flex-col items-center justify-center gap-3 text-zinc-400 font-bold text-xs">
+              <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+              <span>{t("Chargement des produits...")}</span>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="bg-white rounded-3xl p-10 border border-zinc-100 text-center text-zinc-400 font-bold text-xs">
               {t("Aucun produit en attente.")}
             </div>

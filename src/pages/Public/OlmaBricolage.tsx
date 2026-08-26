@@ -1,19 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Users,
-  MapPin,
-  Clock,
-  ArrowRight,
-  ShieldCheck,
-  Star,
-  HardHat,
-  PhoneCall,
-  Sparkles,
-  Wrench,
-  X,
-  User
-} from 'lucide-react';
+import { PhoneCall } from 'lucide-react';
 import {
   BricolageServiceCategory,
   VerifiedArtisan,
@@ -117,7 +104,6 @@ export function OlmaBricolage(): React.ReactElement {
   const [categories, setCategories] = useState<BricolageServiceCategory[]>([]);
   const [artisans, setArtisans] = useState<VerifiedArtisan[]>([]);
   const [reviews, setReviews] = useState<BricolageReview[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Unified Role & Mode setup
   const [activeRole, setActiveRole] = useState<'demandeur' | 'artisan'>('demandeur');
@@ -173,7 +159,6 @@ export function OlmaBricolage(): React.ReactElement {
 
   useEffect(() => {
     async function initData() {
-      setLoading(true);
       const [catData, artData, revData] = await Promise.all([
         fetchBricolageCategories(),
         fetchVerifiedArtisans(),
@@ -182,12 +167,11 @@ export function OlmaBricolage(): React.ReactElement {
       setCategories(catData);
       setArtisans(artData);
       setReviews(revData);
-      setLoading(false);
     }
     initData();
   }, []);
 
-  const loadOpportunities = async () => {
+  const loadOpportunities = useCallback(async () => {
     setLoadingOpportunities(true);
     setOpportunitiesError(null);
     setOpportunitiesHttpStatus(null);
@@ -211,13 +195,13 @@ export function OlmaBricolage(): React.ReactElement {
       setOpportunitiesHttpStatus(res.status || 500);
     }
     setLoadingOpportunities(false);
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     if (activeRole === 'artisan' || activeViewMode === 'artisan_dashboard') {
       loadOpportunities();
     }
-  }, [activeRole, activeViewMode, currentUser]);
+  }, [activeRole, activeViewMode, loadOpportunities]);
 
   const handleArtisanSubmitOffer = async (requestId: string, priceDZD: number, duration: string, notes: string) => {
     try {
@@ -235,8 +219,9 @@ export function OlmaBricolage(): React.ReactElement {
       } else {
         alert(res.message || 'Erreur lors de la transmission de la proposition.');
       }
-    } catch (e: any) {
-      alert(e?.message || 'Erreur lors de la transmission de la proposition.');
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      alert(errorMsg || 'Erreur lors de la transmission de la proposition.');
     }
   };
 

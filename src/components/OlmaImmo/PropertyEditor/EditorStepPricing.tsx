@@ -73,7 +73,7 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
             <label className="text-xs font-bold text-[#1a3831]">Périodicité</label>
             <select
               value={pricePeriod}
-              onChange={(e) => setPricePeriod(e.target.value as any)}
+              onChange={(e) => setPricePeriod(e.target.value as 'night' | 'month' | 'total')}
               className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-xs font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
             >
               {listingType === 'sale' && <option value="total">Prix Total (Vente)</option>}

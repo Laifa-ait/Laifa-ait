@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, Layers, CheckSquare, Square, Trash2 } from "lucide-react";
+import { Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, CheckSquare, Square } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { apiPost } from "../../lib/api";
 import { toast } from "react-hot-toast";

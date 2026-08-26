@@ -114,9 +114,6 @@ service cloud.firestore {
         (
           incoming().role in ['buyer', 'seller'] &&
           (incoming().role == 'seller' ? (incoming().get('status', 'pending_verification') == 'pending_verification' || incoming().get('status', 'pending') == 'pending') : incoming().get('status', 'active') == 'active') &&
-          (!('walletBalance' in incoming()) || incoming().walletBalance == 0) &&
-          (!('lockedBalance' in incoming()) || incoming().lockedBalance == 0) &&
-          (!('cashbackBalance' in incoming()) || incoming().cashbackBalance == 0) &&
           !('commissionRate' in incoming()) &&
           (!('isVerified' in incoming()) || incoming().isVerified == false) &&
           (!('trustScore' in incoming()) || incoming().trustScore == 50) &&
@@ -131,10 +128,6 @@ service cloud.firestore {
             'is2FAEnabled', 
             'verification', 
             'verifiedAt',
-            'balance', 
-            'walletBalance',
-            'lockedBalance',
-            'cashbackBalance',
             'trustScore', 
             'sellerTrustScore',
             'commissionRate',
@@ -212,12 +205,6 @@ service cloud.firestore {
     match /order_masters/{masterId} {
       allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid || isAdmin();
       // 🔴 SÉCURITÉ CRITIQUE : Création uniquement via Cloud Functions / API (processCheckout)
-      allow create: if false;
-      allow update, delete: if isAdmin();
-    }
-    match /wallet_transactions/{txId} {
-      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid || isAdmin();
-      // 🔴 SÉCURITÉ CRITIQUE : Création uniquement via Cloud Functions / API (processCheckout / Cancel)
       allow create: if false;
       allow update, delete: if isAdmin();
     }

@@ -64,10 +64,57 @@ router.post("/report", authenticateToken, async (req: AuthenticatedRequest, res:
   }
 });
 
+router.get("/admin", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const status = req.query.status as string | undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+    const startAfter = req.query.startAfter as string | undefined;
+
+    const result = await reviewService.listAdminReviews({ status, limit, startAfter });
+    res.json(result);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: msg });
+  }
+});
+
 router.post("/approve", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { reviewId } = req.body;
     const result = await reviewService.approveReview(reviewId);
+    res.json(result);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: msg });
+  }
+});
+
+router.post("/:id/approve", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const reviewId = req.params.id;
+    const result = await reviewService.approveReview(reviewId);
+    res.json(result);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: msg });
+  }
+});
+
+router.delete("/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const reviewId = req.params.id;
+    const result = await reviewService.deleteReview(reviewId);
+    res.json(result);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: msg });
+  }
+});
+
+router.post("/:id/delete", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const reviewId = req.params.id;
+    const result = await reviewService.deleteReview(reviewId);
     res.json(result);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal Server Error";

@@ -57,7 +57,9 @@ const httpServer = http.createServer(app);
 app.set("trust proxy", 1);
 
 // Security & Parsing Middlewares
-app.use("/api/v1", apiLimiter);
+if (process.env.NODE_ENV !== "development" && process.env.SKIP_RATE_LIMITS !== "true") {
+  app.use("/api/v1", apiLimiter);
+}
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.post(
@@ -66,7 +68,7 @@ app.post(
   express.json({ type: ["application/csp-report", "application/json"] }),
   handleCspReport
 );
-app.use(compression());
+app.use(compression() as unknown as express.RequestHandler);
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
 
@@ -78,7 +80,11 @@ app.use("/api", csrfProtection);
 // Health & Swagger Documentation
 app.use(healthRouter);
 const openApiDoc = generateOpenApiSpec();
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
+app.use(
+  "/api-docs",
+  ...(swaggerUi.serve as unknown as express.RequestHandler[]),
+  swaggerUi.setup(openApiDoc) as unknown as express.RequestHandler
+);
 
 // -----------------------------------------------------------------------------
 // OLMART API GATEWAY ROUTER PIPELINE

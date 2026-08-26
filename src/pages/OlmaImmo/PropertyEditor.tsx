@@ -10,8 +10,7 @@ import {
   PropertyStatus,
 } from '../../types/realEstate';
 import { apiGet, apiPost, apiPut } from '../../lib/api';
-import { useAuth } from '../../context/AuthContext';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { EditorStepper, StepItem } from '../../components/OlmaImmo/PropertyEditor/EditorStepper';
@@ -35,7 +34,6 @@ export const PropertyEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
 

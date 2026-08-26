@@ -4,8 +4,8 @@ import React from "react";
  * Robust wrapper for React.lazy that handles dynamic import failures.
  * Retries fetch up to maxAttempts times and performs a single page reload if chunks are stale/invalidated.
  */
-export function lazyWithRetry<T extends React.ComponentType<any>>(
-  componentImport: () => Promise<any>,
+export function lazyWithRetry<T extends React.ComponentType<unknown>>(
+  componentImport: () => Promise<{ default: T } | T>,
   keyName?: string
 ) {
   return React.lazy(async () => {
@@ -23,17 +23,19 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
             /* ignore storage errors */
           }
         }
-        if (module && module.default) {
-          return module;
+        if (module && typeof module === "object" && "default" in module) {
+          return module as { default: T };
         } else if (module) {
-          return { default: module };
+          return { default: module as T };
         }
-        return module;
-      } catch (error: any) {
+        throw new Error("Module not found");
+      } catch (error: unknown) {
         const errorMsg =
-          error?.message ||
-          (typeof error === "string" ? error : "") ||
-          "";
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+            ? error
+            : "";
 
         const isDynamicImportError =
           errorMsg.includes("Failed to fetch dynamically imported module") ||

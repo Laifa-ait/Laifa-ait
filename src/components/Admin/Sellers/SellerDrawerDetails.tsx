@@ -154,7 +154,7 @@ export const SellerDrawerDetails: React.FC<{
                         onClick={async () => {
                           setOcrLoading(true);
                           try {
-                            const token = await (currentUser as any)?.getIdToken();
+                            const token = await currentUser?.getIdToken();
                             const res = await fetch(`/api/v1/admin/sellers/${selectedSeller.id}/ocr`, {
                               method: "POST",
                               headers: {

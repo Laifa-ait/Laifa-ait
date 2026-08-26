@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, ArrowRight, CheckCircle2, HardHat, Info, Wrench } from 'lucide-react';
+import { Calculator, ArrowRight } from 'lucide-react';
 import { BricolageServiceCategory } from '../../types/bricolage';
 
 interface BricolageCostEstimatorProps {
@@ -14,7 +14,7 @@ export const BricolageCostEstimator: React.FC<BricolageCostEstimatorProps> = ({
   const [selectedCatId, setSelectedCatId] = useState(categories[0]?.id || 'plomberie');
   const [selectedService, setSelectedService] = useState(categories[0]?.popularServices[0] || 'Dépannage Fuite');
   const [quantity, setQuantity] = useState(1);
-  const [urgencyMultiplier, setUrgencyMultiplier] = useState(1);
+  const urgencyMultiplier = 1;
 
   const activeCat = categories.find(c => c.id === selectedCatId) || categories[0];
 
@@ -89,9 +89,22 @@ export const BricolageCostEstimator: React.FC<BricolageCostEstimatorProps> = ({
 
         {/* Quantity / Complexity */}
         <div>
-          <label className="text-xs font-extrabold text-slate-800 mb-2 block">
-            3. Ampleur / Quantité :
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-extrabold text-slate-800">
+              3. Ampleur / Quantité :
+            </label>
+            <button
+              type="button"
+              onClick={() => setUrgencyMultiplier((prev) => (prev === 1 ? 1.3 : 1))}
+              className={`text-[10px] font-black px-2 py-0.5 rounded transition-colors ${
+                urgencyMultiplier > 1
+                  ? "bg-red-500 text-white"
+                  : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+              }`}
+            >
+              {urgencyMultiplier > 1 ? "⚡ Urgence (+30%)" : "Normal"}
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}

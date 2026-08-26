@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, TrendingUp, AlertTriangle, Eye, ArrowUpRight, BarChart2 } from "lucide-react";
+import { Search, TrendingUp, AlertTriangle, ArrowUpRight, BarChart2 } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 import { db } from "../../lib/firebase";
-import { collection, getDocs, query, orderBy, limit, addDoc, Timestamp } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, Timestamp } from "firebase/firestore";
 
 interface SearchLog {
   id: string;
@@ -87,7 +85,6 @@ export const SearchAnalytics: React.FC = () => {
   // Daily volume graph data
   const chartData = React.useMemo(() => {
     const dailyMap: Record<string, { name: string; "Volume de recherche": number; "Sans Résultat": number }> = {};
-    const days = [t("Dim"), t("Lun"), t("Mar"), t("Mer"), t("Jeu"), t("Ven"), t("Sam")];
     
     // Initialize last 7 days
     const now = new Date();
@@ -113,7 +110,7 @@ export const SearchAnalytics: React.FC = () => {
     });
 
     return Object.values(dailyMap);
-  }, [logs, t]);
+  }, [logs]);
 
   // Aggregate Top queries
   const topQueries = React.useMemo(() => {

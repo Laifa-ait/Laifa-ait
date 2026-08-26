@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, BadgeCheck, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -20,44 +19,6 @@ const DEFAULT_COVERS = [
   "/images/placeholders/product.svg", // Leather crafts
   "/images/placeholders/product.svg", // Textiles workshop
   "/images/placeholders/product.svg", // Design concept room
-];
-
-const FALLBACK_SELLERS = [
-  {
-    id: "maison-kabyle",
-    shopName: "Maison Kabyle",
-    wilaya: "15 Tizi Ouzou - Algérie",
-    logoUrl: "https://ui-avatars.com/api/?name=Maison+Kabyle&background=1E4356&color=fff&size=80&bold=true",
-    bannerUrl: "/images/placeholders/product.svg",
-  },
-  {
-    id: "art-biskra",
-    shopName: "Art de Biskra",
-    wilaya: "07 Biskra - Algérie",
-    logoUrl: "https://ui-avatars.com/api/?name=Art+de+Biskra&background=1E4356&color=fff&size=80&bold=true",
-    bannerUrl: "/images/placeholders/product.svg",
-  },
-  {
-    id: "cuir-algerois",
-    shopName: "Cuir Algérois",
-    wilaya: "16 Alger - Algérie",
-    logoUrl: "https://ui-avatars.com/api/?name=Cuir+Algerois&background=1E4356&color=fff&size=80&bold=true",
-    bannerUrl: "/images/placeholders/product.svg",
-  },
-  {
-    id: "bijoux-touareg",
-    shopName: "Bijoux Touareg",
-    wilaya: "11 Tamanrasset - Algérie",
-    logoUrl: "https://ui-avatars.com/api/?name=Bijoux+Touareg&background=1E4356&color=fff&size=80&bold=true",
-    bannerUrl: "/images/placeholders/product.svg",
-  },
-  {
-    id: "tapis-ghardaia",
-    shopName: "Tapis Ghardaïa",
-    wilaya: "47 Ghardaïa - Algérie",
-    logoUrl: "https://ui-avatars.com/api/?name=Tapis+Ghardaia&background=1E4356&color=fff&size=80&bold=true",
-    bannerUrl: "/images/placeholders/product.svg",
-  },
 ];
 
 export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isLoading }) => {

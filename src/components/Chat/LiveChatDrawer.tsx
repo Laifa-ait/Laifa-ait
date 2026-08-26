@@ -91,7 +91,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
              },
              body: JSON.stringify({ orderId })
           });
-       } catch (err: any) {
+       } catch (err: unknown) {
           console.error("Error marking messages as read in drawer:", err);
        }
     };
@@ -171,25 +171,33 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
     return () => unsubscribe();
   }, [isOpen, orderId, currentUser]);
 
+  const parseTimestampMs = (val: unknown): number => {
+    if (!val) return Date.now();
+    if (typeof val === "object" && val !== null && "toDate" in val && typeof (val as { toDate: () => Date }).toDate === "function") {
+      return (val as { toDate: () => Date }).toDate().getTime();
+    }
+    if (typeof val === "object" && val !== null && "seconds" in val && typeof (val as { seconds: number }).seconds === "number") {
+      return (val as { seconds: number }).seconds * 1000;
+    }
+    if (typeof val === "number") return val;
+    if (typeof val === "string") {
+      const parsed = Date.parse(val);
+      return isNaN(parsed) ? Date.now() : parsed;
+    }
+    return Date.now();
+  };
+
   // Merge messages and logs chronologically
   const timelineItems = React.useMemo<TimelineItem[]>(() => {
     const combined: TimelineItem[] = [
       ...messages.map((m) => ({
         ...m,
-        timestamp: (m.createdAt as any)?.toDate
-          ? (m.createdAt as any).toDate().getTime()
-          : (m.createdAt as any)?.seconds
-            ? (m.createdAt as any).seconds * 1000
-            : Date.now(),
+        timestamp: parseTimestampMs(m.createdAt),
         isLog: false as const,
       })),
       ...logs.map((l) => ({
         ...l,
-        timestamp: (l.date as any)?.toDate
-          ? (l.date as any).toDate().getTime()
-          : (l.date as any)?.seconds
-            ? (l.date as any).seconds * 1000
-            : Date.now(),
+        timestamp: parseTimestampMs(l.date),
         isLog: true as const,
       })),
     ];

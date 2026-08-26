@@ -1,29 +1,21 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   Clock,
   CheckCircle2,
   AlertCircle,
   MessageSquare,
-  ChevronRight,
   PlusCircle,
   HardHat,
-  Phone,
   Calendar,
   MapPin,
   Tag,
-  ShieldCheck,
   Star,
   Bell,
-  Sparkles,
   Camera,
-  Maximize2,
-  X,
-  ChevronLeft,
   Loader2
 } from 'lucide-react';
 import { QuoteRequestDoc, QuoteOffer } from '../../types/bricolage';
-import { useBricolageI18n } from '../../hooks/useBricolageI18n';
 
 interface BricolageClientDashboardProps {
   requests: QuoteRequestDoc[];
@@ -40,7 +32,6 @@ export const BricolageClientDashboard: React.FC<BricolageClientDashboardProps> =
   onAcceptOffer,
   acceptNotice
 }) => {
-  const { tBricolage } = useBricolageI18n();
   const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'quoted' | 'in_progress' | 'completed'>('all');
   const [acceptingOfferId, setAcceptingOfferId] = useState<string | null>(null);
 

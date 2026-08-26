@@ -10,7 +10,14 @@ let mockUserDocData: Record<string, unknown> = { trustScore: 85 };
 let isTest14Mode = false;
 let test14CallCount = 0;
 
-const tGetMock = vi.fn(async (ref: any) => {
+interface MockRef {
+  _type?: string;
+  _colName?: string;
+  _val?: unknown;
+  _path?: string;
+}
+
+const tGetMock = vi.fn(async (ref: MockRef) => {
   if (ref && ref._type === "query" && ref._colName === "reviews") {
     return {
       docs: [
@@ -25,7 +32,7 @@ const tGetMock = vi.fn(async (ref: any) => {
       ]
     };
   }
-  const path = ref._path || "";
+  const path = ref?._path || "";
   if (path.startsWith("orders/")) {
     if (isTest14Mode) {
       test14CallCount++;
@@ -95,7 +102,7 @@ vi.mock("../config/firebase-admin", () => {
               update: vi.fn()
             };
           }),
-          where: vi.fn((field: string, op: string, val: any) => {
+          where: vi.fn((field: string, op: string, val: unknown) => {
             return {
               _type: "query",
               _colName: colName,

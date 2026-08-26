@@ -1,61 +1,40 @@
 import { useState, useCallback } from "react";
-import { db, storage, withTimeout } from "../lib/firebase";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  orderBy,
-  serverTimestamp,
-  writeBatch,
-} from "firebase/firestore";
+import { adminHomepageApi } from "../services/api/adminHomepage.api";
+import { HomepageSection } from "../domains/home/homepage.types";
+import { storage } from "../lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
 export const useFirebaseHomepage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = useCallback(async (collectionName: string) => {
+  const fetchData = useCallback(async (_collectionName: string) => {
     setIsLoading(true);
     try {
-      const q = query(collection(db, collectionName), orderBy("orderIndex", "asc"));
-      const snap = await withTimeout(getDocs(q));
-      return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    } catch {
-      toast.error("Erreur de chargement");
+      const sections = await adminHomepageApi.getSections();
+      return sections;
+    } catch (err) {
+      console.error("Error fetching homepage sections via API:", err);
+      toast.error("Erreur de chargement des sections");
       return [];
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const saveItem = useCallback(async (collectionName: string, id: string | null, payload: Record<string, unknown>) => {
+  const saveItem = useCallback(async (_collectionName: string, id: string | null, payload: Record<string, unknown>) => {
     setIsLoading(true);
     try {
-      const batch = writeBatch(db);
-      let isUpdate = false;
-
       if (id) {
-        isUpdate = true;
-        batch.update(doc(db, collectionName, id), {
-          ...payload,
-          updatedAt: serverTimestamp(),
-        });
+        await adminHomepageApi.updateSection(id, payload as Partial<HomepageSection>);
+        toast.success("Section mise à jour !");
       } else {
-        const newRef = doc(collection(db, collectionName));
-        batch.set(newRef, {
-          ...payload,
-          createdAt: serverTimestamp(),
-        });
+        await adminHomepageApi.createSection(payload as Partial<HomepageSection>);
+        toast.success("Section créée avec succès !");
       }
-
-      // Clear homepage compile cache in the same batch
-      batch.delete(doc(db, "public", "homepage_cache"));
-
-      await batch.commit();
-      toast.success(isUpdate ? "Élément mis à jour !" : "Élément ajouté !");
     } catch (err) {
-      toast.error("Erreur de sauvegarde");
+      console.error("Error saving homepage section:", err);
+      toast.error("Erreur de sauvegarde de la section");
       throw err;
     } finally {
       setIsLoading(false);
@@ -64,14 +43,15 @@ export const useFirebaseHomepage = () => {
 
   const uploadMedia = useCallback(async (file: File) => {
     try {
-      toast.loading("Upload en cours...", { id: "upload" });
+      toast.loading("Upload en cours...", { id: "upload-hp-media" });
       const storageRef = ref(storage, `homepage_media/${Date.now()}_${file.name.replace(/\s+/g, "_")}`);
       const snapshot = await uploadBytes(storageRef, file);
       const url = await getDownloadURL(snapshot.ref);
-      toast.success("Importé !", { id: "upload" });
+      toast.success("Média importé !", { id: "upload-hp-media" });
       return url;
     } catch (err) {
-      toast.error("Erreur d'import", { id: "upload" });
+      console.error("Upload error:", err);
+      toast.error("Erreur d'import", { id: "upload-hp-media" });
       throw err;
     }
   }, []);

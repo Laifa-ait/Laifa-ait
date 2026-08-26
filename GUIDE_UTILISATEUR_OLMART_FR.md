@@ -189,10 +189,10 @@ L'accès acheteur s'appuie sur le numéro de téléphone mobile en tant qu'ident
 L'acheteur filtre les produits par catégorie, plage de prix (DZD), note d'évaluation et Wilaya d'expédition du marchand.
 *   **Comparateur Multi-Critères :** Permet la mise en parallèle de 4 articles d'une même catégorie. L'interface compare de manière synchrone le prix unitaire, le poids d'emballage, le délai d'expédition moyen et la Wilaya de provenance pour assurer une décision d'achat rationnelle.
 
-### 2.3 Ventes Flash, Tunnel d'Achat & Imputation d'Avoirs
+### 2.3 Ventes Flash, Tunnel d'Achat & Paiement à la Livraison (COD)
 *   **Ventes Flash :** L'acheteur profite de tarifs réduits limités dans le temps. L'horloge du serveur Express d'Olmart valide de manière absolue l'expiration des offres pour contrer toute manipulation de l'horloge système côté client.
 *   **Calcul d'Expédition Dynamique :** Lors du passage au panier, le moteur logistique d'Olmart croise la Wilaya d'origine de la boutique et la Wilaya de destination de l'acheteur pour émettre la facturation de transport réelle.
-*   **Déduction Prioritaire des Avoirs :** Si le portefeuille de l'acheteur dispose d'avoirs de remboursement disponibles ($W_{\text{wallet}} > 0$), ces fonds virtuels sont automatiquement déduits du montant total de la facture, le reliquat étant payable en espèces lors de la livraison (Cash on Delivery - COD).
+*   **Paiement Intégral à la Livraison (Cash on Delivery - COD) :** L'acheteur règle la commande directement en espèces au livreur lors de la remise du colis à domicile ou en point relais.
 
 ### 2.4 Matrice Logistique des Wilayas (Calcul de Livraison par Zone)
 Afin d'automatiser et de sécuriser la facturation du fret terrestre, l'API d'Olmart classifie les 58 Wilayas algériennes en 4 grandes zones logistiques distinctes, croisées avec le poids d'emballage de l'article :
@@ -317,13 +317,8 @@ await db.runTransaction(async (transaction) => {
     throw new Error("INSUFFICIENT_STOCK");
   }
 
-  // 2. Décrémentation physique et écriture de la commande
+  // 2. Décrémentation physique atomique
   transaction.update(productRef, { stock: currentStock - qty });
-  
-  // 3. Imputation atomique et sécurisée des soldes de portefeuille
-  // (Empêche toute attaque par interférence ou double dépense simultanée)
-  const currentBalance = Number(buyerSnap.data()!.walletBalance || 0);
-  transaction.update(buyerRef, { walletBalance: currentBalance - totalCost });
 });
 ```
 
@@ -333,10 +328,10 @@ await db.runTransaction(async (transaction) => {
 
 L'architecture NoSQL d'Olmart s'appuie sur un référentiel de collections unifié :
 
-*   **`users`** : Profils d'identité (Acheteurs, Vendeurs, Administrateurs), soldes de portefeuilles d'avoirs, points de fidélité, adresses et données de dossiers KYC.
+*   **`users`** : Profils d'identité (Acheteurs, Vendeurs, Administrateurs), adresses de livraison, et données de dossiers KYC.
 *   **`shops`** : Configurations de bannières, thèmes visuels actifs, notes d'évaluation moyennes, et volumes de ventes des marchands.
 *   **`products`** : Fiches descriptives des articles, prix publics, tarifs de ventes flash, minuteurs d'expiration, stocks physiques, et poids logistique d'emballage.
-*   **`orders`** : Registre immuable de facturation d'achat, suivi logistique national, frais de transport, montants d'avoirs imputés, commissions prélevées et états de séquestre.
+*   **`orders`** : Registre immuable de facturation d'achat COD, suivi logistique national, frais de transport par Wilaya, commissions prélevées et statuts de livraison.
 *   **`disputes`** : Dossiers de réclamation d'arbitrage tripartite, photos des anomalies, journal de messages, et rapport analytique d'aide à la décision confidentiel de l'IA.
 *   **`payouts`** : Queue d'ordonnancement des virements financiers CCP/RIB des vendeurs, états de traitement et reçu de virement administratifs associés.
 *   **`audit_logs`** : Journaux de traçabilité immuables des opérations de modération, d'approbation financière et d'administration système.

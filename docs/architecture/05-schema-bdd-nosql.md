@@ -46,7 +46,7 @@ erDiagram
         string buyerId FK "Réf. vers USERS(uid)"
         string sellerId FK "Réf. vers USERS(uid)"
         string status "PENDING_PAYMENT | PAID_ESCROW | PREPARING | SHIPPED | DELIVERED | RETURN_REQUESTED | RETURNED | DISPUTED | COMPLETED"
-        string paymentMethod "COD | WALLET | HYBRID"
+        string paymentMethod "COD"
         number totalPricePaid
         number escrowNetSellerAmount
         number escrowPlatformCommission

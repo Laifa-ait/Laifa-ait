@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, RefreshCw, CheckCircle2, AlertCircle, Wrench, Home, Car, ShoppingBag, Truck, UtensilsCrossed, Briefcase, Eye, ShieldCheck, Database } from 'lucide-react';
+import { Sparkles, RefreshCw, CheckCircle2, Wrench, Home, Car, ShoppingBag, Truck, UtensilsCrossed, Briefcase, Database } from 'lucide-react';
 import { OlmaAppModule } from '../../types/olmaUnivers';
 import { fetchOlmaUniversApps, updateAdminOlmaApp, seedAdminOlmaApps } from '../../services/olmaUnivers.api';
 

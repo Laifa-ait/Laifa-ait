@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { 
-  Truck, MapPin, BadgePercent, ShieldCheck, Search, HelpCircle, 
-  Sparkles, Check, ArrowLeft, Info, ShoppingBag, Scale, HelpCircle as HelpIcon,
-  PhoneCall, Mail, DollarSign
+  Truck, MapPin, ShieldCheck, Search, Sparkles, Check, ArrowLeft, ShoppingBag, HelpCircle as HelpIcon,
+  PhoneCall, Mail
 } from "lucide-react";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../constants";
 import { formatPrice } from "../../utils/format";
@@ -129,7 +128,7 @@ export const ShippingCalculatorPage: React.FC = () => {
       estimatedDate: formattedDate,
       cleanName,
     };
-  }, [selectedWilaya, packageWeight]);
+  }, [selectedWilaya, packageWeight, shippingConfig.wilayaFees]);
 
   // Total Basket value simulated
   const simulatedTotalWithShipping = useMemo(() => {

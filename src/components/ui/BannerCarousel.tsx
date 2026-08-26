@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -73,7 +73,6 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const activeBanners = banners.filter((b) => b.is_active !== false && b.isActive !== false);
 
@@ -132,37 +131,14 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
     setCurrentIndex((prevIndex) => (prevIndex - 1 + activeBanners.length) % activeBanners.length);
   };
 
-  // Touch handlers for responsive swiping
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX === null) return;
-    const currentX = e.touches[0].clientX;
-    const diffX = touchStartX - currentX;
-
-    if (Math.abs(diffX) > 60) {
-      if (diffX > 0) {
-        // swipe left
-        if (isRTL) handlePrev();
-        else handleNext();
-      } else {
-        // swipe right
-        if (isRTL) handleNext();
-        else handlePrev();
-      }
-      setTouchStartX(null);
-    }
-  };
-
   const currentBanner = activeBanners[currentIndex];
   const linkedTag = currentBanner.tag_id ? tags.find((t) => t.id === currentBanner.tag_id) : null;
   const imageUrl =
     currentBanner.desktop_image ||
     currentBanner.imageUrl ||
+    currentBanner.mobile_image ||
+    currentBanner.mobileImageUrl ||
     "/images/placeholders/product.svg";
-  const mobileImageUrl = currentBanner.mobile_image || currentBanner.mobileImageUrl;
 
   // Multilingual dynamic translation lookup
   const title = getTranslatedValue(currentBanner, "title");

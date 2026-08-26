@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import { realEstateRouter } from '../routes/realEstate';
-import * as auth from '../middlewares/auth';
+import { AuthenticatedRequest } from '../middlewares/auth';
 import { db } from '../config/firebase-admin';
+import { CollectionReference } from 'firebase-admin/firestore';
 
 vi.mock('../config/firebase-admin', () => ({
   db: {
@@ -20,31 +21,36 @@ vi.mock('../config/firebase-admin', () => ({
 
 const app = express();
 app.use(express.json());
-// Inject mock auth middleware
-app.use((req, res, next) => {
+
+// Inject mock auth middleware with proper type casting
+app.use((req, _res, next) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   if (req.headers.authorization === 'Bearer VALID_TOKEN_BUYER') {
-    (req as any).user = { uid: 'buyer123', role: 'buyer' };
+    authReq.user = { uid: 'buyer123', role: 'buyer', email: 'buyer@olmart.dz', auth_time: Math.floor(Date.now() / 1000) };
   } else if (req.headers.authorization === 'Bearer VALID_TOKEN_OWNER') {
-    (req as any).user = { uid: 'owner123', role: 'seller' };
+    authReq.user = { uid: 'owner123', role: 'seller', email: 'owner@olmart.dz', auth_time: Math.floor(Date.now() / 1000) };
   } else if (req.headers.authorization === 'Bearer VALID_TOKEN_ADMIN') {
-    (req as any).user = { uid: 'admin123', role: 'admin' };
+    authReq.user = { uid: 'admin123', role: 'admin', email: 'admin@olmart.dz', auth_time: Math.floor(Date.now() / 1000) };
   }
   next();
 });
+
 app.use('/api/v1/real-estate', realEstateRouter);
 
 describe('GET /api/v1/real-estate/properties/:id/owner', () => {
+  const collectionSpy = vi.spyOn(db, 'collection');
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should return 404 if property does not exist', async () => {
     const mockPropertyDoc = { exists: false };
-    (db.collection as any).mockReturnValue({
+    collectionSpy.mockReturnValue({
       doc: vi.fn().mockReturnValue({
         get: vi.fn().mockResolvedValue(mockPropertyDoc)
       })
-    });
+    } as unknown as CollectionReference);
 
     const res = await request(app).get('/api/v1/real-estate/properties/nonexistent/owner');
     expect(res.status).toBe(404);
@@ -55,11 +61,11 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
       exists: true,
       data: () => ({ status: 'draft', ownerId: 'owner123' })
     };
-    (db.collection as any).mockReturnValue({
+    collectionSpy.mockReturnValue({
       doc: vi.fn().mockReturnValue({
         get: vi.fn().mockResolvedValue(mockPropertyDoc)
       })
-    });
+    } as unknown as CollectionReference);
 
     // Request as buyer (not owner)
     const res = await request(app)
@@ -84,7 +90,7 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
       })
     };
 
-    (db.collection as any).mockImplementation((collName: string) => ({
+    collectionSpy.mockImplementation(((collName: string) => ({
       doc: vi.fn().mockReturnValue({
         get: vi.fn().mockImplementation(() => {
           if (collName === 'real_estate_properties') return Promise.resolve(mockPropertyDoc);
@@ -92,7 +98,7 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
           return Promise.resolve({ exists: false });
         })
       })
-    }));
+    })) as unknown as (collectionPath: string) => CollectionReference);
 
     const res = await request(app)
       .get('/api/v1/real-estate/properties/prop1/owner')
@@ -112,14 +118,14 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
         uid: 'owner123',
         displayName: 'Test Owner',
         verificationStatus: 'approved',
-        email: 'private@email.com',
+        email: 'private@olmart.dz',
         phone: '0550123456',
         address: 'Secret Address 123',
         idCardUrl: 'https://secret.com/card.jpg'
       })
     };
 
-    (db.collection as any).mockImplementation((collName: string) => ({
+    collectionSpy.mockImplementation(((collName: string) => ({
       doc: vi.fn().mockReturnValue({
         get: vi.fn().mockImplementation(() => {
           if (collName === 'real_estate_properties') return Promise.resolve(mockPropertyDoc);
@@ -127,7 +133,7 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
           return Promise.resolve({ exists: false });
         })
       })
-    }));
+    })) as unknown as (collectionPath: string) => CollectionReference);
 
     const res = await request(app).get('/api/v1/real-estate/properties/prop1/owner');
     

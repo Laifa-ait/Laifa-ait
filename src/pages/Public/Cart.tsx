@@ -90,7 +90,7 @@ export const Cart: React.FC = () => {
       setIsRevalidating(false);
     };
     run();
-  }, []);
+  }, [revalidateCart]);
 
   React.useEffect(() => {
     const fetchShops = async () => {

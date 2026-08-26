@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { authenticateToken, authorizeAdmin } from "../middlewares/auth";
+import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../middlewares/auth";
 import { admin, db } from "../config/firebase-admin";
 import { Response, NextFunction } from "express";
+import { CollectionReference } from "firebase-admin/firestore";
 
 describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tests", () => {
-  let mockStatus: any;
-  let mockJson: any;
+  let mockStatus: ReturnType<typeof vi.fn>;
+  let mockJson: ReturnType<typeof vi.fn>;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
 
   beforeEach(() => {
     mockJson = vi.fn();
-    mockStatus = vi.fn().mockReturnValue({ json: mockJson });
+    mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
       status: mockStatus,
       json: mockJson,
@@ -22,19 +23,19 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("1 & 2: /sync Role Escalation Defense", () => {
     it("forces role=admin to 'buyer' during user sync creation", () => {
-      const inputRole: string = "admin";
+      const inputRole = "admin";
       const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("buyer");
     });
 
     it("forces role=superadmin to 'buyer' during user sync creation", () => {
-      const inputRole: string = "superadmin";
+      const inputRole = "superadmin";
       const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("buyer");
     });
 
     it("allows role=seller during user sync creation", () => {
-      const inputRole: string = "seller";
+      const inputRole = "seller";
       const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("seller");
     });
@@ -42,12 +43,12 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("3 & 4: /onboard Role Escalation Defense", () => {
     it("sanitizes role=admin to 'buyer' and denies admin custom claims creation", () => {
-      const clientRequestedRole: string = "admin";
+      const clientRequestedRole = "admin";
       const safeClientRole = clientRequestedRole === "seller" ? "seller" : "buyer";
       
       const isExistingAdmin = false;
       const tokenIsAdmin = false;
-      const finalClaimRole: string = (isExistingAdmin && tokenIsAdmin) ? "admin" : safeClientRole;
+      const finalClaimRole = (isExistingAdmin && tokenIsAdmin) ? "admin" : safeClientRole;
       const customClaims = {
         role: finalClaimRole,
         isAdmin: finalClaimRole === "admin" || finalClaimRole === "superadmin",
@@ -59,12 +60,12 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
     });
 
     it("sanitizes role=superadmin to 'buyer' and denies superadmin custom claims creation", () => {
-      const clientRequestedRole: string = "superadmin";
+      const clientRequestedRole = "superadmin";
       const safeClientRole = clientRequestedRole === "seller" ? "seller" : "buyer";
       
       const isExistingAdmin = false;
       const tokenIsAdmin = false;
-      const finalClaimRole: string = (isExistingAdmin && tokenIsAdmin) ? "superadmin" : safeClientRole;
+      const finalClaimRole = (isExistingAdmin && tokenIsAdmin) ? "superadmin" : safeClientRole;
       const customClaims = {
         role: finalClaimRole,
         isAdmin: finalClaimRole === "admin" || finalClaimRole === "superadmin",
@@ -78,8 +79,8 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("5: /sync-user-claims Indirect Elevation Defense", () => {
     it("refuses to sync admin claim if requesting token lacks admin claim even if Firestore is tampered", () => {
-      const dbRole: string = "admin";
-      const userTokenRole: string = "buyer"; // Token without admin privileges
+      const dbRole = "admin";
+      const userTokenRole = "buyer"; // Token without admin privileges
       
       let claimRole = "buyer";
       if (dbRole === "admin" || dbRole === "superadmin") {
@@ -102,15 +103,16 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("6: Administrator Email Without Privilege -> 403 Forbidden", () => {
     it("returns 403 Forbidden for admin email without admin role", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "attacker123",
-          email: "laifa.ait@gmail.com", // Admin email
+          email: "laifa.ait@olmart.dz", // Admin email
           role: "buyer", // But non-admin role
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
 
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockNext).not.toHaveBeenCalled();
@@ -119,15 +121,16 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("7: Custom Claim buyer + Firestore buyer -> 403 Forbidden", () => {
     it("returns 403 Forbidden for regular buyer account", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "buyer456",
-          email: "buyer@domain.dz",
+          email: "buyer@olmart.dz",
           role: "buyer",
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
 
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockNext).not.toHaveBeenCalled();
@@ -138,9 +141,9 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
     it("evaluates effective role as buyer when Custom Claims are buyer, despite Firestore admin value", async () => {
       const mockVerifyIdToken = vi.spyOn(admin.auth(), "verifyIdToken").mockResolvedValueOnce({
         uid: "hacker999",
-        email: "hacker@domain.dz",
+        email: "hacker@olmart.dz",
         role: "buyer",
-      } as any);
+      } as unknown as admin.auth.DecodedIdToken);
 
       const mockDocGet = vi.fn().mockResolvedValueOnce({
         exists: true,
@@ -148,24 +151,24 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
       });
 
       const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-      const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+      const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         headers: {
           authorization: "Bearer valid_id_token",
         },
       };
 
-      await authenticateToken(mockReq, mockRes as Response, mockNext);
+      await authenticateToken(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       // Verify that effective role remains buyer because Custom Claims tokenRole is buyer
-      expect(mockReq.user.role).toBe("buyer");
+      expect(mockReq.user?.role).toBe("buyer");
       expect(mockNext).toHaveBeenCalled();
 
       // Now verify that authorizeAdmin rejects this user with 403
       mockNext = vi.fn();
       mockStatus.mockClear();
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockNext).not.toHaveBeenCalled();
@@ -177,16 +180,16 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
   describe("9: Custom Claim admin + Valid Account -> 200 / next()", () => {
     it("successfully authorizes genuine administrator account", () => {
-      const mockReq: any = {
+      const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "XdUhV8ZLYxbgCKFnpTU6Zh5B4ZR2",
-          email: "laifa.ait@gmail.com",
+          email: "laifa.ait@olmart.dz",
           role: "admin",
-          isAdmin: true,
+          auth_time: Math.floor(Date.now() / 1000),
         },
       };
 
-      authorizeAdmin(mockReq, mockRes as Response, mockNext);
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       expect(mockStatus).not.toHaveBeenCalledWith(403);
@@ -203,14 +206,15 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
         permissions: ["ALL"],
       };
 
-      const { role, isAdmin, customClaims, permissions, status, ...safeProfileUpdate } = clientPayload as any;
+      const { role, isAdmin, permissions, ...safeProfileUpdate } = clientPayload as Record<string, unknown>;
 
       expect(safeProfileUpdate).toEqual({
         displayName: "New Name",
         phone: "0555123456",
       });
-      expect(safeProfileUpdate.role).toBeUndefined();
-      expect(safeProfileUpdate.isAdmin).toBeUndefined();
+      expect(role).toBe("admin");
+      expect(isAdmin).toBe(true);
+      expect(permissions).toEqual(["ALL"]);
     });
   });
 });

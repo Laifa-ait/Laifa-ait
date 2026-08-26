@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
-import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
+import { Property, VisitRequest, Booking } from '../../types/realEstate';
 import { InitiateConversationDTO } from '../../types/messaging';
 import { apiGet, apiPut } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -121,14 +121,14 @@ export const PropertyOwnerDashboard: React.FC = () => {
         {/* Tab navigation */}
         <div className="flex items-center gap-2 border-b border-[#e8e2d4] pb-2">
           {[
-            { id: 'properties', label: `Mes Annonces (${properties.length})` },
-            { id: 'visits', label: `Demandes de Visite (${visits.length})` },
-            { id: 'bookings', label: `Réservations Séjours (${bookings.length})` },
+            { id: 'properties' as const, label: `Mes Annonces (${properties.length})` },
+            { id: 'visits' as const, label: `Demandes de Visite (${visits.length})` },
+            { id: 'bookings' as const, label: `Réservations Séjours (${bookings.length})` },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-[#1a3831] text-[#ebdcb8] shadow-xs'

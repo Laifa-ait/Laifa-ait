@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "motion/react";
-import { AlertTriangle, Package, Check, X, User, CreditCard, Sparkles } from "lucide-react";
+import { AlertTriangle, Package, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatPrice } from "../../utils/format";
 import { useTranslation } from "react-i18next";
@@ -15,14 +14,11 @@ export const DisputeManagement: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const [cases, setCases] = useState<Dispute[]>([]);
-  const [loading, setLoading] = useState(true);
   const [decisions, setDecisions] = useState<{ [key: string]: string }>({});
-  const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [chatOpenFor, setChatOpenFor] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCases = async () => {
-      setLoading(true);
       try {
         const data = await apiGet<{ success: boolean; disputes: Dispute[] }>('/api/v1/disputes/admin/all');
         if (data && data.disputes) {
@@ -31,14 +27,12 @@ export const DisputeManagement: React.FC = () => {
       } catch (e) {
         console.error("Error fetching disputes:", e);
         toast.error(t("Erreur lors du chargement des litiges"));
-      } finally {
-        setLoading(false);
       }
     };
     if (userProfile?.role === "admin") {
       fetchCases();
     }
-  }, [userProfile]);
+  }, [userProfile, t]);
 
   const handleResolve = async (c: Dispute) => {
     if (!currentUser || userProfile?.role !== "admin" || !c.id) {

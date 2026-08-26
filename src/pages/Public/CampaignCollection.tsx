@@ -3,13 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProductCard } from '../../components/Product/ProductCard';
 import { ArrowLeft, Loader2, Star, Sparkles } from 'lucide-react';
 import { useTranslation } from "react-i18next";
+import { Product } from '../../domains/product/product.types';
+
+interface CampaignBanner {
+  desktop_image: string;
+  title: string;
+  title_color?: string;
+  subtitle?: string;
+}
 
 export const CampaignCollection: React.FC = () => {
     const { t } = useTranslation();
   const { bannerId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{banner: any, products: any[]}>({ banner: null, products: [] });
+  const [data, setData] = useState<{banner: CampaignBanner | null, products: Product[]}>({ banner: null, products: [] });
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -33,8 +41,8 @@ export const CampaignCollection: React.FC = () => {
         setPage(1);
         setHasMore(json.hasMore);
         setTotalProducts(json.total || 0);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }

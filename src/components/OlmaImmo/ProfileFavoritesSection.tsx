@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Home, ArrowRight, Loader2 } from 'lucide-react';
+import { Heart, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { Property } from '../../types/realEstate';
 import { PropertyCard } from './PropertyCard';
 import { getFavoritePropertyIds } from '../../utils/realEstateFavorites';
 import { apiGet } from '../../lib/api';
 
 export const ProfileFavoritesSection: React.FC = () => {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,7 +23,6 @@ export const ProfileFavoritesSection: React.FC = () => {
 
   const loadFavorites = async () => {
     const ids = getFavoritePropertyIds();
-    setFavoriteIds(ids);
 
     if (ids.length === 0) {
       setProperties([]);
@@ -50,7 +48,6 @@ export const ProfileFavoritesSection: React.FC = () => {
   const handleFavoriteToggle = (id: string, isFav: boolean) => {
     if (!isFav) {
       setProperties((prev) => prev.filter((p) => p.id !== id));
-      setFavoriteIds((prev) => prev.filter((favId) => favId !== id));
     }
   };
 

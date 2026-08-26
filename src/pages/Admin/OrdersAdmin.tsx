@@ -1,29 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShoppingCart,
-  Package,
-  Truck,
-  CheckCircle2,
-  Search,
-  Filter,
-  X,
-  Phone,
   FileText,
-  Printer,
-  CheckSquare,
-  Square,
   RefreshCw,
-  Barcode,
-  HelpCircle,
   TrendingUp,
   Percent,
   DollarSign,
-  Calendar,
 } from "lucide-react";
 import { formatPrice } from "../../utils/format";
 import { Order, OrderStatus } from "../../domains/order/order.types";
 import { useTranslation } from "react-i18next";
-import { ALGERIA_WILAYAS } from "../../constants";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { AppTimestamp, normalizeTimestamp } from "../../utils/date";
@@ -70,9 +56,7 @@ export const OrdersAdmin: React.FC = () => {
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
   // Pagination State
-  const [lastVisible, setLastVisible] = useState<unknown>(null);
   const [hasMore, setHasMore] = useState(true);
-  const ORDERS_PER_PAGE = 20;
 
   // Detail Modal State
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -145,7 +129,6 @@ export const OrdersAdmin: React.FC = () => {
   };
 
   useEffect(() => {
-    setLastVisible(null);
     setHasMore(true);
     fetchOrders(false);
   }, [refreshTrigger, startDate, endDate, fetchOrders]);
@@ -665,7 +648,7 @@ export const OrdersAdmin: React.FC = () => {
           </div>
           <div>
             <span className="block text-[10px] font-sans font-bold text-zinc-400 uppercase tracking-widest">
-              {t("Portefeuille Actif")}
+              {t("Commandes Filtrées")}
             </span>
             <strong className="block text-xl font-sans font-bold font-mono text-blue-600 tracking-tight mt-1">
               {filteredOrders.length} / {orders.length} {t("com.")}

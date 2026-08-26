@@ -91,9 +91,10 @@ export const Onboarding: React.FC = () => {
       
       toast.success(t("profile_completed", "Profil complété avec succès !"));
       navigate(formData.role === 'seller' ? '/seller-onboarding' : '/');
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating profile:", error);
-      toast.error(error?.message || t("profile_creation_error", "Erreur lors de la création du profil."));
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      toast.error(errorMsg || t("profile_creation_error", "Erreur lors de la création du profil."));
     } finally {
       setLoading(false);
     }

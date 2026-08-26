@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Database, Search, Download, Settings, RefreshCw, FileCode, CheckCircle, Flame, MapPin, Sliders, Play, Info, Key, Server, BarChart2, BookOpen } from 'lucide-react';
+import { Database, Search, Download, Settings, RefreshCw, FileCode, CheckCircle, Flame, MapPin, Sliders, Play, Key, Server, BarChart2, BookOpen } from 'lucide-react';
 import { MOCK_PRODUCTS } from '../../utils/mockProducts';
 import { useTranslation } from "react-i18next";
 import { apiGet, apiPut } from '../../lib/api';
@@ -33,8 +33,7 @@ interface SearchIndexingModel {
 }
 
 export const SearchIndexAdmin: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar' || i18n.language?.startsWith('ar');
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'index' | 'synonyms' | 'analytics'>('index');
 
   // Products State (Real Firestore + fallback to Demo if empty)
@@ -87,7 +86,7 @@ export const SearchIndexAdmin: React.FC = () => {
         const fetchedProds: Product[] = prodRes?.products || [];
 
         if (!isCancelled) {
-          if (fetchedProds.length > 0) {
+        if (fetchedProds.length > 0) {
             setProducts(fetchedProds);
             setUsingDemoData(false);
           } else {
@@ -95,7 +94,7 @@ export const SearchIndexAdmin: React.FC = () => {
             setUsingDemoData(true);
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error initializing search index settings:", err as Error);
         if (!isCancelled) {
           setProducts(MOCK_PRODUCTS);
@@ -276,7 +275,7 @@ export const SearchIndexAdmin: React.FC = () => {
       
       setExportedStatus(t("Exportation réussie de {{count}} produits !", { count: filteredRecords.length }));
       setTimeout(() => setExportedStatus(''), 5000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error(t("Erreur de téléchargement"));
     }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useComparatorStore } from '../../store/useComparatorStore';
-import { Scale, ArrowLeft, Plus, Sparkles, Trophy, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Scale, ArrowLeft, Plus, Sparkles, Trophy, CheckCircle } from 'lucide-react';
 import { PremiumLayout } from '../../components/Layout/PremiumLayout';
 import { ComparatorHeader } from '../../components/Comparator/ComparatorHeader';
 import { ComparatorTable } from '../../components/Comparator/ComparatorTable';
@@ -44,7 +44,6 @@ export const ComparatorPage: React.FC = () => {
   // Find winner recommendation
   let bestProduct: Product | null = null;
   if (products.length >= 2) {
-    const minPrice = Math.min(...products.map(p => p.price));
     const maxPrice = Math.max(...products.map(p => p.price));
     bestProduct = [...products].sort((a, b) => {
       const rA = a.stats?.averageRating || a.rating || 0;

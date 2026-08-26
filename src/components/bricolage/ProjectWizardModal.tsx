@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
-  Wrench,
   CheckCircle2,
   Send,
   HardHat,
@@ -10,7 +9,6 @@ import {
   Image as ImageIcon,
   Trash2,
   UploadCloud,
-  Plus,
   Search,
   Check,
   AlertCircle

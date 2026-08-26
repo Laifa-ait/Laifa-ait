@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { auth, storage } from "../lib/firebase";
-import { apiGet, apiPost } from "../lib/api";
+import { storage } from "../lib/firebase";
+import { apiGet } from "../lib/api";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -8,7 +8,6 @@ import {
   AlertTriangle, 
   CheckCheck, 
   ShieldCheck, 
-  Clock, 
   Store, 
   User, 
   Info, 

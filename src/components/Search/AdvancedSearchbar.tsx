@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Search, X, Loader2, ArrowRight, Clock, Star, TrendingUp, History } from "lucide-react";
+import { Search, X, Loader2, ArrowRight, TrendingUp, History } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Shop } from "../../domains/seller/shop.types";
 import { useNavigate } from "react-router-dom";
 import { useShop } from "../../context/ShopContext";
 import { apiGet } from "../../lib/api";
@@ -20,7 +19,7 @@ interface AdvancedSearchbarProps {
 
 export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
   className = "",
-  isMobile = false,
+  isMobile: _isMobile = false,
   variant = "default",
 }) => {
   const { t } = useTranslation();

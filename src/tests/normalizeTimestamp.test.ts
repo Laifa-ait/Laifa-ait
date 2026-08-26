@@ -42,7 +42,7 @@ describe('normalizeTimestamp', () => {
     const now = new Date('2024-01-01T12:00:00Z');
     vi.setSystemTime(now);
     
-    const result = normalizeTimestamp(null as any);
+    const result = normalizeTimestamp(null as unknown as string);
     expect(result.toMillis()).toBe(now.getTime());
     
     vi.useRealTimers();

@@ -1,9 +1,7 @@
 import React from "react";
 import { LayoutTemplate, Plus } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 export const ShopsAdmin: React.FC = () => {
-  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">

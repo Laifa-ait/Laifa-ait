@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapPin, Plus, Trash2, Check, CheckCircle2, Bookmark, ShieldAlert, Compass } from "lucide-react";
+import { MapPin, Plus, Trash2, Compass } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { apiPost } from "../../lib/api";
 import { ALGERIA_WILAYAS } from "../../constants";

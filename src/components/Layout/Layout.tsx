@@ -1,6 +1,6 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
 import { MobileBottomNav } from "../MobileBottomNav";
@@ -12,7 +12,7 @@ import { useUI } from "../../context/UIContext";
 import { SearchOverlay } from "../Search/SearchOverlay";
 import { RecentlyViewedDrawer } from "../RecentlyViewed/RecentlyViewedDrawer";
 import { useAuth } from "../../context/AuthContext";
-import { AlertCircle, ArrowRight, ShieldCheck, WifiOff } from "lucide-react";
+import { WifiOff } from "lucide-react";
 import { VerificationModal } from "../Auth/VerificationModal";
 import { AuthModal } from "../Auth/AuthModal";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
@@ -25,13 +25,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { i18n } = useTranslation();
   const location = useLocation();
   const isOnline = useOnlineStatus();
-  const { isCartOpen, setIsCartOpen, isWishlistOpen, setIsWishlistOpen, isMobileMenuOpen, setIsMobileMenuOpen } =
-    useUI();
-  const { currentUser, userProfile } = useAuth();
+  const { isCartOpen, setIsCartOpen, isWishlistOpen, setIsWishlistOpen } = useUI();
+  const { currentUser } = useAuth();
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<"email" | "sms">("email");
 
-  const openVerification = async () => {
+  const openVerification = useCallback(async () => {
     try {
       const idToken = await currentUser?.getIdToken();
       const res = await fetch("/api/v1/auth/2fa/send-code", {
@@ -44,7 +43,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     } catch (e) {
       console.error("Failed to start verification", e);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    const handleOpen2FA = () => {
+      openVerification();
+    };
+    window.addEventListener("open-2fa-modal", handleOpen2FA);
+    return () => window.removeEventListener("open-2fa-modal", handleOpen2FA);
+  }, [openVerification]);
 
   const isDashboard =
     location.pathname.startsWith("/dashboard/admin") || location.pathname.startsWith("/dashboard/seller");
@@ -53,19 +60,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     location.pathname === "/forgot-password" ||
     location.pathname === "/verify-email" ||
     location.pathname === "/onboarding";
-  const isOrderDetails = location.pathname.includes("/order/");
   const isHomepage = location.pathname === "/";
   const isPremiumCollection = location.pathname.includes("/collection/");
 
   const isCheckoutPage = location.pathname === "/checkout";
   const isBricolagePage = location.pathname.startsWith("/bricolage");
   const isImmoPage = location.pathname.startsWith("/immo");
-
-  const isShop =
-    location.pathname.startsWith("/shop") ||
-    location.pathname.startsWith("/catalogue") ||
-    location.pathname.startsWith("/ventes-flash") ||
-    location.pathname.startsWith("/search");
 
   const hideNavigation = isDashboard || isAuthPage;
 

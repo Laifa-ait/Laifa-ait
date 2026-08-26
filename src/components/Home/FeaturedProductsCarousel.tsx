@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
 import { apiGet } from "../../lib/api";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Product } from "../../domains/product/product.types";
-import { MOCK_PRODUCTS } from "../../utils/mockProducts";
 import { getTranslatedField } from "../../utils/translations";
 import { formatPrice } from "../../utils/format";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
+
+interface FeaturedApiProduct {
+  productId?: string;
+  id?: string;
+  name: string;
+  price: number;
+  promoPrice?: number;
+  image?: string;
+  category?: string;
+  sellerName?: string;
+  rating?: number;
+}
 
 export const FeaturedProductsCarousel: React.FC = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -20,7 +30,7 @@ export const FeaturedProductsCarousel: React.FC = () => {
   const lang = i18n.language;
 
   useEffect(() => {
-    let resizeTimer: any;
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
     const handleResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
@@ -38,13 +48,13 @@ export const FeaturedProductsCarousel: React.FC = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const data = await apiGet<{ products?: any[] }>("/api/v1/ui-elements/homepage_featured");
+        const data = await apiGet<{ products?: FeaturedApiProduct[] }>("/api/v1/ui-elements/homepage_featured");
 
         let items: Product[] = [];
         if (data && data.products) {
           const aggregated = data.products || [];
-          const formatted = aggregated.map((p: any) => ({
-            id: p.productId || p.id,
+          const formatted = aggregated.map((p) => ({
+            id: p.productId || p.id || "",
             name: p.name,
             price: p.price,
             promoPrice: p.promoPrice,
@@ -52,15 +62,16 @@ export const FeaturedProductsCarousel: React.FC = () => {
             category: p.category,
             sellerName: p.sellerName,
             rating: p.rating,
-            status: "approved",
+            status: "approved" as const,
           })) as Product[];
 
           items = formatted;
         }
 
         setAllProducts(items);
-      } catch (error: any) {
-        console.warn("Could not fetch featured products:", error?.message || error);
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        console.warn("Could not fetch featured products:", errMsg);
         setAllProducts([]);
       } finally {
         setLoading(false);
@@ -200,6 +211,11 @@ export const FeaturedProductsCarousel: React.FC = () => {
                     {idx === 0 && (
                       <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[9px] sm:text-[10px] font-sans font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none border border-slate-200/50">
                         {t("PIÈCE UNIQUE ARTISANALE")}
+                      </span>
+                    )}
+                    {isPromo && (
+                      <span className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none">
+                        PROMO
                       </span>
                     )}
                     <span className="bg-slate-900/80 backdrop-blur-md text-white border border-white/20 text-[9px] sm:text-[10px] font-sans font-medium uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none">

@@ -105,7 +105,7 @@ export async function submitQuoteRequest(payload: QuoteRequestPayload): Promise<
       };
     }
     return { success: false, message: json.error || 'Erreur lors de la soumission.' };
-  } catch (_err) {
+  } catch {
     return {
       success: true,
       message: 'Demande enregistrée en mode hors-ligne ! Un conseiller Olma vous contactera sous peu.',

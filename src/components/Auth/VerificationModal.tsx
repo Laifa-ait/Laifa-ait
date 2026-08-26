@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldCheck, Mail, Smartphone } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -34,7 +34,9 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
 
       toast.success("Compte vérifié avec succès !");
       onClose();
-    } catch (err) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("Failed to verify code:", msg);
       toast.error("Code invalide ou expiré.");
     } finally {
       setLoading(false);
@@ -62,9 +64,6 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
             <p className="text-sm text-zinc-500 text-center mb-6">
               {t("Entrez le code reçu par")}
               {method === "email" ? "e-mail" : "SMS"}.
-              {process.env.NODE_ENV !== "production" && (
-                <span className="block mt-2 font-bold text-amber-600">{t("Code de test (Dév): 123456")}</span>
-              )}
             </p>
             <input
               type="text"

@@ -28,7 +28,7 @@ export const CategoryVisuals = () => {
       await apiPut(`/api/v1/admin/categories/${selectedCategoryId}`, formData);
       toast.success(t("Catégorie mise à jour"));
       mutate();
-    } catch (e) {
+    } catch {
       toast.error(t("Erreur lors de la mise à jour"));
     }
   };

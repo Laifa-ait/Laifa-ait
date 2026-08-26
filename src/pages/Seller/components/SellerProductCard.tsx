@@ -16,7 +16,7 @@ interface SellerProductCardProps {
 
 export const SellerProductCard: React.FC<SellerProductCardProps> = ({
   product,
-  currentUserId,
+  currentUserId: _currentUserId,
   onDuplicate,
   onEdit,
   onDeleteRequest,
@@ -32,7 +32,7 @@ export const SellerProductCard: React.FC<SellerProductCardProps> = ({
       setIsUpdatingStock(true);
       try {
         await onStockUpdate(product.id, val);
-      } catch (err) {
+      } catch {
         setStockVal(product.stock);
       } finally {
         setIsUpdatingStock(false);

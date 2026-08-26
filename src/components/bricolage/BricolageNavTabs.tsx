@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, User, HardHat, MessageSquare, ShieldCheck, LogIn, UserCheck, Sparkles, AlertCircle } from 'lucide-react';
+import { LayoutGrid, User, HardHat, MessageSquare, ShieldCheck, UserCheck, AlertCircle } from 'lucide-react';
 import { ActiveArtisanProfile } from '../../types/bricolage';
 import { useBricolageI18n } from '../../hooks/useBricolageI18n';
 

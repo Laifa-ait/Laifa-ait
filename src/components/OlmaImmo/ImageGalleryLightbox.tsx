@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Share2, Maximize2 } from 'lucide-react';
+import React, { useEffect, useCallback } from 'react';
+import { X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 
 interface ImageGalleryLightboxProps {
   isOpen: boolean;
@@ -18,6 +18,16 @@ export const ImageGalleryLightbox: React.FC<ImageGalleryLightboxProps> = ({
   onIndexChange,
   title,
 }) => {
+  const handlePrev = useCallback(() => {
+    if (images.length === 0) return;
+    onIndexChange((currentIndex - 1 + images.length) % images.length);
+  }, [currentIndex, images.length, onIndexChange]);
+
+  const handleNext = useCallback(() => {
+    if (images.length === 0) return;
+    onIndexChange((currentIndex + 1) % images.length);
+  }, [currentIndex, images.length, onIndexChange]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -34,17 +44,9 @@ export const ImageGalleryLightbox: React.FC<ImageGalleryLightboxProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, currentIndex, images.length]);
+  }, [isOpen, handleNext, handlePrev, onClose]);
 
   if (!isOpen || images.length === 0) return null;
-
-  const handlePrev = () => {
-    onIndexChange((currentIndex - 1 + images.length) % images.length);
-  };
-
-  const handleNext = () => {
-    onIndexChange((currentIndex + 1) % images.length);
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 animate-fade-in">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShieldCheck, CheckCircle2, XCircle, FileText, Award, CreditCard, User, MapPin, Phone, Eye, RefreshCw, AlertTriangle, HardHat } from 'lucide-react';
-import { ActiveArtisanProfile, ArtisanVerificationDocument } from '../../types/bricolage';
+import { X, ShieldCheck, CheckCircle2, XCircle, FileText, Award, CreditCard, Eye, RefreshCw, HardHat } from 'lucide-react';
+import { ActiveArtisanProfile } from '../../types/bricolage';
 import { fetchPendingArtisanVerifications, adminVerifyArtisanDoc } from '../../services/bricolage.api';
 
 interface ArtisanVerificationAdminModalProps {
@@ -130,7 +130,7 @@ export const ArtisanVerificationAdminModal: React.FC<ArtisanVerificationAdminMod
 
   const handleApproveAll = async (artisan: ActiveArtisanProfile) => {
     setProcessingId(artisan.id);
-    const res = await adminVerifyArtisanDoc({
+    await adminVerifyArtisanDoc({
       artisanId: artisan.id,
       action: 'approve'
     });
@@ -148,7 +148,7 @@ export const ArtisanVerificationAdminModal: React.FC<ArtisanVerificationAdminMod
 
   const handleReject = async (artisan: ActiveArtisanProfile, docType?: 'identity' | 'diploma' | 'registry') => {
     setProcessingId(artisan.id);
-    const res = await adminVerifyArtisanDoc({
+    await adminVerifyArtisanDoc({
       artisanId: artisan.id,
       action: 'reject',
       rejectionReason: rejectionReason || 'Pièces illisibles ou non conformes.',

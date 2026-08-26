@@ -6,15 +6,10 @@ import {
   Monitor, 
   RotateCw, 
   CheckCircle2, 
-  AlertTriangle, 
-  Info, 
   Sparkles, 
   TrendingUp, 
-  MapPin, 
-  Activity, 
   Flame, 
   Check,
-  Eye,
   FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -23,7 +18,6 @@ import toast from "react-hot-toast";
 import { db, auth } from "../../lib/firebase";
 import { collection, addDoc, getDocs, query, orderBy, limit, Timestamp } from "firebase/firestore";
 import { apiGet, apiPost } from "../../lib/api";
-import { formatPrice } from "../../utils/format";
 import { AdminDataTable } from "../../components/ui/Admin/AdminDataTable";
 
 interface AuditReport {
@@ -127,7 +121,7 @@ export const CheckoutAuditAdmin: React.FC = () => {
             authorEmail: String(data.authorEmail || '')
           }));
         }
-      } catch (apiErr) {
+      } catch {
         try {
           const q = query(collection(db, "checkout_audits"), orderBy("timestamp", "desc"), limit(20));
           const snap = await getDocs(q);

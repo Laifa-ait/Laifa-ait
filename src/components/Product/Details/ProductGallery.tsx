@@ -26,7 +26,7 @@ export const ProductGallery: React.FC<GalleryProps> = ({
   productVideoUrl,
   onOpenLightbox,
 }) => {
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (_event: unknown, info: { offset: { x: number; y: number } }) => {
     const swipeThreshold = 50;
     if (info.offset.x < -swipeThreshold) {
       // Swiped left -> next image

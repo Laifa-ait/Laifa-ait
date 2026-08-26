@@ -1,30 +1,15 @@
-import React, { useEffect, useState, useRef } from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../context/AuthContext";
 import {
-  Heart,
-  Clock,
-  TrendingUp,
-  Sparkles,
-  Tag,
-  ShoppingBag,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Zap,
   ArrowRight,
 } from "lucide-react";
 import { HomepageSection } from "../../domains/home/homepage.types";
 import { Product } from "../../domains/product/product.types";
-import { formatPrice } from "../../utils/format";
-import { useCart } from "../../context/CartContext";
-import { apiGet } from "../../lib/api";
 import { ProductCard } from "../Product/ProductCard";
-import { cacheEngine, handleDevQuotaLogger } from "../../utils/mockProducts";
 import { MobileSwipeIndicator } from "../ui/MobileSwipeIndicator";
 
 export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boolean }> = ({
@@ -32,13 +17,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
   isFramed = false,
 }) => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const { toggleWishlist, wishlist } = useCart();
-  const { userProfile } = useAuth();
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [customTheme, setCustomTheme] = useState<{ name?: string; imageUrl?: string } | null>(null);
+  const [customTheme] = useState<{ name?: string; imageUrl?: string } | null>(null);
   const hasActiveImage = !!customTheme;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,20 +39,13 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     }
   };
 
-  let ticking = false;
-  const handleScroll = () => {
-    if (!ticking && containerRef.current) {
-      window.requestAnimationFrame(() => {
-        if (containerRef.current) {
-          const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-          setShowLeftArrow(scrollLeft > 10);
-          setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
-        }
-        ticking = false;
-      });
-      ticking = true;
+  const handleScroll = useCallback(() => {
+    if (containerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -99,15 +74,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
         if (resizeTimeout) clearTimeout(resizeTimeout);
       };
     }
-  }, [products]);
-
-  // Determine items per page based on layout
-  const itemsPerPage =
-    section.layout === "small" ? 36 : section.layout === "compact" ? 20 : section.columns ? section.columns * 2 : 12;
+  }, [handleScroll, products]);
 
   const [limitState, setLimitState] = useState(10);
   const [hasMore, setHasMore] = useState(false);
-  const [lastVisible, setLastVisible] = useState<unknown>(null);
 
   useEffect(() => {
     let resizeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -174,7 +144,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
         const data = await res.json();
         const docs = data.products || [];
 
-        const filteredDocs = docs.filter((d: unknown) => d && ((d as any).stock === undefined || (d as any).stock > 0));
+        const filteredDocs = (docs as Product[]).filter((d) => d && (d.stock === undefined || d.stock > 0));
         setProducts(filteredDocs);
         
         if (section.manualProducts && section.manualProducts.length > 0) {
@@ -199,7 +169,8 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     sectionLimit,
     sectionRulesMaxItems,
     manualProductsKey,
-    limitState
+    limitState,
+    section.manualProducts
   ]);
 
   const loadMore = async () => {
@@ -404,11 +375,8 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     return "flex gap-4 overflow-x-auto pb-6 desktop-scrollbar snap-x snap-mandatory flex-nowrap";
   };
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   const renderThemeWrapper = () => {
-    if (!customTheme) return null;
+    if (!customTheme || !customTheme.imageUrl) return null;
 
     return (
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -416,7 +384,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
         <div
           className="absolute inset-0 bg-cover bg-center object-cover opacity-90"
           style={{
-            backgroundImage: `url('${(customTheme as any)?.imageUrl}')`,
+            backgroundImage: `url('${customTheme.imageUrl}')`,
             WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
             maskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
           }}
@@ -426,11 +394,6 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
         <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5]/30 via-black/10 to-[#FAF8F5]/30" />
       </div>
     );
-  };
-
-  const themeClasses = () => {
-    if (customTheme) return "bg-transparent";
-    return "";
   };
 
   if (section.type === "flash_sale") {

@@ -5,14 +5,25 @@ import { db } from '../../lib/firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 
+interface LoginHistoryRecord {
+  id: string;
+  userId?: string;
+  ipAddress?: string;
+  location?: string;
+  userAgent?: string;
+  timestamp?: { toDate?: () => Date };
+  success?: boolean;
+  reason?: string;
+}
+
 interface IpLogsModalProps {
-  user: any;
+  user: { id?: string; email?: string };
   onClose: () => void;
 }
 
 export const IpLogsModal: React.FC<IpLogsModalProps> = ({ user, onClose }) => {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<LoginHistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

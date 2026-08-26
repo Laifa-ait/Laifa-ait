@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { apiGet } from "../../lib/api";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { collection, query, getDocs, limit } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { ShopDirectoryItem, ShopsFilterState } from "../../types/shopsDirectory";
 import { ShopsHeader } from "../../components/ShopsDirectory/ShopsHeader";

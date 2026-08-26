@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
-import { Star, MessageSquareQuote, Search, ExternalLink, Loader2 } from 'lucide-react';
+import { Star, MessageSquareQuote, ExternalLink, Loader2 } from 'lucide-react';
 import { apiGet } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -21,11 +20,9 @@ export const SellerReviews: React.FC = () => {
 }
    const [reviews, setReviews] = useState<SellerReview[]>([]);
    const [loading, setLoading] = useState(true);
-   const [loadingMore, setLoadingMore] = useState(false);
+   const [loadingMore] = useState(false);
    const [averageRating, setAverageRating] = useState(0);
-   const [lastVisible, setLastVisible] = useState<unknown>(null);
-   
-   const REVIEWS_PER_PAGE = 10;
+   const [lastVisible] = useState<unknown>(null);
 
    useEffect(() => {
       const fetchReviews = async () => {

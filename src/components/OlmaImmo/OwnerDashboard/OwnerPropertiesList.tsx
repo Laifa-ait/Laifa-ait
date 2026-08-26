@@ -8,9 +8,7 @@ import {
   Edit,
   PauseCircle,
   PlayCircle,
-  Archive,
   MapPin,
-  MoreVertical,
 } from 'lucide-react';
 
 interface OwnerPropertiesListProps {
@@ -25,7 +23,6 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
   onUpdateStatus,
 }) => {
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('all');
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const filteredProperties = properties.filter((p) => {
     if (selectedStatusTab === 'all') return true;

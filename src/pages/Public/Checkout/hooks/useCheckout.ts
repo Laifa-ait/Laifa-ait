@@ -9,7 +9,7 @@ import { auth } from '../../../../lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { processCheckout } from '../../../../services/checkoutService';
 import { getShippingLocations, calculateShippingRates, ShippingLocation, ShippingRateDetail } from '../../../../services/shippingClient';
-import { apiGet, apiPost } from '../../../../lib/api';
+import { apiPost } from '../../../../lib/api';
 import { Shop } from "../../../../domains/seller/shop.types";
 import { analyticsEngine } from '../../../../utils/analyticsEngine';
 import { CartItem } from '../../../../domains/product/product.types';
@@ -101,7 +101,7 @@ export const useCheckout = () => {
         setFormData(prev => ({ ...prev, commune: availableCommunes[0] }));
       }
     }
-  }, [formData.wilaya, availableCommunes]);
+  }, [formData.wilaya, availableCommunes, formData.commune]);
 
   useEffect(() => {
       if (formData.wilaya) {
@@ -160,7 +160,7 @@ export const useCheckout = () => {
     if (currentUser?.displayName && !formData.fullName) {
       setFormData(prev => ({ ...prev, fullName: currentUser.displayName || '' }));
     }
-  }, [currentUser]);
+  }, [currentUser, formData.fullName]);
 
   const [shops, setShops] = useState<Record<string, Shop>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -179,7 +179,7 @@ export const useCheckout = () => {
       setDeliveryRegId(null);
       toast.success(t("checkout.info_changed_notice", "Informations modifiées, veuillez valider à nouveau vos coordonnées de livraison à l'étape 3."));
     }
-  }, [formData.fullName, formData.phone, formData.wilaya, formData.commune, formData.address, deliveryMethod, selectedAgency]);
+  }, [formData.fullName, formData.phone, formData.wilaya, formData.commune, formData.address, deliveryMethod, selectedAgency, isDeliveryInfoConfirmed, t]);
 
   const groupedCart = useMemo(() => {
     const groups: Record<string, { items: CartItem[], total: number, sellerName: string }> = {};
@@ -300,21 +300,7 @@ export const useCheckout = () => {
     toast.success(t("checkout.coupon_removed", "Coupon retiré."));
   };
 
-  const [shippingConfig, setShippingConfig] = useState<{globalBaseFee?: number; wilayaFees?: Record<string,number>; matrixFees?: Record<string, Record<string, number>>}>({});
 
-  useEffect(() => {
-    const fetchGlobalSettings = async () => {
-      try {
-        const data = await apiGet<{ globalBaseFee?: number; wilayaFees?: Record<string, number>; matrixFees?: Record<string, Record<string, number>> }>('/api/v1/settings/shipping');
-        if (data) {
-          setShippingConfig(data);
-        }
-      } catch(e) {
-        console.error("Erreur chargement shipping configuration", e);
-      }
-    };
-    fetchGlobalSettings();
-  }, []);
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -524,8 +510,7 @@ export const useCheckout = () => {
     }
     setIsConverting(true);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, formData.email, guestPassword);
-      const newUser = cred.user;
+      await createUserWithEmailAndPassword(auth, formData.email, guestPassword);
 
       await apiPost("/api/v1/auth/convert-guest", {
         email: formData.email,

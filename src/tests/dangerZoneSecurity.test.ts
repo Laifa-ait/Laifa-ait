@@ -42,7 +42,7 @@ vi.mock("../config/firebase-admin", () => {
       },
     },
     db: {
-      collection: (name: string) => {
+      collection: (_name: string) => {
         return {
           add: auditLogsAddMock,
           get: vi.fn().mockResolvedValue({ docs: [] }),

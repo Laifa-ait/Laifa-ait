@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { RotateCw, ZoomIn, Move, Check, X, Sliders } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { motion } from "motion/react";
+import { RotateCw, Move, Check, X } from "lucide-react";
 
 interface ImageAdjusterModalProps {
   src: string;
@@ -16,7 +16,6 @@ export const ImageAdjusterModal: React.FC<ImageAdjusterModalProps> = ({ src, typ
   const [rotation, setRotation] = useState<number>(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,7 +93,6 @@ export const ImageAdjusterModal: React.FC<ImageAdjusterModalProps> = ({ src, typ
   // Prevent scroll propagation
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    const zoomStep = 0.1;
     setZoom((prev) => Math.min(5, Math.max(0.1, prev - e.deltaY * 0.002)));
   };
 
@@ -255,7 +253,6 @@ export const ImageAdjusterModal: React.FC<ImageAdjusterModalProps> = ({ src, typ
                 }
 
                 setImgSize({ width: startWidth, height: startHeight });
-                setImageLoaded(true);
               }}
               style={{
                 width: imgSize.width ? `${imgSize.width}px` : "100%",

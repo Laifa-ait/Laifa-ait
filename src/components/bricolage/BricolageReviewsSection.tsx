@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Quote, CheckCircle2 } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { BricolageReview } from '../../types/bricolage';
 
 interface BricolageReviewsSectionProps {

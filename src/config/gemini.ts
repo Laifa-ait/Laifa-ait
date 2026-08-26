@@ -21,11 +21,11 @@ const FALLBACK_MODELS = [
   "gemini-1.5-flash-8b",
 ];
 
-ai.models.generateContent = async function (params: any) {
+ai.models.generateContent = async function (params: Parameters<typeof originalGenerateContent>[0]) {
   let attempt = 0;
   const maxAttempts = 3;
   let delay = 1000; // start with 1s delay
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   // Keep a copy of original params to manipulate
   const localParams = { ...params };

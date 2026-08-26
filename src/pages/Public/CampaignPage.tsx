@@ -2,6 +2,7 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCampaignBanner } from "../../hooks/queries/useProducts";
 import { ProductCard } from "../../components/Product/ProductCard";
+import { Product } from "../../types";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -36,18 +37,20 @@ export const CampaignPage: React.FC = () => {
     );
   }
 
-  const getTranslatedValue = (bannerData: any, key: string) => {
+  const getTranslatedValue = (bannerData: Record<string, unknown> | null | undefined, key: string): string => {
+    if (!bannerData) return '';
     // Check nested translation object
-    if (bannerData?.translations?.[i18n.language]?.[key]) {
-      return bannerData.translations[i18n.language][key];
+    const translations = bannerData.translations as Record<string, Record<string, string>> | undefined;
+    if (translations?.[i18n.language]?.[key]) {
+      return translations[i18n.language][key];
     }
     // Check flat localized suffix keys (e.g., banner.title_ar, title_fr)
     const flatKey = `${key}_${i18n.language}`;
-    if (bannerData?.[flatKey]) {
-      return bannerData[flatKey];
+    if (typeof bannerData[flatKey] === 'string') {
+      return bannerData[flatKey] as string;
     }
     // Fallback
-    return bannerData?.[key] || '';
+    return typeof bannerData[key] === 'string' ? (bannerData[key] as string) : '';
   };
 
   const pageTitle = banner ? getTranslatedValue(banner, 'title') : "";
@@ -99,7 +102,7 @@ export const CampaignPage: React.FC = () => {
 
         {products.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {products.map((product: any, index: number) => (
+            {(products as Product[]).map((product, index) => (
               <ProductCard 
                 key={product.id} 
                 product={product} 

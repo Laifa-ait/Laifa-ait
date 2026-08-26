@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "motion/react";
 import { Heart, Zap, Flame, Scale } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -24,9 +23,9 @@ interface ProductCardProps {
 export const ProductCard = React.memo(
   ({
     product,
-    index,
+    index: _index,
     onClick,
-    isFeatured = false,
+    isFeatured: _isFeatured = false,
     variant = "default",
     sectionStyle,
     isFlashSale: isFlashSaleProp,
@@ -35,8 +34,7 @@ export const ProductCard = React.memo(
     const { wishlist, toggleWishlist } = useCart();
     const navigate = useNavigate();
     const lang = i18n.language;
-    const isProductFlashActive = false;
-    const isFlashSale = false;
+    const isProductFlashActive = isFlashSaleProp || false;
     
     const { products: comparedProducts, addProduct: addToCompare, removeProduct: removeFromCompare } = useComparatorStore();
     const isCompared = comparedProducts.some(p => p.id === product.id);

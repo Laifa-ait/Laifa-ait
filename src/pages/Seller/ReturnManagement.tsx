@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
 import { apiGet } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Package, Check, X, AlertCircle } from 'lucide-react';

@@ -16,7 +16,7 @@ sequenceDiagram
 
     %% Étape 1: Création
     Buyer->>Front: Valide son panier (Checkout)
-    Front->>Gateway: POST /api/v1/orders { items, shippingAddress, paymentMethod: "COD" | "WALLET" }
+    Front->>Gateway: POST /api/v1/orders { items, shippingAddress, paymentMethod: "COD" }
     
     %% Étape 2: Validation et Transaction ACID
     Gateway->>Gateway: Valide la conformité Wilaya (01-58) et nettoie le mobile (+213)

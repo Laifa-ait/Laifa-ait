@@ -903,7 +903,7 @@ realEstateRouter.get(
       const userData = userSnap.data();
 
       // IMPORTANT: Only map allowed fields to prevent PII leakage (no email, phone, documents)
-      const publicProfile: any = {
+      const publicProfile = {
         uid: property.ownerId,
         displayName: userData?.displayName || 'Propriétaire Anonyme',
         photoURL: userData?.photoURL || '',
@@ -2121,7 +2121,7 @@ realEstateRouter.post('/seed', async (_req, res) => {
       batch.set(ref, p);
     }
     await batch.commit();
-    (global as any).isSeedingCompleted = true;
+    (global as unknown as { isSeedingCompleted?: boolean }).isSeedingCompleted = true;
     return res.json({ success: true, message: 'Seeded initial Olma Immo properties into Firestore', count: SEED_REAL_ESTATE_PROPERTIES.length });
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);

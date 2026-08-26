@@ -6,15 +6,10 @@ import {
   HardHat,
   LayoutGrid,
   MessageSquare,
-  Calculator,
   ShieldCheck,
-  Tag,
   Sparkles,
   PhoneCall,
-  UserCheck,
-  ChevronRight,
-  LogOut,
-  AlertCircle
+  ChevronRight
 } from 'lucide-react';
 import { BricolageViewMode, UserRoleSpace } from './BricolageNavTabs';
 import { ActiveArtisanProfile } from '../../types/bricolage';
@@ -44,9 +39,9 @@ export const BricolageSidebar: React.FC<BricolageSidebarProps> = ({
   activeArtisanProfile,
   onOpenArtisanAuth,
   olmartCustomerName = 'Demandeur Olmart',
-  onRequestQuoteClick
+  onRequestQuoteClick: _onRequestQuoteClick
 }) => {
-  const { currentUser, openAuthModal, logout } = useAuth();
+  const { currentUser, openAuthModal } = useAuth();
   const { tBricolage } = useBricolageI18n();
 
   if (!isOpen) return null;

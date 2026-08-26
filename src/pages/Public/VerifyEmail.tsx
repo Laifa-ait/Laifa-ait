@@ -72,7 +72,7 @@ export const VerifyEmail: React.FC = () => {
       } else {
         toast.error(t("email_not_verified_yet", "E-mail non encore vérifié."));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("verification_error", "Erreur lors de la vérification."));
     } finally {
       setChecking(false);

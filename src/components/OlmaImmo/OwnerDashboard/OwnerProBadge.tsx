@@ -9,7 +9,7 @@ interface OwnerProBadgeProps {
 }
 
 export const OwnerProBadge: React.FC<OwnerProBadgeProps> = ({
-  isVerifiedHost = true,
+  isVerifiedHost: _isVerifiedHost = true,
   agencyName,
   professionalLicenseNumber,
 }) => {

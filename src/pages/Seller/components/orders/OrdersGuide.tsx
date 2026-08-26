@@ -134,7 +134,7 @@ export const OrdersGuide: React.FC<OrdersGuideProps> = ({ showGuide, onToggleGui
                   </h4>
                   <p className="text-xs text-zinc-600 font-medium">
                     {t(
-                      "Une fois l'article livré par le transporteur, l'argent est crédité automatiquement sur votre \"Portefeuille\"."
+                      "Une fois l'article livré et le montant COD encaissé, les fonds nets sont immédiatement comptabilisés pour votre virement CCP/RIB."
                     )}
                   </p>
                 </div>

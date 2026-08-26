@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Property, PropertyMapResult, ListingType } from '../types/realEstate';
 import { FilterState } from '../components/OlmaImmo/SearchFilters';
@@ -30,12 +30,8 @@ export function useOlmaImmoProperties() {
     const t = searchParams.get('type') as ListingType | null;
     const f = searchParams.get('favorites') === 'true';
 
-    if (t !== (filters.listingType || null)) {
-      setFilters((prev) => ({ ...prev, listingType: t || undefined }));
-    }
-    if (f !== showFavoritesOnly) {
-      setShowFavoritesOnly(f);
-    }
+    setFilters((prev) => (prev.listingType !== (t || undefined) ? { ...prev, listingType: t || undefined } : prev));
+    setShowFavoritesOnly(f);
   }, [searchParams]);
 
   useEffect(() => {
@@ -44,7 +40,7 @@ export function useOlmaImmoProperties() {
     return () => window.removeEventListener('olma_immo:favorites_updated', handleFavsUpdate);
   }, []);
 
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams();
@@ -76,14 +72,14 @@ export function useOlmaImmoProperties() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, mapBounds]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchProperties();
     }, 300);
     return () => clearTimeout(timer);
-  }, [filters, mapBounds]);
+  }, [fetchProperties]);
 
   const handleSelectProperty = (id: string) => {
     setSelectedPropertyId(id);

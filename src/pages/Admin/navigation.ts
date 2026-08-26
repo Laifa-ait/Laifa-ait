@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Users,
   ShieldAlert,
-  Coins,
   PieChart,
   Megaphone,
   Settings,
@@ -14,7 +13,6 @@ import {
   Star,
   ImageIcon,
   LayoutTemplate,
-  FileText,
   Tag,
   BellRing,
   Bot,
@@ -124,13 +122,8 @@ export const getNavGroups = (t: (key: string) => string) => [
     ],
   },
   {
-    title: t("admin.sidebar.group_marketing") !== "admin.sidebar.group_marketing" ? t("admin.sidebar.group_marketing") : "Marketing & Finances",
+    title: t("admin.sidebar.group_marketing") !== "admin.sidebar.group_marketing" ? t("admin.sidebar.group_marketing") : "Marketing & Promotions",
     items: [
-      {
-        to: "/dashboard/admin/finances",
-        icon: Coins,
-        label: t("admin.sidebar.finances") !== "admin.sidebar.finances" ? t("admin.sidebar.finances") : "Finances & Payouts",
-      },
       {
         to: "/dashboard/admin/promotions",
         icon: Tag,

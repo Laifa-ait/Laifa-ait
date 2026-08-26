@@ -32,7 +32,7 @@ export const SellerDisputes: React.FC = () => {
       }
     };
     fetchCases();
-  }, [currentUser]);
+  }, [currentUser, t]);
 
   return (
     <div className="space-y-6 px-4 md:px-0">

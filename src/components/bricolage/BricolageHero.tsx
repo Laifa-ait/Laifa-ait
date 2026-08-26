@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, MapPin, ShieldCheck, Clock, Award, ArrowRight, Wrench, HardHat, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, ShieldCheck, Clock, ArrowRight, HardHat, CheckCircle2 } from 'lucide-react';
 import { BricolageServiceCategory } from '../../types/bricolage';
 import { ALGERIAN_WILAYAS_LIST } from '../../data/algeriaRegions';
 import { useBricolageI18n } from '../../hooks/useBricolageI18n';
 
 interface BricolageHeroProps {
-  categories: BricolageServiceCategory[];
-  lang: 'fr' | 'ar' | 'en';
-  onSelectCategory: (category: BricolageServiceCategory) => void;
+  categories?: BricolageServiceCategory[];
+  lang?: 'fr' | 'ar' | 'en';
+  onSelectCategory?: (category: BricolageServiceCategory) => void;
   onSearch: (query: string, wilaya: string) => void;
 }
 
 const ALGERIAN_WILAYAS = ['Toutes les Wilayas', ...ALGERIAN_WILAYAS_LIST];
 
 export const BricolageHero: React.FC<BricolageHeroProps> = ({
-  categories,
-  lang,
-  onSelectCategory,
   onSearch
 }) => {
   const { tBricolage } = useBricolageI18n();

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image as ImageIcon, Plus, Trash2, Upload, AlertCircle } from 'lucide-react';
+import { Image as ImageIcon, Trash2, Upload, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface EditorStepMediaProps {

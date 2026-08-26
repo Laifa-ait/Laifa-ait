@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Wrench, ShieldCheck, PhoneCall, ArrowLeft, Sparkles, HardHat, LogIn, LogOut, UserCheck, Menu } from 'lucide-react';
+import { ShieldCheck, PhoneCall, ArrowLeft, HardHat, UserCheck, Menu } from 'lucide-react';
 import { ActiveArtisanProfile } from '../../types/bricolage';
 import { BricolageLanguageSelector } from './BricolageLanguageSelector';
 import { useBricolageI18n } from '../../hooks/useBricolageI18n';
@@ -15,10 +15,10 @@ interface BricolageHeaderProps {
 }
 
 export const BricolageHeader: React.FC<BricolageHeaderProps> = ({
-  onRequestQuoteClick,
+  onRequestQuoteClick: _onRequestQuoteClick,
   activeArtisanProfile,
-  onOpenArtisanAuth,
-  onLogoutArtisan,
+  onOpenArtisanAuth: _onOpenArtisanAuth,
+  onLogoutArtisan: _onLogoutArtisan,
   olmartCustomerName = 'Demandeur Olmart',
   onOpenSidebar
 }) => {

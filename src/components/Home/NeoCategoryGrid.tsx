@@ -7,8 +7,15 @@ import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { MobileSwipeIndicator } from "../ui/MobileSwipeIndicator";
 
+interface NeoCategoryItem {
+  key: string;
+  image: string;
+  title: string;
+  subtitle?: string;
+}
+
 export const NeoCategoryGrid: React.FC<{
-  categories: any[];
+  categories: NeoCategoryItem[];
   favoriteCategory: string | null;
 }> = ({ categories, favoriteCategory }) => {
   const { t, i18n } = useTranslation();

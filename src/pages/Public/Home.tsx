@@ -2,20 +2,8 @@ import React, { useMemo, useState, useEffect, useRef, useCallback } from "react"
 import { motion } from "motion/react";
 import {
   Sparkles,
-  Eye,
-  ShoppingBag,
   ArrowRight,
-  Zap,
   Star,
-  ShieldCheck,
-  Heart,
-  Store,
-  Shirt,
-  Monitor,
-  Sparkle,
-  Truck,
-  MessageSquare,
-  BadgeCheck,
   ChevronLeft,
   ChevronRight,
   X,
@@ -23,16 +11,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useShop } from "../../context/ShopContext";
-import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import toast from "react-hot-toast";
 import { BentoHero } from "../../components/Home/BentoHero";
 import { TechTrustBanner } from "../../components/Home/TechTrustBanner";
 import { NeoCategoryGrid } from "../../components/Home/NeoCategoryGrid";
 import { DynamicSection } from "../../components/Home/DynamicSection";
 import { HomepageSection, Banner } from "../../domains/home/homepage.types";
 import { Shop } from "../../domains/seller/shop.types";
-import { BannerCarousel } from "../../components/ui/BannerCarousel";
 
 interface HomeHeroBanner {
   id: string;
@@ -45,7 +30,7 @@ interface HomeHeroBanner {
   isActive?: boolean;
   is_active?: boolean;
   ctaLink?: string;
-  translations?: Record<string, any>;
+  translations?: Record<string, unknown>;
   mobile_image?: string;
   mobileImageUrl?: string;
 }
@@ -55,15 +40,9 @@ interface HomeBanner extends Banner {
   desktopImage?: string;
 }
 import { ProductCard } from "../../components/Product/ProductCard";
-import { formatPrice } from "../../utils/format";
 import { Product } from "../../domains/product/product.types";
 import { Helmet } from "react-helmet-async";
-import { getTranslatedField } from "../../utils/translations";
 import { MobileSwipeIndicator } from "../../components/ui/MobileSwipeIndicator";
-import {
-  cacheEngine,
-  handleDevQuotaLogger,
-} from "../../utils/mockProducts";
 import { useUserHabits } from "../../hooks/useUserHabits";
 import { useHomeData } from "../../hooks/useHomeData";
 import { FeaturedProductsCarousel } from "../../components/Home/FeaturedProductsCarousel";
@@ -95,21 +74,16 @@ export const Home: React.FC = () => {
       container.scrollBy({ left: leftScroll, behavior: "smooth" });
     }
   };
-  const { setActiveCategory, activeWilaya } = useShop();
-  const { toggleWishlist, wishlist, addToCart } = useCart();
+  const { activeWilaya } = useShop();
   const { currentUser, userProfile } = useAuth();
 
   const {
     getCategorieFavorite,
-    trackCategorie,
-    forceCategorieFavorite,
-    clearHabits,
     categoriesVisiteesCount,
   } = useUserHabits();
 
   const {
     dbBanners,
-    dbTags,
     isBannersLoading,
     homepageSections,
     featuredProducts,
@@ -198,7 +172,7 @@ export const Home: React.FC = () => {
         featuredProductIds: [],
       };
     });
-  }, [customCategories, defaultCategoryMapping, t]);
+  }, [customCategories, defaultCategoryMapping, categoryHierarchy]);
 
   // Sort and display strictly only 3 category cards according to user's navigation count!
   const sortedCategoryCards = useMemo(() => {
@@ -223,35 +197,7 @@ export const Home: React.FC = () => {
 
     // Take exactly 3 categories to maintain the pristine aesthetic of 3 layout blocks
     return sorted;
-  }, [activeCategoriesConfig, categoriesVisiteesCount, getCategorieFavorite]);
-
-  // Dynamically prioritize products that match user's custom favorite category's featured list defined by admin
-  const sortedFeaturedProducts = useMemo(() => {
-    const defaultCat = Object.keys(categoryHierarchy)[0] || "";
-    const favorite = getCategorieFavorite() || defaultCat;
-
-    // Retrieve custom configuration for that category
-    const categoryConfig = activeCategoriesConfig.find(
-      (c) => c.key === favorite,
-    );
-    const adminFeaturedIds = categoryConfig?.featuredProductIds || [];
-
-    return [...featuredProducts].sort((a, b) => {
-      // 1. Is it explicitly marked as featured by admin (adminFeaturedIds) for the current favorite category? (Score 2)
-      const aIsAdminFeatured =
-        a.category === favorite && adminFeaturedIds.includes(a.id) ? 2 : 0;
-      const bIsAdminFeatured =
-        b.category === favorite && adminFeaturedIds.includes(b.id) ? 2 : 0;
-
-      // 2. Is it in the customer's favorite category? (Score 1)
-      const aIsFavoriteCat = a.category === favorite ? 1 : 0;
-      const bIsFavoriteCat = b.category === favorite ? 1 : 0;
-
-      return (
-        bIsAdminFeatured + bIsFavoriteCat - (aIsAdminFeatured + aIsFavoriteCat)
-      );
-    });
-  }, [featuredProducts, getCategorieFavorite, activeCategoriesConfig]);
+  }, [activeCategoriesConfig, categoriesVisiteesCount, getCategorieFavorite, categoryHierarchy]);
 
   // Premium High-Value Selection: Sorted by sales count, devalued proportionally if seller trust drops
   const premiumProducts = useMemo(() => {
@@ -261,14 +207,15 @@ export const Home: React.FC = () => {
       .map((product) => {
         // Look up seller profile in dbSellers to verify up-to-date trustScore
         const sellerProfile = dbSellers?.find((s) => s.id === product.sellerId);
+        const extendedProduct = product as Product & { sellerTrustScore?: number; trustScore?: number };
         
         let sellerTrust = 100;
         if (sellerProfile && typeof sellerProfile.trustScore === "number") {
           sellerTrust = sellerProfile.trustScore;
-        } else if (typeof (product as any).sellerTrustScore === "number") {
-          sellerTrust = (product as any).sellerTrustScore;
-        } else if (typeof (product as any).trustScore === "number") {
-          sellerTrust = (product as any).trustScore;
+        } else if (typeof extendedProduct.sellerTrustScore === "number") {
+          sellerTrust = extendedProduct.sellerTrustScore;
+        } else if (typeof extendedProduct.trustScore === "number") {
+          sellerTrust = extendedProduct.trustScore;
         }
 
         const sales = product.salesCount || 0;
@@ -287,49 +234,6 @@ export const Home: React.FC = () => {
       })
       .sort((a, b) => b.valueScore - a.valueScore);
   }, [featuredProducts, dbSellers]);
-
-  const getPrecedingSectionBgColor = () => {
-    const activeSections = homepageSections.filter((s) => s.isActive);
-    if (activeSections.length > 0) {
-      const lastSection = activeSections[activeSections.length - 1];
-      if (lastSection.type === "flash_sale") {
-        return "#51AEC6";
-      }
-      switch (lastSection.theme) {
-        case "ramadan":
-          return "#FEFAEF";
-        case "summer":
-          return "#FDF9F1";
-        case "winter":
-          return "#F4F7FC";
-        case "back_to_school":
-          return "#FCFBF8";
-        default:
-          return lastSection.backgroundColor || "#FAF8F5";
-      }
-    }
-    return "#FAF8F5";
-  };
-
-  const banners = [
-    {
-      id: "1",
-      image: "/images/placeholders/product.svg",
-      title: t("hero_title_1"),
-      subtitle:
-        t("hero_sub_1"),
-      buttonText: t("hero_btn_1"),
-    },
-    {
-      id: "2",
-      image:
-        "/images/placeholders/product.svg",
-      title: t("hero_title_2"),
-      subtitle:
-        t("hero_sub_2"),
-      buttonText: t("hero_btn_2"),
-    },
-  ];
 
   // Dynamic Target Filtering for Banners and Sections (Audience & wilayas targeting + Dates)
   const filterByTargeting = useCallback((item: Banner | HomepageSection, isBanner: boolean) => {

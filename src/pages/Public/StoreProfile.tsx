@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, MapPin, SearchX, Star, Package, ChevronLeft, Store, Truck, Undo2, Building2, Info, UserPlus, UserCheck, Users, Camera, Search, X, Filter } from 'lucide-react';
+import { ShieldCheck, MapPin, SearchX, Star, Package, ChevronLeft, Store, Truck, Undo2, Building2, Info, UserPlus, UserCheck, Users, Camera, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs, doc, getDoc, limit, startAfter, getCountFromServer, setDoc, deleteDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, limit, setDoc, deleteDoc, updateDoc, increment } from 'firebase/firestore';
 import { ProductCard } from '../../components/Product/ProductCard';
 import { Product } from "../../domains/product/product.types";
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +20,28 @@ import { ALGERIA_REGIONS } from '../../data/algeriaRegions';
 import { maskSensitiveData, hasExternalChannel } from '../../utils/masking';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
+export interface PublicStoreInfo {
+  id: string;
+  sellerId: string;
+  shopName: string;
+  shopDescription?: string;
+  wilaya: string;
+  legalStatus?: string;
+  avgPreparationTime?: string;
+  returnPolicy?: string;
+  followersCount: number;
+  rating?: number | null;
+  status: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  shopSlug?: string;
+  coverImage?: string;
+  displayName?: string;
+  description?: string;
+  avatarUrl?: string;
+  coverUrl?: string;
+}
+
 export const StoreProfile: React.FC = () => {
   const { sellerId } = useParams();
   const navigate = useNavigate();
@@ -28,7 +50,7 @@ export const StoreProfile: React.FC = () => {
   const isRTL = currentLang === 'ar';
   
   const d = (key: string) => {
-    const dict = {
+    const dict: Record<string, Record<string, string>> = {
       fr: {
         legalStatus: "Statut Légal",
         prepTime: "Préparation Moyenne",
@@ -96,10 +118,10 @@ export const StoreProfile: React.FC = () => {
         uploadingProfile: "جاري رفع الصورة..."
       }
     };
-    return (dict as any)[currentLang]?.[key] || (dict as any)["fr"][key];
+    return dict[currentLang]?.[key] || dict["fr"][key];
   };
 
-  const [storeInfo, setStoreInfo] = useState<any>(null);
+  const [storeInfo, setStoreInfo] = useState<PublicStoreInfo | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -216,15 +238,16 @@ export const StoreProfile: React.FC = () => {
       // Upload the generated Blob with content type header
       try {
         await uploadBytes(fileRef, blob, { contentType: 'image/jpeg' });
-      } catch (err: any) {
-        toast.error("Firebase Storage Error: " + err.message, { id: toastId });
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        toast.error("Firebase Storage Error: " + errorMsg, { id: toastId });
         return;
       }
       
       const url = await getDownloadURL(fileRef);
 
       // Save to Firebase Firestore
-      const updateData: any = {};
+      const updateData: Record<string, string> = {};
       if (isLogo) {
         updateData.logoUrl = url;
         updateData.photoURL = url;
@@ -237,25 +260,25 @@ export const StoreProfile: React.FC = () => {
 
       try {
         await updateDoc(doc(db, "users", sellerId), updateData);
-      } catch (err: any) {
+      } catch (err) {
         console.warn("Firestore users update warning:", err);
       }
 
       try {
         await setDoc(doc(db, "publicProfiles", sellerId), updateData, { merge: true });
-      } catch (err: any) {
+      } catch (err) {
         console.warn("Firestore publicProfiles error:", err);
       }
 
       // Update State
-      setStoreInfo((prev: any) => ({ ...prev, ...updateData }));
+      setStoreInfo(prev => prev ? ({ ...prev, ...updateData }) : null);
       toast.success(
         isRTL 
           ? "تم تحديث الصورة بنجاح !" 
           : "Photo mise à jour avec succès !", 
         { id: toastId }
       );
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       toast.error(isRTL ? "حدث خطأ أثناء الرفع." : "Échec du chargement.", { id: toastId });
     } finally {
@@ -272,44 +295,44 @@ export const StoreProfile: React.FC = () => {
       if (!sellerId) return;
       setLoading(true);
       try {
-        let data: any = null;
+        let data: PublicStoreInfo | null = null;
         const decodedSellerId = decodeURIComponent(sellerId);
 
         // 1. Try fetching publicProfile document (and user document if active user is owner/admin)
-        let pubData: any = null;
-        let userData: any = null;
+        let pubData: Record<string, unknown> | null = null;
+        let userData: Record<string, unknown> | null = null;
         try {
           const isSelfOrAdmin = currentUser?.uid === sellerId || userProfile?.role === 'admin';
           const [pubSnap, userSnap] = await Promise.all([
             getDoc(doc(db, "publicProfiles", sellerId)).catch(() => null),
             isSelfOrAdmin ? getDoc(doc(db, "users", sellerId)).catch(() => null) : Promise.resolve(null)
           ]);
-          if (pubSnap && pubSnap.exists()) pubData = pubSnap.data();
-          if (userSnap && 'exists' in userSnap && userSnap.exists()) userData = userSnap.data();
+          if (pubSnap && pubSnap.exists()) pubData = pubSnap.data() as Record<string, unknown>;
+          if (userSnap && 'exists' in userSnap && userSnap.exists()) userData = userSnap.data() as Record<string, unknown>;
         } catch (e) {
           console.warn("[StoreProfile] Firestore profile fetch error:", e);
         }
 
         if (pubData || userData) {
-          const merged = { ...userData, ...pubData };
-          const logoUrl = pubData?.logoUrl || pubData?.photoURL || pubData?.avatarUrl ||
-                          userData?.logoUrl || userData?.photoURL || userData?.avatarUrl || userData?.photoUrl || "";
+          const merged = { ...(userData || {}), ...(pubData || {}) } as Record<string, string | number | boolean | null | undefined>;
+          const logoUrl = (pubData?.logoUrl || pubData?.photoURL || pubData?.avatarUrl ||
+                          userData?.logoUrl || userData?.photoURL || userData?.avatarUrl || userData?.photoUrl || "") as string;
 
-          const bannerUrl = pubData?.bannerUrl || pubData?.coverUrl || pubData?.coverImage ||
-                            userData?.bannerUrl || userData?.coverUrl || userData?.coverImage || userData?.bannerImage || "";
+          const bannerUrl = (pubData?.bannerUrl || pubData?.coverUrl || pubData?.coverImage ||
+                            userData?.bannerUrl || userData?.coverUrl || userData?.coverImage || userData?.bannerImage || "") as string;
 
           data = {
             id: sellerId,
             sellerId: sellerId,
-            shopName: merged.shopName || merged.displayName || ("Boutique " + (merged.displayName || "Vendeur")),
-            shopDescription: merged.shopDescription || merged.description || "Bienvenue dans ma boutique sur Olmart.",
-            wilaya: merged.wilaya || "16 - Alger",
-            legalStatus: merged.legalStatus || "Artisan / Commerçant",
-            avgPreparationTime: merged.avgPreparationTime || "24h",
-            returnPolicy: merged.returnPolicy || "Retours acceptés sous 7 jours.",
-            followersCount: merged.followersCount || 0,
-            rating: merged.rating !== undefined ? merged.rating : null,
-            status: merged.status || "ACTIVE",
+            shopName: (merged.shopName || merged.displayName || ("Boutique " + (merged.displayName || "Vendeur"))) as string,
+            shopDescription: (merged.shopDescription || merged.description || "Bienvenue dans ma boutique sur Olmart.") as string,
+            wilaya: (merged.wilaya || "16 - Alger") as string,
+            legalStatus: (merged.legalStatus || "Artisan / Commerçant") as string,
+            avgPreparationTime: (merged.avgPreparationTime || "24h") as string,
+            returnPolicy: (merged.returnPolicy || "Retours acceptés sous 7 jours.") as string,
+            followersCount: (merged.followersCount || 0) as number,
+            rating: merged.rating !== undefined ? merged.rating as number | null : null,
+            status: (merged.status || "ACTIVE") as string,
             ...merged,
             logoUrl,
             bannerUrl
@@ -319,11 +342,11 @@ export const StoreProfile: React.FC = () => {
         // 2. Try API endpoints (Server Admin SDK bypasses rules safely)
         if (!data) {
           try {
-            const apiRes = await apiGet<{ success: boolean; shop?: any }>(`/api/v1/public/shops/${encodeURIComponent(sellerId)}`);
+            const apiRes = await apiGet<{ success: boolean; shop?: PublicStoreInfo }>(`/api/v1/public/shops/${encodeURIComponent(sellerId)}`);
             if (apiRes && apiRes.success && apiRes.shop) {
               data = apiRes.shop;
             } else {
-              const apiRes2 = await apiGet<any>(`/api/v1/stores/${encodeURIComponent(sellerId)}`);
+              const apiRes2 = await apiGet<PublicStoreInfo>(`/api/v1/stores/${encodeURIComponent(sellerId)}`);
               if (apiRes2 && !apiRes2.error) {
                 data = apiRes2;
               }
@@ -415,12 +438,12 @@ export const StoreProfile: React.FC = () => {
         // Strategy A: Primary Public Shop Products API (Admin SDK backend)
         for (const tid of targetSellerIds) {
           try {
-            const pubProdRes = await apiGet<{ success?: boolean; products?: any[] }>(
+            const pubProdRes = await apiGet<{ success?: boolean; products?: Product[] }>(
               `/api/v1/public/shops/${encodeURIComponent(tid)}/products`
             ).catch(() => null);
             if (pubProdRes && Array.isArray(pubProdRes.products) && pubProdRes.products.length > 0) {
               pubProdRes.products.forEach(p => {
-                if (p && p.id) productMap.set(p.id, p as Product);
+                if (p && p.id) productMap.set(p.id, p);
               });
             }
           } catch (e) {
@@ -431,14 +454,14 @@ export const StoreProfile: React.FC = () => {
         // Strategy B: If the logged-in user is viewing their own store, fetch via authenticated seller endpoint
         if (currentUser?.uid && (currentUser.uid === sellerId || currentUser.uid === data?.id || currentUser.uid === data?.sellerId)) {
           try {
-            const sellerApiRes = await apiGet<any>('/api/v1/seller/products').catch(() => null);
+            const sellerApiRes = await apiGet<Product[] | { products?: Product[] }>('/api/v1/seller/products').catch(() => null);
             if (sellerApiRes && Array.isArray(sellerApiRes)) {
               sellerApiRes.forEach(p => {
-                if (p && p.id) productMap.set(p.id, p as Product);
+                if (p && p.id) productMap.set(p.id, p);
               });
-            } else if (sellerApiRes && Array.isArray(sellerApiRes?.products)) {
-              sellerApiRes.products.forEach((p: any) => {
-                if (p && p.id) productMap.set(p.id, p as Product);
+            } else if (sellerApiRes && typeof sellerApiRes === 'object' && Array.isArray(sellerApiRes?.products)) {
+              sellerApiRes.products.forEach((p) => {
+                if (p && p.id) productMap.set(p.id, p);
               });
             }
           } catch (e) {
@@ -496,10 +519,10 @@ export const StoreProfile: React.FC = () => {
         if (productMap.size === 0) {
           try {
             for (const tid of targetSellerIds) {
-              const apiProdRes = await apiGet<{ products?: any[] }>(`/api/v1/products/cross-sell?sellerId=${encodeURIComponent(tid)}&limit=30`).catch(() => null);
+              const apiProdRes = await apiGet<{ products?: Product[] }>(`/api/v1/products/cross-sell?sellerId=${encodeURIComponent(tid)}&limit=30`).catch(() => null);
               if (apiProdRes && Array.isArray(apiProdRes.products) && apiProdRes.products.length > 0) {
                 apiProdRes.products.forEach(p => {
-                  if (p && p.id) productMap.set(p.id, p as Product);
+                  if (p && p.id) productMap.set(p.id, p);
                 });
                 break;
               }
@@ -513,7 +536,7 @@ export const StoreProfile: React.FC = () => {
 
         // 8. Infer storeInfo from product metadata if profile missing
         if (!data && fetchedProducts.length > 0) {
-          const sample = fetchedProducts[0] as any;
+          const sample = fetchedProducts[0] as Product & { storeName?: string; sellerLogo?: string; storeLogo?: string; location?: string; };
           data = {
             id: sellerId,
             sellerId: sellerId,
@@ -556,7 +579,10 @@ export const StoreProfile: React.FC = () => {
 
         if (data) {
           // Final resolution check for logoUrl and bannerUrl across all potential aliases & product metadata
-          const sampleProd = fetchedProducts.find((p: any) => p.sellerLogo || p.storeLogo || p.sellerBanner || p.storeBanner) as any;
+          const sampleProd = fetchedProducts.find((p) => {
+            const extended = p as Product & { sellerLogo?: string; storeLogo?: string; sellerBanner?: string; storeBanner?: string; };
+            return extended.sellerLogo || extended.storeLogo || extended.sellerBanner || extended.storeBanner;
+          }) as (Product & { sellerLogo?: string; storeLogo?: string; sellerBanner?: string; storeBanner?: string; }) | undefined;
 
           const resolvedLogo =
             data.logoUrl ||
@@ -604,7 +630,7 @@ export const StoreProfile: React.FC = () => {
       }
     };
     fetchStoreAndProducts();
-  }, [sellerId]);
+  }, [sellerId, currentUser?.uid, currentUser?.photoURL, userProfile?.role]);
 
   useEffect(() => {
     const checkFollowStatus = async () => {
@@ -658,18 +684,18 @@ export const StoreProfile: React.FC = () => {
 
         setIsFollowing(false);
         // Update local state smoothly
-        setStoreInfo((prev: any) => ({
+        setStoreInfo((prev) => prev ? ({
           ...prev,
-          followersCount: Math.max(0, (prev?.followersCount || 0) - 1)
-        }));
+          followersCount: Math.max(0, (prev.followersCount || 0) - 1)
+        }) : null);
 
         toast.success("Désabonnement réussi.");
       } else {
         await setDoc(followRef, {
           sellerId,
-          name: storeInfo.shopName || storeInfo.displayName || 'Boutique',
-          logo: storeInfo.logoUrl || null,
-          location: storeInfo.wilaya || 'Algérie',
+          name: storeInfo?.shopName || storeInfo?.displayName || 'Boutique',
+          logo: storeInfo?.logoUrl || null,
+          location: storeInfo?.wilaya || 'Algérie',
           followedAt: new Date().toISOString()
         });
 
@@ -685,10 +711,10 @@ export const StoreProfile: React.FC = () => {
 
         setIsFollowing(true);
         // Update local state smoothly
-        setStoreInfo((prev: any) => ({
+        setStoreInfo((prev) => prev ? ({
           ...prev,
-          followersCount: (prev?.followersCount || 0) + 1
-        }));
+          followersCount: (prev.followersCount || 0) + 1
+        }) : null);
 
         toast.success("Boutique suivie !");
       }
@@ -733,7 +759,7 @@ export const StoreProfile: React.FC = () => {
 
       await updateDoc(doc(db, "users", sellerId), maskedForm);
       await setDoc(doc(db, "publicProfiles", sellerId), maskedForm, { merge: true });
-      setStoreInfo((prev: any) => ({ ...prev, ...maskedForm }));
+      setStoreInfo((prev) => prev ? ({ ...prev, ...maskedForm }) : null);
       setIsEditingAbout(false);
       toast.success(isRTL ? "تم تحديث المعلومات بنجاح" : "Informations mises à jour.", { id: toastId });
     } catch(err) {
@@ -762,7 +788,7 @@ export const StoreProfile: React.FC = () => {
       .toLowerCase();
   };
 
-  const matchesSmartSearch = (product: any, query: string): boolean => {
+  const matchesSmartSearch = (product: Product, query: string): boolean => {
     if (!query) return true;
     
     // Multi-lingual synonyms groups (fr, en, ar)
@@ -831,6 +857,8 @@ export const StoreProfile: React.FC = () => {
       : true;
     return matchesSearch && matchesCategory;
   });
+
+  const typedFilteredProducts = filteredProducts as (Product & { isStoreFeatured?: boolean })[];
 
   const paginatedProducts = filteredProducts.slice(0, displayLimit);
   const currentHasMore = displayLimit < filteredProducts.length;
@@ -1149,13 +1177,13 @@ export const StoreProfile: React.FC = () => {
                         {!searchQuery && !selectedCategory ? (
                            <>
                               {/* Featured items shelf */}
-                              {filteredProducts.filter((p: any) => p.isStoreFeatured).length > 0 && (
+                              {typedFilteredProducts.filter((p) => p.isStoreFeatured).length > 0 && (
                                  <div className="space-y-6">
                                     <div className="flex items-center gap-2 border-l-4 border-amber-500 pl-4">
                                        <h2 className="text-lg font-sans font-bold text-zinc-900 uppercase tracking-widest">{d('featured')}</h2>
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-                                       {filteredProducts.filter((p: any) => p.isStoreFeatured).map((product, i) => (
+                                       {typedFilteredProducts.filter((p) => p.isStoreFeatured).map((product, i) => (
                                           <div key={product.id} className="col-span-1 transform transition-transform hover:scale-[1.015]">
                                              <ProductCard product={product} index={i} />
                                           </div>
@@ -1165,13 +1193,13 @@ export const StoreProfile: React.FC = () => {
                               )}
 
                               {/* All listings grid */}
-                              {filteredProducts.filter((p: any) => !p.isStoreFeatured).length > 0 && (
+                              {typedFilteredProducts.filter((p) => !p.isStoreFeatured).length > 0 && (
                                  <div className="space-y-6">
                                     <div className="flex items-center gap-2 border-l-4 border-zinc-950 pl-4">
                                        <h2 className="text-lg font-sans font-bold text-zinc-900 uppercase tracking-widest">{d('allArticles')}</h2>
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                                       {filteredProducts.filter((p: any) => !p.isStoreFeatured).slice(0, displayLimit).map((product, i) => (
+                                       {typedFilteredProducts.filter((p) => !p.isStoreFeatured).slice(0, displayLimit).map((product, i) => (
                                           <div key={product.id} className="col-span-1 transform transition-transform hover:scale-[1.015]">
                                              <ProductCard product={product} index={i} />
                                           </div>

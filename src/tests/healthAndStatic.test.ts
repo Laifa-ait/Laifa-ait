@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { isFrontendReady } from "../services/ViteStaticService";
 
 describe("Health & Static Service Verification", () => {

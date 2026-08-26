@@ -15,13 +15,8 @@ import {
   Eye,
   ShoppingCart,
   Search,
-  Heart,
   Sparkles,
   History,
-  BookOpen,
-  Download,
-  ChevronDown,
-  ChevronUp,
   AlertCircle,
   ShieldAlert,
 } from "lucide-react";
@@ -30,7 +25,7 @@ import { Link } from "react-router-dom";
 const OverviewChart = React.lazy(() => import("../../components/Admin/OverviewChart"));
 const TrafficChart = React.lazy(() => import("../../components/Admin/TrafficChart"));
 import { db } from "../../lib/firebase";
-import { collection, query, getDocs, limit, orderBy, where, startAfter, Timestamp, DocumentData } from "firebase/firestore";
+import { collection, query, getDocs, limit, orderBy, Timestamp, DocumentData } from "firebase/firestore";
 import { formatPrice } from "../../utils/format";
 import { analyticsEngine, AnalyticsEvent } from "../../utils/analyticsEngine";
 import { WorkspaceActions } from "../../components/Admin/WorkspaceActions";
@@ -40,7 +35,6 @@ import { AdminManualGuide } from "../../components/Admin/AdminManualGuide";
 
 import { AdminDataTable } from "../../components/ui/Admin/AdminDataTable";
 import { StatusBadge } from "../../components/ui/Admin/StatusBadge";
-import { Button } from "../../components/ui/Button";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useAuth } from "../../context/AuthContext";
 import { apiGet } from "../../lib/api";
@@ -150,9 +144,8 @@ export const safeFetch = async <T,>(fn: () => Promise<T>, fallback: T): Promise<
 };
 
 export const Overview: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
-  const isArabic = i18n.language === "ar" || i18n.language?.startsWith("ar");
   const [stats, setStats] = useState({
     totalSales: 0,
     activeVendors: 0,
@@ -195,15 +188,6 @@ export const Overview: React.FC = () => {
       return [];
     }
   });
-
-  const [isGuideOpen, setIsGuideOpen] = useState(() => {
-    return localStorage.getItem('olmart_admin_guide_closed') !== 'true';
-  });
-
-  const closeGuide = () => {
-    setIsGuideOpen(false);
-    localStorage.setItem('olmart_admin_guide_closed', 'true');
-  };
 
   const [loadingRefresh, setLoadingRefresh] = useState(false);
 
@@ -443,58 +427,6 @@ export const Overview: React.FC = () => {
       toast.success(t("Demande de réinitialisation envoyée au serveur sécurisé..."));
     }
   };
-
-  const analyticsColumns = [
-    {
-      header: t("Heure"),
-      accessor: (evt: AnalyticsEvent) => (
-        <span className="text-xs font-bold text-zinc-400 whitespace-nowrap">
-          {new Date(evt.timestamp).toLocaleTimeString()}
-        </span>
-      )
-    },
-    {
-      header: t("Session User"),
-      accessor: (evt: AnalyticsEvent) => (
-        <span className="text-xs font-bold text-zinc-650 truncate max-w-[150px] inline-block">
-          {evt.userEmail || t("Visiteur Anonyme")}
-        </span>
-      )
-    },
-    {
-      header: t("Action"),
-      accessor: (evt: AnalyticsEvent) => {
-        let badgeColor = "bg-zinc-100 text-zinc-700";
-        if (evt.name === "product_view") badgeColor = "bg-[#eff6ff] text-[#2563eb] border border-[#dbeafe]";
-        if (evt.name === "add_to_cart") badgeColor = "bg-orange-50 text-orange-600 border border-orange-100";
-        if (evt.name === "purchase_complete") badgeColor = "bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]";
-        if (evt.name === "wishlist_toggle") badgeColor = "bg-[#fdf2f8] text-[#db2777] border border-[#fbcfe8]";
-        if (evt.name === "search_query") badgeColor = "bg-amber-50 text-amber-600 border border-amber-100";
-        if (evt.name === "checkout_start") badgeColor = "bg-purple-50 text-purple-600 border border-purple-100";
-        if (evt.name === "remove_from_cart") badgeColor = "bg-red-50 text-red-600 border border-red-100";
-
-        return (
-          <span className={`${badgeColor} inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider rtl:tracking-normal`}>
-            {evt.name}
-          </span>
-        );
-      }
-    },
-    {
-      header: t("Détails"),
-      accessor: (evt: AnalyticsEvent) => (
-        <span className="text-xs text-zinc-500 font-bold max-w-xs sm:max-w-md truncate inline-block">
-          {evt.name === "product_view" && `${t("Consulté")} "${evt.metadata.name}"`}
-          {evt.name === "add_to_cart" && `${t("Ajouté au panier:")} "${evt.metadata.name}"`}
-          {evt.name === "remove_from_cart" && `${t("Retiré du panier:")} "${evt.metadata.name}"`}
-          {evt.name === "wishlist_toggle" && `${evt.metadata.action === "add" ? t("Ajouté aux") : t("Retiré des")} ${t("favoris :")} ID ${evt.metadata.productId}`}
-          {evt.name === "search_query" && `${t("Recherche d'intérêt :")} "${evt.metadata.query}" (${evt.metadata.resultsCount} ${t("résultats")})`}
-          {evt.name === "purchase_complete" && `${t("Commande validée")} #${evt.metadata.orderId} - ${t("Total:")} ${formatPrice(Number(evt.metadata.totalAmount || 0))}`}
-          {evt.name === "checkout_start" && `${t("Visite de l'entonnoir - Panier contenant")} ${evt.metadata.itemsCount} ${t("articles")}`}
-        </span>
-      )
-    }
-  ];
 
   const globalOrdersColumns = [
     {

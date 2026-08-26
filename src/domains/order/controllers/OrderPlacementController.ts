@@ -38,12 +38,19 @@ const sendLowStockEmail = async (sellerEmail: string, message: string) => {
   }
 };
 
+interface OrderEmailSubOrder {
+  sellerId: string;
+  subOrderId: string;
+  items: Array<{ name?: string; quantity?: number; price?: number; [key: string]: unknown }>;
+  total: number;
+}
+
 const sendOrderConfirmationEmails = async (
   buyerEmail: string,
   buyerName: string,
   orderId: string,
   grandTotal: number,
-  subOrders: Array<{ sellerId: string; subOrderId: string; items: any[]; total: number }>
+  subOrders: OrderEmailSubOrder[]
 ) => {
   try {
     if (!process.env.SMTP_USER) {
@@ -735,7 +742,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
             subOrdersForEmail: subOrdersToCreate.map(so => ({
               sellerId: (so.data.sellerIds as string[])[0],
               subOrderId: so.ref.id,
-              items: so.data.items as any[],
+              items: (so.data.items as OrderEmailSubOrder['items']) || [],
               total: so.data.total as number
             }))
           };

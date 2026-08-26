@@ -1,8 +1,20 @@
 import React from 'react';
-import { Calendar, Phone, MessageSquare, ShieldCheck, Sparkles, Building } from 'lucide-react';
+import { Calendar, Phone, MessageSquare } from 'lucide-react';
 import { Property, PublicOwnerProfile } from '../../../types/realEstate';
 import { OwnerTrustCard } from '../OwnerTrustCard';
 import { ShortTermBookingCalendar } from '../ShortTermBookingCalendar';
+
+export interface BookingSummaryData {
+  startDate: string;
+  endDate: string;
+  totalNights: number;
+  guests: { adults: number; children: number };
+  subtotal: number;
+  cleaningFee: number;
+  serviceFee: number;
+  totalPriceDZD: number;
+  [key: string]: unknown;
+}
 
 interface DetailSidebarProps {
   property: Property;
@@ -12,7 +24,7 @@ interface DetailSidebarProps {
   onOpenVisitModal: () => void;
   onOpenBookingModal: () => void;
   onOpenDirectChat: () => void;
-  onBookingSummaryChange: (summary: any) => void;
+  onBookingSummaryChange: (summary: BookingSummaryData) => void;
 }
 
 export const DetailSidebar: React.FC<DetailSidebarProps> = ({

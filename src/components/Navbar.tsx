@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
   Menu,
-  ChevronDown,
   User as UserIcon,
   Heart,
   ShoppingBag,
-  Grid,
-  Home,
-  Search,
-  Settings,
   Globe,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -56,8 +51,8 @@ export const OlmaLogo: React.FC<OlmaLogoProps> = ({ className }) => (
 export const Navbar: React.FC = () => {
   const { currentUser, userProfile, logout } = useAuth();
   const { cart, wishlist } = useCart();
-  const { searchQuery, setSearchQuery, setActiveCategory, setIsSaleFilterActive, setActiveTag } = useShop();
-  const { setIsCartOpen, setIsWishlistOpen, setIsMobileMenuOpen, setIsSearchOpen } = useUI();
+  const { setSearchQuery, setActiveCategory, setIsSaleFilterActive, setActiveTag } = useShop();
+  const { setIsCartOpen, setIsWishlistOpen, setIsMobileMenuOpen } = useUI();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/api";
+import { AnimatePresence } from "motion/react";
+import { apiGet, apiPost, apiPut } from "../../lib/api";
 import { AdminPageHeader } from "../../components/ui/Admin/AdminPageHeader";
 import { AdminStatCard } from "../../components/ui/Admin/AdminStatCard";
 import { AdminDataTable } from "../../components/ui/Admin/AdminDataTable";
-import { StatusBadge } from "../../components/ui/Admin/StatusBadge";
 import {
   Users,
   Search,
-  Shield,
   Building2,
   Star,
   CheckCircle2,
   PowerOff,
   ChevronDown,
   Download,
-  Filter,
   Monitor,
   CheckSquare,
   Square,

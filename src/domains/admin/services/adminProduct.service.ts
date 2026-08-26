@@ -203,6 +203,110 @@ export class AdminProductService {
     return { success: true };
   }
 
+  static async listProducts({
+    status = "pending",
+    limit = 25,
+    startAfter,
+    category,
+  }: {
+    status?: "pending" | "active" | "rejected" | "pending_deletion";
+    limit?: number;
+    startAfter?: string;
+    category?: string;
+  }) {
+    let queryRef: admin.firestore.Query = db.collection("products");
+
+    if (status === "pending") {
+      queryRef = queryRef.where("status", "in", ["pending", "in_review", "draft"]);
+    } else if (status === "active") {
+      queryRef = queryRef.where("status", "in", ["published", "active"]);
+    } else if (status === "rejected") {
+      queryRef = queryRef.where("status", "==", "rejected");
+    } else if (status === "pending_deletion") {
+      queryRef = queryRef.where("status", "==", "pending_deletion");
+    }
+
+    if (category && category !== "Tous") {
+      queryRef = queryRef.where("category", "==", category);
+    }
+
+    const fetchLimit = Math.min(Math.max(1, limit), 100);
+    queryRef = queryRef.limit(fetchLimit + 1);
+
+    if (startAfter) {
+      const startDoc = await db.collection("products").doc(startAfter).get();
+      if (startDoc.exists) {
+        queryRef = queryRef.startAfter(startDoc);
+      }
+    }
+
+    const snap = await queryRef.get();
+    const docs = snap.docs;
+    const hasMore = docs.length > fetchLimit;
+    const resultDocs = hasMore ? docs.slice(0, fetchLimit) : docs;
+    const lastVisibleId = resultDocs.length > 0 && hasMore ? resultDocs[resultDocs.length - 1].id : null;
+
+    const products = resultDocs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        name: data.name || data.title || "",
+        title: data.title || data.name || "",
+      };
+    });
+
+    return {
+      success: true,
+      products,
+      lastVisibleId,
+    };
+  }
+
+  static async deleteProduct({ productId, adminId }: { productId: string; adminId: string }) {
+    const productRef = db.collection("products").doc(productId);
+    const snap = await productRef.get();
+    if (!snap.exists) {
+      throw new Error("Produit non trouvé");
+    }
+    await productRef.update({
+      status: "deleted",
+      isDeleted: true,
+      deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+      deletedBy: adminId,
+    });
+    await db.collection("audit_logs").add({
+      type: "PRODUCT_MODERATION",
+      action: "SOFT_DELETE",
+      productId,
+      adminId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { success: true };
+  }
+
+  static async denyDeleteProduct({ productId, adminId }: { productId: string; adminId: string }) {
+    const productRef = db.collection("products").doc(productId);
+    const snap = await productRef.get();
+    if (!snap.exists) {
+      throw new Error("Produit non trouvé");
+    }
+    await productRef.update({
+      status: "published",
+      isApproved: true,
+      deletionRequested: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await db.collection("audit_logs").add({
+      type: "PRODUCT_MODERATION",
+      action: "DENY_DELETE",
+      productId,
+      adminId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { success: true };
+  }
+
   static async listCategoriesFull() {
     const categoriesSnap = await db.collection("categories").get();
     return categoriesSnap.docs.map((doc) => ({

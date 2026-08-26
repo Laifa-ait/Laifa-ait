@@ -58,7 +58,7 @@ const parseTimestamp = (val: unknown): number => {
   if (typeof val === "number") return val;
   if (typeof val === "string") return Date.parse(val) || Date.now();
   if (val && typeof val === "object") {
-    const obj = val as Record<string, any>;
+    const obj = val as { seconds?: number; _seconds?: number };
     if (obj.seconds) return obj.seconds * 1000;
     if (obj._seconds) return obj._seconds * 1000;
   }
@@ -112,7 +112,7 @@ export const NotificationCenter: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchNotifications = async (isFirstLoad = false) => {
+  const fetchNotifications = React.useCallback(async (isFirstLoad = false) => {
     if (!currentUser) return;
     try {
       const response = await apiGet<{
@@ -268,7 +268,7 @@ export const NotificationCenter: React.FC = () => {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.warn("NotificationCenter: Unable to fetch online notifications, using fallback:", errMsg);
     }
-  };
+  }, [currentUser, lang, userProfile?.role, t]);
 
   // Sync / Fetch live firebase events
   useEffect(() => {
@@ -312,7 +312,7 @@ export const NotificationCenter: React.FC = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [currentUser, lang, userProfile?.role, t]);
+  }, [currentUser, fetchNotifications, t]);
 
   // Combined notifications memo sorted chronologically
   const notifications = useMemo(() => {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Megaphone, CheckCircle2, XCircle, Search, Clock, ShieldAlert, Star, Sliders } from 'lucide-react';
+import { Megaphone, CheckCircle2, XCircle, Search, Clock, Star, Sliders } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';

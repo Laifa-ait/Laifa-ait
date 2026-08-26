@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 

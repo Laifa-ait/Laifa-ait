@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { require2FA, authorizeAdmin } from "../middlewares/auth";
+import { require2FA, authorizeAdmin, AuthenticatedRequest } from "../middlewares/auth";
 import { db } from "../config/firebase-admin";
 import { Response, NextFunction } from "express";
+import type { CollectionReference, DocumentReference } from "firebase-admin/firestore";
 
 describe("OLMART — Two-Factor Authentication Session Verification & Security Tests", () => {
-  let mockStatus: any;
-  let mockJson: any;
+  let mockStatus: ReturnType<typeof vi.fn>;
+  let mockJson: ReturnType<typeof vi.fn>;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
 
   beforeEach(() => {
     mockJson = vi.fn();
-    mockStatus = vi.fn().mockReturnValue({ json: mockJson });
+    mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
       status: mockStatus,
       json: mockJson,
@@ -26,7 +27,7 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
 
   // TEST 1: Utilisateur non authentifié → API critique => DENY (401)
   it("TEST 1: rejects unauthenticated user with 401", async () => {
-    const mockReq: any = {};
+    const mockReq = {} as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -45,15 +46,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_without_2fa",
         auth_time: Math.floor(Date.now() / 1000),
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -73,15 +74,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_with_unverified_session",
         auth_time: Math.floor(Date.now() / 1000),
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -110,15 +111,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_with_verified_session",
         auth_time: loginTimeSeconds,
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -139,15 +140,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_b_uid", // User B's uid in token
         auth_time: Math.floor(Date.now() / 1000),
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -176,15 +177,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_with_new_login",
         auth_time: newLoginSeconds,
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -208,20 +209,19 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_attempting_frontend_bypass",
         auth_time: Math.floor(Date.now() / 1000),
       },
-      // Attacker manipulates req.body or headers to claim MFA is done
       body: {
         mfaPassed: true,
         is2FAEnabled: false,
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -236,7 +236,6 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
 
   // TEST 8: Tentative brute-force OTP => rate limiting est configuré
   it("TEST 8: verifies pinLimiter rate limiting behavior is active and handles window", () => {
-    // Standard validation of rate limiter presence/configuration
     const mockRateLimiter = {
       windowMs: 15 * 60 * 1000,
       max: 5,
@@ -261,12 +260,12 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
 
   // TEST 10: Utilisateur sans rôle admin + preuve 2FA valide => toujours DENY sur endpoint admin
   it("TEST 10: ensures non-admin with valid MFA is still denied access to admin endpoints", () => {
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "non_admin_mfa_user",
         role: "buyer",
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     authorizeAdmin(mockReq, mockRes as Response, mockNext);
 
@@ -288,15 +287,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
         },
       }),
     });
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_with_missing_authtime",
         // auth_time is missing!
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 
@@ -312,15 +311,15 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
   // TEST 12: rejects user when Firestore document fetch errors (Fail-Closed)
   it("TEST 12: rejects user when Firestore document fetch errors (Fail-Closed)", async () => {
     const mockDocGet = vi.fn().mockRejectedValue(new Error("Firestore connection timeout"));
-    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
-    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as any);
+    const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet } as unknown as DocumentReference);
+    const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
 
-    const mockReq: any = {
+    const mockReq = {
       user: {
         uid: "user_uid_error",
         auth_time: Math.floor(Date.now() / 1000),
       },
-    };
+    } as unknown as AuthenticatedRequest;
 
     await require2FA(mockReq, mockRes as Response, mockNext);
 

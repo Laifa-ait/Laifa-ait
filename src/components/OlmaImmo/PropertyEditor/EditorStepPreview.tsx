@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, MapPin, Bed, Maximize, Bath, ShieldCheck } from 'lucide-react';
+import { Eye, MapPin, Phone } from 'lucide-react';
 import { PropertyType, ListingType, GeoPointLocation } from '../../../types/realEstate';
 
 interface EditorStepPreviewProps {
@@ -100,6 +100,13 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
           <p className="text-xs text-slate-700 whitespace-pre-line leading-relaxed">
             {description || 'Aucune description rédigée.'}
           </p>
+
+          {contactPhone && (
+            <div className="flex items-center gap-1.5 text-xs text-[#1a3831] font-semibold pt-1">
+              <Phone className="w-3.5 h-3.5" />
+              <span>Contact : {contactPhone}</span>
+            </div>
+          )}
 
           {features.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2">

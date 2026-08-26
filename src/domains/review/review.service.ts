@@ -39,4 +39,14 @@ export class ReviewService {
     
     return { success: true };
   }
+
+  async deleteReview(reviewId: string): Promise<{ success: boolean }> {
+    if (!reviewId) throw new Error("ID de l'avis requis");
+    await this.repo.deleteReview(reviewId);
+    return { success: true };
+  }
+
+  async listAdminReviews(params: { status?: string; limit?: number; startAfter?: string }) {
+    return this.repo.listAdminReviews(params);
+  }
 }

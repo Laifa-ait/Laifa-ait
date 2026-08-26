@@ -44,7 +44,7 @@ export const Support: React.FC = () => {
                 message,
             });
             setIsSubmitted(true);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error submitting support ticket:", error);
             toast.error(t("Une erreur est survenue lors de l'envoi de votre demande."));
         } finally {

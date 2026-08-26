@@ -177,12 +177,6 @@ export const AdminSearchConfigUpdateSchema = z.object({
   typesenseCollection: z.string().optional(),
 });
 
-// Admin Commission Schemas
-export const AdminCommissionUpdateSchema = z.object({
-  globalRate: z.number().min(0, "Taux invalide").max(50, "Taux maximum 50%"),
-  categoryRates: z.record(z.string(), z.number().min(0).max(50)).optional().default({}),
-});
-
 // Admin Coupon / Promotions Schemas
 export const AdminCouponCreateSchema = z.object({
   code: z.string().min(2, "Code promo requis").max(30).transform(val => val.trim().toUpperCase()),

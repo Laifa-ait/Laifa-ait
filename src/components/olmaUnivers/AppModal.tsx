@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   Sparkles,
-  Users,
   CheckCircle2,
   Mail,
   Phone,

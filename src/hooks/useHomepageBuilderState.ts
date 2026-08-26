@@ -4,13 +4,14 @@ import { db } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { HomepageSection } from "../domains/home/homepage.types";
 import { Product } from "../domains/product/product.types";
+import { adminHomepageApi } from "../services/api/adminHomepage.api";
 import { useFirebaseHomepage } from "./useFirebaseHomepage";
 import { useHomepageBuilder } from "./useHomepageBuilder";
-
 import { useHomepageSections } from "./homepageBuilder/useHomepageSections";
 import { useHomepageCategories, CategoryConfig } from "./homepageBuilder/useHomepageCategories";
 import { useHomepageVersions, VersionInfo } from "./homepageBuilder/useHomepageVersions";
 import { useHomepageModalState } from "./homepageBuilder/useHomepageModalState";
+import toast from "react-hot-toast";
 
 export type { VersionInfo, CategoryConfig };
 
@@ -26,45 +27,53 @@ export function useHomepageBuilderState() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLivePreviewOpen, setIsLivePreviewOpen] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [isSyncingCache, setIsSyncingCache] = useState(false);
+
+  // Extract stable function references to prevent dependency loop
+  const { setEditItem, setActiveModalStep, setIsModalOpen } = modal;
+  const { resetSectionForm, populateSectionForm, setSections } = sectionsState;
+  const { fetchVersions } = versionsState;
+  const { loadCategoryConfigAndProducts: loadCategoryFromHook, selectedCategory } = categoriesState;
 
   const resetForm = useCallback(() => {
-    modal.setEditItem(null);
-    modal.setActiveModalStep(1);
-    sectionsState.resetSectionForm();
-  }, [modal, sectionsState]);
+    setEditItem(null);
+    setActiveModalStep(1);
+    resetSectionForm();
+  }, [setEditItem, setActiveModalStep, resetSectionForm]);
 
   const handleAddItem = useCallback(() => {
     resetForm();
-    modal.setIsModalOpen(true);
-  }, [resetForm, modal]);
+    setIsModalOpen(true);
+  }, [resetForm, setIsModalOpen]);
 
   const handleEditItem = useCallback((item: HomepageSection) => {
-    modal.setEditItem(item);
-    modal.setActiveModalStep(1);
-    sectionsState.populateSectionForm(item);
-    modal.setIsModalOpen(true);
-  }, [modal, sectionsState]);
+    setEditItem(item);
+    setActiveModalStep(1);
+    populateSectionForm(item);
+    setIsModalOpen(true);
+  }, [setEditItem, setActiveModalStep, populateSectionForm, setIsModalOpen]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const rawSections = await fetchHookData("homepage_sections");
       const sortedSections = [...(rawSections || [])].sort(
-        (a: Record<string, unknown>, b: Record<string, unknown>) =>
-          (Number(a.orderIndex) || 0) - (Number(b.orderIndex) || 0)
+        (a: HomepageSection, b: HomepageSection) => (Number(a.orderIndex) || 0) - (Number(b.orderIndex) || 0)
       );
-      sectionsState.setSections(sortedSections as HomepageSection[]);
-      versionsState.fetchVersions();
+      setSections(sortedSections);
+      fetchVersions();
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchHookData, sectionsState, versionsState]);
+  }, [fetchHookData, setSections, fetchVersions]);
 
   const loadCategoryConfigAndProducts = useCallback(async () => {
-    await categoriesState.loadCategoryConfigAndProducts(setIsLoading);
-  }, [categoriesState]);
+    await loadCategoryFromHook(setIsLoading);
+  }, [loadCategoryFromHook]);
 
   useEffect(() => {
     const fetchAllProducts = async () => {
@@ -86,13 +95,23 @@ export function useHomepageBuilderState() {
     } else {
       loadCategoryConfigAndProducts();
     }
-  }, [modal.activeTab, categoriesState.selectedCategory, fetchData, loadCategoryConfigAndProducts]);
+  }, [modal.activeTab, selectedCategory, fetchData, loadCategoryConfigAndProducts]);
 
-  const handleSaveItem = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveItem = useCallback(async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    const manualIds = sectionsState.secManualLinks
+      .map((val) => {
+        const str = (val || "").trim();
+        if (str.includes("/product/")) {
+          return str.split("/product/")[1].split("?")[0].split("/")[0].split("#")[0];
+        }
+        return str;
+      })
+      .filter((id) => Boolean(id));
 
     const payload = {
-      name: sectionsState.secName,
+      name: sectionsState.secName || "Nouvelle Section",
       type: sectionsState.secType,
       layout: sectionsState.secLayout,
       backgroundColor: sectionsState.secBackgroundColor,
@@ -103,20 +122,12 @@ export function useHomepageBuilderState() {
       themeImage: sectionsState.secThemeImage,
       tag: sectionsState.secTag,
       category: sectionsState.secCategory,
-      manualProducts: sectionsState.secManualLinks
-        .map((val) => {
-          const str = val.trim();
-          if (str.includes("/product/")) {
-            return str.split("/product/")[1].split("?")[0].split("/")[0].split("#")[0];
-          }
-          return str;
-        })
-        .filter((id) => id),
+      manualProducts: manualIds,
       title: sectionsState.secTitle,
       subtitle: sectionsState.secSubtitle,
       isActive: sectionsState.secIsActive,
-      startDate: sectionsState.secStartDate || null,
-      endDate: sectionsState.secEndDate || null,
+      startDate: sectionsState.secStartDate || undefined,
+      endDate: sectionsState.secEndDate || undefined,
       targetAudience: sectionsState.secTargetAudience,
       targetRegions: sectionsState.secTargetRegions,
       orderIndex: modal.editItem ? modal.editItem.orderIndex : sectionsState.sections.length + 1,
@@ -124,34 +135,117 @@ export function useHomepageBuilderState() {
 
     try {
       await saveHookItem("homepage_sections", modal.editItem ? modal.editItem.id : null, payload);
-      modal.setIsModalOpen(false);
+      setIsModalOpen(false);
       resetForm();
       fetchData();
     } catch (err) {
       console.error(err);
     }
   }, [
-    modal,
-    sectionsState,
+    sectionsState.secManualLinks,
+    sectionsState.secName,
+    sectionsState.secType,
+    sectionsState.secLayout,
+    sectionsState.secBackgroundColor,
+    sectionsState.secLimit,
+    sectionsState.secStyle,
+    sectionsState.secTheme,
+    sectionsState.secThemeName,
+    sectionsState.secThemeImage,
+    sectionsState.secTag,
+    sectionsState.secCategory,
+    sectionsState.secTitle,
+    sectionsState.secSubtitle,
+    sectionsState.secIsActive,
+    sectionsState.secStartDate,
+    sectionsState.secEndDate,
+    sectionsState.secTargetAudience,
+    sectionsState.secTargetRegions,
+    sectionsState.sections.length,
+    modal.editItem,
     saveHookItem,
+    setIsModalOpen,
     resetForm,
     fetchData,
   ]);
 
-  const handleCreateBackup = useCallback(async () => {
-    await versionsState.handleCreateBackup(
-      sectionsState.sections,
-      currentUser?.email || undefined
+  const handleToggleSectionActive = useCallback(async (section: HomepageSection) => {
+    const nextState = !section.isActive;
+    // Optimistic local update
+    setSections((prev) =>
+      prev.map((s) => (s.id === section.id ? { ...s, isActive: nextState } : s))
     );
-  }, [versionsState, sectionsState.sections, currentUser]);
+    try {
+      await adminHomepageApi.updateSection(section.id, { isActive: nextState });
+      toast.success(nextState ? "Section activée sur la page d'accueil" : "Section désactivée");
+    } catch (err) {
+      console.error("Error toggling section:", err);
+      toast.error("Erreur lors de la mise à jour");
+      fetchData();
+    }
+  }, [setSections, fetchData]);
 
-  const handleRestoreBackup = useCallback(async (version: VersionInfo) => {
-    await versionsState.handleRestoreBackup(version, fetchData);
-  }, [versionsState, fetchData]);
+  const handleReorder = useCallback(async (newSections: HomepageSection[]) => {
+    // Optimistic UI update
+    setSections(newSections);
+    const orderedIds = newSections.map((s) => s.id);
+    try {
+      await adminHomepageApi.reorderSections(orderedIds);
+      toast.success("Ordre des sections sauvegardé !");
+    } catch (err) {
+      console.error("Error reordering sections:", err);
+      toast.error("Erreur de réorganisation");
+      fetchData();
+    }
+  }, [setSections, fetchData]);
 
-  const handleSaveCategory = useCallback(async () => {
-    await categoriesState.handleSaveCategory(loadCategoryConfigAndProducts);
-  }, [categoriesState, loadCategoryConfigAndProducts]);
+  const handleMoveSection = useCallback(async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= sectionsState.sections.length) return;
+
+    const updated = [...sectionsState.sections];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    await handleReorder(updated);
+  }, [sectionsState.sections, handleReorder]);
+
+  const handleApplyPreset = useCallback((preset: Partial<HomepageSection>) => {
+    resetForm();
+    populateSectionForm({
+      id: "",
+      name: preset.name || "Section Thématique",
+      type: preset.type || "top_picks",
+      layout: preset.layout || "standard",
+      style: preset.style || "premium",
+      orderIndex: sectionsState.sections.length + 1,
+      isActive: true,
+      title: preset.title || "",
+      subtitle: preset.subtitle || "",
+      category: preset.category || "",
+      tag: preset.tag || "",
+      theme: preset.theme || "none",
+      themeName: preset.themeName || "",
+      themeImage: preset.themeImage || "",
+      targetRegions: preset.targetRegions || [],
+      targetAudience: preset.targetAudience || "all",
+      limit: preset.limit || 8,
+    } as HomepageSection);
+    setIsModalOpen(true);
+  }, [resetForm, populateSectionForm, sectionsState.sections.length, setIsModalOpen]);
+
+  const handleSyncCache = useCallback(async () => {
+    setIsSyncingCache(true);
+    try {
+      await adminHomepageApi.syncCache();
+      toast.success("Cache storefront actualisé en temps réel !");
+      await fetchData();
+    } catch (err) {
+      console.error("Error syncing cache:", err);
+      toast.error("Erreur de synchronisation du cache");
+    } finally {
+      setIsSyncingCache(false);
+    }
+  }, [fetchData]);
 
   const handleDelete = useCallback(async (id: string) => {
     const success = await deleteItem("sections", id);
@@ -172,86 +266,24 @@ export function useHomepageBuilderState() {
     isModalOpen: modal.isModalOpen,
     setIsModalOpen: modal.setIsModalOpen,
     editItem: modal.editItem,
-    secName: sectionsState.secName,
-    setSecName: sectionsState.setSecName,
-    secType: sectionsState.secType,
-    setSecType: sectionsState.setSecType,
-    secLayout: sectionsState.secLayout,
-    setSecLayout: sectionsState.setSecLayout,
-    secBackgroundColor: sectionsState.secBackgroundColor,
-    setSecBackgroundColor: sectionsState.setSecBackgroundColor,
-    secLimit: sectionsState.secLimit,
-    setSecLimit: sectionsState.setSecLimit,
-    secStyle: sectionsState.secStyle,
-    setSecStyle: sectionsState.setSecStyle,
-    secTheme: sectionsState.secTheme,
-    setSecTheme: sectionsState.setSecTheme,
-    secThemeName: sectionsState.secThemeName,
-    setSecThemeName: sectionsState.setSecThemeName,
-    secThemeImage: sectionsState.secThemeImage,
-    setSecThemeImage: sectionsState.setSecThemeImage,
-    secTag: sectionsState.secTag,
-    setSecTag: sectionsState.setSecTag,
-    secCategory: sectionsState.secCategory,
-    setSecCategory: sectionsState.setSecCategory,
-    secManualProducts: sectionsState.secManualProducts,
-    setSecManualProducts: sectionsState.setSecManualProducts,
-    secTitle: sectionsState.secTitle,
-    setSecTitle: sectionsState.setSecTitle,
-    secSubtitle: sectionsState.secSubtitle,
-    setSecSubtitle: sectionsState.setSecSubtitle,
-    secIsActive: sectionsState.secIsActive,
-    setSecIsActive: sectionsState.setSecIsActive,
-    secStartDate: sectionsState.secStartDate,
-    setSecStartDate: sectionsState.setSecStartDate,
-    secEndDate: sectionsState.secEndDate,
-    setSecEndDate: sectionsState.setSecEndDate,
-    activeModalStep: modal.activeModalStep,
-    setActiveModalStep: modal.setActiveModalStep,
-    secManualLinks: sectionsState.secManualLinks,
-    setSecManualLinks: sectionsState.setSecManualLinks,
-    secTargetAudience: sectionsState.secTargetAudience,
-    setSecTargetAudience: sectionsState.setSecTargetAudience,
-    secTargetRegions: sectionsState.secTargetRegions,
-    setSecTargetRegions: sectionsState.setSecTargetRegions,
-    draggedIdx: modal.draggedIdx,
-    setDraggedIdx: modal.setDraggedIdx,
-    versions: versionsState.versions,
-    setVersions: versionsState.setVersions,
-    backupName: versionsState.backupName,
-    setBackupName: versionsState.setBackupName,
-    isLoadingVersions: versionsState.isLoadingVersions,
-    setIsLoadingVersions: versionsState.setIsLoadingVersions,
-    previewDeviceMode: modal.previewDeviceMode,
-    setPreviewDeviceMode: modal.setPreviewDeviceMode,
-    dbCategories: categoriesState.dbCategories,
-    selectedCategory: categoriesState.selectedCategory,
-    setSelectedCategory: categoriesState.setSelectedCategory,
-    catTitle: categoriesState.catTitle,
-    setCatTitle: categoriesState.setCatTitle,
-    catSubtitle: categoriesState.catSubtitle,
-    setCatSubtitle: categoriesState.setCatSubtitle,
-    catImage: categoriesState.catImage,
-    setCatImage: categoriesState.setCatImage,
-    catSubImages: categoriesState.catSubImages,
-    setCatSubImages: categoriesState.setCatSubImages,
-    catFeaturedIds: categoriesState.catFeaturedIds,
-    setCatFeaturedIds: categoriesState.setCatFeaturedIds,
-    categoryProducts: categoriesState.categoryProducts,
-    searchProductQuery: categoriesState.searchProductQuery,
-    setSearchProductQuery: categoriesState.setSearchProductQuery,
-    isSavingCategory: categoriesState.isSavingCategory,
-    isLoadingProducts: categoriesState.isLoadingProducts,
+    sectionsState,
+    categoriesState,
+    versionsState,
+    isLivePreviewOpen,
+    setIsLivePreviewOpen,
+    previewDevice,
+    setPreviewDevice,
+    isSyncingCache,
+    handleSyncCache,
     resetForm,
     handleAddItem,
     handleEditItem,
     handleSaveItem,
-    handleFileUpload: modal.handleFileUpload,
-    handleCreateBackup,
-    handleRestoreBackup,
-    handleDeleteVersion: versionsState.handleDeleteVersion,
-    handleSaveCategory,
-    toggleProductFeatured: categoriesState.toggleProductFeatured,
+    handleToggleSectionActive,
+    handleReorder,
+    handleMoveSection,
+    handleApplyPreset,
     handleDelete,
+    loadCategoryConfigAndProducts,
   };
 }

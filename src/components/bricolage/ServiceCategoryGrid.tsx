@@ -7,9 +7,7 @@ import {
   Paintbrush,
   Hammer,
   Drill,
-  Sparkles,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2
 } from 'lucide-react';
 import { BricolageServiceCategory } from '../../types/bricolage';
@@ -33,7 +31,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 export const ServiceCategoryGrid: React.FC<ServiceCategoryGridProps> = ({
   categories,
-  lang,
+  lang: _lang,
   onSelectCategory,
   onRequestQuote
 }) => {

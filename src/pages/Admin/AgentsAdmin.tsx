@@ -3,7 +3,6 @@ import {
   Bot, 
   Mail, 
   LineChart, 
-  Sparkles, 
   ShieldCheck, 
   HeadphonesIcon, 
   Settings, 
@@ -11,15 +10,11 @@ import {
   X, 
   Play, 
   RefreshCw, 
-  Send, 
   AlertTriangle, 
-  FileText, 
-  ChevronRight, 
   HelpCircle,
   TrendingUp,
   Award,
-  Zap,
-  BookOpen
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import toast from "react-hot-toast";
@@ -31,6 +26,57 @@ type AgentKey = "growth" | "cart" | "moderator" | "support" | "sentinel";
 
 interface AgentConfig {
   isActive: boolean;
+  [key: string]: unknown;
+}
+
+interface GrowthReport {
+  summary?: string;
+  kpis?: Array<{ label: string; value: string | number; trend?: string; change?: string }>;
+  topSearches?: string[];
+  pricingTips?: string;
+  actionableAdvice?: string;
+  [key: string]: unknown;
+}
+
+interface CartPreview {
+  subject?: string;
+  htmlBody?: string;
+  [key: string]: unknown;
+}
+
+interface ModeratorResult {
+  approved?: boolean;
+  qualityScore?: number;
+  checklist?: Array<{ label: string; passed: boolean }>;
+  infractionsDetected?: string[];
+  feedback?: string;
+  [key: string]: unknown;
+}
+
+interface SentinelReport {
+  statusLabel?: string;
+  summary?: string;
+  healthIndex?: number;
+  systemChecks?: Array<{ name: string; detail: string; latencyMs: number; status: string }>;
+  issuesFound?: Array<{ title: string; severity?: string; component?: string; rootCause?: string; recommendedFix?: string; [key: string]: unknown }>;
+  [key: string]: unknown;
+}
+
+interface AgentModalConfig {
+  isActive?: boolean;
+  focusCategory?: string;
+  marketContext?: string;
+  analysisFrequency?: string;
+  discountCode?: string;
+  discountPercent?: number;
+  followUpDelay?: number;
+  tone?: string;
+  strictness?: string;
+  customForbiddenWords?: string;
+  personality?: string;
+  kbContext?: string;
+  autoScanInterval?: string;
+  alertThreshold?: string;
   [key: string]: unknown;
 }
 
@@ -53,26 +99,21 @@ export const AgentsAdmin: React.FC = () => {
   
   // Modal states
   const [activeModal, setActiveModal] = useState<AgentKey | null>(null);
-  const [modalConfig, setModalConfig] = useState<any>(null);
+  const [modalConfig, setModalConfig] = useState<AgentModalConfig | null>(null);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
   // Testing / Run results states
   const [isRunningAgent, setIsRunningAgent] = useState(false);
-  const [growthReport, setGrowthReport] = useState<any>(null);
-  const [cartPreview, setCartPreview] = useState<any>(null);
-  const [moderatorResult, setModeratorResult] = useState<any>(null);
-  const [sentinelReport, setSentinelReport] = useState<any>(null);
+  const [growthReport, setGrowthReport] = useState<GrowthReport | null>(null);
+  const [cartPreview, setCartPreview] = useState<CartPreview | null>(null);
+  const [moderatorResult, setModeratorResult] = useState<ModeratorResult | null>(null);
+  const [sentinelReport, setSentinelReport] = useState<SentinelReport | null>(null);
   
   // Custom moderator test input
-  const [testProduct, setTestProduct] = useState({
+  const [testProduct] = useState({
     title: "Robe Kabyle de Fête Authentique",
     description: "Sublime robe kabyle cousue main avec foutha assortie. Qualité premium d'artisanat d'art de Tizi Ouzou. Contactez-moi sur mon WhatsApp +213550123456 pour plus de détails et commande rapide !"
   });
-
-  // Custom support chat test input
-  const [chatMessage, setChatMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState<{ role: "user" | "model"; content: string }[]>([]);
-  const [isSendingChat, setIsSendingChat] = useState(false);
 
   // Load configurations from backend
   const loadConfigs = useCallback(async () => {
@@ -88,7 +129,7 @@ export const AgentsAdmin: React.FC = () => {
       if (data.success && data.configs) {
         setConfigs(data.configs);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error(t("Erreur lors de la récupération de la configuration des agents IA"));
     } finally {
@@ -97,13 +138,9 @@ export const AgentsAdmin: React.FC = () => {
   }, [currentUser, t]);
 
   useEffect(() => {
-    let isCancelled = false;
     if (currentUser) {
       loadConfigs();
     }
-    return () => {
-      isCancelled = true;
-    };
   }, [currentUser, loadConfigs]);
 
   // Toggle active status
@@ -139,7 +176,7 @@ export const AgentsAdmin: React.FC = () => {
           : t("Agent IA désactivé avec succès"),
         { icon: "🤖" }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error(t("Impossible de modifier l'état de l'agent IA"));
     } finally {
@@ -154,8 +191,6 @@ export const AgentsAdmin: React.FC = () => {
     setCartPreview(null);
     setModeratorResult(null);
     setSentinelReport(null);
-    setChatHistory([]);
-    setChatMessage("");
     setActiveModal(agentKey);
   };
 
@@ -182,9 +217,10 @@ export const AgentsAdmin: React.FC = () => {
       } else {
         throw new Error(data.error || t("Erreur de diagnostic Sentinel"));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(t("Erreur de l'agent Sentinel : ") + error.message);
+      const message = error instanceof Error ? error.message : "";
+      toast.error(t("Erreur de l'agent Sentinel : ") + message);
     } finally {
       setIsRunningAgent(false);
     }
@@ -210,12 +246,12 @@ export const AgentsAdmin: React.FC = () => {
       
       setConfigs(prev => ({
         ...prev,
-        [activeModal]: { ...modalConfig }
+        [activeModal]: { ...modalConfig, isActive: prev[activeModal].isActive }
       }));
 
       toast.success(t("Configuration de l'agent IA enregistrée"), { icon: "💾" });
       setActiveModal(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error(t("Impossible de sauvegarder la configuration"));
     } finally {
@@ -243,9 +279,10 @@ export const AgentsAdmin: React.FC = () => {
       } else {
         throw new Error(data.error);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(t("Échec du lancement de l'analyse : ") + error.message);
+      const message = error instanceof Error ? error.message : "";
+      toast.error(t("Échec du lancement de l'analyse : ") + message);
     } finally {
       setIsRunningAgent(false);
     }
@@ -271,9 +308,10 @@ export const AgentsAdmin: React.FC = () => {
       } else {
         throw new Error(data.error);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(t("Échec de la simulation : ") + error.message);
+      const message = error instanceof Error ? error.message : "";
+      toast.error(t("Échec de la simulation : ") + message);
     } finally {
       setIsRunningAgent(false);
     }
@@ -303,9 +341,10 @@ export const AgentsAdmin: React.FC = () => {
       } else {
         throw new Error(data.error);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(t("Échec de l'audit : ") + error.message);
+      const message = error instanceof Error ? error.message : "";
+      toast.error(t("Échec de l'audit : ") + message);
     } finally {
       setIsRunningAgent(false);
     }

@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   Send,
   MessageSquare,
   Phone,
-  Clock,
   Sparkles,
-  Paperclip,
-  ShieldCheck,
   ChevronLeft,
   Search,
-  FileText,
   MapPin,
   Mic,
   Image as ImageIcon,
@@ -19,10 +15,8 @@ import {
   X,
   Check,
   CheckCheck,
-  Plus,
   DollarSign,
   Radio,
-  SlidersHorizontal,
   ExternalLink
 } from 'lucide-react';
 import { BricolageConversation, BricolageMessage } from '../../types/bricolage';
@@ -103,7 +97,7 @@ export const BricolageMessaging: React.FC<BricolageMessagingProps> = ({
 
   // Handle voice note recording simulator timer
   useEffect(() => {
-    let interval: any;
+    let interval: NodeJS.Timeout | undefined;
     if (isRecording) {
       interval = setInterval(() => {
         setRecordingSeconds(prev => prev + 1);
@@ -111,7 +105,9 @@ export const BricolageMessaging: React.FC<BricolageMessagingProps> = ({
     } else {
       setRecordingSeconds(0);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isRecording]);
 
   const handleSendText = (textToSend?: string) => {

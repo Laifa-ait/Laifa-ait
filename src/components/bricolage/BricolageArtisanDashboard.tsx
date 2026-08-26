@@ -10,23 +10,17 @@ import {
   MapPin,
   MessageSquare,
   Power,
-  TrendingUp,
   Briefcase,
-  AlertCircle,
   Bell,
-  Filter,
   Sparkles,
   Layers,
   Camera,
-  Eye,
   Maximize2,
   ChevronLeft,
   ChevronRight,
-  X,
-  Image as ImageIcon
+  X
 } from 'lucide-react';
 import { ArtisanOpportunityDTO, ActiveArtisanProfile } from '../../types/bricolage';
-import { useBricolageI18n } from '../../hooks/useBricolageI18n';
 
 interface BricolageArtisanDashboardProps {
   availableLeads: ArtisanOpportunityDTO[];
@@ -55,7 +49,6 @@ export const BricolageArtisanDashboard: React.FC<BricolageArtisanDashboardProps>
   onRegisterClick,
   onRefreshLeads
 }) => {
-  const { tBricolage } = useBricolageI18n();
   const [selectedLeadForOffer, setSelectedLeadForOffer] = useState<ArtisanOpportunityDTO | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string>(activeArtisanProfile?.specialty || 'all');
   const [offerPrice, setOfferPrice] = useState<number>(3500);

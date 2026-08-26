@@ -6,12 +6,35 @@ import { apiGet, apiPost } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 
+interface SupportTicket {
+  id: string;
+  subject: string;
+  priority: string;
+  status: string;
+  lastMessage?: string;
+  createdAt?: {
+    toDate?: () => Date;
+  };
+}
+
+interface SupportMessage {
+  id: string;
+  sender: 'seller' | 'admin' | string;
+  text: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileName?: string;
+  createdAt?: {
+    toDate?: () => Date;
+  };
+}
+
 export const Support: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, userProfile } = useAuth();
-  const [tickets, setTickets] = useState<any[]>([]);
+  const { currentUser } = useAuth();
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
   
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -33,7 +56,7 @@ export const Support: React.FC = () => {
     
     const fetchTickets = async () => {
       try {
-        const data = await apiGet<any>("/api/v1/support/tickets");
+        const data = await apiGet<{ tickets: SupportTicket[] }>("/api/v1/support/tickets");
         if (isCancelled) return;
         const fetchedTickets = data.tickets || [];
         setTickets(fetchedTickets);
@@ -72,7 +95,7 @@ export const Support: React.FC = () => {
     
     const fetchMessages = async () => {
       try {
-        const data = await apiGet<any>(`/api/v1/support/tickets/${selectedTicket}/messages`);
+        const data = await apiGet<{ messages: SupportMessage[] }>(`/api/v1/support/tickets/${selectedTicket}/messages`);
         if (isCancelled) return;
         setMessages(data.messages || []);
         setLoadingMessages(false);
@@ -99,7 +122,7 @@ export const Support: React.FC = () => {
 
     setCreatingTicket(true);
     try {
-      const res = await apiPost<any>("/api/v1/support/tickets", {
+      const res = await apiPost<{ ticketId: string }>("/api/v1/support/tickets", {
         subject: newTicketData.subject.trim(),
         priority: newTicketData.priority,
       });
@@ -184,7 +207,7 @@ export const Support: React.FC = () => {
           const base64Data = (reader.result as string).split(',')[1];
           
           // Secure API backend upload
-          const uploadRes = await apiPost<any>(`/api/v1/support/tickets/${encodeURIComponent(selectedTicket)}/upload`, {
+          const uploadRes = await apiPost<{ success: boolean; fileUrl: string; fileName: string; fileType: string }>(`/api/v1/support/tickets/${encodeURIComponent(selectedTicket)}/upload`, {
             fileName: file.name,
             mimeType: file.type,
             base64Data
@@ -200,9 +223,10 @@ export const Support: React.FC = () => {
             
             toast.success("Fichier envoyé.");
           }
-        } catch (error: any) {
+        } catch (error) {
           console.error("Upload error:", error);
-          toast.error(error.message || "Le fichier est trop volumineux. La taille maximale autorisée est de 1 Mo.");
+          const errorMsg = error instanceof Error ? error.message : "Le fichier est trop volumineux. La taille maximale autorisée est de 1 Mo.";
+          toast.error(errorMsg);
         } finally {
           setUploading(false);
           if (fileInputRef.current) fileInputRef.current.value = '';

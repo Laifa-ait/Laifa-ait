@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Loader2,
   Star,
-  ShieldCheck,
   Compass,
   Info,
   Sparkles,
@@ -17,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { useUI } from "../../context/UIContext";
 import { useShop } from "../../context/ShopContext";
 import { useTranslation } from "react-i18next";
-import { Shop } from "../../domains/seller/shop.types";
 import { useTrendingSearches } from "../../hooks/useTrendingSearches";
 import { Product } from "../../domains/product/product.types";
 import { formatPrice } from "../../utils/format";
@@ -142,8 +140,9 @@ export const SearchOverlay: React.FC = () => {
         } else {
           throw new Error("HTTP search error");
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err: unknown) {
+        const errorName = err instanceof Error ? err.name : "";
+        if (errorName !== "AbortError") {
           console.error("Live search overlay error:", err);
           setApiError(true);
         }

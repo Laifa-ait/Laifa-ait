@@ -65,7 +65,6 @@ if ("serviceWorker" in navigator) {
 
 import { setupErrorAgent, logReactErrorBoundary } from "./utils/errorAgent";
 import { trackPerformance } from "./utils/performance";
-import { useTranslation } from "react-i18next";
 
 // Initialize the global error agent
 setupErrorAgent();

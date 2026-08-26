@@ -13,8 +13,8 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   src = "",
   alt,
   className = "",
-  rootMargin,
-  threshold,
+  rootMargin: _rootMargin,
+  threshold: _threshold,
   ...props
 }) => {
   return (

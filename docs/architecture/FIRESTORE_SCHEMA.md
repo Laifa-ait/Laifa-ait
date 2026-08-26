@@ -69,8 +69,6 @@ export interface UserDocument {
   email: string;               // Adresse de messagerie validée
   phoneNumber: string;         // Identifiant logistique unique algérien (ex: "0555123456")
   defaultWilayaCode: string;   // Code de Wilaya résidentiel (1 à 58)
-  walletBalance: number;       // Balance d'avoirs de remboursement disponibles (en DZD)
-  loyaltyPoints: number;       // Solde actuel du pool de points de fidélité accumulés
   role: "buyer" | "vendor" | "admin";
   createdAt: string;           // Horodatage ISO (ex: "2026-07-17T11:00:00Z")
   updatedAt?: string;
@@ -144,7 +142,7 @@ export interface OrderDocument {
   totalPricePaid: number;      // Total net facturé à l'acheteur
   escrowNetSellerAmount: number; // Fonds nets séquestrés destinés au vendeur à la clôture
   escrowPlatformCommission: number; // Commission prélevée à la validation
-  paymentMethod: "COD" | "WALLET" | "HYBRID"; // Mode de règlement (COD, Avoir portefeuille, ou Mixte)
+  paymentMethod: "COD";        // Mode de règlement (Cash On Delivery à la livraison)
   paymentStatus: "PAID_ESCROW" | "PARTIALLY_PAID_COD" | "REFUNDED" | "RELEASED";
   status: "PENDING_PAYMENT" | "PAID_ESCROW" | "PREPARING" | "SHIPPED" | "DELIVERED" | "RETURN_REQUESTED" | "RETURNED" | "DISPUTED" | "COMPLETED";
   shippingAddress: {

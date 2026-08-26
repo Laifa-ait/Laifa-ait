@@ -124,7 +124,6 @@ export default tseslint.config(
         "src/pages/Seller/Sponsorships.tsx",
         "src/pages/Seller/Support.tsx",
         "src/pages/Seller/Verification.tsx",
-        "src/pages/Seller/Wallet.tsx",
         "src/components/bricolage/**",
         "src/pages/Public/OlmaBricolage.tsx",
         "src/components/OlmaImmo/SearchFilters.tsx",

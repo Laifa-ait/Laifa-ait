@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Search } from 'lucide-react';
 
 interface Column<T> {
   header: React.ReactNode;

@@ -1,6 +1,6 @@
 import { PRODUCT_HIERARCHY } from "../constants";
 
-const PRODUCT_COLORS = [
+export const PRODUCT_COLORS = [
   { name: "Noir", hex: "#000000" },
   { name: "Blanc", hex: "#FFFFFF" },
   { name: "Gris", hex: "#6B7280" },
@@ -15,9 +15,9 @@ const PRODUCT_COLORS = [
   { name: "Argent", hex: "#C0C0C0" },
 ];
 
-const CATEGORIES = ["Tous", ...Object.keys(PRODUCT_HIERARCHY)];
+export const CATEGORIES = ["Tous", ...Object.keys(PRODUCT_HIERARCHY)];
 
-const ORDER_STEPS = [
+export const ORDER_STEPS = [
   { status: "pending", label: "En attente" },
   { status: "confirmed", label: "Confirmée" },
   { status: "processing", label: "Préparation" },
@@ -26,7 +26,7 @@ const ORDER_STEPS = [
   { status: "delivered", label: "Livrée" },
 ];
 
-const PRESET_AVATARS = [
+export const PRESET_AVATARS = [
   {
     id: "av_retro_afro",
     name: {

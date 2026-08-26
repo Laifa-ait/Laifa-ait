@@ -9,7 +9,7 @@ interface EditorStepTransactionProps {
   setPropertyType: (type: PropertyType) => void;
 }
 
-const PROPERTY_TYPES: { type: PropertyType; title: string; description: string; icon: any }[] = [
+const PROPERTY_TYPES: { type: PropertyType; title: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { type: 'apartment', title: 'Appartement', description: 'F2, F3, F4, Duplex, Penthouse en résidence', icon: Building2 },
   { type: 'villa', title: 'Villa', description: 'Villa individuelle, demeure coloniale, propriété', icon: Home },
   { type: 'house', title: 'Maison', description: 'Maison traditionnelle, niveau de villa', icon: Home },

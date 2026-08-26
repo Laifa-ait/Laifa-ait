@@ -1,8 +1,7 @@
 import { normalizeTimestamp } from "../../utils/date";
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle, MapPin, CreditCard, Building2, Ticket, MessageCircle, Star, AlertTriangle, RotateCcw, ShieldCheck, Camera, Phone } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle, MapPin, CreditCard, Building2, Ticket, MessageCircle, Star, AlertTriangle, RotateCcw, ShieldCheck, Camera } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../utils/format';
 import { Shop } from "../../domains/seller/shop.types";
@@ -15,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { useConfirm } from "../../hooks/useConfirm";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiGet, apiPost } from '../../lib/api';
+import { apiGet } from '../../lib/api';
 import { DisputeChat } from '../../components/Disputes/DisputeChat';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -52,10 +51,6 @@ export const OrderDetails: React.FC = () => {
 
   // Post-purchase return & dispute states
   const [showReturnForm, setShowReturnForm] = useState(false);
-  const [returnReason, setReturnReason] = useState('Taille inadaptée');
-  const [refundMethod, setRefundMethod] = useState('coupon');
-  const [bankInfo, setBankInfo] = useState('');
-  const [returnDetails, setReturnDetails] = useState('');
   
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [showDisputeChat, setShowDisputeChat] = useState(false);
@@ -91,7 +86,7 @@ export const OrderDetails: React.FC = () => {
            if (idx !== -1) newPhotos[idx] = { url, uploading: false };
            return newPhotos;
         });
-      } catch (err) {
+      } catch {
         toast.error("Erreur téléchargement");
         setDisputePhotos(prev => prev.filter(p => p.uploading === false));
       }
@@ -177,28 +172,6 @@ export const OrderDetails: React.FC = () => {
       toast.error(err instanceof Error ? err.message : "Une erreur est survenue lors de l'annulation.");
     } finally {
       setCancelling(false);
-    }
-  };
-
-  const handleRequestReturn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!order || order.status !== 'DELIVERED') return;
-    
-    setSubmittingAction(true);
-    try {
-      await apiPost('/api/v1/buyer/orders/return', {
-        orderId: order.id,
-        reason: returnReason,
-        details: returnDetails
-      });
-      mutate();
-      toast.success("Votre demande de retour a été enregistrée avec succès !");
-      setShowReturnForm(false);
-    } catch (err: unknown) {
-      console.error("Error creating return request:", err);
-      toast.error("Impossible d'enregistrer la demande de retour.");
-    } finally {
-      setSubmittingAction(false);
     }
   };
 

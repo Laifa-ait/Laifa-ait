@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Mail, Key, User, CheckCircle2, Eye, EyeOff, ShieldCheck, ScrollText } from "lucide-react";
+import { Mail, Key, User, CheckCircle2, ShieldCheck, ScrollText } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { auth } from "../../lib/firebase";
 import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  updateProfile,
-  signInWithPopup,
-  GoogleAuthProvider,
-  sendEmailVerification
+  signInWithEmailAndPassword
 } from "firebase/auth";
 
 import toast from "react-hot-toast";
@@ -33,8 +28,6 @@ export const Auth: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
 
   // Premium UI & Verification States (Module 5)
-  const [fieldErrors, setFieldErrors] = useState({ email: false, password: false, name: false, cgv: false });
-  const [showPassword, setShowPassword] = useState(false);
   const [cgvAccepted, setCgvAccepted] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
 
@@ -76,22 +69,6 @@ export const Auth: React.FC = () => {
     }
   }, [isLogin, registrationRules]);
 
-  // Password strength gauge analyzer
-  const getPasswordStrength = (pass: string) => {
-    if (!pass) return { score: 0, text: "", color: "bg-zinc-200" };
-    if (pass.length < 1) return { score: 0, text: "", color: "bg-zinc-200" };
-    if (pass.length < 4) return { score: 1, text: t("auth.password_strength.very_weak") || "Très faible", color: "bg-red-500 w-1/4" };
-    if (pass.length < 6) return { score: 2, text: t("auth.password_strength.weak") || "Faible", color: "bg-orange-500 w-2/4" };
-    if (pass.length < 8) return { score: 3, text: t("auth.password_strength.medium") || "Moyen", color: "bg-yellow-500 w-3/4" };
-    // Check complexity
-    const hasLetters = /[a-zA-Z]/.test(pass);
-    const hasNumbers = /[0-9]/.test(pass);
-    if (hasLetters && hasNumbers) {
-      return { score: 5, text: t("auth.password_strength.robust") || "Robuste !", color: "bg-emerald-600 w-full" };
-    }
-    return { score: 4, text: t("auth.password_strength.strong") || "Fort", color: "bg-emerald-500 w-4/5" };
-  };
-
   // Redirection automatique si déjà connecté
   useEffect(() => {
     if (currentUser) {
@@ -124,8 +101,11 @@ export const Auth: React.FC = () => {
       setLoading(true);
       await signInWithGoogle(selectedRole);
       toast.success(t("login_success", "Connexion réussie !"));
-    } catch (error: any) {
-      if (error?.code !== 'auth/popup-closed-by-user' && error?.code !== 'auth/cancelled-popup-request') {
+    } catch (error: unknown) {
+      const errCode = (error && typeof error === "object" && "code" in error && typeof (error as { code: unknown }).code === "string")
+        ? (error as { code: string }).code
+        : "";
+      if (errCode !== 'auth/popup-closed-by-user' && errCode !== 'auth/cancelled-popup-request') {
          console.error("Erreur de connexion Google:", error);
          toast.error(t("google_login_failed", "La connexion avec Google a échoué."));
       }
@@ -137,10 +117,8 @@ export const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setFieldErrors({ email: false, password: false, name: false, cgv: false });
 
     if (!isLogin && !name.trim()) {
-        setFieldErrors(prev => ({ ...prev, name: true }));
         toast.error(t("auth.error.name_required") || "Veuillez saisir votre nom complet.");
         setLoading(false);
         return;
@@ -149,7 +127,6 @@ export const Auth: React.FC = () => {
     if (!isLogin) {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       if (!passwordRegex.test(password)) {
-        setFieldErrors(prev => ({ ...prev, password: true }));
         toast.error("Le mot de passe doit faire au moins 8 caractères, inclure une majuscule, une minuscule, un chiffre et un caractère spécial.");
         setLoading(false);
         return;
@@ -157,7 +134,6 @@ export const Auth: React.FC = () => {
     }
 
     if (!isLogin && registrationRules && !cgvAccepted) {
-        setFieldErrors(prev => ({ ...prev, cgv: true }));
         toast.error(t("auth.error.read_rules") || "Veuillez lire et accepter les conditions d'inscription.");
         setLoading(false);
         return;
@@ -201,19 +177,12 @@ export const Auth: React.FC = () => {
         await signUpWithEmail(email, password, name, selectedRole);
         toast.success(t("account_created_success", "Compte créé avec succès ! Veuillez vérifier votre email."));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erreur d'authentification:", err);
-      
-      // Update field highlights based on errorCode
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-        setFieldErrors({ email: true, password: true, name: false, cgv: false });
-      } else if (err.code === 'auth/email-already-in-use' || err.code === 'auth/invalid-email') {
-        setFieldErrors(prev => ({ ...prev, email: true }));
-      } else if (err.code === 'auth/weak-password') {
-        setFieldErrors(prev => ({ ...prev, password: true }));
-      }
-      
-      toast.error(getLocalizedAuthErrorMessage(err.code || ''));
+      const errorCode = (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string")
+        ? (err as { code: string }).code
+        : "";
+      toast.error(getLocalizedAuthErrorMessage(errorCode));
     } finally {
       setLoading(false);
     }

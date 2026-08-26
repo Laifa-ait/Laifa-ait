@@ -43,7 +43,7 @@ export const CheckoutSummarySidebar: React.FC<CheckoutSummarySidebarProps> = ({
   subtotal,
   couponDiscount,
   totalShipping,
-  userProfile,
+  userProfile: _userProfile,
   grandTotal,
   handlePlaceOrder,
   isSubmittingOrder,

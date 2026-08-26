@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Megaphone, Search, Zap, CheckCircle2, Clock } from "lucide-react";
 import { apiGet, apiPost } from "../../lib/api";
@@ -32,7 +32,7 @@ export const SellerSponsorships: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProductForPack, setSelectedProductForPack] = useState<Product | null>(null);
 
-  const fetchSponsorshipData = async () => {
+  const fetchSponsorshipData = useCallback(async () => {
     if (!currentUser) return;
     setLoading(true);
     try {
@@ -54,11 +54,11 @@ export const SellerSponsorships: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     fetchSponsorshipData();
-  }, [currentUser]);
+  }, [fetchSponsorshipData]);
 
   const handleOpenPackModal = (product: Product) => {
     if (product.status !== "active") {
@@ -83,8 +83,9 @@ export const SellerSponsorships: React.FC = () => {
         toast.success(res.message);
         await fetchSponsorshipData();
       }
-    } catch (error: any) {
-      toast.error(error.message || t("Erreur lors de la réservation du pack."));
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      toast.error(errorMsg || t("Erreur lors de la réservation du pack."));
     }
   };
 

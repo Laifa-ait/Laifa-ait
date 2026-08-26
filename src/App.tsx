@@ -31,7 +31,7 @@ const App = () => {
     return () => {
       i18n.off("languageChanged", handleLangChange);
     };
-  }, []);
+  }, [i18n]);
 
   return (
     <ErrorBoundary>

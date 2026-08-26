@@ -100,7 +100,7 @@ export const SupportAdmin: React.FC = () => {
       try {
         const data = await apiGet<{ messages: SupportMessage[] }>(`/api/v1/admin/support/tickets/${encodeURIComponent(selectedTicket)}/messages`);
         setMessages(data.messages);
-      } catch (err) {
+      } catch {
         console.error("Error fetching messages:", err);
       }
     };
@@ -228,7 +228,7 @@ export const SupportAdmin: React.FC = () => {
        
        // Update local ticket status
        setTickets(tickets.map(t => t.id === selectedTicket ? { ...t, status: newStatus } : t));
-     } catch (err) {
+     } catch {
        toast.error("Erreur lors du changement de statut.");
      }
   };
@@ -248,7 +248,7 @@ export const SupportAdmin: React.FC = () => {
 
        // Update local priority
        setTickets(tickets.map(t => t.id === selectedTicket ? { ...t, priority: newPriority } : t));
-     } catch (err) {
+     } catch {
        toast.error("Erreur lors de la mise à jour de la priorité.");
      }
   };

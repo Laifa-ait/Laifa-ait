@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Megaphone,
   Send,
   Sparkles,
   Layout,
@@ -13,7 +12,6 @@ import {
   Smartphone,
   Monitor,
   Eye,
-  Save,
   Link2,
   AlignLeft,
   AlignCenter,
@@ -22,9 +20,6 @@ import {
   Search,
   X,
   Loader2,
-  Tag,
-  CheckCircle,
-  HelpCircle,
   Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";

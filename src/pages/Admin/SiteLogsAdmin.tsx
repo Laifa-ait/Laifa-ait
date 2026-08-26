@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, limit } from 'firebase/firestore';
-import { Bug, AlertCircle, CheckCircle2, Clock, Trash2 } from 'lucide-react';
+import { Bug, CheckCircle2, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { useTranslation } from "react-i18next";
@@ -101,11 +101,11 @@ export const SiteLogsAdmin: React.FC = () => {
             {errors.map((error) => {
                   
                   return (
-                              <div key={error.id} className={`p-6 rounded-2xl border ${(error as any).resolved ? 'bg-zinc-50 border-zinc-200 opacity-60' : 'bg-red-50/50 border-red-100'} transition-all`}>
+                              <div key={error.id} className={`p-6 rounded-2xl border ${error.resolved ? 'bg-zinc-50 border-zinc-200 opacity-60' : 'bg-red-50/50 border-red-100'} transition-all`}>
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                      {(error as any).resolved ? (
+                                      {error.resolved ? (
                                         <span className="bg-zinc-200 text-zinc-700 text-[9px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal px-2 py-1 rounded">{t("Résolu")}</span>
                                       ) : (
                                         <span className="bg-red-500 text-white text-[9px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal px-2 py-1 rounded">{t("Nouveau")}</span>
@@ -116,7 +116,7 @@ export const SiteLogsAdmin: React.FC = () => {
                                           try {
                                             const date = normalizeTimestamp(error.timestamp).toDate();
                                             return format(date, 'dd MMM yyyy, HH:mm:ss');
-                                          } catch (e) {
+                                          } catch {
                                             return 'Date invalide';
                                           }
                                         })() : 'En cours'}

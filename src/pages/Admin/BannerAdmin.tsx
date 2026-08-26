@@ -27,7 +27,6 @@ export const BannerAdmin: React.FC = () => {
     previewDeviceMode,
     setPreviewDeviceMode,
     tagName,
-    setTagName,
     tagSlug,
     setTagSlug,
     handleCreateTag,

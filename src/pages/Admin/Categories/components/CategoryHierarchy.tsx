@@ -5,16 +5,29 @@ import { Network, GripVertical } from 'lucide-react';
 import { apiPut } from '../../../../lib/api';
 import toast from 'react-hot-toast';
 
+interface CategoryItem {
+  id: string;
+  name?: string;
+  order?: number;
+  translations?: {
+    fr?: { name?: string };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 export const CategoryHierarchy = () => {
   const { t } = useTranslation();
   const { categories, isLoading, mutate } = useCategories();
-  const [localCategories, setLocalCategories] = useState<any[]>([]);
+  const [localCategories, setLocalCategories] = useState<CategoryItem[]>([]);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (categories) {
       // Tri initial par ordre existant ou par défaut
-      const sorted = [...categories].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      const sorted = [...(categories as CategoryItem[])].sort(
+        (a: CategoryItem, b: CategoryItem) => (a.order || 0) - (b.order || 0)
+      );
       setLocalCategories(sorted);
     }
   }, [categories]);
@@ -59,8 +72,9 @@ export const CategoryHierarchy = () => {
       await apiPut('/api/v1/admin/categories/hierarchy', { hierarchy });
       toast.success(t("Hiérarchie mise à jour"), { id: toastId });
       mutate();
-    } catch (e: any) {
-      toast.error(e.message || t("Erreur de sauvegarde"), { id: toastId });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "";
+      toast.error(message || t("Erreur de sauvegarde"), { id: toastId });
     }
   };
 

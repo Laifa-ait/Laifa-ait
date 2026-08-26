@@ -9,10 +9,6 @@ import {
   Building2,
   User,
   ArrowRight,
-  PlusCircle,
-  ShieldCheck,
-  Award,
-  Layers,
 } from 'lucide-react';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';

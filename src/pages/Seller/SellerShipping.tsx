@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import {
   Truck,
@@ -52,12 +52,7 @@ export const SellerShipping: React.FC = () => {
   const [selectedWilayaId, setSelectedWilayaId] = useState<string>("16"); // Default Algiers (16)
   const [, setShippingRates] = useState<ShippingRatesResponse | null>(null);
 
-  useEffect(() => {
-    fetchSellerOrders();
-    fetchRates("16");
-  }, []);
-
-  const fetchSellerOrders = async () => {
+  const fetchSellerOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await apiGet<{ orders: Order[] }>("/api/v1/seller/orders");
@@ -70,9 +65,9 @@ export const SellerShipping: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchRates = async (wilayaId: string) => {
+  const fetchRates = useCallback(async (wilayaId: string) => {
     try {
       const res = await apiGet<ShippingRatesResponse>(`/api/v1/shipping/rates/${wilayaId}`);
       if (res) {
@@ -84,7 +79,12 @@ export const SellerShipping: React.FC = () => {
       console.warn("Could not fetch rates dynamically, using standard matrix:", err);
       setShippingRates(null);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSellerOrders();
+    fetchRates("16");
+  }, [fetchSellerOrders, fetchRates]);
 
   const handleWilayaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;

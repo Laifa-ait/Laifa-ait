@@ -11,6 +11,7 @@ import { MessageModerationService } from "../domains/messaging/services/MessageM
 import { NegotiationService } from "../domains/messaging/services/NegotiationService";
 import { MessagingService } from "../domains/messaging/services/MessagingService";
 import { ConversationDocument } from "../types/messaging";
+import type { CollectionReference, Transaction } from "firebase-admin/firestore";
 
 // Mock Firebase Admin
 vi.mock("../config/firebase-admin", () => {
@@ -63,10 +64,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockJson = vi.fn();
-    mockStatus = vi.fn().mockReturnValue({ json: mockJson });
+    mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
-      status: mockStatus as unknown as Response["status"],
-      json: mockJson as unknown as Response["json"]
+      status: mockStatus,
+      json: mockJson
     };
     mockNext = vi.fn();
   });
@@ -100,7 +101,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
         attachments: [
           {
             type: "pdf" as const,
-            url: "https://example.com/doc.pdf",
+            url: "https://olmart.dz/doc.pdf",
             fileName: "contract.pdf",
             fileSizeBytes: 10 * 1024 * 1024 // 10MB > 5MB limit
           }
@@ -183,10 +184,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       const mockConversation: ConversationDocument = {
         id: "conv_123",
         type: "REAL_ESTATE_INQUIRY",
-        participants: ["buyer_1", "owner_2"],
+        participants: ["client.buyer1@olmart.dz", "client.owner2@olmart.dz"],
         participantDetails: {
-          buyer_1: { uid: "buyer_1", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
-          owner_2: { uid: "owner_2", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
+          "client.buyer1@olmart.dz": { uid: "client.buyer1@olmart.dz", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
+          "client.owner2@olmart.dz": { uid: "client.owner2@olmart.dz", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
         },
         context: { referenceTitle: "Appartement F3" },
         activeNegotiation: {
@@ -195,8 +196,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
           initialPriceDZD: 60000,
           currency: "DZD",
           status: "PENDING",
-          proposedByUid: "buyer_1",
-          targetUid: "owner_2",
+          proposedByUid: "client.buyer1@olmart.dz",
+          targetUid: "client.owner2@olmart.dz",
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           createdAt: new Date().toISOString()
         },
@@ -207,7 +208,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       };
 
       if (db) {
-        vi.spyOn(db, "runTransaction").mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+        vi.spyOn(db, "runTransaction").mockImplementation(async (cb) => {
           const fakeTx = {
             get: vi.fn().mockResolvedValue({
               exists: true,
@@ -216,14 +217,14 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             set: vi.fn(),
             update: vi.fn()
           };
-          return cb(fakeTx);
+          return cb(fakeTx as unknown as Transaction);
         });
       }
 
       // Proposer attempts to accept their own offer
       await expect(
         NegotiationService.resolveOffer({
-          callerUid: "buyer_1",
+          callerUid: "client.buyer1@olmart.dz",
           conversationId: "conv_123",
           payload: { offerId: "off_abc", action: "ACCEPT" }
         })
@@ -236,10 +237,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       const mockConversation: ConversationDocument = {
         id: "conv_123",
         type: "REAL_ESTATE_INQUIRY",
-        participants: ["buyer_1", "owner_2"],
+        participants: ["client.buyer1@olmart.dz", "client.owner2@olmart.dz"],
         participantDetails: {
-          buyer_1: { uid: "buyer_1", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
-          owner_2: { uid: "owner_2", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
+          "client.buyer1@olmart.dz": { uid: "client.buyer1@olmart.dz", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
+          "client.owner2@olmart.dz": { uid: "client.owner2@olmart.dz", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
         },
         context: { referenceTitle: "Appartement F3" },
         activeNegotiation: {
@@ -248,8 +249,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
           initialPriceDZD: 60000,
           currency: "DZD",
           status: "PENDING",
-          proposedByUid: "buyer_1",
-          targetUid: "owner_2",
+          proposedByUid: "client.buyer1@olmart.dz",
+          targetUid: "client.owner2@olmart.dz",
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           createdAt: new Date().toISOString()
         },
@@ -260,7 +261,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       };
 
       if (db) {
-        vi.spyOn(db, "runTransaction").mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+        vi.spyOn(db, "runTransaction").mockImplementation(async (cb) => {
           const fakeTx = {
             get: vi.fn().mockResolvedValue({
               exists: true,
@@ -269,12 +270,12 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             set: vi.fn(),
             update: vi.fn()
           };
-          return cb(fakeTx);
+          return cb(fakeTx as unknown as Transaction);
         });
       }
 
       const result = await NegotiationService.resolveOffer({
-        callerUid: "owner_2",
+        callerUid: "client.owner2@olmart.dz",
         conversationId: "conv_123",
         payload: { offerId: "off_abc", action: "ACCEPT" }
       });
@@ -289,10 +290,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       const mockConversation: ConversationDocument = {
         id: "conv_123",
         type: "REAL_ESTATE_INQUIRY",
-        participants: ["buyer_1", "owner_2"],
+        participants: ["client.buyer1@olmart.dz", "client.owner2@olmart.dz"],
         participantDetails: {
-          buyer_1: { uid: "buyer_1", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
-          owner_2: { uid: "owner_2", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
+          "client.buyer1@olmart.dz": { uid: "client.buyer1@olmart.dz", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
+          "client.owner2@olmart.dz": { uid: "client.owner2@olmart.dz", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
         },
         context: { referenceTitle: "Appartement F3" },
         activeNegotiation: {
@@ -301,8 +302,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
           initialPriceDZD: 60000,
           currency: "DZD",
           status: "PENDING",
-          proposedByUid: "buyer_1",
-          targetUid: "owner_2",
+          proposedByUid: "client.buyer1@olmart.dz",
+          targetUid: "client.owner2@olmart.dz",
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           createdAt: new Date().toISOString()
         },
@@ -313,7 +314,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       };
 
       if (db) {
-        vi.spyOn(db, "runTransaction").mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+        vi.spyOn(db, "runTransaction").mockImplementation(async (cb) => {
           const fakeTx = {
             get: vi.fn().mockResolvedValue({
               exists: true,
@@ -322,20 +323,20 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             set: vi.fn(),
             update: vi.fn()
           };
-          return cb(fakeTx);
+          return cb(fakeTx as unknown as Transaction);
         });
       }
 
       const counterResult = await NegotiationService.resolveOffer({
-        callerUid: "owner_2",
+        callerUid: "client.owner2@olmart.dz",
         conversationId: "conv_123",
         payload: { offerId: "off_abc", action: "COUNTER", counterAmountDZD: 55000 }
       });
 
       expect(counterResult.status).toBe("PENDING");
       expect(counterResult.amountDZD).toBe(55000);
-      expect(counterResult.proposedByUid).toBe("owner_2");
-      expect(counterResult.targetUid).toBe("buyer_1");
+      expect(counterResult.proposedByUid).toBe("client.owner2@olmart.dz");
+      expect(counterResult.targetUid).toBe("client.buyer1@olmart.dz");
     });
 
     it("3.4 Proposer can CANCEL their own pending offer, but target cannot", async () => {
@@ -344,10 +345,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       const mockConversation: ConversationDocument = {
         id: "conv_123",
         type: "REAL_ESTATE_INQUIRY",
-        participants: ["buyer_1", "owner_2"],
+        participants: ["client.buyer1@olmart.dz", "client.owner2@olmart.dz"],
         participantDetails: {
-          buyer_1: { uid: "buyer_1", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
-          owner_2: { uid: "owner_2", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
+          "client.buyer1@olmart.dz": { uid: "client.buyer1@olmart.dz", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
+          "client.owner2@olmart.dz": { uid: "client.owner2@olmart.dz", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
         },
         context: { referenceTitle: "Appartement F3" },
         activeNegotiation: {
@@ -356,8 +357,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
           initialPriceDZD: 60000,
           currency: "DZD",
           status: "PENDING",
-          proposedByUid: "buyer_1",
-          targetUid: "owner_2",
+          proposedByUid: "client.buyer1@olmart.dz",
+          targetUid: "client.owner2@olmart.dz",
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           createdAt: new Date().toISOString()
         },
@@ -368,7 +369,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       };
 
       if (db) {
-        vi.spyOn(db, "runTransaction").mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+        vi.spyOn(db, "runTransaction").mockImplementation(async (cb) => {
           const fakeTx = {
             get: vi.fn().mockResolvedValue({
               exists: true,
@@ -377,17 +378,17 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             set: vi.fn(),
             update: vi.fn()
           };
-          return cb(fakeTx);
+          return cb(fakeTx as unknown as Transaction);
         });
       }
 
       // Target tries to cancel proposer's offer -> fails
       await expect(
-        NegotiationService.cancelOffer("owner_2", "conv_123", "off_abc")
+        NegotiationService.cancelOffer("client.owner2@olmart.dz", "conv_123", "off_abc")
       ).rejects.toThrow("UNAUTHORIZED_OFFER_CANCELLATION");
 
       // Proposer cancels their offer -> succeeds
-      const cancelResult = await NegotiationService.cancelOffer("buyer_1", "conv_123", "off_abc");
+      const cancelResult = await NegotiationService.cancelOffer("client.buyer1@olmart.dz", "conv_123", "off_abc");
       expect(cancelResult.status).toBe("CANCELLED");
     });
 
@@ -397,10 +398,10 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       const mockConversation: ConversationDocument = {
         id: "conv_123",
         type: "REAL_ESTATE_INQUIRY",
-        participants: ["buyer_1", "owner_2"],
+        participants: ["client.buyer1@olmart.dz", "client.owner2@olmart.dz"],
         participantDetails: {
-          buyer_1: { uid: "buyer_1", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
-          owner_2: { uid: "owner_2", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
+          "client.buyer1@olmart.dz": { uid: "client.buyer1@olmart.dz", role: "buyer", displayName: "Acheteur", unreadCount: 0 },
+          "client.owner2@olmart.dz": { uid: "client.owner2@olmart.dz", role: "owner", displayName: "Propriétaire", unreadCount: 0 }
         },
         context: { referenceTitle: "Appartement F3" },
         activeNegotiation: {
@@ -409,8 +410,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
           initialPriceDZD: 60000,
           currency: "DZD",
           status: "ACCEPTED",
-          proposedByUid: "buyer_1",
-          targetUid: "owner_2",
+          proposedByUid: "client.buyer1@olmart.dz",
+          targetUid: "client.owner2@olmart.dz",
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           createdAt: new Date().toISOString(),
           resolvedAt: new Date().toISOString()
@@ -422,7 +423,7 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
       };
 
       if (db) {
-        vi.spyOn(db, "runTransaction").mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+        vi.spyOn(db, "runTransaction").mockImplementation(async (cb) => {
           const fakeTx = {
             get: vi.fn().mockResolvedValue({
               exists: true,
@@ -431,13 +432,13 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             set: vi.fn(),
             update: vi.fn()
           };
-          return cb(fakeTx);
+          return cb(fakeTx as unknown as Transaction);
         });
       }
 
       await expect(
         NegotiationService.resolveOffer({
-          callerUid: "owner_2",
+          callerUid: "client.owner2@olmart.dz",
           conversationId: "conv_123",
           payload: { offerId: "off_abc", action: "REJECT" }
         })
@@ -455,17 +456,17 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
             get: vi.fn().mockResolvedValue({
               exists: true,
               data: () => ({
-                ownerId: "user_same_123",
+                ownerId: "client.self@olmart.dz",
                 title: "Mon propre appartement",
                 images: []
               })
             })
           })
-        } as any);
+        } as unknown as CollectionReference);
       }
 
       await expect(
-        MessagingService.initiateConversation("user_same_123", {
+        MessagingService.initiateConversation("client.self@olmart.dz", {
           type: "REAL_ESTATE_INQUIRY",
           recipientId: "fake_id_in_body",
           context: { propertyId: "prop_own" },
@@ -484,15 +485,15 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
               exists: true,
               id: "conv_private_999",
               data: () => ({
-                participants: ["buyer_alice", "seller_bob"]
+                participants: ["client.alice@olmart.dz", "client.bob@olmart.dz"]
               })
             })
           })
-        } as any);
+        } as unknown as CollectionReference);
       }
 
       await expect(
-        MessagingService.getConversation("attacker_eve", "conv_private_999", false)
+        MessagingService.getConversation("audit.eve@olmart.dz", "conv_private_999", false)
       ).rejects.toThrow("FORBIDDEN_NOT_PARTICIPANT");
     });
 
@@ -506,14 +507,14 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
               exists: true,
               id: "conv_private_999",
               data: () => ({
-                participants: ["buyer_alice", "seller_bob"]
+                participants: ["client.alice@olmart.dz", "client.bob@olmart.dz"]
               })
             })
           })
-        } as any);
+        } as unknown as CollectionReference);
       }
 
-      const conv = await MessagingService.getConversation("admin_uid", "conv_private_999", true);
+      const conv = await MessagingService.getConversation("admin.security@olmart.dz", "conv_private_999", true);
       expect(conv.id).toBe("conv_private_999");
     });
   });

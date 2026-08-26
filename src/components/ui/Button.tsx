@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'motion/react';
 import { LucideIcon } from 'lucide-react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

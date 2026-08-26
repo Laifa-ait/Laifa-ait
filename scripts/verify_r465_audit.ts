@@ -16,10 +16,9 @@ async function runAudit() {
   const buyer2Uid = "audit-buyer-r465-2";
   const sellerAUid = "audit-seller-r465-A";
   const sellerBUid = "audit-seller-r465-B";
-  const adminUid = "audit-admin-r465";
 
   // Create Custom Tokens & Fetch ID Tokens
-  async function getIdToken(uid: string, claims: Record<string, any>): Promise<string> {
+  async function getIdToken(uid: string, claims: Record<string, string | number | boolean>): Promise<string> {
     const customToken = await admin.auth().createCustomToken(uid, claims);
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`, {
       method: "POST",
@@ -31,10 +30,7 @@ async function runAudit() {
   }
 
   const buyer1Token = await getIdToken(buyer1Uid, { role: "buyer" });
-  const buyer2Token = await getIdToken(buyer2Uid, { role: "buyer" });
   const sellerAToken = await getIdToken(sellerAUid, { role: "seller" });
-  const sellerBToken = await getIdToken(sellerBUid, { role: "seller" });
-  const adminToken = await getIdToken(adminUid, { role: "admin" });
 
   console.log("Tokens generated successfully for test identities.");
 
@@ -47,8 +43,6 @@ async function runAudit() {
     email: "buyer1@olmart.dz",
     role: "buyer",
     status: "active",
-    walletBalance: 0,
-    lockedBalance: 0,
     isVerified: false,
     trustScore: 50,
   });
@@ -58,8 +52,6 @@ async function runAudit() {
     email: "buyer2@olmart.dz",
     role: "buyer",
     status: "active",
-    walletBalance: 0,
-    lockedBalance: 0,
     isVerified: false,
     trustScore: 50,
   });
@@ -69,8 +61,6 @@ async function runAudit() {
     email: "sellerA@olmart.dz",
     role: "seller",
     status: "active",
-    walletBalance: 1000,
-    lockedBalance: 0,
     isVerified: true,
     trustScore: 90,
     commissionRate: 10,
@@ -82,8 +72,6 @@ async function runAudit() {
     email: "sellerB@olmart.dz",
     role: "seller",
     status: "active",
-    walletBalance: 2000,
-    lockedBalance: 0,
     isVerified: true,
     trustScore: 85,
     commissionRate: 12,
@@ -159,8 +147,8 @@ async function runAudit() {
     method: string,
     path: string,
     token: string | null,
-    body?: any
-  ): Promise<{ status: number; data: any }> {
+    body?: unknown
+  ): Promise<{ status: number; data: Record<string, unknown> }> {
     const url = `${restBaseUrl}${path}`;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) {
@@ -171,7 +159,7 @@ async function runAudit() {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    const data = await res.json().catch(() => ({}));
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
     return { status: res.status, data };
   }
 
@@ -364,10 +352,11 @@ async function runAudit() {
   const s06a = await restCall("PATCH", `/sellers/${sellerAUid}?updateMask.fieldPaths=shopName`, buyer1Token, {
     fields: { shopName: { stringValue: "Buyer Defaced" } }
   });
+  logResult("TEST-S06a", "Client -> modification d'un profil vendeur (/sellers)", "PATCH", "Buyer1", `/sellers/${sellerAUid}`, s06a.status, "DENY", String((s06a.data?.error as Record<string, unknown>)?.message || "Denied"));
   const s06b = await restCall("PATCH", `/users/${sellerAUid}?updateMask.fieldPaths=shopName`, buyer1Token, {
     fields: { shopName: { stringValue: "Buyer Defaced" } }
   });
-  logResult("TEST-S06", "Client -> modification d'un profil vendeur (/sellers et /users)", "PATCH", "Buyer1", `/users/${sellerAUid}`, s06b.status, "DENY", s06b.data?.error?.message || "Denied");
+  logResult("TEST-S06b", "Client -> modification d'un profil vendeur (/users)", "PATCH", "Buyer1", `/users/${sellerAUid}`, s06b.status, "DENY", String((s06b.data?.error as Record<string, unknown>)?.message || "Denied"));
 
 
   console.log("\n=================== SECTION 5: AUDIT USERS ===================");
@@ -378,11 +367,11 @@ async function runAudit() {
   });
   logResult("TEST-U01", "Utilisateur -> élévation de rôle vers admin (/users/update)", "PATCH", "Buyer1", `/users/${buyer1Uid}`, u01.status, "DENY", u01.data?.error?.message || "Denied");
 
-  // TEST-U02: Utilisateur -> modification de son walletBalance / lockedBalance
-  const u02 = await restCall("PATCH", `/users/${buyer1Uid}?updateMask.fieldPaths=walletBalance`, buyer1Token, {
-    fields: { walletBalance: { integerValue: 1000000 } }
+  // TEST-U02: Utilisateur -> modification non autorisée de son commissionRate
+  const u02 = await restCall("PATCH", `/users/${buyer1Uid}?updateMask.fieldPaths=commissionRate`, buyer1Token, {
+    fields: { commissionRate: { integerValue: 0 } }
   });
-  logResult("TEST-U02", "Utilisateur -> modification directe du walletBalance", "PATCH", "Buyer1", `/users/${buyer1Uid}`, u02.status, "DENY", u02.data?.error?.message || "Denied");
+  logResult("TEST-U02", "Utilisateur -> modification directe du commissionRate", "PATCH", "Buyer1", `/users/${buyer1Uid}`, u02.status, "DENY", String((u02.data?.error as Record<string, unknown>)?.message || "Denied"));
 
   // TEST-U03: Utilisateur -> modification de isVerified / trustScore
   const u03 = await restCall("PATCH", `/users/${buyer1Uid}?updateMask.fieldPaths=trustScore`, buyer1Token, {

@@ -463,12 +463,12 @@ describe("Coupon & Voucher Security & Integrity Engine (P0.6.8)", () => {
             docs: [],
           };
         },
-        set: (ref: { path?: string; id?: string }, data: Record<string, unknown>) => {
+        set: (ref: { path?: string; id?: string }, _data: Record<string, unknown>) => {
           const target = ref?.path || ref?.id || "doc";
           callLog.push({ op: "set", target, phase: currentPhase });
           return fakeTransaction;
         },
-        update: (ref: { path?: string; id?: string }, data: Record<string, unknown>) => {
+        update: (ref: { path?: string; id?: string }, _data: Record<string, unknown>) => {
           const target = ref?.path || ref?.id || "doc";
           callLog.push({ op: "update", target, phase: currentPhase });
           return fakeTransaction;
@@ -1149,7 +1149,7 @@ describe("Coupon & Voucher Security & Integrity Engine (P0.6.8)", () => {
       const failedCheckout = async () => {
         return store.runTransaction(async (t) => {
           const coupon = t.get("coupons/expired_c");
-          const product = t.get("products/p_stock");
+          t.get("products/p_stock");
 
           // Validation fails in Phase 2
           const timeCheck = CouponService.isCouponTimeValid(coupon!);
