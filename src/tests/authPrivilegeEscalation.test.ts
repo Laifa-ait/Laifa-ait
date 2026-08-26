@@ -14,8 +14,8 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
     mockJson = vi.fn();
     mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
-      status: mockStatus,
-      json: mockJson,
+      status: mockStatus as unknown as Response["status"],
+      json: mockJson as unknown as Response["json"],
     };
     mockNext = vi.fn();
     vi.clearAllMocks();
@@ -24,19 +24,19 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
   describe("1 & 2: /sync Role Escalation Defense", () => {
     it("forces role=admin to 'buyer' during user sync creation", () => {
       const inputRole = "admin";
-      const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
+      const sanitizedRole = (inputRole as string) === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("buyer");
     });
 
     it("forces role=superadmin to 'buyer' during user sync creation", () => {
       const inputRole = "superadmin";
-      const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
+      const sanitizedRole = (inputRole as string) === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("buyer");
     });
 
     it("allows role=seller during user sync creation", () => {
       const inputRole = "seller";
-      const sanitizedRole = inputRole === "seller" ? "seller" : "buyer";
+      const sanitizedRole = (inputRole as string) === "seller" ? "seller" : "buyer";
       expect(sanitizedRole).toBe("seller");
     });
   });
@@ -44,14 +44,14 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
   describe("3 & 4: /onboard Role Escalation Defense", () => {
     it("sanitizes role=admin to 'buyer' and denies admin custom claims creation", () => {
       const clientRequestedRole = "admin";
-      const safeClientRole = clientRequestedRole === "seller" ? "seller" : "buyer";
+      const safeClientRole = (clientRequestedRole as string) === "seller" ? "seller" : "buyer";
       
       const isExistingAdmin = false;
       const tokenIsAdmin = false;
       const finalClaimRole = (isExistingAdmin && tokenIsAdmin) ? "admin" : safeClientRole;
       const customClaims = {
         role: finalClaimRole,
-        isAdmin: finalClaimRole === "admin" || finalClaimRole === "superadmin",
+        isAdmin: (finalClaimRole as string) === "admin" || (finalClaimRole as string) === "superadmin",
       };
 
       expect(safeClientRole).toBe("buyer");
@@ -61,14 +61,14 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
     it("sanitizes role=superadmin to 'buyer' and denies superadmin custom claims creation", () => {
       const clientRequestedRole = "superadmin";
-      const safeClientRole = clientRequestedRole === "seller" ? "seller" : "buyer";
+      const safeClientRole = (clientRequestedRole as string) === "seller" ? "seller" : "buyer";
       
       const isExistingAdmin = false;
       const tokenIsAdmin = false;
       const finalClaimRole = (isExistingAdmin && tokenIsAdmin) ? "superadmin" : safeClientRole;
       const customClaims = {
         role: finalClaimRole,
-        isAdmin: finalClaimRole === "admin" || finalClaimRole === "superadmin",
+        isAdmin: (finalClaimRole as string) === "admin" || (finalClaimRole as string) === "superadmin",
       };
 
       expect(safeClientRole).toBe("buyer");
@@ -84,7 +84,7 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
       
       let claimRole = "buyer";
       if (dbRole === "admin" || dbRole === "superadmin") {
-        if (userTokenRole === "admin" || userTokenRole === "superadmin") {
+        if ((userTokenRole as string) === "admin" || (userTokenRole as string) === "superadmin") {
           claimRole = dbRole;
         } else {
           claimRole = "buyer";

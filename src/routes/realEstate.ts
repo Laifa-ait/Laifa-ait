@@ -903,7 +903,16 @@ realEstateRouter.get(
       const userData = userSnap.data();
 
       // IMPORTANT: Only map allowed fields to prevent PII leakage (no email, phone, documents)
-      const publicProfile = {
+      const publicProfile: {
+        uid: string;
+        displayName: string;
+        photoURL: string;
+        role: string;
+        shopName?: string;
+        sellerType?: string;
+        verificationStatus: string;
+        joinedAt?: string;
+      } = {
         uid: property.ownerId,
         displayName: userData?.displayName || 'Propriétaire Anonyme',
         photoURL: userData?.photoURL || '',

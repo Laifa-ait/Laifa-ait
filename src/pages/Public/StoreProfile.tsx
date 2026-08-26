@@ -29,9 +29,9 @@ export interface PublicStoreInfo {
   legalStatus?: string;
   avgPreparationTime?: string;
   returnPolicy?: string;
-  followersCount: number;
+  followersCount?: number;
   rating?: number | null;
-  status: string;
+  status?: string;
   logoUrl?: string;
   bannerUrl?: string;
   shopSlug?: string;
@@ -40,6 +40,17 @@ export interface PublicStoreInfo {
   description?: string;
   avatarUrl?: string;
   coverUrl?: string;
+  uid?: string;
+  userUid?: string;
+  error?: string;
+  photoURL?: string;
+  photoUrl?: string;
+  avatar?: string;
+  banner?: string;
+  storeBanner?: string;
+  sellerBanner?: string;
+  bannerImage?: string;
+  brand?: string;
 }
 
 export const StoreProfile: React.FC = () => {
@@ -386,13 +397,15 @@ export const StoreProfile: React.FC = () => {
             const snapName = await getDocs(qName);
             if (!snapName.empty) {
               const pDoc = snapName.docs[0];
-              data = { id: pDoc.id, sellerId: pDoc.id, ...pDoc.data() };
+              const pData = pDoc.data();
+              data = { id: pDoc.id, sellerId: pDoc.id, shopName: pData.shopName || pData.displayName || "Boutique Vendeur", wilaya: pData.wilaya || "16 - Alger", ...pData };
             } else {
               const qDisplay = query(collection(db, "publicProfiles"), where("displayName", "==", decodedSellerId), limit(1));
               const snapDisplay = await getDocs(qDisplay);
               if (!snapDisplay.empty) {
                 const pDoc = snapDisplay.docs[0];
-                data = { id: pDoc.id, sellerId: pDoc.id, ...pDoc.data() };
+                const pData = pDoc.data();
+                data = { id: pDoc.id, sellerId: pDoc.id, shopName: pData.shopName || pData.displayName || "Boutique Vendeur", wilaya: pData.wilaya || "16 - Alger", ...pData };
               }
             }
           } catch (e) {
@@ -813,7 +826,7 @@ export const StoreProfile: React.FC = () => {
     const searchTerms = normalizeText(query).split(/\s+/).filter(Boolean);
     
     const searchableText = normalizeText([
-      product.title,
+      (product as unknown as { title?: string }).title,
       product.name,
       product.description,
       product.category,

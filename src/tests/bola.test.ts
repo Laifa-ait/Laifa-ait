@@ -12,8 +12,8 @@ describe("OLMART — BOLA and RBAC Authorization Security Policies", () => {
     mockJson = vi.fn();
     mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
-      status: mockStatus,
-      json: mockJson,
+      status: mockStatus as unknown as Response["status"],
+      json: mockJson as unknown as Response["json"],
     };
     mockNext = vi.fn();
   });

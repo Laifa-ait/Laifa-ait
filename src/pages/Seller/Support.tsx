@@ -15,6 +15,15 @@ interface SupportTicket {
   createdAt?: {
     toDate?: () => Date;
   };
+  updatedAt?: {
+    toDate?: () => Date;
+  };
+  resolvedAt?: {
+    toDate?: () => Date;
+  };
+  lastMessageAt?: {
+    toDate?: () => Date;
+  };
 }
 
 interface SupportMessage {
@@ -426,7 +435,7 @@ export const Support: React.FC = () => {
                        const ts = currentTicket?.resolvedAt || currentTicket?.updatedAt || currentTicket?.lastMessageAt;
                        let eligible = true;
                        if (ts) {
-                          const resDate = ts.toDate ? ts.toDate() : new Date(ts);
+                          const resDate = ts.toDate ? ts.toDate() : new Date(ts as unknown as string | number | Date);
                           const diffDays = (Date.now() - resDate.getTime()) / (1000 * 60 * 60 * 24);
                           eligible = diffDays <= 7;
                        }

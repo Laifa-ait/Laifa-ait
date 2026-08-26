@@ -66,8 +66,8 @@ describe("OLM-04.1 Unified Messaging & Negotiation Security Test Suite", () => {
     mockJson = vi.fn();
     mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
-      status: mockStatus,
-      json: mockJson
+      status: mockStatus as unknown as Response["status"],
+      json: mockJson as unknown as Response["json"]
     };
     mockNext = vi.fn();
   });

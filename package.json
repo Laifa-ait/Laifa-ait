@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "lint": "NODE_OPTIONS=\"--max-old-space-size=1024\" eslint \"{src,scripts}/**/*.{ts,tsx}\" server.ts app.ts",
-    "typecheck": "NODE_OPTIONS=\"--max-old-space-size=1536\" tsc --noEmit",
+    "typecheck": "NODE_OPTIONS=\"--max-old-space-size=1536\" node ./node_modules/typescript/bin/tsc --noEmit",
     "format": "prettier --write \"{src,scripts}/**/*.{js,jsx,ts,tsx,css,md}\" server.ts app.ts",
     "backup:firestore": "tsx scripts/backup-firestore.ts",
     "check:translations": "tsx scripts/check-seller-translations.ts"

@@ -14,8 +14,8 @@ describe("OLMART — Two-Factor Authentication Session Verification & Security T
     mockJson = vi.fn();
     mockStatus = vi.fn().mockImplementation(() => mockRes as Response);
     mockRes = {
-      status: mockStatus,
-      json: mockJson,
+      status: mockStatus as unknown as Response["status"],
+      json: mockJson as unknown as Response["json"],
     };
     mockNext = vi.fn();
     vi.clearAllMocks();
