@@ -17,7 +17,8 @@ import {
   CheckCheck,
   DollarSign,
   Radio,
-  ExternalLink
+  ExternalLink,
+  ShieldCheck
 } from 'lucide-react';
 import { BricolageConversation, BricolageMessage } from '../../types/bricolage';
 

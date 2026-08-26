@@ -76,18 +76,7 @@ export const ImageLazy: React.FC<ImageLazyProps> = ({
         }
       }
     }
-  }, [currentSrc]);
-
-  const handleImageError = () => {
-    if (!hasTriedFallback && src && currentSrc !== src) {
-      setCurrentSrc(src);
-      setHasTriedFallback(true);
-      setLoading(true);
-    } else {
-      setLoading(false);
-      setError(true);
-    }
-  };
+  }, [currentSrc, handleImageError]);
 
   if (error || !src) {
     return (

@@ -12,25 +12,27 @@ import { CategoryHistorySection } from "./CategoryHistorySection";
 import { CategoryItemRow } from "./CategoryItemRow";
 
 interface CategoriesTabProps {
-  hierarchy: unknown[];
+  hierarchy: Record<string, Record<string, string[]>>;
+  setHierarchy?: (h: Record<string, Record<string, string[]>>) => void;
   expandedCats: Record<string, boolean>;
-  setExpandedCats: (cats: Record<string, boolean>) => void;
+  setExpandedCats: (cats: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
   expandedSubs: Record<string, boolean>;
-  setExpandedSubs: (subs: Record<string, boolean>) => void;
+  setExpandedSubs: (subs: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
   newCatName: string;
   setNewCatName: (name: string) => void;
   newSubcatNames: Record<string, string>;
-  setNewSubcatNames: (names: Record<string, string>) => void;
+  setNewSubcatNames: (names: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
   newSubSubcatNames: Record<string, string>;
-  setNewSubSubcatNames: (names: Record<string, string>) => void;
+  setNewSubSubcatNames: (names: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
   handleAddCategory: () => void;
   handleAddSubcategory: (catName: string) => void;
   handleAddSubSubcategory: (catName: string, subcatName: string) => void;
   handleRemoveCategory: (catName: string) => void;
   handleRemoveSubcategory: (catName: string, subcatName: string) => void;
   handleRemoveSubSubcategory: (catName: string, subcatName: string, subSubcatName: string) => void;
-  startTranslateWorkflow: (catName: string, subcatName?: string, subSubcatName?: string) => void;
-  handleResetToDefault: () => void;
+  startTranslateWorkflow?: (catName?: string, subcatName?: string, subSubcatName?: string) => void;
+  handleResetToDefault?: () => void;
+  runHierarchyTransaction?: (desc: string, fn: unknown) => Promise<void>;
   historyLogs: unknown[];
   historyLoading: boolean;
   handleRollback: (logId: string) => void;
@@ -86,7 +88,7 @@ export const CategoriesTab = ({
         </h4>
         <div className="flex items-center gap-3">
           <button
-            onClick={startTranslateWorkflow}
+            onClick={() => startTranslateWorkflow?.("all")}
             className="flex items-center gap-2 text-[10px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-2xl transition-all self-start disabled:opacity-50 cursor-pointer border-none"
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -164,7 +166,7 @@ export const CategoriesTab = ({
       <CategoryHistorySection
         historyLoading={historyLoading as boolean}
         historyLogs={(historyLogs as Array<Record<string, unknown>>) || []}
-        handleRollback={handleRollback as (log: Record<string, unknown>) => void}
+        handleRollback={(log: Record<string, unknown>) => handleRollback(String(log.id || ""))}
       />
     </motion.div>
   );

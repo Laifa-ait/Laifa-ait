@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
-import { Property, VisitRequest, Booking } from '../../types/realEstate';
+import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
 import { InitiateConversationDTO } from '../../types/messaging';
 import { apiGet, apiPut } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';

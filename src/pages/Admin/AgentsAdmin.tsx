@@ -110,7 +110,7 @@ export const AgentsAdmin: React.FC = () => {
   const [sentinelReport, setSentinelReport] = useState<SentinelReport | null>(null);
   
   // Custom moderator test input
-  const [testProduct] = useState({
+  const [testProduct, setTestProduct] = useState({
     title: "Robe Kabyle de Fête Authentique",
     description: "Sublime robe kabyle cousue main avec foutha assortie. Qualité premium d'artisanat d'art de Tizi Ouzou. Contactez-moi sur mon WhatsApp +213550123456 pour plus de détails et commande rapide !"
   });
@@ -988,7 +988,7 @@ export const AgentsAdmin: React.FC = () => {
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-3">{t("Aperçu du corps HTML :")}</span>
                             <div 
                               className="text-xs text-zinc-600 space-y-2 border-t border-zinc-200 pt-3"
-                              dangerouslySetInnerHTML={{ __html: sanitizeHTML(cartPreview.htmlBody) }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeHTML(cartPreview.htmlBody || "") }}
                             />
                           </div>
                         </div>
@@ -1114,8 +1114,8 @@ export const AgentsAdmin: React.FC = () => {
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="text-[10px] text-zinc-400 font-bold uppercase">{t("Score de Qualité")}</span>
-                              <span className={`text-base font-sans font-bold ${moderatorResult.qualityScore >= 80 ? 'text-green-600' : moderatorResult.qualityScore >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
-                                {moderatorResult.qualityScore} / 100
+                              <span className={`text-base font-sans font-bold ${(moderatorResult.qualityScore ?? 0) >= 80 ? 'text-green-600' : (moderatorResult.qualityScore ?? 0) >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                                {moderatorResult.qualityScore ?? 0} / 100
                               </span>
                             </div>
                           </div>
@@ -1136,11 +1136,11 @@ export const AgentsAdmin: React.FC = () => {
                             </div>
                           </div>
 
-                          {moderatorResult.infractionsDetected?.length > 0 && (
+                          {((moderatorResult.infractionsDetected?.length ?? 0) > 0) && (
                             <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 space-y-1">
                               <strong className="text-xs font-bold text-red-900 block">⚠️ {t("Anomalies Détectées :")}</strong>
                               <ul className="list-disc list-inside text-xs text-red-700 space-y-0.5 font-medium">
-                                {moderatorResult.infractionsDetected.map((inf: string, idx: number) => (
+                                {moderatorResult.infractionsDetected?.map((inf: string, idx: number) => (
                                   <li key={idx}>{inf}</li>
                                 ))}
                               </ul>

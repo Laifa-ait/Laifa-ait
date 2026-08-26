@@ -96,19 +96,19 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
     );
   };
 
-  const getMaskedName = (name: string) => {
+  const getMaskedName = (name?: string) => {
     if (!name) return "A***m";
     if (name.length <= 2) return name + "***";
     return name.charAt(0) + "***" + name.charAt(name.length - 1);
   };
 
-  const formatDate = (timestamp: { seconds: number; nanoseconds?: number; toDate?: () => Date } | Date | string | null | undefined) => {
+  const formatDate = (timestamp: { seconds: number; nanoseconds?: number; toDate?: () => Date } | Date | string | number | null | undefined) => {
     if (!timestamp) return "";
     try {
       if (timestamp instanceof Date) {
         return format(timestamp, "dd MMM yyyy", { locale: fr });
       }
-      if (typeof timestamp === "string") {
+      if (typeof timestamp === "string" || typeof timestamp === "number") {
         return format(new Date(timestamp), "dd MMM yyyy", { locale: fr });
       }
       const tObj = timestamp as { seconds: number; toDate?: () => Date };

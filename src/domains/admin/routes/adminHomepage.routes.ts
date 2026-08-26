@@ -18,7 +18,7 @@ async function clearHomepageCache() {
 router.get("/admin/homepage/sections", async (_req: Request, res: Response) => {
   try {
     const snap = await db.collection("homepage_sections").get();
-    const sections = snap.docs.map((doc) => ({
+    const sections: Array<{ id: string; orderIndex?: number; [key: string]: unknown }> = snap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));

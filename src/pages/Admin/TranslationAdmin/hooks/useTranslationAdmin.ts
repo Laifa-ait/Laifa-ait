@@ -125,7 +125,7 @@ export const useTranslationAdmin = () => {
 
       const monthlySnap = await getDocs(query(collection(db, 'site_content_monthly'), limit(20)));
       setMonthlyContent(monthlySnap.docs.map((d) => ({ id: d.id, ...d.data() } as MonthlyItem)));
-    } catch {
+    } catch (error) {
       console.error('Audit fail:', error);
     } finally {
       setIsLoading(false);
@@ -571,7 +571,7 @@ export const useTranslationAdmin = () => {
       }
       toast.success(`${count} produits traduits avec succès !`, { id: toastId });
       runAudit();
-    } catch {
+    } catch (error) {
       console.error('Critical error in auto translate products:', error);
       toast.error('Erreur durant la traduction.', { id: toastId });
     } finally {

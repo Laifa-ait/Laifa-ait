@@ -4,10 +4,11 @@ import React from "react";
  * Robust wrapper for React.lazy that handles dynamic import failures.
  * Retries fetch up to maxAttempts times and performs a single page reload if chunks are stale/invalidated.
  */
-export function lazyWithRetry<T extends React.ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T } | T>,
   keyName?: string
-) {
+): React.LazyExoticComponent<T> {
   return React.lazy(async () => {
     let attempts = 0;
     const maxAttempts = 3;

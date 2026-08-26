@@ -6,6 +6,8 @@ import { db } from "../../lib/firebase";
 import { collection, query, orderBy, onSnapshot, doc, limit } from "firebase/firestore";
 import { Tag, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CategoriesTab } from "./Marketing/CategoriesTab";
+import { FeaturedTab } from "./Marketing/FeaturedTab";
 
 export const Marketing: React.FC = () => {
   const { t } = useTranslation();

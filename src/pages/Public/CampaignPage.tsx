@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCampaignBanner } from "../../hooks/queries/useProducts";
 import { ProductCard } from "../../components/Product/ProductCard";
-import { Product } from "../../types";
+import { Product } from "../../domains/product/product.types";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";

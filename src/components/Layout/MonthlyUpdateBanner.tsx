@@ -62,6 +62,13 @@ export const MonthlyUpdateBanner: React.FC = () => {
   const currentLang = i18n.language || "fr";
   const latestUpdate = updates[0];
 
+  const getUpdateText = (up: MonthlyUpdate, lang: string): string => {
+    const val = up[`text_${lang}`];
+    if (typeof val === "string") return val;
+    if (typeof up.text_fr === "string") return up.text_fr;
+    return up.content || "";
+  };
+
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsVisible(false);
@@ -94,9 +101,9 @@ export const MonthlyUpdateBanner: React.FC = () => {
                     {latestUpdate.month || latestUpdate.id}
                   </div>
                   <p className="text-sm font-medium leading-snug">
-                    {(latestUpdate[`text_${currentLang}`] || latestUpdate.text_fr || "").length > 150
-                      ? (latestUpdate[`text_${currentLang}`] || latestUpdate.text_fr || "").substring(0, 150) + "..."
-                      : latestUpdate[`text_${currentLang}`] || latestUpdate.text_fr || ""}
+                    {getUpdateText(latestUpdate, currentLang).length > 150
+                      ? getUpdateText(latestUpdate, currentLang).substring(0, 150) + "..."
+                      : getUpdateText(latestUpdate, currentLang)}
                   </p>
                 </div>
               </div>
@@ -154,7 +161,7 @@ export const MonthlyUpdateBanner: React.FC = () => {
                         {up.month || up.id}
                       </div>
                       <div className="bg-white rounded-2xl p-5 shadow-sm border border-zinc-200/60 whitespace-pre-wrap text-zinc-700 text-sm leading-relaxed font-medium">
-                        {up[`text_${currentLang}`] || up.text_fr || ""}
+                        {getUpdateText(up, currentLang)}
                       </div>
                     </div>
                   ))

@@ -98,13 +98,10 @@ export const ReviewsAdmin: React.FC = () => {
   };
 
   const handleDelete = async (reviewId: string) => {
-    const ok = await showConfirmModal({
-      title: t("Supprimer cet avis ?"),
-      message: t("Cette action supprimera définitivement l'avis et recalculera automatiquement la note moyenne du produit."),
-      confirmText: t("Supprimer définitivement"),
-      cancelText: t("Annuler"),
-      variant: "danger",
-    });
+    const ok = await showConfirmModal(
+      t("Cette action supprimera définitivement l'avis et recalculera automatiquement la note moyenne du produit."),
+      t("Supprimer cet avis ?")
+    );
 
     if (!ok) return;
 
@@ -217,7 +214,7 @@ export const ReviewsAdmin: React.FC = () => {
         </div>
       )}
 
-      {ConfirmationDialog}
+      <ConfirmationDialog />
     </div>
   );
 };

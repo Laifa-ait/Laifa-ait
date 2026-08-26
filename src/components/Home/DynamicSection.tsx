@@ -11,6 +11,8 @@ import { HomepageSection } from "../../domains/home/homepage.types";
 import { Product } from "../../domains/product/product.types";
 import { ProductCard } from "../Product/ProductCard";
 import { MobileSwipeIndicator } from "../ui/MobileSwipeIndicator";
+import { apiGet } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boolean }> = ({
   section,
@@ -18,9 +20,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { userProfile } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [customTheme] = useState<{ name?: string; imageUrl?: string } | null>(null);
+  const [customTheme, setCustomTheme] = useState<{ name?: string; imageUrl?: string } | null>(null);
   const hasActiveImage = !!customTheme;
 
   const containerRef = useRef<HTMLDivElement>(null);

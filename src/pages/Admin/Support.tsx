@@ -100,7 +100,7 @@ export const SupportAdmin: React.FC = () => {
       try {
         const data = await apiGet<{ messages: SupportMessage[] }>(`/api/v1/admin/support/tickets/${encodeURIComponent(selectedTicket)}/messages`);
         setMessages(data.messages);
-      } catch {
+      } catch (err) {
         console.error("Error fetching messages:", err);
       }
     };

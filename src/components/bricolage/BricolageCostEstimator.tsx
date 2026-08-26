@@ -14,7 +14,7 @@ export const BricolageCostEstimator: React.FC<BricolageCostEstimatorProps> = ({
   const [selectedCatId, setSelectedCatId] = useState(categories[0]?.id || 'plomberie');
   const [selectedService, setSelectedService] = useState(categories[0]?.popularServices[0] || 'Dépannage Fuite');
   const [quantity, setQuantity] = useState(1);
-  const urgencyMultiplier = 1;
+  const [urgencyMultiplier, setUrgencyMultiplier] = useState(1);
 
   const activeCat = categories.find(c => c.id === selectedCatId) || categories[0];
 

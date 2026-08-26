@@ -36,7 +36,7 @@ export const ServiceCategoryGrid: React.FC<ServiceCategoryGridProps> = ({
   onRequestQuote
 }) => {
   const { tBricolage, currentLang } = useBricolageI18n();
-  const activeLang = lang || currentLang;
+  const activeLang = (_lang || currentLang) as "fr" | "ar" | "en";
 
   const handleQuoteRequest = (cat: BricolageServiceCategory, task?: string) => {
     if (typeof onRequestQuote === 'function') {

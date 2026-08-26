@@ -19,7 +19,7 @@ import { DynamicSection } from "../../components/Home/DynamicSection";
 import { HomepageSection, Banner } from "../../domains/home/homepage.types";
 import { Shop } from "../../domains/seller/shop.types";
 
-interface HomeHeroBanner {
+interface HomeHeroBanner extends Partial<Banner> {
   id: string;
   desktop_image?: string;
   imageUrl?: string;
@@ -30,8 +30,8 @@ interface HomeHeroBanner {
   isActive?: boolean;
   is_active?: boolean;
   ctaLink?: string;
-  translations?: Record<string, unknown>;
-  mobile_image?: string;
+  translations?: Record<string, Record<string, string>>;
+  mobile_image?: string | null;
   mobileImageUrl?: string;
 }
 

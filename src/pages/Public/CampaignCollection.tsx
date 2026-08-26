@@ -10,6 +10,7 @@ interface CampaignBanner {
   title: string;
   title_color?: string;
   subtitle?: string;
+  subtitle_color?: string;
 }
 
 export const CampaignCollection: React.FC = () => {

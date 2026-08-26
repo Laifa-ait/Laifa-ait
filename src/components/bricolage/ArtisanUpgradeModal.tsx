@@ -34,6 +34,9 @@ export const ArtisanUpgradeModal: React.FC<ArtisanUpgradeModalProps> = ({
   const [fullName, setFullName] = useState(userProfile?.displayName || currentUser?.displayName || '');
   const [specialty, setSpecialty] = useState('Plomberie & Chauffage');
   const [wilaya, setWilaya] = useState(userProfile?.wilaya || '16 - Alger');
+  const [commune] = useState<string>(
+    typeof userProfile?.commune === 'string' ? userProfile.commune : 'Centre'
+  );
   const [phone, setPhone] = useState(userProfile?.phone || '');
   const [registryNumber, setRegistryNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState(5);

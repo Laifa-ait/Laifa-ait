@@ -31,7 +31,8 @@ import {
   X,
   Check,
   Info,
-  Truck
+  Truck,
+  ShoppingBag
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";

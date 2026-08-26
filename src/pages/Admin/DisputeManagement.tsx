@@ -15,6 +15,7 @@ export const DisputeManagement: React.FC = () => {
   const { currentUser, userProfile } = useAuth();
   const [cases, setCases] = useState<Dispute[]>([]);
   const [decisions, setDecisions] = useState<{ [key: string]: string }>({});
+  const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [chatOpenFor, setChatOpenFor] = useState<string | null>(null);
 
   useEffect(() => {
@@ -130,7 +131,7 @@ export const DisputeManagement: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-                    <div className="w-full md:w-auto">
+                    <div className="w-full md:w-auto flex flex-col gap-2">
                       <select
                         value={decisions[id] || ""}
                         onChange={(e) => setDecisions({ ...decisions, [id]: e.target.value })}
@@ -141,6 +142,13 @@ export const DisputeManagement: React.FC = () => {
                         <option value="seller_paid">{t("Clôturer en faveur du vendeur")}</option>
                         <option value="split">{t("Partage à l'amiable (50/50)")}</option>
                       </select>
+                      <input
+                        type="text"
+                        placeholder={t("Note de décision (optionnel)")}
+                        value={notes[id] || ""}
+                        onChange={(e) => setNotes({ ...notes, [id]: e.target.value })}
+                        className="w-full bg-white border border-zinc-200 px-4 py-2 rounded-xl text-xs font-medium outline-none focus:ring-2 ring-emerald-500/20"
+                      />
                     </div>
                     <button
                       onClick={() => handleResolve(c)}
