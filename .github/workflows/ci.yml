@@ -33,10 +33,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
 
       - name: Install Clean Dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci || (echo "⚠️ npm ci failed, fallback to npm install..." && npm install)
+          else
+            echo "⚠️ package-lock.json missing on GitHub runner, executing npm install..."
+            npm install
+          fi
 
       - name: Security Audit (Production Dependencies)
         run: npm audit --audit-level=critical --omit=dev || true

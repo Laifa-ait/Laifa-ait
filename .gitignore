@@ -29,6 +29,9 @@ playwright-report
 blob-report
 coverage
 
+# Lockfiles
+!package-lock.json
+
 # Environment and Secrets
 firebase-applet-config.json
 .env
