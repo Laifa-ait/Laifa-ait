@@ -1,6 +1,6 @@
 import React from 'react';
 import { Property, PropertyMapResult } from '../../types/realEstate';
-import { PropertyCard } from './PropertyCard';
+import { PropertyCard, PropertyCardSkeleton } from './PropertyCard';
 import { InteractiveMap } from './InteractiveMap';
 import { Sparkles } from 'lucide-react';
 
@@ -29,9 +29,9 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse my-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-white rounded-2xl h-80 border border-[#e8e2d4]" />
+          <PropertyCardSkeleton key={i} />
         ))}
       </div>
     );
@@ -39,26 +39,26 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
 
   if (properties.length === 0) {
     return (
-      <div className="bg-white rounded-3xl p-12 text-center border border-[#e8e2d4] space-y-5 my-6 flex flex-col items-center shadow-xs">
-        <div className="w-16 h-16 bg-[#f2eee5] text-[#183930] rounded-full flex items-center justify-center mx-auto shadow-sm">
+      <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm space-y-4 my-6 flex flex-col items-center">
+        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xs">
           <Sparkles className="w-8 h-8" />
         </div>
-        <div className="space-y-2">
-          <h3 className="text-2xl font-black font-['Playfair_Display',serif] text-[#183930]">
-            No properties found
+        <div className="space-y-1.5 max-w-md">
+          <h3 className="text-xl font-bold font-['Poppins',sans-serif] text-slate-900">
+            Aucun résultat trouvé
           </h3>
-          <p className="text-slate-500 text-sm font-medium">
-            No properties match your current search criteria.
+          <p className="text-slate-500 text-sm">
+            Aucun bien ou séjour ne correspond à vos critères actuels.
           </p>
           <p className="text-slate-400 text-xs">
-            Try expanding your area or resetting your filters.
+            Essayez d'élargir votre recherche ou de réinitialiser les filtres.
           </p>
         </div>
         <button
           onClick={onResetFilters}
-          className="mt-4 px-6 py-2.5 bg-[#f2eee5] hover:bg-[#183930] hover:text-white text-[#183930] rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#e8e2d4]"
+          className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-semibold transition-all shadow-sm shadow-blue-600/20 cursor-pointer border-none"
         >
-          Reset all filters
+          Réinitialiser tous les filtres
         </button>
       </div>
     );
@@ -80,7 +80,7 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
                   }}
                   onClick={() => onSelectProperty(p.id)}
                   className={`transition-all duration-300 rounded-2xl cursor-pointer ${
-                    isSelected ? 'ring-3 ring-[#183930] shadow-xl scale-[1.01]' : 'hover:shadow-md'
+                    isSelected ? 'ring-2 ring-slate-900 shadow-lg scale-[1.01]' : 'hover:shadow-md'
                   }`}
                 >
                   <PropertyCard property={p} />
@@ -95,7 +95,7 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
               selectedPropertyId={selectedPropertyId}
               onSelectProperty={onSelectProperty}
               onBoundsChange={onBoundsChange}
-              className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-[#e5dfd2]"
+              className="w-full h-full rounded-2xl overflow-hidden shadow-md border border-slate-200/80"
             />
           </div>
         </div>

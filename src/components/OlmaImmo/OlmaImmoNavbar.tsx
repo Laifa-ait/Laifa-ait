@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, Mail, User, PlusCircle, Building2 } from 'lucide-react';
+import { Heart, MessageSquare, User, Sparkles, Building2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UnifiedMessagingDrawer } from '../Chat/UnifiedMessagingDrawer';
 
@@ -34,31 +34,55 @@ export const OlmaImmoNavbar: React.FC = () => {
   const isVacation = location.search.includes('type=rent_short');
 
   return (
-    <header className="hidden md:block sticky top-0 z-40 bg-[#f6f2e9]/95 backdrop-blur-md border-b border-[#e5dfd2]">
+    <header className="hidden md:block sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-xl border-b border-stone-200/80 shadow-[0_4px_20px_-4px_rgba(28,25,23,0.03)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Left: Brand Text "OLMA IMMO" */}
-          <Link to="/immo" className="flex items-center gap-2.5 group">
-            <span className="text-xl sm:text-2xl font-bold tracking-wider text-[#1a3831] font-['Playfair_Display',serif] uppercase">
-              OLMA IMMO
-            </span>
+          {/* Left: Brand Identity with Travel & Luxury Touch */}
+          <Link to="/immo" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white flex items-center justify-center shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-300">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xl font-extrabold tracking-tight text-stone-900 font-['Poppins',sans-serif] block leading-none">
+                OLMA <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">IMMO</span>
+              </span>
+              <span className="text-[10px] font-bold text-stone-400 tracking-wider uppercase mt-1 block">
+                Séjours & Immobilier
+              </span>
+            </div>
           </Link>
 
-          {/* Center: Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 lg:gap-9">
+          {/* Center: Travel Pill Navigation */}
+          <nav className="hidden md:flex items-center p-1.5 bg-stone-200/60 rounded-full border border-stone-200/80 shadow-inner">
             <Link
               to="/immo"
-              className={`text-sm font-medium transition-colors ${
-                isExplore ? 'text-[#1a3831] font-bold border-b-2 border-[#1a3831] pb-1' : 'text-slate-700 hover:text-[#1a3831]'
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+                isExplore
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
               }`}
             >
               Explorer
             </Link>
 
             <Link
+              to="/immo?type=rent_short"
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 ${
+                isVacation
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
+              }`}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${isVacation ? 'text-white' : 'text-amber-500'}`} />
+              <span>Séjours & Vacances</span>
+            </Link>
+
+            <Link
               to="/immo?type=sale"
-              className={`text-sm font-medium transition-colors ${
-                isBuy ? 'text-[#1a3831] font-bold border-b-2 border-[#1a3831] pb-1' : 'text-slate-700 hover:text-[#1a3831]'
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+                isBuy
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
               }`}
             >
               Acheter
@@ -66,57 +90,52 @@ export const OlmaImmoNavbar: React.FC = () => {
 
             <Link
               to="/immo?type=rent_long"
-              className={`text-sm font-medium transition-colors ${
-                isRent ? 'text-[#1a3831] font-bold border-b-2 border-[#1a3831] pb-1' : 'text-slate-700 hover:text-[#1a3831]'
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+                isRent
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
               }`}
             >
               Louer
             </Link>
-
-            <Link
-              to="/immo?type=rent_short"
-              className={`text-sm font-medium transition-colors ${
-                isVacation ? 'text-[#1a3831] font-bold border-b-2 border-[#1a3831] pb-1' : 'text-slate-700 hover:text-[#1a3831]'
-              }`}
-            >
-              Vacances & Séjours
-            </Link>
-
-            <Link
-              to="/immo/owner"
-              className="text-xs font-bold uppercase tracking-wider text-[#1a3831] bg-[#f4ecd8] hover:bg-[#ebdcb8] border border-[#e8e2d4] px-3.5 py-1.5 rounded-full transition"
-            >
-              Espace Pro & Annonceur
-            </Link>
           </nav>
 
-          {/* Right: Favorites, Messages, Profile */}
-          <div className="flex items-center gap-5 sm:gap-7">
+          {/* Right: Quick actions and Profile */}
+          <div className="flex items-center gap-4">
             <Link
-              to="/immo?favorites=true"
-              className="flex flex-col items-center gap-1 text-slate-700 hover:text-[#1a3831] transition-colors group cursor-pointer"
+              to="/immo/owner"
+              className="text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200/80 px-3.5 py-2 rounded-full transition-colors hidden lg:inline-flex items-center gap-1.5 border border-stone-200/60"
             >
-              <Heart className="w-4 h-4 text-slate-700 group-hover:text-[#1a3831] transition-colors stroke-[1.75]" />
-              <span className="text-[11px] font-medium tracking-tight">Favoris</span>
+              Espace Propriétaire
             </Link>
 
-            <button
-              type="button"
-              onClick={handleOpenMessaging}
-              className="flex flex-col items-center gap-1 text-slate-700 hover:text-[#1a3831] transition-colors group cursor-pointer bg-transparent border-none"
-            >
-              <Mail className="w-4 h-4 text-slate-700 group-hover:text-[#1a3831] transition-colors stroke-[1.75]" />
-              <span className="text-[11px] font-medium tracking-tight">Messages</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/immo?favorites=true"
+                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-rose-500 transition-colors shadow-2xs"
+                title="Favoris"
+              >
+                <Heart className="w-4 h-4" />
+              </Link>
 
-            <button
-              type="button"
-              onClick={handleProfileClick}
-              className="flex flex-col items-center gap-1 text-slate-700 hover:text-[#1a3831] transition-colors group cursor-pointer bg-transparent border-none"
-            >
-              <User className="w-4 h-4 text-slate-700 group-hover:text-[#1a3831] transition-colors stroke-[1.75]" />
-              <span className="text-[11px] font-medium tracking-tight">Profil</span>
-            </button>
+              <button
+                type="button"
+                onClick={handleOpenMessaging}
+                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors shadow-2xs cursor-pointer"
+                title="Messages"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleProfileClick}
+                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors shadow-2xs cursor-pointer"
+                title="Profil"
+              >
+                <User className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

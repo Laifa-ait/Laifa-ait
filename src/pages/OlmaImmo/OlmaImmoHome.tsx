@@ -31,7 +31,7 @@ export const OlmaImmoHome: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f2e9] text-[#1c211e] flex flex-col font-sans pb-20 md:pb-8">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans pb-20 md:pb-8 selection:bg-orange-500/20 selection:text-orange-900">
       <OlmaImmoNavbar />
 
       <OlmaImmoHero
@@ -40,8 +40,8 @@ export const OlmaImmoHome: React.FC = () => {
         onSearchSubmit={fetchProperties}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 flex-1 w-full">
-        {/* 3D Green Category Buttons (Villa, Appartement, Maison, Studio...) */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-12 flex-1 w-full">
+        {/* Category Bar with golden hour pills & tactile motion */}
         <OlmaCategoryBar
           activeCategory={filters.propertyType || 'all'}
           onCategorySelect={handleCategorySelect}

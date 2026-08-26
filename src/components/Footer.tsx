@@ -12,8 +12,12 @@ import {
   ShoppingBag,
   Sparkles,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Truck,
+  ShieldCheck,
+  CreditCard
 } from "lucide-react";
+import { BrandIcon } from "./ui/BrandIcon";
 
 export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false }) => {
   const { t, i18n } = useTranslation();
@@ -81,13 +85,14 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
 
   return (
     <footer
+      id="olmart-main-footer"
       className={`custom-dark-footer bg-slate-950 text-slate-400 border-t border-slate-900 ${
         isHomepage ? "pb-24 sm:pb-12" : "pb-12"
       }`}
     >
       {/* Main Marketplace Links & Navigation Grid */}
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pt-12 pb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8">
-        {/* Column 1: Marketplace Brand Identity */}
+        {/* Column 1: Marketplace Brand Identity & Social Icons */}
         <div className="lg:col-span-2 space-y-5">
           <div className="flex items-center gap-2.5">
             <OlmaLogo className="w-8 h-8 text-orange-500" />
@@ -102,12 +107,84 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
             </div>
           </div>
 
-          <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+          <p className="text-xs text-slate-400 leading-relaxed max-w-md">
             {t(
               "footer_marketplace_desc",
               "La plateforme multi-vendeurs N°1 en Algérie. Découvrez des milliers de produits proposés par des commerçants indépendants certifiés dans les 58 Wilayas."
             )}
           </p>
+
+          {/* Social Network Brand Icons */}
+          <div className="space-y-2 pt-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+              {t("footer_follow_us") || "Suivez-nous sur les réseaux"}
+            </span>
+            <div className="flex items-center gap-2.5 pt-1">
+              <a
+                href="https://facebook.com/olmart.dz"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-blue-600/20 text-slate-400 hover:text-blue-500 border border-slate-800 hover:border-blue-500/40 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="facebook" size={16} />
+              </a>
+              <a
+                href="https://instagram.com/olmart.dz"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-pink-600/20 text-slate-400 hover:text-pink-500 border border-slate-800 hover:border-pink-500/40 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="instagram" size={16} />
+              </a>
+              <a
+                href="https://tiktok.com/@olmart.dz"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="tiktok" size={16} />
+              </a>
+              <a
+                href="https://youtube.com/@olmart"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-red-600/20 text-slate-400 hover:text-red-500 border border-slate-800 hover:border-red-500/40 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="youtube" size={16} />
+              </a>
+              <a
+                href="https://linkedin.com/company/olmart"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-sky-600/20 text-slate-400 hover:text-sky-400 border border-slate-800 hover:border-sky-500/40 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="linkedin" size={16} />
+              </a>
+              <a
+                href="https://x.com/olmart_dz"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X (Twitter) Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="x" size={15} />
+              </a>
+              <a
+                href="https://wa.me/213550000000"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WhatsApp Support Olmart"
+                className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-emerald-600/20 text-slate-400 hover:text-emerald-400 border border-slate-800 hover:border-emerald-500/40 flex items-center justify-center transition-all duration-200"
+              >
+                <BrandIcon name="whatsapp" size={16} />
+              </a>
+            </div>
+          </div>
 
           {/* Seller CTA Banner */}
           <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-transparent border border-orange-500/20 space-y-2">
@@ -236,7 +313,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
       </div>
 
       {/* 3. Bottom Legal, Payment & Partner Badges */}
-      <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pt-8 border-t border-slate-900/90 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-slate-400">
+      <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pt-8 border-t border-slate-900/90 flex flex-col lg:flex-row justify-between items-center gap-6 text-xs text-slate-400">
         <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-start">
           <span className="font-medium">
             © {new Date().getFullYear()}{" "}
@@ -250,24 +327,53 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
           </button>
         </div>
 
-        {/* Algerian Payment & Delivery Badges */}
+        {/* Secure Payments & Partner Badges with Official Brand Logos */}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 me-1">
-            {t("footer_payment_delivery_label") || "Paiement & Livraison"} :
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 me-1 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 inline" />
+            {t("footer_payment_delivery_label") || "Paiements Sécurisés & Livraison"} :
           </span>
-          <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold text-[10px]">
-            {t("BaridiMob")}
-          </span>
-          <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold text-[10px]">
+          
+          {/* CIB Badge */}
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-emerald-400 font-bold text-[10px]">
+            <CreditCard className="w-3 h-3 text-emerald-400" />
             {t("CIB")}
           </span>
-          <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold text-[10px]">
+
+          {/* BaridiMob Badge */}
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-amber-400 font-bold text-[10px]">
+            {t("BaridiMob")}
+          </span>
+
+          {/* Visa Brand Icon */}
+          <span
+            className="inline-flex items-center px-2 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-slate-300"
+            title="Visa"
+          >
+            <BrandIcon name="visa" size={22} className="text-[#1A1F71] dark:text-[#00579F]" />
+          </span>
+
+          {/* Mastercard Brand Icon */}
+          <span
+            className="inline-flex items-center px-2 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-slate-300"
+            title="Mastercard"
+          >
+            <BrandIcon name="mastercard" size={20} className="text-[#EB001B]" />
+          </span>
+
+          {/* Cash on Delivery Badge */}
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-orange-400 font-bold text-[10px]">
+            <Truck className="w-3 h-3 text-orange-400" />
             {t("footer_cod_badge") || "Paiement à la livraison (COD)"}
           </span>
-          <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold text-[10px]">
+
+          {/* Yalidine Logistics Badge */}
+          <span className="px-2.5 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-slate-300 font-medium text-[10px]">
             {t("Yalidine Express")}
           </span>
-          <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold text-[10px]">
+
+          {/* ZR Logistics Badge */}
+          <span className="px-2.5 py-1 bg-slate-900/90 border border-slate-800 rounded-lg text-slate-300 font-medium text-[10px]">
             {t("ZR Express")}
           </span>
         </div>
@@ -305,4 +411,5 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
     </footer>
   );
 };
+
 

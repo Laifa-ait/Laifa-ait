@@ -1,0 +1,7 @@
+# Force line breaks to LF for cross-platform compatibility
+* text=auto eol=lf
+
+# Force specific directories and shell scripts to LF
+.husky/* text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf

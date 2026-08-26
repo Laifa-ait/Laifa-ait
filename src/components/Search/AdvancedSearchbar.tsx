@@ -346,7 +346,19 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
             >
               <X className="w-4 h-4 stroke-[1.5]" />
             </button>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("open-global-search"));
+              }}
+              title="Recherche globale rapide (Ctrl+K)"
+              className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono font-medium text-slate-400 hover:text-orange-500 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 me-2 shrink-0 cursor-pointer transition-colors"
+            >
+              <span>⌘K</span>
+            </button>
+          )}
         </div>
 
         {/* Predictive & Interactive Mega Search Dropdown Overlay */}

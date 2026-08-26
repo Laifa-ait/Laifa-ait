@@ -35,7 +35,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
               onClick={() => setRoomsFilter(r)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer min-h-[36px] ${
                 roomsFilter === r
-                  ? 'bg-emerald-700 text-white shadow-xs'
+                  ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -49,7 +49,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
       <div>
         <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
           <span>Superficie min.</span>
-          <span className="text-emerald-700 font-extrabold">{areaRange[0]} m²</span>
+          <span className="text-blue-600 font-extrabold">{areaRange[0]} m²</span>
         </div>
         <input
           type="range"
@@ -58,7 +58,7 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
           step="10"
           value={areaRange[0]}
           onChange={(e) => setAreaRange([Number(e.target.value), areaRange[1]])}
-          className="w-full accent-emerald-600 cursor-pointer"
+          className="w-full accent-blue-600 cursor-pointer"
         />
       </div>
 
@@ -75,9 +75,9 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
                 key={item}
                 type="button"
                 onClick={() => toggleAmenity(item)}
-                className={`px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer min-h-[32px] ${
+                className={`px-2.5 py-1 rounded-xl text-xs transition-colors cursor-pointer min-h-[32px] ${
                   isSelected
-                    ? 'bg-emerald-100 text-emerald-800 font-semibold border border-emerald-300'
+                    ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
                 }`}
               >

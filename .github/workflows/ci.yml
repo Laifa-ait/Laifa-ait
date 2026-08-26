@@ -38,6 +38,9 @@ jobs:
       - name: Install Clean Dependencies
         run: npm ci
 
+      - name: Security Audit (Production Dependencies)
+        run: npm audit --audit-level=critical --omit=dev || true
+
       - name: ESLint Code Quality
         run: npm run lint
 

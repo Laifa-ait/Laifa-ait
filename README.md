@@ -1,75 +1,85 @@
 # OLMART — Marketplace E-Commerce Multi-Vendeurs
 
+[![Olmart CI](https://github.com/Laifa-ait/Laifa-ait/actions/workflows/ci.yml/badge.svg)](https://github.com/Laifa-ait/Laifa-ait/actions/workflows/ci.yml)
 ![TypeScript Strict](https://img.shields.io/badge/TypeScript-Strict-blue.svg)
 ![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)
 ![Tests: Vitest](https://img.shields.io/badge/tests-vitest-44a833.svg)
-![License: Unlicensed](https://img.shields.io/badge/license-UNLICENSED-red.svg)
+![License: Proprietary](https://img.shields.io/badge/license-Proprietary-red.svg)
 
-Plateforme e-commerce destinée au marché algérien, couvrant les 58 wilayas.
+Plateforme e-commerce et marketplace destinée au marché algérien, couvrant l'ensemble des 58 wilayas avec gestion multi-vendeurs, transactions sécurisées, messagerie chiffrée, scoring de confiance et module immobilier Olma Immo.
 
-## Stack Technique
+---
+
+## 🏛️ Gouvernance & Sécurité
+
+- 🔒 **Politique de Sécurité :** voir [`SECURITY.md`](./SECURITY.md) pour la divulgation responsable et les standards d'autorisation serveur.
+- 🤝 **Guide de Contribution :** voir [`CONTRIBUTING.md`](./CONTRIBUTING.md) pour les règles de typage strict et le workflow Git.
+- 📜 **Licence Propriétaire :** voir [`LICENSE`](./LICENSE).
+
+---
+
+## 🛠️ Stack Technique
 
 - **Frontend :** React 19 + TypeScript + Vite + Tailwind CSS
-- **Backend :** Express.js + Firebase (Auth, Firestore, Storage)
-- **AI :** Gemini 1.5 Flash
-- **i18n :** Français, Arabe, Anglais
+- **Backend :** Express.js + Firebase Admin SDK (Auth, Firestore, Storage)
+- **AI :** Gemini 1.5 Flash (@google/genai)
+- **i18n :** Français, Arabe (RTL), Anglais
 
-## Prérequis
+---
 
-- Node.js 20+
-- npm 10+
-- Compte Firebase
+## 📋 Prérequis
 
-## Installation
+- **Node.js :** v22.x (aligné sur `.nvmrc`)
+- **npm :** 10+
+- **Java :** 17+ (requis pour les émulateurs locaux Firebase en phase de test)
 
-```bash
-npm install
-```
+---
 
-## Configuration
+## 🚀 Installation & Démarrage
 
 ```bash
+# Installation propre des dépendances
+npm ci
+
+# Configuration des variables d'environnement
 cp .env.example .env
-# Remplir les variables dans .env
+
+# Lancement en mode développement (Port 3000)
+npm run dev
 ```
 
-## Scripts
+---
+
+## 🧪 Scripts & Validation Qualité
 
 | Commande | Description |
 |---|---|
-| `npm run dev` | Démarrer en développement |
-| `npm run build` | Build production |
-| `npm start` | Démarrer en production |
-| `npm test` | Lancer les tests |
-| `npm run lint` | Vérifier les types |
-| `npm run format` | Formater le code |
+| `npm run dev` | Démarrer l'application complète (Serveur Express + Vite) |
+| `npm run build` | Compiler le frontend SPA et bundle le serveur Node.js CJS |
+| `npm start` | Lancer le bundle de production (`dist/server.cjs`) |
+| `npm test` | Exécuter la suite complète de tests unitaires et d'intégration |
+| `npm run lint` | Analyse statique ESLint |
+| `npm run typecheck` | Contrôle strict des types TypeScript |
+| `npm run format` | Formatage du code avec Prettier |
 
-## Dépendances Serveur
+---
 
-**⚠️ ATTENTION : `firebase-admin` est présent dans les dependencies (et non devDependencies) car il est requis par le backend Express en production. Bien qu'il soit ignoré par Vite lors du build frontend, il alourdit l'installation de production. Ne jamais l'importer dans le code source React.**
+## ⚠️ Dépendances Serveur
 
-## Architecture
+`firebase-admin` est présent dans les `dependencies` de production car il est requis par le backend Express. **Il ne doit jamais être importé dans le code client React** sous peine d'altérer la compilation du bundle frontend.
 
-```
-src/
-├── pages/Public/    # Storefront
-├── pages/Seller/    # Dashboard vendeur
-├── pages/Admin/     # Backoffice admin
-├── components/      # Composants UI
-├── context/         # Contextes React
-├── hooks/           # Hooks personnalisés
-├── routes/          # API endpoints
-├── utils/           # Utilitaires
-└── services/        # Services métier
-```
+---
 
-## Sécurité
- 
-- RBAC (Admin / Vendeur / Acheteur)
-- KYC vendeur avec modération
-- Rate limiting sur les endpoints sensibles
-- CSP et Helmet configurés
-- Sanitization XSS
+## 🔒 Sécurité & Intégrité des Données
 
-## Licence
-UNLICENSED
+- **RBAC Server-Side :** Vérification stricte des rôles (Admin / Vendeur / Acheteur) au niveau backend.
+- **Transactions ACID :** Gestion des stocks, paniers et commandes via `db.runTransaction()`.
+- **Contrôles IDOR :** Validation systématique du propriétaire sur chaque ressource ciblée.
+- **Sanitization :** DOMPurify sur les entrées riches et CSP configuré.
+
+---
+
+## 📜 Licence
+
+Ce projet est la propriété exclusive d'**OLMART**. Tous droits réservés.
+Consultez le fichier [`LICENSE`](./LICENSE) pour plus de détails.

@@ -1,3 +1,18 @@
 #!/bin/sh
+
+# ==============================================================================
+# OLMART PRE-COMMIT HOOK (Husky v9+)
+# Validation rapide sur les fichiers modifiés via lint-staged
+# ==============================================================================
+
+echo "🛡️  [Pre-commit] Vérification rapide des fichiers modifiés..."
 npx lint-staged
+if [ $? -ne 0 ]; then
+  echo "❌ [Pre-commit] ÉCHEC : La vérification des fichiers modifiés a échoué."
+  exit 1
+fi
+
+echo "✅ [Pre-commit] Fichiers validés."
+exit 0
+
 
