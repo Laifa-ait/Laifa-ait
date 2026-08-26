@@ -110,7 +110,6 @@
     "@firebase/rules-unit-testing": "^5.0.1",
     "@playwright/test": "^1.61.1",
     "@types/compression": "^1.8.1",
-    "@types/dompurify": "^3.2.0",
     "@types/express": "^4.17.25",
     "@types/he": "^1.2.3",
     "@types/node": "^22.19.19",

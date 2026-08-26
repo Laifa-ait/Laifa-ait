@@ -74,7 +74,7 @@ export class PushNotificationService {
 
       // Check if conversation is blocked
       const convSnap = await db.collection("conversations").doc(conversationId).get();
-      if (!convSnap.exists || convSnap.data()?.isBlocked) {
+      if (!convSnap || !convSnap.exists || convSnap.data?.()?.isBlocked) {
         return;
       }
 
@@ -82,7 +82,7 @@ export class PushNotificationService {
       const logId = `${conversationId}_${messageData.messageId}`;
       const logRef = db.collection("push_logs").doc(logId);
       const logSnap = await logRef.get();
-      if (logSnap.exists) {
+      if (logSnap && logSnap.exists) {
         return; // Already sent
       }
 
@@ -195,7 +195,7 @@ export class PushNotificationService {
 
       // Check if conversation is blocked
       const convSnap = await db.collection("conversations").doc(conversationId).get();
-      if (!convSnap.exists || convSnap.data()?.isBlocked) {
+      if (!convSnap || !convSnap.exists || convSnap.data?.()?.isBlocked) {
         return;
       }
 
@@ -203,7 +203,7 @@ export class PushNotificationService {
       const logId = `${conversationId}_${offerData.offerId}_${offerData.action}`;
       const logRef = db.collection("push_logs").doc(logId);
       const logSnap = await logRef.get();
-      if (logSnap.exists) {
+      if (logSnap && logSnap.exists) {
         return; // Already sent
       }
 

@@ -7,20 +7,26 @@ import {
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getFirestore, Firestore } from "firebase/firestore";
 
+const isTestEnv =
+  (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
+  (typeof import.meta !== "undefined" && import.meta.env?.MODE === "test");
+
 const clientConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: import.meta.env?.VITE_FIREBASE_API_KEY || (isTestEnv ? "fake-test-key" : ""),
+  authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || (isTestEnv ? "localhost" : ""),
+  projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || (isTestEnv ? "test-project" : ""),
+  storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || (isTestEnv ? "test-project.appspot.com" : ""),
+  messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || (isTestEnv ? "1234567890" : ""),
+  appId: import.meta.env?.VITE_FIREBASE_APP_ID || (isTestEnv ? "1:1234567890:web:abcdef" : ""),
+  measurementId: import.meta.env?.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const requiredVars = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VITE_FIREBASE_PROJECT_ID"];
-for (const key of requiredVars) {
-  if (!import.meta.env[key]) {
-    console.warn(`[Firebase Client] ⚠️ Variable d'environnement manquante : ${key}`);
+if (!isTestEnv) {
+  for (const key of requiredVars) {
+    if (!import.meta.env?.[key]) {
+      console.warn(`[Firebase Client] ⚠️ Variable d'environnement manquante : ${key}`);
+    }
   }
 }
 
@@ -33,7 +39,7 @@ try {
   app = getApps().length === 0 ? initializeApp(clientConfig) : getApp();
   auth = getAuth(app);
   storage = getStorage(app);
-  const customDbId = import.meta.env.VITE_FIREBASE_DATABASE_ID;
+  const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID;
   db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
 } catch (err: unknown) {
   const errorObj = err as { code?: string; message?: string };
@@ -41,8 +47,14 @@ try {
     app = getApp();
     auth = getAuth(app);
     storage = getStorage(app);
-    const customDbId = import.meta.env.VITE_FIREBASE_DATABASE_ID;
+    const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID;
     db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
+  } else if (isTestEnv) {
+    console.warn("[Firebase Client] ⚠️ Initialisation Firebase en mode test tolérée avec fallback:", err);
+    app = (getApps()[0] || {}) as FirebaseApp;
+    auth = {} as Auth;
+    storage = {} as FirebaseStorage;
+    db = {} as Firestore;
   } else {
     const errorMsg = errorObj?.message || String(err);
     console.error("[Firebase Client] ❌ Échec critique de l'initialisation Firebase :", errorMsg);

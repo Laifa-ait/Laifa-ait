@@ -2,6 +2,34 @@
 import React, { act } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+vi.mock('../lib/firebase', () => ({
+  app: {},
+  auth: { currentUser: null, onAuthStateChanged: vi.fn() },
+  db: {},
+  storage: {},
+}));
+
+vi.mock('../lib/api', () => ({
+  apiGet: vi.fn(),
+  apiPost: vi.fn(),
+  apiPut: vi.fn(),
+  apiDelete: vi.fn(),
+}));
+
+vi.mock('@/lib/firebase', () => ({
+  app: {},
+  auth: { currentUser: null, onAuthStateChanged: vi.fn() },
+  db: {},
+  storage: {},
+}));
+
+vi.mock('@/lib/api', () => ({
+  apiGet: vi.fn(),
+  apiPost: vi.fn(),
+  apiPut: vi.fn(),
+  apiDelete: vi.fn(),
+}));
 import { GlobalSearchModal } from '../components/common/GlobalSearchModal';
 import * as apiModule from '../lib/api';
 

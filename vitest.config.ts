@@ -16,10 +16,12 @@ export default defineConfig({
     },
     maxWorkers: 1,
     minWorkers: 1,
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
+    fileParallelism: false,
+    env: {
+      VITE_FIREBASE_API_KEY: 'test-api-key',
+      VITE_FIREBASE_AUTH_DOMAIN: 'localhost',
+      VITE_FIREBASE_PROJECT_ID: 'test-project',
+      VITE_FIREBASE_STORAGE_BUCKET: 'test-project.appspot.com',
     },
   },
 });
