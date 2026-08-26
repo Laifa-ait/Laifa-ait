@@ -181,7 +181,7 @@ export const GlobalSearchModal: React.FC = () => {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <img
-                        src={getOptimizedImageUrl(product.imageUrl || (product.images && product.images[0]) || "", 80, 80)}
+                        src={getOptimizedImageUrl(product.image || (product.images && product.images[0]) || "", 80)}
                         alt={product.name}
                         className="w-10 h-10 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/60 dark:border-slate-700/60"
                         referrerPolicy="no-referrer"
@@ -212,8 +212,8 @@ export const GlobalSearchModal: React.FC = () => {
               >
                 {stores.map((store) => (
                   <Command.Item
-                    key={store.id || store.uid || store.shopName}
-                    onSelect={() => handleSelect(() => navigate(`/shop/${store.id || store.uid || store.shopName}`))}
+                    key={store.id || store.shopName}
+                    onSelect={() => handleSelect(() => navigate(`/shop/${store.id || store.shopName}`))}
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-teal-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">

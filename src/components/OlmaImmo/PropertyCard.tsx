@@ -177,7 +177,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             <h3 className="font-bold text-stone-900 text-base leading-snug line-clamp-1 group-hover:text-orange-600 transition-colors font-['Poppins',sans-serif]">
               {property.title}
             </h3>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" title="Vérifié par Olma" />
+            <span title="Vérifié par Olma" className="inline-flex shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-stone-500 font-medium mt-1">
