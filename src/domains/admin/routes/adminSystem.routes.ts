@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeAdmin, require2FA, AuthenticatedRequest } from "../../../middlewares/auth";
+import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 

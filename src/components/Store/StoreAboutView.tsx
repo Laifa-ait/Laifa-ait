@@ -1,4 +1,5 @@
 import React from 'react';
+import { TFunction } from 'i18next';
 import { Store } from 'lucide-react';
 import { ALGERIA_REGIONS } from '../../data/algeriaRegions';
 import { PublicStoreInfo } from '../../pages/Public/StoreProfile';
@@ -32,7 +33,7 @@ interface StoreAboutViewProps {
   totalCount: number | null;
   isRTL: boolean;
   d: (key: string) => string;
-  t: (key: string, defaultValue?: string) => string;
+  t: TFunction;
 }
 
 export const StoreAboutView: React.FC<StoreAboutViewProps> = ({

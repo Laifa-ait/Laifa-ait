@@ -1,4 +1,5 @@
 import React from 'react';
+import { TFunction } from 'i18next';
 import { ShieldCheck, Building2, Truck, Undo2 } from 'lucide-react';
 import { PublicStoreInfo } from '../../pages/Public/StoreProfile';
 
@@ -26,7 +27,7 @@ interface StoreEngagementsCardProps {
   saveAboutInfo: () => Promise<void>;
   isRTL: boolean;
   d: (key: string) => string;
-  t: (key: string, defaultValue?: string) => string;
+  t: TFunction;
 }
 
 export const StoreEngagementsCard: React.FC<StoreEngagementsCardProps> = ({

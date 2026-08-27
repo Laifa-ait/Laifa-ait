@@ -155,3 +155,26 @@ export interface Product {
   createdAt?: AppTimestamp;
   updatedAt?: AppTimestamp;
 }
+
+export interface HomepageSection {
+  id: string;
+  title?: string;
+  name?: string;
+  themeImage?: string;
+  theme?: string;
+  imageUrl?: string;
+  bannerImage?: string;
+  tag?: string;
+  category?: string;
+  manualProducts?: string[];
+  [key: string]: unknown;
+}
+
+export interface Banner {
+  id: string;
+  title?: string;
+  name?: string;
+  imageUrl?: string;
+  mobileImageUrl?: string;
+  [key: string]: unknown;
+}

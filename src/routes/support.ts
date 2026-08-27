@@ -388,11 +388,11 @@ router.post("/api/v1/support/tickets/:ticketId/reopen", authenticateToken, async
 
 // POST upload attachment for support ticket (secure backend private upload)
 router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId } = req.params;
   try {
     if (!req.user?.uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { ticketId } = req.params;
     const { fileName, mimeType, base64Data } = req.body;
 
     if (!fileName || !mimeType) {
@@ -545,11 +545,11 @@ router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async
 
 // GET download attachment for support ticket (secure streaming)
 router.get("/api/v1/support/tickets/:ticketId/attachments/:attachmentId", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId, attachmentId } = req.params;
   try {
     if (!req.user?.uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { ticketId, attachmentId } = req.params;
 
     // 1. Récupérer le ticket
     const ticketDoc = await db.collection(SUPPORT_TICKETS_COLLECTION).doc(ticketId).get();
@@ -643,8 +643,8 @@ router.get("/api/v1/admin/support/tickets", authenticateToken, authorizeAdmin, a
 
 // GET messages of support ticket for admin
 router.get("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId } = req.params;
   try {
-    const { ticketId } = req.params;
     const snap = await db.collection("supportMessages")
       .where("ticketId", "==", ticketId)
       .orderBy("createdAt", "asc")
@@ -660,12 +660,12 @@ router.get("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToken
 
 // POST message to support ticket as admin
 router.post("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId } = req.params;
   try {
     if (!req.user?.uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
     const uid = req.user.uid;
-    const { ticketId } = req.params;
     const { text, attachmentId, isInternal } = req.body;
 
     // Strict validation
@@ -829,12 +829,12 @@ router.post("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToke
 
 // PUT update status of support ticket
 router.put("/api/v1/admin/support/tickets/:ticketId/status", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId } = req.params;
+  const { status } = req.body;
   try {
     if (!req.user?.uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { ticketId } = req.params;
-    const { status } = req.body;
 
     const allowedStatuses = ["open", "closed", "pending"];
     if (!status || typeof status !== "string" || !allowedStatuses.includes(status)) {
@@ -892,12 +892,12 @@ router.put("/api/v1/admin/support/tickets/:ticketId/status", authenticateToken, 
 
 // PUT update priority of support ticket
 router.put("/api/v1/admin/support/tickets/:ticketId/priority", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { ticketId } = req.params;
+  const { priority } = req.body;
   try {
     if (!req.user?.uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { ticketId } = req.params;
-    const { priority } = req.body;
 
     const allowedPriorities = ["low", "medium", "high"];
     if (!priority || typeof priority !== "string" || !allowedPriorities.includes(priority)) {

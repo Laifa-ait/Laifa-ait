@@ -522,8 +522,6 @@ router.get("/api/v1/campaigns/:bannerId/products", async (req, res) => {
 });
 
 // GET public home data
-import { CoreService } from "../services/CoreService";
-
 router.get("/api/v1/public/home-data", async (req, res) => {
   try {
     const data = await CoreService.getHomeData();

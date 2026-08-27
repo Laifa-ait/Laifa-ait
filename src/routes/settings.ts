@@ -76,8 +76,8 @@ router.get("/api/v1/settings/:id", async (req: Request, res: Response) => {
 
 // POST any setting document by id (Admin only)
 router.post("/api/v1/settings/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
   try {
-    const { id } = req.params;
     const data = req.body;
     await db.collection("settings").doc(id).set(data, { merge: true });
     settingsCache.clear();

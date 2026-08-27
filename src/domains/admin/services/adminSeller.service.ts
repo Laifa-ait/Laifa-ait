@@ -1,4 +1,5 @@
 import { admin, db } from "../../../config/firebase-admin";
+import { safeLogger } from "../../../utils/logger";
 
 export interface ListSellersQuery {
   page?: number;

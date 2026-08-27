@@ -77,33 +77,7 @@ export const corsOptions: cors.CorsOptions = {
 
     return callback(new Error("Blocked by CORS: Origin not authorized."));
   },
-  credentials: (req: Request, origin: string | undefined) => {
-    if (!origin) return false;
-
-    const allowedOrigins = getParsedAllowedOrigins();
-    const isAllowedExact = allowedOrigins.includes(origin);
-    const isAllowedPreview = isAllowedPreviewOrigin(origin);
-
-    if (!isAllowedExact && !isAllowedPreview) {
-      return false;
-    }
-
-    // Disable credentials on endpoints that don't need them
-    const path = req.path || (req.originalUrl ? req.originalUrl.split("?")[0] : "");
-    const safeMethods = ["GET", "HEAD", "OPTIONS"];
-
-    const isWebhook = path.startsWith("/api/v1/webhooks/") || path.startsWith("/webhooks/");
-    const isCspReport = path === "/api/v1/csp-report";
-    const isCron = path.startsWith("/api/v1/cron/");
-    const isHealth = path === "/api/v1/health" || path === "/api/v1/health/live" || path === "/api/health";
-    const isSafeMethod = safeMethods.includes((req.method || "").toUpperCase());
-
-    if (isWebhook || isCspReport || isCron || isHealth || isSafeMethod) {
-      return false;
-    }
-
-    return true;
-  },
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",

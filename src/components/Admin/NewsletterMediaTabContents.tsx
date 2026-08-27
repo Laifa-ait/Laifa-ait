@@ -1,4 +1,5 @@
 import React from "react";
+import { TFunction } from "i18next";
 import { Search, Link2, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 import { formatPrice } from "../../utils/format";
 import { Product } from "../../domains/product/product.types";
@@ -17,7 +18,7 @@ interface NewsletterMediaTabContentsProps {
   setCustomImageUrl: (url: string) => void;
   isUploadingImage: boolean;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  t: (key: string, defaultValue?: string) => string;
+  t: TFunction;
 }
 
 export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProps> = ({

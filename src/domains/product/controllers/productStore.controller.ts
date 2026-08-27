@@ -286,7 +286,7 @@ productStoreRouter.get("/api/v1/collections/:collectionId", async (req, res) => 
         return null;
       });
       const productDocs = await Promise.all(productPromises);
-      curatedProducts = productDocs.filter((p): p is MappedProduct => p !== null);
+      curatedProducts = productDocs.filter((p: MappedProduct | null): p is MappedProduct => p !== null);
     }
 
     if (curatedProducts.length === 0) {

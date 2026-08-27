@@ -1,4 +1,5 @@
 import React from "react";
+import { TFunction } from "i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { Bot, X } from "lucide-react";
 import { GrowthConfigTab } from "./AgentModalTabs/GrowthConfigTab";
@@ -85,7 +86,7 @@ interface AgentConfigModalProps {
   setTestProduct: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
   runSentinelDiagnostic: () => Promise<void>;
   sentinelReport: SentinelReport | null;
-  t: (key: string, defaultValue?: string) => string;
+  t: TFunction;
 }
 
 export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({

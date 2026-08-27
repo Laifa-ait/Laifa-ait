@@ -1,4 +1,5 @@
 import React from "react";
+import { TFunction } from "i18next";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { Product } from "../../domains/product/product.types";
@@ -27,7 +28,7 @@ interface NewsletterMediaModalProps {
   setCustomImageUrl: (url: string) => void;
   isUploadingImage: boolean;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  t: (key: string, defaultValue?: string) => string;
+  t: TFunction;
 }
 
 export const NewsletterMediaModal: React.FC<NewsletterMediaModalProps> = ({
