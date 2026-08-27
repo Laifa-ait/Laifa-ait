@@ -3,6 +3,7 @@ import { admin, db } from '../config/firebase-admin';
 import { authenticateToken, optionalAuthenticateToken, authorizeAdmin, AuthenticatedRequest } from '../middlewares/auth';
 import { BRICOLAGE_CATEGORIES, TOP_VERIFIED_ARTISANS } from '../data/bricolageData';
 import { QuoteRequestPayload, ArtisanOpportunityDTO } from '../types/bricolage';
+import { safeLogger } from '../utils/logger';
 
 export const bricolageRouter = Router();
 
@@ -53,7 +54,7 @@ bricolageRouter.get('/bricolage/categories', async (_req: Request, res: Response
     snapshot.forEach((doc) => categories.push(doc.data()));
     return res.json({ success: true, data: categories, source: 'firestore' });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching bricolage categories:', error);
+    safeLogger.error('Error fetching bricolage categories', { err: error instanceof Error ? error.message : String(error) });
     return res.json({ success: true, data: BRICOLAGE_CATEGORIES, source: 'default' });
   }
 });
@@ -84,7 +85,7 @@ bricolageRouter.get('/bricolage/artisans', async (req: Request, res: Response) =
     snapshot.forEach((doc) => list.push(doc.data()));
     return res.json({ success: true, data: list });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching artisans:', error);
+    safeLogger.error('Error fetching artisans', { err: error instanceof Error ? error.message : String(error) });
     return res.json({ success: true, data: TOP_VERIFIED_ARTISANS });
   }
 });
@@ -142,7 +143,7 @@ bricolageRouter.post('/bricolage/quotes', optionalAuthenticateToken, async (req:
       });
     }
 
-    console.log(`🟢 [Olmart Core] 🟢 Created Bricolage Quote Request: ${requestId} (customerId: ${customerId || 'guest'})`);
+    safeLogger.info('Created Bricolage Quote Request', { requestId, customerId: customerId || 'guest' });
 
     return res.json({
       success: true,
@@ -153,7 +154,7 @@ bricolageRouter.post('/bricolage/quotes', optionalAuthenticateToken, async (req:
       }
     });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error saving quote request:', error);
+    safeLogger.error('Error saving quote request', { requestId, err: error instanceof Error ? error.message : String(error) });
     return res.json({
       success: true,
       data: {
@@ -190,7 +191,7 @@ bricolageRouter.get('/bricolage/opportunities', authenticateToken, async (req: A
         }
       }
     } catch (e) {
-      console.warn('[Olmart Core] ⚠️ Error checking artisan profile:', e);
+      safeLogger.warn('Error checking artisan profile', { artisanUid, err: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -266,7 +267,7 @@ bricolageRouter.get('/bricolage/opportunities', authenticateToken, async (req: A
 
     return res.json({ success: true, data: opportunities });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching artisan opportunities:', error);
+    safeLogger.error('Error fetching artisan opportunities', { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: 'Erreur lors de la récupération des opportunités.' });
   }
 });
@@ -346,7 +347,7 @@ bricolageRouter.post('/bricolage/offers', authenticateToken, async (req: Authent
       });
     }
 
-    console.log(`🟢 [Olmart Core] 🟢 Authenticated Artisan ${artisanUid} submitted offer ${offerId} for request ${requestId}`);
+    safeLogger.info('Artisan submitted offer', { artisanId: artisanUid, offerId, requestId });
     return res.json({
       success: true,
       data: { offerId, message: 'Devis transmis directement au client.' }
@@ -356,7 +357,7 @@ bricolageRouter.post('/bricolage/offers', authenticateToken, async (req: Authent
     if (err?.message === 'DEMANDE_INTROUVABLE') {
       return res.status(404).json({ success: false, error: 'Demande de devis introuvable.' });
     }
-    console.error('[Olmart Core] ❌ Error submitting offer:', error);
+    safeLogger.error('Error submitting offer', { requestId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: 'Erreur lors de l\'enregistrement du devis.' });
   }
 });
@@ -448,7 +449,7 @@ bricolageRouter.post('/bricolage/quotes/:id/accept-offer', authenticateToken, as
       });
     });
 
-    console.log(`🟢 [Olmart Core] 🟢 Customer ${customerUid} accepted offer ${offerId} for request ${requestId}`);
+    safeLogger.info('Customer accepted offer', { customerId: customerUid, offerId, requestId });
 
     return res.json({
       success: true,
@@ -464,7 +465,7 @@ bricolageRouter.post('/bricolage/quotes/:id/accept-offer', authenticateToken, as
     const errorMessage = customErr?.message || 'Erreur serveur lors de l\'acceptation du devis.';
 
     if (statusCode >= 500) {
-      console.error('[Olmart Core] ❌ Error accepting quote offer:', error);
+      safeLogger.error('Error accepting quote offer', { requestId, err: error instanceof Error ? error.message : String(error) });
     }
 
     return res.status(statusCode).json({
@@ -574,7 +575,7 @@ bricolageRouter.post('/bricolage/artisans/upgrade', authenticateToken, async (re
       // 3. Set Custom Claims role = 'artisan'
       await admin.auth().setCustomUserClaims(uid, { role: 'artisan' });
 
-      console.log(`🟢 [Olmart Core] 🟢 User ${uid} registered as Artisan (${verificationStatus}): ${fullName}`);
+      safeLogger.info('User registered as Artisan', { artisanId: uid, verificationStatus });
 
       return res.json({
         success: true,
@@ -612,7 +613,7 @@ bricolageRouter.post('/bricolage/artisans/upgrade', authenticateToken, async (re
       }
     });
   } catch (error: unknown) {
-    console.error('[Olmart Core] ❌ Error upgrading user to artisan:', error);
+    safeLogger.error('Error upgrading user to artisan', { artisanId: uid, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: 'Erreur lors du passage au statut artisan.' });
   }
 });
@@ -631,7 +632,7 @@ bricolageRouter.get('/bricolage/admin/artisans/pending', authenticateToken, auth
     snapshot.forEach(doc => pendingArtisans.push(doc.data()));
     return res.json({ success: true, data: pendingArtisans });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching pending artisan verifications:', error);
+    safeLogger.error('Error fetching pending artisan verifications', { err: error instanceof Error ? error.message : String(error) });
     return res.json({ success: true, data: [] });
   }
 });
@@ -706,7 +707,7 @@ bricolageRouter.post('/bricolage/admin/artisans/verify', authenticateToken, auth
         }
       });
 
-      console.log(`🟢 [Olmart Core] 🟢 Artisan ${artisanId} verification updated: ${action}`);
+      safeLogger.info('Artisan verification updated', { artisanId, action });
       return res.json({
         success: true,
         message: action === 'approve' 
@@ -717,7 +718,7 @@ bricolageRouter.post('/bricolage/admin/artisans/verify', authenticateToken, auth
 
     return res.json({ success: true, message: 'Statut de vérification mis à jour.' });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error in admin artisan verification:', error);
+    safeLogger.error('Error in admin artisan verification', { artisanId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: 'Erreur lors de la vérification de l\'artisan.' });
   }
 });
@@ -736,7 +737,7 @@ bricolageRouter.get('/bricolage/reviews', async (_req: Request, res: Response) =
     snapshot.forEach(doc => list.push(doc.data()));
     return res.json({ success: true, data: list });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching reviews:', error);
+    safeLogger.error('Error fetching reviews', { err: error instanceof Error ? error.message : String(error) });
     return res.json({ success: true, data: SAMPLE_REVIEWS });
   }
 });

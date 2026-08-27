@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { db } from "../config/firebase-admin";
 import { authenticateToken, authorizeAdmin } from "../middlewares/auth";
 import type { AuthenticatedRequest } from "./core";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -39,7 +40,7 @@ async function getCachedOrFetch<T>(
       if (cached) {
         return cached.data as T;
       }
-      console.warn(`[Olmart Gateway] Settings fetch error for ${key}:`, errorObj?.message || err);
+      safeLogger.warn("[Olmart Gateway] Settings fetch error", { settingKey: key, err: errorObj?.message || String(err) });
       return null;
     }
   }
@@ -82,7 +83,7 @@ router.post("/api/v1/settings/:id", authenticateToken, authorizeAdmin, async (re
     settingsCache.clear();
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Error saving setting:", error);
+    safeLogger.error("Error saving setting", { settingId: id, err: error instanceof Error ? error.message : String(error) });
     const message = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: message });
   }
@@ -106,7 +107,7 @@ router.post("/api/v1/newsletter/subscribe", async (req: Request, res: Response) 
     });
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Newsletter subscription error:", error);
+    safeLogger.error("Newsletter subscription error", { err: error instanceof Error ? error.message : String(error) });
     const message = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: message });
   }
@@ -192,7 +193,7 @@ router.get("/api/v1/monthly-updates", async (req: Request, res: Response) => {
     return res.json({ updates: updates || [] });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn("Monthly updates fetch warning:", message);
+    safeLogger.warn("Monthly updates fetch warning", { err: message });
     return res.json({ updates: [] });
   }
 });

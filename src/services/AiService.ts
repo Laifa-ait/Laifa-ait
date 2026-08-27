@@ -2,6 +2,7 @@ import { ai, DEFAULT_GEMINI_MODEL } from "../config/gemini";
 import { validateExternalUrl } from "../utils/security";
 import fs from "fs";
 import path from "path";
+import { safeLogger } from "../utils/logger";
 
 export class AiService {
   private static parseJsonSafely<T = Record<string, unknown>>(rawText: string, fallback: T): T {
@@ -13,7 +14,7 @@ export class AiService {
       const strToParse = jsonMatch ? jsonMatch[0] : cleaned;
       return JSON.parse(strToParse) as T;
     } catch (err: unknown) {
-      console.error("[AiService] JSON parse failed, returning fallback:", err);
+      safeLogger.error("[AiService] JSON parse failed, returning fallback", { err: err instanceof Error ? err.message : String(err) });
       return fallback;
     }
   }
@@ -35,7 +36,7 @@ export class AiService {
           result[lang] = parsed[lang] || `${text} (${lang})`;
         });
       } catch (err: unknown) {
-        console.error("[AiService.translateText] Error:", err);
+        safeLogger.error("[AiService.translateText] Error", { err: err instanceof Error ? err.message : String(err) });
         langsToTranslate.forEach((lang: string) => {
           result[lang] = `${text} (${lang})`;
         });
@@ -58,7 +59,7 @@ export class AiService {
         en: parsed.en || `${frText} (EN)`,
       };
     } catch (err: unknown) {
-      console.error("[AiService.translateSingleKey] Error:", err);
+      safeLogger.error("[AiService.translateSingleKey] Error", { err: err instanceof Error ? err.message : String(err) });
       return {
         ar: `${frText} (AR)`,
         en: `${frText} (EN)`,
@@ -69,7 +70,7 @@ export class AiService {
   static dualWrite(lang: string, content: Record<string, unknown>) {
     const allowedLocales = ["fr", "en", "ar"];
     if (!allowedLocales.includes(lang)) {
-      console.error(`Invalid locale: ${lang}`);
+      safeLogger.error("Invalid locale in dualWrite", { lang });
       return;
     }
     const basePublicDir = path.resolve(process.cwd(), "public/locales");
@@ -78,7 +79,7 @@ export class AiService {
     const p1 = path.resolve(basePublicDir, `${lang}.json`);
     const p2 = path.resolve(baseDistDir, `${lang}.json`);
     if (!p1.startsWith(basePublicDir) || !p2.startsWith(baseDistDir)) {
-      console.error(`Path traversal detected: ${lang}`);
+      safeLogger.error("Path traversal detected in dualWrite", { lang });
       return;
     }
     const dir1 = path.dirname(p1);
@@ -149,7 +150,7 @@ export class AiService {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } catch (batchErr: unknown) {
-        console.error("Fictive translation batch error:", batchErr);
+        safeLogger.error("Fictive translation batch error", { err: batchErr instanceof Error ? batchErr.message : String(batchErr) });
       }
     }
 

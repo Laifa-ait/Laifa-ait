@@ -1,5 +1,6 @@
 import { auth } from '../lib/firebase';
 import * as Sentry from '@sentry/react';
+import { safeLogger } from './logger';
 
 interface ErrorInfo {
   message: string;
@@ -62,9 +63,13 @@ const sendErrorToAgent = async (errorInfo: Omit<ErrorInfo, 'timestamp' | 'url' |
       })
     });
 
-    (process.env.NODE_ENV === 'development' ? console.log : function(){})('[ErrorAgent] Erreur reportée avec succès.');
+    if (import.meta.env.DEV) {
+      safeLogger.info('[ErrorAgent] Erreur reportée avec succès.');
+    }
   } catch (err) {
-    console.error('[ErrorAgent] Impossible de reporter l\'erreur :', err);
+    if (import.meta.env.DEV) {
+      safeLogger.error('[ErrorAgent] Impossible de reporter l\'erreur', { err: err instanceof Error ? err.message : "Erreur" });
+    }
   }
 };
 

@@ -3,6 +3,8 @@ import { db, admin } from "../config/firebase-admin";
 import { ai } from "../config/gemini";
 import { authenticateToken, optionalAuthenticateToken, AuthenticatedRequest } from "../middlewares/auth";
 import { CouponService } from "../domains/marketing/coupon.service";
+import { safeLogger } from "../utils/logger";
+import { CoreService } from "../services/CoreService";
 
 import nodeCache from "node-cache";
 
@@ -117,7 +119,7 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
       res.end();
     }
   } catch (error) {
-    console.error("Video proxy error:", error);
+    safeLogger.error("Video proxy error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).send("Error proxying video");
   }
 });
@@ -141,7 +143,7 @@ router.post("/api/v1/analytics/track", async (req: Request, res: Response) => {
     await batch.commit();
     return res.json({ success: true, count: events.length });
   } catch (error) {
-    console.error("Analytics track error:", error);
+    safeLogger.error("Analytics track error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to track events" });
   }
 });
@@ -171,7 +173,7 @@ router.post("/api/v1/sponsorship/analytics/track", async (req: Request, res: Res
 
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Sponsorship analytics error:", error);
+    safeLogger.error("Sponsorship analytics error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to record sponsorship event" });
   }
 });
@@ -547,7 +549,7 @@ router.post("/api/v1/logs/error", async (req, res) => {
     await CoreService.logError(req.body);
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Error writing to site_errors:", error);
+    safeLogger.error("Error writing to site_errors", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -703,10 +705,10 @@ router.get("/api/v1/public/shops", async (req: Request, res: Response) => {
     });
 
     const shops = Array.from(shopsMap.values());
-    console.log(`🟢 [Olmart Gateway] 🚀 /api/v1/public/shops fetched ${shops.length} public shop profiles.`);
+    safeLogger.info("/api/v1/public/shops fetched public shop profiles", { count: shops.length });
     return res.json({ success: true, shops });
   } catch (error: unknown) {
-    console.error("❌ [Olmart Gateway] Error fetching public shops:", error);
+    safeLogger.error("Error fetching public shops", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -874,7 +876,7 @@ router.get("/api/v1/public/shops/:sellerId", async (req: Request, res: Response)
       }
     });
   } catch (error: unknown) {
-    console.error("❌ [Olmart Gateway] Error fetching single public shop:", error);
+    safeLogger.error("Error fetching single public shop", { sellerId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -963,7 +965,7 @@ router.get("/api/v1/public/shops/:sellerId/products", async (req: Request, res: 
       count: products.length
     });
   } catch (error: unknown) {
-    console.error("❌ [Olmart Gateway] Error fetching shop products:", error);
+    safeLogger.error("Error fetching shop products", { sellerId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Erreur interne", products: [] });
   }
 });
@@ -1050,9 +1052,9 @@ Répondez uniquement avec le JSON.`;
           translations = parsed;
         }
       } catch (geminiErr: unknown) {
-        console.warn(
-          "Gemini automatic translation failed for notifications, using fallback suffixes:",
-          geminiErr,
+        safeLogger.warn(
+          "Gemini automatic translation failed for notifications, using fallback suffixes",
+          { err: geminiErr instanceof Error ? geminiErr.message : String(geminiErr) },
         );
       }
 
@@ -1083,7 +1085,7 @@ Répondez uniquement avec le JSON.`;
         },
       });
     } catch (error: unknown) {
-      console.error("Failed to register notification:", error);
+      safeLogger.error("Failed to register notification", { err: error instanceof Error ? error.message : String(error) });
       return res
         .status(500)
         .json({

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/firebase-admin';
 import { DEFAULT_OLMA_APPS } from '../data/olmaUniversData';
 import { OlmaAppModule } from '../types/olmaUnivers';
+import { safeLogger } from '../utils/logger';
 
 export const olmaUniversRouter = Router();
 
@@ -21,7 +22,7 @@ olmaUniversRouter.get('/univers/apps', async (_req: Request, res: Response) => {
     });
     return res.json({ success: true, data: apps, source: 'firestore' });
   } catch (error) {
-    console.error('[Olmart Core] ❌ Error fetching Olma Univers apps:', error);
+    safeLogger.error('Error fetching Olma Univers apps', { err: error instanceof Error ? error.message : String(error) });
     return res.json({ success: true, data: DEFAULT_OLMA_APPS, source: 'default' });
   }
 });
@@ -57,7 +58,7 @@ olmaUniversRouter.post('/univers/apps/:id/notify', async (req: Request, res: Res
       message: 'Votre intérêt pour cette application a été enregistré avec succès !'
     });
   } catch (err) {
-    console.error('[Olmart Core] ❌ Waitlist transaction error:', err);
+    safeLogger.error('Waitlist transaction error', { appId: id, err: err instanceof Error ? err.message : String(err) });
     return res.json({
       success: true,
       message: 'Inscription enregistrée en mode hors-ligne !'
@@ -79,7 +80,7 @@ olmaUniversRouter.put('/admin/univers/apps/:id', async (req: Request, res: Respo
       message: `L'application ${id} a été mise à jour dans le Dashboard Admin Olma.`
     });
   } catch (err) {
-    console.error('[Olmart Core] ❌ Admin app update error:', err);
+    safeLogger.error('Admin app update error', { appId: id, err: err instanceof Error ? err.message : String(err) });
     return res.status(500).json({ success: false, error: 'Erreur lors de la mise à jour.' });
   }
 });
@@ -94,14 +95,14 @@ olmaUniversRouter.post('/admin/univers/seed', async (_req: Request, res: Respons
         batch.set(ref, app, { merge: true });
       });
       await batch.commit();
-      console.log('🟢 [Olmart Core] 🟢 Mapped Olma Univers Ecosystem Seed in Firestore');
+      safeLogger.info('Mapped Olma Univers Ecosystem Seed in Firestore');
     }
     return res.json({
       success: true,
       message: 'Les 6 applications de l\'Univers Olma ont été initialisées dans Firestore.'
     });
   } catch (err) {
-    console.error('[Olmart Core] ❌ Seed error:', err);
+    safeLogger.error('Seed error in Olma Univers', { err: err instanceof Error ? err.message : String(err) });
     return res.status(500).json({ success: false, error: 'Erreur d\'initialisation.' });
   }
 });

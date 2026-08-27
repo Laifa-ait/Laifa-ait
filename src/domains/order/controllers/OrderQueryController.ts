@@ -3,6 +3,7 @@ import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken } from "../../../middlewares/auth";
 import { Order } from "../order.types";
 import { calculateOrderCommission } from "../../../utils/orderCalculations";
+import { safeLogger } from "../../../utils/logger";
 
 export interface AuthenticatedUser {
   uid: string;
@@ -135,7 +136,7 @@ router.post("/calculate-commissions", authenticateToken, async (req: Authenticat
       sellersNetPayout: totalVolume - totalCommission,
     });
   } catch (error: unknown) {
-    console.error("Calculate commissions error:", error);
+    safeLogger.error("Calculate commissions error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: "Failed to calculate commissions" });
   }
 });

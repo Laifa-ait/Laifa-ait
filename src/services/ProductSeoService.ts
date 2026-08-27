@@ -1,4 +1,5 @@
 import { db } from "../config/firebase-admin";
+import { safeLogger } from "../utils/logger";
 
 export interface ProductSeoTimestamp {
   toDate?: () => Date;
@@ -103,7 +104,7 @@ export async function getProductSeoData(productId: string): Promise<ProductSeoDa
     }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    console.warn(`[ProductSeoService] Error fetching product ${productId}:`, message);
+    safeLogger.warn("[ProductSeoService] Error fetching product", { productId, err: message });
   }
 
   return null;

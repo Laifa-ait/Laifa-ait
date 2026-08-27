@@ -4,6 +4,7 @@ import { authenticateToken, authorizeSeller, require2FA, AuthenticatedRequest } 
 import { validateRequest } from "../../../middlewares/validation";
 import { SellerService } from "../../../services/SellerService";
 import { shippingTariffsSchema, sellerSettingsSchema } from "../validators/seller.validators";
+import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 
@@ -101,7 +102,7 @@ router.put(
           productsSnap.docs.forEach((pDoc) => {
             batch.update(pDoc.ref, prodUpdate);
           });
-          await batch.commit().catch(e => console.warn("[Seller Profile Settings] Batch product sync warning:", e));
+          await batch.commit().catch(e => safeLogger.warn("[Seller Profile Settings] Batch product sync warning", { err: e instanceof Error ? e.message : String(e) }));
         }
       }
 

@@ -12,6 +12,8 @@ import { drive as googleDrive } from "@googleapis/drive";
 import { calendar as googleCalendar } from "@googleapis/calendar";
 import { Readable } from "stream";
 import { authenticateToken } from "../middlewares/auth";
+import { strictLimiter } from "../middlewares/rateLimiters";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -30,7 +32,7 @@ const requireGoogleToken = (req: AuthenticatedRequest, res: Response, next: Next
  * 1. GOOGLE SHEETS (Export Premium "Canva-like")
  * Exportation des rapports formatés (Admin & Vendeur).
  */
-router.post("/sheets/export-premium", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/sheets/export-premium", strictLimiter, authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { title, metadata, headers, rows, totals, theme } = req.body;
     
@@ -220,7 +222,7 @@ router.post("/sheets/export-premium", authenticateToken, requireGoogleToken, asy
 
   } catch (err: unknown) {
     const error = err as { code?: number; message?: string };
-    console.error("Erreur Google Sheets Export Premium:", error);
+    safeLogger.error("Erreur Google Sheets Export Premium", { err: error.message || String(err) });
     let errorMsg = "Échec de l'exportation Sheets";
     if (error.code === 401 || error.code === 403) errorMsg = "Accès refusé ou Token expiré. Reconnectez-vous.";
     if (error.code === 429) errorMsg = "Quota de requêtes Google API atteint. Veuillez patienter.";
@@ -233,7 +235,7 @@ router.post("/sheets/export-premium", authenticateToken, requireGoogleToken, asy
  * 2. GOOGLE DRIVE (User Upload - Admin Backup / Admin Docs)
  * Upload sécurisé avec le token de l'utilisateur.
  */
-router.post("/drive/upload", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/drive/upload", strictLimiter, authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { fileName, mimeType, base64Data } = req.body;
     
@@ -266,7 +268,7 @@ router.post("/drive/upload", authenticateToken, requireGoogleToken, async (req: 
 
   } catch (err: unknown) {
     const error = err as { code?: number; message?: string };
-    console.error("Erreur Google Drive Upload:", error);
+    safeLogger.error("Erreur Google Drive Upload", { err: error.message || String(err) });
     let errorMsg = "Échec de l'upload Drive";
     if (error.code === 401 || error.code === 403) errorMsg = "Accès refusé ou Token expiré. Reconnectez-vous.";
     if (error.code === 429) errorMsg = "Quota de requêtes Google API atteint. Veuillez patienter.";
@@ -280,7 +282,7 @@ router.post("/drive/upload", authenticateToken, requireGoogleToken, async (req: 
  * Upload sécurisé via un Compte de Service (Service Account) pour les vendeurs,
  * car le Vendeur n'a pas accès au Google Drive de l'Admin !
  */
-router.post("/drive/system-upload-kyc", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/drive/system-upload-kyc", strictLimiter, authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { fileName, mimeType, base64Data, sellerId } = req.body;
     
@@ -342,10 +344,10 @@ router.post("/drive/system-upload-kyc", authenticateToken, async (req: Authentic
         });
     } else {
         // Mode développement / Démo (simule la sauvegarde si pas de clé de service)
-        console.warn("ATTENTION: Pas de GOOGLE_SERVICE_ACCOUNT_KEY. Le fichier n'est pas envoyé sur Drive (Mode Démo).");
+        safeLogger.warn("Pas de GOOGLE_SERVICE_ACCOUNT_KEY. Le fichier n'est pas envoyé sur Drive (Mode Démo).");
         return res.json({ 
             success: true, 
-            file: { webViewLink: `https://drive.google.com/demo-link-kyc/${sellerId}`, id: `mock-id-${Date.now()}` },
+            file: { webViewLink: `https://drive.google.com/demo-link-kyc/${encodeURIComponent(sellerId)}`, id: `mock-id-${Date.now()}` },
             demoMode: true
         });
     }
@@ -375,7 +377,7 @@ router.post("/drive/system-upload-kyc", authenticateToken, async (req: Authentic
 
   } catch (err: unknown) {
     const error = err as { code?: number; message?: string };
-    console.error("Erreur Google Drive System Upload:", error);
+    safeLogger.error("Erreur Google Drive System Upload", { err: error.message || String(err) });
     res.status(error.code || 500).json({ error: "Échec de l'upload KYC system Drive", details: error.message });
   }
 });
@@ -385,7 +387,7 @@ router.post("/drive/system-upload-kyc", authenticateToken, async (req: Authentic
  * 3. GOOGLE MEET & CALENDAR
  * Prise de RDV pour la vérification des nouveaux vendeurs.
  */
-router.post("/calendar/schedule", authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/calendar/schedule", strictLimiter, authenticateToken, requireGoogleToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { sellerEmail, sellerEmails, startTime, endTime, summary, description } = req.body;
 
@@ -460,7 +462,7 @@ router.post("/calendar/schedule", authenticateToken, requireGoogleToken, async (
         });
     } catch(err: unknown) {
         const error = err as { code?: number; message?: string };
-        console.error("Erreur Calendar/Meet:", error);
+        safeLogger.error("Erreur Calendar/Meet", { err: error.message || String(err) });
         let errorMsg = "Échec de la création du Meet";
         if (error.code === 401 || error.code === 403) errorMsg = "Accès refusé ou Token expiré. Reconnectez-vous.";
         if (error.code === 429) errorMsg = "Quota de requêtes Google API atteint. Veuillez patienter.";

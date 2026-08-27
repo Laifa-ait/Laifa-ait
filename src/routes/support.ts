@@ -3,6 +3,7 @@ import { db, admin } from "../config/firebase-admin";
 import { authenticateToken, authorizeAdmin } from "../middlewares/auth";
 import type { AuthenticatedRequest } from "./core";
 import { validateFileContent } from "../utils/fileSignatureValidator";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -508,7 +509,7 @@ router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async
         try {
           await fileUpload.delete();
         } catch (cleanupError) {
-          console.error("Storage cleanup failed:", cleanupError);
+          safeLogger.error("Storage cleanup failed", { err: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) });
         }
       }
       throw writeError;
@@ -527,7 +528,7 @@ router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async
       status: "success"
     });
 
-    console.log(`[Firestore Core] 🟢 File uploaded successfully to ${uniquePath}`);
+    safeLogger.info("File uploaded successfully to support ticket", { ticketId, filePath: uniquePath });
 
     return res.json({
       success: true,
@@ -537,7 +538,7 @@ router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async
       fileType: mimeType
     });
   } catch (error: unknown) {
-    console.error("[Firestore Core] ❌ Support upload error:", error);
+    safeLogger.error("Support upload error", { ticketId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Erreur serveur lors de l'upload de la pièce jointe." });
   }
 });
@@ -610,7 +611,7 @@ router.get("/api/v1/support/tickets/:ticketId/attachments/:attachmentId", authen
 
     file.createReadStream()
       .on("error", (err) => {
-        console.error("Stream error:", err);
+        safeLogger.error("Stream error in support attachment", { ticketId, attachmentId, err: err instanceof Error ? err.message : String(err) });
         if (!res.headersSent) {
           res.status(500).json({ error: "Erreur de lecture du fichier" });
         }
@@ -618,7 +619,7 @@ router.get("/api/v1/support/tickets/:ticketId/attachments/:attachmentId", authen
       .pipe(res);
 
   } catch (error: unknown) {
-    console.error("Attachment retrieval error:", error);
+    safeLogger.error("Attachment retrieval error", { ticketId, attachmentId, err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -634,7 +635,7 @@ router.get("/api/v1/admin/support/tickets", authenticateToken, authorizeAdmin, a
     const tickets = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return res.json({ success: true, tickets });
   } catch (error: unknown) {
-    console.error("[Firestore Core] ❌ Error fetching admin support tickets:", error);
+    safeLogger.error("Error fetching admin support tickets", { err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -651,7 +652,7 @@ router.get("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToken
     const messages = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return res.json({ success: true, messages });
   } catch (error: unknown) {
-    console.error("[Firestore Core] ❌ Error fetching admin support messages:", error);
+    safeLogger.error("Error fetching admin support messages", { ticketId, err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -820,7 +821,7 @@ router.post("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToke
     if (error instanceof BusinessError) {
       return res.status(error.statusCode).json({ error: error.message });
     }
-    console.error("[Firestore Core] ❌ Error adding admin support message:", error);
+    safeLogger.error("Error adding admin support message", { ticketId, err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -883,7 +884,7 @@ router.put("/api/v1/admin/support/tickets/:ticketId/status", authenticateToken, 
     if (error instanceof BusinessError) {
       return res.status(error.statusCode).json({ error: error.message });
     }
-    console.error("[Firestore Core] ❌ Error updating support status:", error);
+    safeLogger.error("Error updating support status", { ticketId, newStatus: status, err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -946,7 +947,7 @@ router.put("/api/v1/admin/support/tickets/:ticketId/priority", authenticateToken
     if (error instanceof BusinessError) {
       return res.status(error.statusCode).json({ error: error.message });
     }
-    console.error("[Firestore Core] ❌ Error updating support priority:", error);
+    safeLogger.error("Error updating support priority", { ticketId, newPriority: priority, err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }

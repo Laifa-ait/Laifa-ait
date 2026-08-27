@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+import { safeLogger } from "../utils/logger";
 
 if (process.env.NODE_ENV === "production") {
   try {
@@ -21,7 +22,7 @@ if (process.env.NODE_ENV === "production") {
       // Skipped Sentry initialization (no real DSN provided)
     }
   } catch (error) {
-    console.error("[Sentry] Failed to initialize safely:", error);
+    safeLogger.error("[Sentry] Failed to initialize safely", { err: error instanceof Error ? error.message : String(error) });
   }
 }
 

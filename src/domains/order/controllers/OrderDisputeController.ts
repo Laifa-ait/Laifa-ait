@@ -32,6 +32,7 @@ import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken } from "../../../middlewares/auth";
 import { GoogleGenAI, Part } from "@google/genai";
+import { safeLogger } from "../../../utils/logger";
 
 async function getGeminiImagePart(photoStr: string): Promise<Part | null> {
   try {
@@ -60,7 +61,7 @@ async function getGeminiImagePart(photoStr: string): Promise<Part | null> {
       }
     }
   } catch (err) {
-    console.error("Error fetching photo for Gemini:", err);
+    safeLogger.error("Error fetching photo for Gemini", { err: err instanceof Error ? err.message : String(err) });
   }
   return null;
 }
@@ -202,7 +203,7 @@ router.post("/buyer/orders/dispute", authenticateToken, async (req: Authenticate
       (async () => {
         try {
           if (!process.env.GEMINI_API_KEY) {
-             console.warn("No GEMINI_API_KEY, skipping dispute AI summary");
+             safeLogger.warn("No GEMINI_API_KEY, skipping dispute AI summary");
              return;
           }
           const genAI = new GoogleGenAI({
@@ -266,14 +267,14 @@ Veuillez analyser ces éléments textuels ainsi que les photos d'évidence joint
             });
           }
         } catch (aiErr) {
-           console.error("AI Mediation summary failed:", aiErr);
+           safeLogger.error("AI Mediation summary failed", { err: aiErr instanceof Error ? aiErr.message : String(aiErr) });
         }
       })();
     }
 
     res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Dispute error:", error);
+    safeLogger.error("Dispute error", { err: error instanceof Error ? error.message : String(error) });
     const msg = error instanceof Error ? error.message : "Erreur serveur";
     if (msg === "ELIGIBILITY_WINDOW_EXPIRED") {
       return res.status(400).json({ error: "La fenêtre d'éligibilité est dépassée. L'ouverture d'un litige n'est possible que dans les 3 jours suivant la livraison du colis." });
@@ -337,7 +338,7 @@ router.post("/buyer/orders/return", authenticateToken, async (req: Authenticated
 
     return res.json({ success: true, returnRequest: returnObj });
   } catch (error: unknown) {
-    console.error("Order return error:", error);
+    safeLogger.error("Order return error", { err: error instanceof Error ? error.message : String(error) });
     const msg = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: msg });
   }

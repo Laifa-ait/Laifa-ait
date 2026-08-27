@@ -14,6 +14,7 @@ import { auth } from "../lib/firebase";
 import { UserProfile } from "../domains/user/user.types";
 import toast from "react-hot-toast";
 import { apiGet, apiPost } from "../lib/api";
+import { safeLogger } from "../utils/logger";
 
 
 
@@ -58,7 +59,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUserProfile(data.profile);
           }
         } catch (err) {
-          console.warn("AuthContext: Sync retry finished on initial load", err);
+          safeLogger.warn("AuthContext: Sync retry finished on initial load", { err: err instanceof Error ? err.message : String(err) });
         } finally {
           clearTimeout(safetyTimer);
           setLoading(false);
@@ -80,7 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUserProfile(data);
         }
       } catch (err) {
-        console.warn("AuthContext: Periodic profile fetch retry finished", err);
+        safeLogger.warn("AuthContext: Periodic profile fetch retry finished", { err: err instanceof Error ? err.message : String(err) });
       }
     };
 
@@ -119,7 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         toast.error("Erreur de connexion Google");
       }
-      console.error("Google sign-in error:", err);
+      safeLogger.error("Google sign-in error", { err: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -169,7 +170,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const handleUnauthorized = async () => {
-      console.warn("AuthContext: Received auth:unauthorized event, logging out");
+      safeLogger.warn("AuthContext: Received auth:unauthorized event, logging out");
       await logout();
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -197,7 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    console.warn("useAuth used outside AuthProvider");
+    safeLogger.warn("useAuth used outside AuthProvider");
     return { currentUser: null, userProfile: null, loading: false } as unknown as AuthContextType;
   }
   return context;

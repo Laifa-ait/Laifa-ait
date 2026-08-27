@@ -17,6 +17,26 @@ export default defineConfig({
     maxWorkers: 1,
     minWorkers: 1,
     fileParallelism: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      thresholds: {
+        lines: 30,
+        functions: 30,
+        branches: 25,
+        statements: 30,
+      },
+      exclude: [
+        'coverage/**',
+        'dist/**',
+        'node_modules/**',
+        'src/tests/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        'scripts/**',
+      ],
+    },
     env: {
       VITE_FIREBASE_API_KEY: 'test-api-key',
       VITE_FIREBASE_AUTH_DOMAIN: 'localhost',

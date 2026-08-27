@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { apiPost } from "../../lib/api";
 import { generateBackupCodes } from "../../utils/twoFactor";
+import { safeLogger } from "../../utils/logger";
 
 interface TwoFactorSecurityModalProps {
   isOpen: boolean;
@@ -71,7 +72,7 @@ export const TwoFactorSecurityModal: React.FC<TwoFactorSecurityModalProps> = ({
       setPin(["", "", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (error: unknown) {
-      console.error("2FA Send Code Error:", error);
+      safeLogger.error("2FA Send Code Error", { err: error instanceof Error ? error.message : String(error) });
       const errMsg = error instanceof Error ? error.message : undefined;
       toast.error(
         errMsg ||
@@ -142,7 +143,7 @@ export const TwoFactorSecurityModal: React.FC<TwoFactorSecurityModalProps> = ({
       );
       setStep("backup_codes");
     } catch (error: unknown) {
-      console.error("2FA Verify Error:", error);
+      safeLogger.error("2FA Verify Error", { err: error instanceof Error ? error.message : String(error) });
       const errMsg = error instanceof Error ? error.message : undefined;
       toast.error(
         errMsg ||

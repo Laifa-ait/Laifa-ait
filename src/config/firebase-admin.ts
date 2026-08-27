@@ -2,11 +2,16 @@ import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
+import { safeLogger } from "../utils/logger";
 
 // Load Firebase Config
 export let firebaseConfig: Record<string, string | number | boolean> = {};
 
-const logDev = process.env.NODE_ENV !== "production" ? console.log : function () {};
+const logDev = (msg: string) => {
+  if (process.env.NODE_ENV !== "production") {
+    safeLogger.debug(msg);
+  }
+};
 
 try {
   const configPath = path.join(process.cwd(), "firebase-applet-config.json");
@@ -19,7 +24,7 @@ try {
   }
 } catch (err: unknown) {
   const message = err instanceof Error ? err.message : String(err);
-  console.error("[Firebase Config] ❌ Unable to parse firebase-applet-config.json:", message);
+  safeLogger.error("[Firebase Config] ❌ Unable to parse firebase-applet-config.json", { err: message });
 }
 
 // Initialize Firebase Admin
@@ -47,7 +52,7 @@ try {
   } else {
     const runtimeProjectId = targetProjectId;
     if (!runtimeProjectId) {
-      console.warn(
+      safeLogger.warn(
         "[Firebase Admin] ⚠️ runtimeProjectId is undefined. Provide FIREBASE_PROJECT_ID in environment."
       );
     }
@@ -60,7 +65,7 @@ try {
         serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        console.error("[Firebase Admin] ❌ FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON:", message);
+        safeLogger.error("[Firebase Admin] ❌ FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON", { err: message });
       }
 
       if (serviceAccount) {
@@ -79,7 +84,7 @@ try {
   }
 } catch (e: unknown) {
   const message = e instanceof Error ? e.message : String(e);
-  console.error("[Firebase Admin] ❌ Initialization failed:", message);
+  safeLogger.error("[Firebase Admin] ❌ Initialization failed", { err: message });
 }
 
 export let db: admin.firestore.Firestore;
@@ -102,7 +107,7 @@ const setupFirestore = () => {
         logDev(`[Firestore Core] 🟢 Connected and mapped Named Database: [${configDatabaseId}]`);
       } catch (dbErr: unknown) {
         const dbMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
-        console.error("[Firestore Core] ❌ Named DB mapping failed, falling back to default:", dbMsg);
+        safeLogger.error("[Firestore Core] ❌ Named DB mapping failed, falling back to default", { err: dbMsg });
         db = adminApp.firestore();
       }
     } else {
@@ -111,7 +116,7 @@ const setupFirestore = () => {
     }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Firestore Core] ❌ Critical mapping failure:", message);
+    safeLogger.error("[Firestore Core] ❌ Critical mapping failure", { err: message });
   }
 };
 
@@ -121,16 +126,16 @@ export const verifyAndFixDb = async () => {
   }
   // Try a tiny read to check permissions
   await db.collection("products").limit(1).get();
-  (process.env.NODE_ENV === "development" ? console.log : function () {})("Firestore: Connection verified.");
+  logDev("Firestore: Connection verified.");
 
   if (process.env.RUN_MIGRATIONS === "true") {
     try {
-      (process.env.NODE_ENV === "development" ? console.log : function () {})("Triggering category migration dynamically...");
+      logDev("Triggering category migration dynamically...");
       const { migrateCategories } = await import("../../scripts/migrate-categories");
       await migrateCategories(db);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error("Failed to run dynamic migration 'migrate-categories':", message);
+      safeLogger.error("Failed to run dynamic migration 'migrate-categories'", { err: message });
     }
   }
 };

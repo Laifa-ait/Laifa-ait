@@ -1,3 +1,5 @@
+import { safeLogger } from "./logger";
+
 /**
  * Executes a promise-returning function with exponential backoff.
  * @param fn The function to execute.
@@ -50,7 +52,11 @@ export async function withExponentialBackoff<T>(
       const jitter = delay * 0.2 * Math.random(); // Up to 20% jitter
       const sleepTime = delay + jitter;
       
-      console.warn(`[Retry] Attempt ${attempt} failed (${errMsg}). Retrying in ${Math.round(sleepTime)}ms...`);
+      safeLogger.warn("Retry attempt failed, retrying with backoff", {
+        attempt,
+        errMsg,
+        sleepTimeMs: Math.round(sleepTime)
+      });
       await new Promise((resolve) => setTimeout(resolve, sleepTime));
     }
   }

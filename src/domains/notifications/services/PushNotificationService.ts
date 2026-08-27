@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { admin, db } from "../../../config/firebase-admin";
+import { safeLogger } from "../../../utils/logger";
 
 export interface PushTokenRecord {
   token: string;
@@ -159,7 +160,7 @@ export class PushNotificationService {
             });
           }
         } catch (messagingErr) {
-          console.warn("[PushNotificationService] FCM multicast failed:", messagingErr);
+          safeLogger.warn("[PushNotificationService] FCM multicast failed", { err: messagingErr instanceof Error ? messagingErr.message : String(messagingErr) });
         }
       }
 
@@ -172,7 +173,7 @@ export class PushNotificationService {
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error("[PushNotificationService] ❌ Failed to send messaging push:", errorMsg);
+      safeLogger.error("[PushNotificationService] ❌ Failed to send messaging push", { err: errorMsg });
     }
   }
 
@@ -300,7 +301,7 @@ export class PushNotificationService {
             });
           }
         } catch (messagingErr) {
-          console.warn("[PushNotificationService] FCM multicast failed:", messagingErr);
+          safeLogger.warn("[PushNotificationService] FCM multicast failed", { err: messagingErr instanceof Error ? messagingErr.message : String(messagingErr) });
         }
       }
 
@@ -313,7 +314,7 @@ export class PushNotificationService {
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error("[PushNotificationService] ❌ Failed to send negotiation push:", errorMsg);
+      safeLogger.error("[PushNotificationService] ❌ Failed to send negotiation push", { err: errorMsg });
     }
   }
 }

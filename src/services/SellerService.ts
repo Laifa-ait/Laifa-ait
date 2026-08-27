@@ -3,6 +3,7 @@ import { ai, DEFAULT_GEMINI_MODEL } from "../config/gemini";
 import { validateExternalUrl } from "../utils/security";
 import { normalizeTimestamp } from "../utils/date";
 import { Order } from "../domains/order/order.types";
+import { safeLogger } from "../utils/logger";
 
 export class SellerService {
   static async extractOcr(type: string, documentUrl?: string, base64Data?: string, mimeType?: string) {
@@ -40,7 +41,7 @@ export class SellerService {
       parsed = JSON.parse(extractedJson); 
     } catch(e: unknown) { 
       const msg = e instanceof Error ? e.message : String(e);
-      console.warn("Failed to parse OCR response JSON:", msg); 
+      safeLogger.warn("Failed to parse OCR response JSON", { err: msg }); 
     }
     return parsed;
   }

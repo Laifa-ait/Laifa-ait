@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../config/firebase-admin";
+import { safeLogger } from "../utils/logger";
 
 export interface CspReportDetails {
   "document-uri"?: string;
@@ -87,7 +88,7 @@ export async function handleCspReport(req: Request, res: Response): Promise<void
     const domain = extractDomain(blockedUri);
 
     // Standard Olmart Enterprise Logging
-    console.warn(`[Olmart Security] ⚠️ Violation CSP interceptée sur : ${documentUri} | Directive: ${violatedDirective} | URI bloqué: ${blockedUri}`);
+    safeLogger.warn("[Olmart Security] ⚠️ Violation CSP interceptée", { documentUri, violatedDirective, blockedUri });
 
     if (domain && !isKnownDomain(domain)) {
       const now = Date.now();
@@ -98,7 +99,7 @@ export async function handleCspReport(req: Request, res: Response): Promise<void
 
         const severity: "HIGH" | "MEDIUM" = violatedDirective.includes("script") ? "HIGH" : "MEDIUM";
 
-        console.error(`[Olmart Security] 🚨 ALERTE CRITIQUE : Domaine non autorisé détecté en violation CSP [${domain}] (Directivité: ${violatedDirective})`);
+        safeLogger.error("[Olmart Security] 🚨 ALERTE CRITIQUE : Domaine non autorisé détecté en violation CSP", { domain, violatedDirective });
 
         // Audit Trail enregistrement Firestore
         try {
@@ -115,7 +116,7 @@ export async function handleCspReport(req: Request, res: Response): Promise<void
           });
         } catch (dbErr: unknown) {
           const errMsg = dbErr instanceof Error ? dbErr.message : "Erreur inconnue";
-          console.error(`[Olmart Security] ❌ Échec enregistrement alerte Firestore: ${errMsg}`);
+          safeLogger.error("[Olmart Security] ❌ Échec enregistrement alerte Firestore", { err: errMsg });
         }
       }
     }
@@ -124,7 +125,7 @@ export async function handleCspReport(req: Request, res: Response): Promise<void
     res.status(204).end();
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Erreur inconnue";
-    console.error(`[Olmart Security] ❌ Erreur traitement rapport CSP: ${message}`);
+    safeLogger.error("[Olmart Security] ❌ Erreur traitement rapport CSP", { err: message });
     res.status(204).end();
   }
 }

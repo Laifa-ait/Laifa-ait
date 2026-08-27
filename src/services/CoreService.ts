@@ -1,5 +1,6 @@
 import { admin, db } from "../config/firebase-admin";
 import { CouponService } from "../domains/marketing/coupon.service";
+import { safeLogger } from "../utils/logger";
 
 interface FirestoreDocSnapshot {
   id: string;
@@ -67,7 +68,7 @@ export class CoreService {
       const featuredProducts = topTier.length >= 4 ? topTier : productsLoaded.slice(0, 8);
       const sellers = sellersSnap.docs.map((doc: FirestoreDocSnapshot) => ({ id: doc.id, ...doc.data() }));
       const duration = Date.now() - startTime;
-      console.log(`[Olmart Gateway] 🚀 /api/v1/public/home-data processed in ${duration}ms | Firestore Parallel Velocity: OK`);
+      safeLogger.info("/api/v1/public/home-data processed", { durationMs: duration });
       return {
         categories,
         sections,
@@ -78,8 +79,7 @@ export class CoreService {
       };
     } catch (err: unknown) {
       const duration = Date.now() - startTime;
-      console.log(`[Olmart Gateway] ❌ /api/v1/public/home-data failed in ${duration}ms`);
-      console.error("Error in /api/public/home-data:", err);
+      safeLogger.error("/api/v1/public/home-data failed", { durationMs: duration, err: err instanceof Error ? err.message : String(err) });
       throw new Error("Failed to load homepage data", { cause: err });
     }
   }

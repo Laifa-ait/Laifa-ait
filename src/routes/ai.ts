@@ -38,6 +38,7 @@ const router = Router();
 
 import { AiService } from "../services/AiService";
 import { DEFAULT_GEMINI_MODEL } from "../config/gemini";
+import { safeLogger } from "../utils/logger";
 
 router.post(
   "/admin/translate-text",
@@ -48,7 +49,7 @@ router.post(
       const result = await AiService.translateText(req.body.text, req.body.targetLangs);
       res.json(result);
     } catch (error: unknown) {
-      console.error(error);
+      safeLogger.error("translateText error", { err: error instanceof Error ? error.message : String(error) });
       const mockResult: Record<string, string> = {};
       if (req.body.targetLangs) req.body.targetLangs.forEach((l: string) => { mockResult[l] = req.body.text + ` (${l})`; });
       return res.json(mockResult);
@@ -216,7 +217,7 @@ router.post(
             await new Promise((resolve) => setTimeout(resolve, 2000));
           }
         } catch (err: unknown) {
-          console.error("Gemini Translate batch error:", err);
+          safeLogger.error("Gemini Translate batch error", { err: err instanceof Error ? err.message : String(err) });
           const errObj = err instanceof Error ? err : new Error(String(err));
           lastError = errObj.message || errObj.toString();
           batchKeys.forEach((k) => {
@@ -250,7 +251,7 @@ router.post(
         !errString.includes("permission_denied") &&
         !errString.includes("403")
       ) {
-        console.error("Translate UI Error:", error);
+        safeLogger.error("Translate UI Error", { err: error instanceof Error ? error.message : String(error) });
       }
 
       let finalMessage = error instanceof Error ? error.message : String(error);
@@ -352,7 +353,7 @@ router.post(
 
       res.json({ translations: result });
     } catch (error: unknown) {
-      console.error("Translate Preview Error:", error);
+      safeLogger.error("Translate Preview Error", { err: error instanceof Error ? error.message : String(error) });
       const msg = error instanceof Error ? error.message : String(error);
       res.status(500).json({ error: msg });
     }
@@ -402,7 +403,7 @@ router.post(
 
       res.json({ message: "Traductions appliquées et enregistrées avec succès !" });
     } catch (error: unknown) {
-      console.error("Translate Commit Error:", error);
+      safeLogger.error("Translate Commit Error", { err: error instanceof Error ? error.message : String(error) });
       const msg = error instanceof Error ? error.message : String(error);
       res.status(500).json({ error: msg });
     }
@@ -487,7 +488,7 @@ router.post(
         description: { fr: description, ar: parsed.description?.ar || description, en: parsed.description?.en || description },
       });
     } catch (error: unknown) {
-      console.error("Gemini Translation API Error:", error);
+      safeLogger.error("Gemini Translation API Error", { err: error instanceof Error ? error.message : String(error) });
       return res.json({
         name: { fr: name, en: name, ar: name },
         description: { fr: description, en: description, ar: description },
@@ -692,7 +693,7 @@ Veuillez générer l'analyse de croissance complète en JSON.`;
 
     res.json({ success: true, report: reportDoc });
   } catch (error: unknown) {
-    console.error("Growth Agent execution error:", error);
+    safeLogger.error("Growth Agent execution error", { err: error instanceof Error ? error.message : String(error) });
     const msg = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: "Une erreur est survenue lors de l'exécution de l'analyse : " + msg });
   }
@@ -873,7 +874,7 @@ Générez le rapport de diagnostic de l'Agent Sentinel au format JSON.`;
 
     res.json({ success: true, report: diagDoc });
   } catch (error: unknown) {
-    console.error("Sentinel Agent execution error:", error);
+    safeLogger.error("Sentinel Agent execution error", { err: error instanceof Error ? error.message : String(error) });
     const msg = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: "Échec du diagnostic de l'Agent Sentinel : " + msg });
   }

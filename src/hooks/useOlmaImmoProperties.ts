@@ -4,6 +4,7 @@ import { Property, PropertyMapResult, ListingType } from '../types/realEstate';
 import { FilterState } from '../components/OlmaImmo/SearchFilters';
 import { apiGet } from '../lib/api';
 import { getFavoritePropertyIds } from '../utils/realEstateFavorites';
+import { safeLogger } from '../utils/logger';
 
 export function useOlmaImmoProperties() {
   const [searchParams] = useSearchParams();
@@ -68,7 +69,7 @@ export function useOlmaImmoProperties() {
         setMapResults(mapRes.data);
       }
     } catch (err) {
-      console.error('Failed to fetch real estate properties:', err);
+      safeLogger.error('Failed to fetch real estate properties', { err: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsLoading(false);
     }

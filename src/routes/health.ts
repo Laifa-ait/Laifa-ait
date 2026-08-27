@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { admin, db } from "../config/firebase-admin";
 import { isFrontendReady } from "../services/ViteStaticService";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ async function checkReadiness(): Promise<{ ready: boolean; firebase: string; fro
   } catch {
     // On cold start or transient network latency, as long as Firebase Admin SDK is initialized,
     // we log a warning but keep firebaseStatus as "ok" so Cloud Run health probes succeed.
-    console.warn("[Healthcheck] ⚠️ Firestore ping timed out or delayed during cold start, but Admin SDK is initialized.");
+    safeLogger.warn("Firestore ping timed out or delayed during cold start, but Admin SDK is initialized.");
     firebaseStatus = "ok";
   }
 

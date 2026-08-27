@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiGet } from "../lib/api";
 import { useTranslation } from "react-i18next";
+import { safeLogger } from "../utils/logger";
 
 const CACHE_KEY = "olma_trending_searches";
 const CACHE_EXPIRATION_MS = 1 * 60 * 60 * 1000; // 1 hour
@@ -28,7 +29,7 @@ export const useTrendingSearches = () => {
         try {
           cached = localStorage.getItem(CACHE_KEY);
         } catch (err) {
-          console.warn("localStorage read blocked in useTrendingSearches:", err);
+          safeLogger.warn("localStorage read blocked in useTrendingSearches", { err: err instanceof Error ? err.message : String(err) });
         }
 
         if (cached) {
@@ -53,7 +54,7 @@ export const useTrendingSearches = () => {
               })
             );
           } catch (err) {
-            console.warn("localStorage write failed in useTrendingSearches:", err);
+            safeLogger.warn("localStorage write failed in useTrendingSearches", { err: err instanceof Error ? err.message : String(err) });
           }
         } else {
           try {
@@ -65,11 +66,11 @@ export const useTrendingSearches = () => {
               })
             );
           } catch (err) {
-            console.warn("localStorage fallback write failed in useTrendingSearches:", err);
+            safeLogger.warn("localStorage fallback write failed in useTrendingSearches", { err: err instanceof Error ? err.message : String(err) });
           }
         }
       } catch (error) {
-        console.error("Error fetching trending searches:", error);
+        safeLogger.error("Error fetching trending searches", { err: error instanceof Error ? error.message : String(error) });
       }
     };
 

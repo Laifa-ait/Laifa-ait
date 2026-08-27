@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../../constants";
+import { safeLogger } from "../../../utils/logger";
 
 // Standard Wilayas mapped to standard format
 const FALLBACK_WILAYAS = ALGERIA_WILAYAS.map((w, index) => {
@@ -20,7 +21,7 @@ export const getShippingLocations = async (req: Request, res: Response) => {
       }
     });
   } catch (error: unknown) {
-    console.error("[Olmart Gateway] ❌ Error fetching shipping locations:", error);
+    safeLogger.error("[Olmart Gateway] ❌ Error fetching shipping locations", { err: error instanceof Error ? error.message : String(error) });
     res.json({
       success: true,
       data: {
@@ -57,7 +58,7 @@ export const calculateShippingRates = async (req: Request, res: Response) => {
     });
 
   } catch (error: unknown) {
-    console.error("[Olmart Gateway] ❌ Error calculating shipping rates:", error);
+    safeLogger.error("[Olmart Gateway] ❌ Error calculating shipping rates", { err: error instanceof Error ? error.message : String(error) });
     res.json({
       success: true,
       data: {

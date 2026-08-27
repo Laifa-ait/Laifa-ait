@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeSeller } from "../../../middlewares/auth";
+import { safeLogger } from "../../../utils/logger";
 
 export interface AuthenticatedUser {
   uid: string;
@@ -64,14 +65,14 @@ router.post("/seller/orders/tracking", authenticateToken, authorizeSeller, async
       actor: req.user?.email || sellerId
     });
 
-    console.log(`[Firestore Core] 🟢 [Olmart Delivery] Direct Seller shipping info updated for order ${orderId} by ${req.user?.email || sellerId}`);
+    safeLogger.info("[Firestore Core] 🟢 [Olmart Delivery] Direct Seller shipping info updated", { orderId, actor: req.user?.email || sellerId });
 
     return res.json({
       success: true,
       message: "Informations de livraison directe vendeur mises à jour avec succès."
     });
   } catch (error: unknown) {
-    console.error("[Order Tracking] ❌ Error updating tracking info:", error);
+    safeLogger.error("[Order Tracking] ❌ Error updating tracking info", { err: error instanceof Error ? error.message : String(error) });
     const msg = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: msg });
   }
@@ -150,7 +151,7 @@ router.post("/cron/sync-tracking", async (req: Request, res: Response) => {
 
     res.json({ success: true, syncedCount: 0, message: "Tracking sync complete" });
   } catch (error: unknown) {
-    console.error("Cron sync tracking error:", error);
+    safeLogger.error("Cron sync tracking error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: "Internal server error during sync" });
   }
 });

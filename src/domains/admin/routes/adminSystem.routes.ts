@@ -178,6 +178,18 @@ router.put("/admin/users/:id/status", authenticateToken, authorizeAdmin, async (
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    // Invalidate refresh tokens immediately when a user is suspended or blocked
+    if (status === "suspended" || status === "blocked") {
+      try {
+        await admin.auth().revokeRefreshTokens(userId);
+      } catch (authErr: unknown) {
+        safeLogger.warn("Failed to revoke refresh tokens on user suspension", {
+          userId,
+          err: authErr instanceof Error ? authErr.message : String(authErr),
+        });
+      }
+    }
+
     await db.collection("audit_logs").add({
       type: "USER_MANAGEMENT",
       action: "UPDATE_STATUS",
@@ -188,6 +200,56 @@ router.put("/admin/users/:id/status", authenticateToken, authorizeAdmin, async (
     });
 
     res.json({ success: true });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
+router.put("/admin/users/:id/role", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const { role } = req.body;
+
+    if (!["buyer", "seller", "artisan", "property_owner", "moderator", "admin", "superadmin"].includes(role)) {
+      return res.status(400).json({ error: "Rôle invalide" });
+    }
+
+    // Only superadmin can assign administrative roles
+    if ((role === "admin" || role === "superadmin") && req.user?.role !== "superadmin") {
+      return res.status(403).json({ error: "Seul un superadministrateur peut attribuer les rôles d'administration" });
+    }
+
+    await db.collection("users").doc(userId).update({
+      role,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const customClaims = {
+      role,
+      isAdmin: role === "admin" || role === "superadmin",
+    };
+    await admin.auth().setCustomUserClaims(userId, customClaims);
+
+    // Invalidate refresh tokens on role change/downgrade to force re-authentication with new claims
+    try {
+      await admin.auth().revokeRefreshTokens(userId);
+    } catch (authErr: unknown) {
+      safeLogger.warn("Failed to revoke refresh tokens on role update", {
+        userId,
+        err: authErr instanceof Error ? authErr.message : String(authErr),
+      });
+    }
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "UPDATE_ROLE",
+      targetUserId: userId,
+      adminId: req.user?.uid || "admin",
+      details: { newRole: role },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, role });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
@@ -239,6 +301,20 @@ router.post("/admin/users/bulk-status", authenticateToken, authorizeAdmin, async
       await batch.commit();
     }
 
+    // Invalidate refresh tokens for suspended/blocked users in bulk
+    if (status === "suspended" || status === "blocked") {
+      await Promise.allSettled(
+        userIds.map((uid: string) =>
+          admin.auth().revokeRefreshTokens(uid).catch((authErr: unknown) => {
+            safeLogger.warn("Failed to revoke refresh tokens in bulk suspension", {
+              uid,
+              err: authErr instanceof Error ? authErr.message : String(authErr),
+            });
+          })
+        )
+      );
+    }
+
     await db.collection("audit_logs").add({
       type: "USER_MANAGEMENT",
       action: "BULK_UPDATE_STATUS",
@@ -272,6 +348,18 @@ router.post("/admin/users/bulk-delete", authenticateToken, authorizeAdmin, async
       await batch.commit();
     }
 
+    // Invalidate refresh tokens on bulk delete
+    await Promise.allSettled(
+      userIds.map((uid: string) =>
+        admin.auth().revokeRefreshTokens(uid).catch((authErr: unknown) => {
+          safeLogger.warn("Failed to revoke refresh tokens on bulk user deletion", {
+            uid,
+            err: authErr instanceof Error ? authErr.message : String(authErr),
+          });
+        })
+      )
+    );
+
     await db.collection("audit_logs").add({
       type: "USER_MANAGEMENT",
       action: "BULK_DELETE_USERS",
@@ -291,6 +379,15 @@ router.delete("/admin/users/:id", authenticateToken, authorizeAdmin, async (req:
   try {
     const userId = req.params.id;
     await db.collection("users").doc(userId).delete();
+
+    try {
+      await admin.auth().revokeRefreshTokens(userId);
+    } catch (authErr: unknown) {
+      safeLogger.warn("Failed to revoke refresh tokens on user deletion", {
+        userId,
+        err: authErr instanceof Error ? authErr.message : String(authErr),
+      });
+    }
 
     await db.collection("audit_logs").add({
       type: "USER_MANAGEMENT",

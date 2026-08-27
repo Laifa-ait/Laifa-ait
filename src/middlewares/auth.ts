@@ -1,12 +1,15 @@
 import { admin, db } from "../config/firebase-admin";
 import { Request, Response, NextFunction } from "express";
+import { safeLogger } from "../utils/logger";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
     uid: string;
     email?: string;
     role?: string;
+    status?: string;
     admin?: boolean;
+    adminValidated?: boolean;
     customClaims?: Record<string, unknown>;
     [key: string]: unknown;
   };
@@ -25,42 +28,88 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
   }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const tokenRole = decodedToken.role || "buyer";
-    let dbRole = tokenRole;
+    // Check revocation (checkRevoked = true) to immediately reject revoked tokens or disabled accounts
+    const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    const tokenRole = (decodedToken.role as string) || "buyer";
+    let dbRole: string | undefined = undefined;
+    let dbStatus = "active";
     let dbCapabilities: string[] = [];
+    let dbFetchError = false;
+    let userDocExists = false;
 
-    // Check DB for role if possible
+    // Check DB for role & status if possible
     try {
       if (db) {
         const userDoc = await db.collection("users").doc(decodedToken.uid).get();
         if (userDoc.exists) {
+          userDocExists = true;
           const udata = userDoc.data();
-          dbRole = udata?.role || tokenRole;
+          dbRole = udata?.role;
+          dbStatus = udata?.status || "active";
           if (Array.isArray(udata?.capabilities)) {
             dbCapabilities = udata.capabilities;
           }
         }
+      } else {
+        dbFetchError = true;
       }
     } catch (e: unknown) {
+      dbFetchError = true;
       const errorMsg = e instanceof Error ? e.message : String(e);
-      console.warn("Auth middleware: Failed to fetch user role from DB:", errorMsg);
+      safeLogger.warn("Auth middleware: Failed to fetch user role from DB", { uid: decodedToken.uid, err: errorMsg });
     }
 
-    // Strict authority hierarchy:
-    // Administrative privileges REQUIRE cryptographic Custom Claims (tokenRole === 'admin' | 'superadmin').
-    // A manipulated Firestore doc alone CANNOT elevate a buyer to admin.
-    let effectiveRole = tokenRole;
+    // Strict authority hierarchy & FAIL-CLOSED evaluation:
+    // Administrative privileges REQUIRE cryptographic Custom Claims AND active status in Firestore.
+    // If Firestore is unavailable (dbFetchError), we FAIL CLOSED: admin privileges are NOT granted.
+    let effectiveRole = "buyer";
+
     if (tokenRole === "admin" || tokenRole === "superadmin") {
-      effectiveRole = (dbRole === "suspended" || dbRole === "buyer") ? dbRole : tokenRole;
+      if (dbFetchError) {
+        // FAIL-CLOSED: Database unavailable -> cannot validate admin status -> suspend privileges
+        safeLogger.error("Auth middleware: Admin status validation failed-closed due to DB unreachability", {
+          uid: decodedToken.uid,
+          tokenRole,
+        });
+        effectiveRole = "suspended";
+      } else if (dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
+        // Admin is suspended or blocked in database
+        effectiveRole = "suspended";
+      } else if (userDocExists && (dbRole === "admin" || dbRole === "superadmin")) {
+        // Validated active administrator
+        effectiveRole = tokenRole;
+      } else if (userDocExists && dbRole) {
+        // Admin was downgraded in database (e.g. to buyer or seller)
+        effectiveRole = dbRole;
+      } else {
+        // User doc does not exist or role cannot be confirmed -> fail-closed
+        effectiveRole = "buyer";
+      }
     } else {
-      effectiveRole = (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") ? dbRole : "buyer";
+      // Non-admin token roles
+      if (dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
+        effectiveRole = "suspended";
+      } else if (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") {
+        effectiveRole = dbRole;
+      } else {
+        effectiveRole = "buyer";
+      }
     }
 
-    req.user = { ...decodedToken, role: effectiveRole, capabilities: dbCapabilities };
+    req.user = {
+      ...decodedToken,
+      role: effectiveRole,
+      status: dbStatus,
+      capabilities: dbCapabilities,
+      adminValidated: effectiveRole === "admin" || effectiveRole === "superadmin",
+    };
     next();
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
+    const isRevoked = errorMsg.includes("revoked") || (error as { code?: string })?.code === "auth/id-token-revoked";
+    if (isRevoked) {
+      return res.status(401).json({ error: "Jeton révoqué. Veuillez vous reconnecter." });
+    }
     return res.status(401).json({ error: `Jeton invalide ou expiré : ${errorMsg}` });
   }
 };
@@ -78,43 +127,75 @@ export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: 
   }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const tokenRole = decodedToken.role || "buyer";
-    let dbRole = tokenRole;
+    const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    const tokenRole = (decodedToken.role as string) || "buyer";
+    let dbRole: string | undefined = undefined;
+    let dbStatus = "active";
     let dbCapabilities: string[] = [];
+    let dbFetchError = false;
+    let userDocExists = false;
 
     try {
       if (db) {
         const userDoc = await db.collection("users").doc(decodedToken.uid).get();
         if (userDoc.exists) {
+          userDocExists = true;
           const udata = userDoc.data();
-          dbRole = udata?.role || tokenRole;
+          dbRole = udata?.role;
+          dbStatus = udata?.status || "active";
           if (Array.isArray(udata?.capabilities)) {
             dbCapabilities = udata.capabilities;
           }
         }
+      } else {
+        dbFetchError = true;
       }
     } catch {
-      // Just fail silently for optional auth
+      dbFetchError = true;
     }
 
-    let effectiveRole = tokenRole;
+    let effectiveRole = "buyer";
     if (tokenRole === "admin" || tokenRole === "superadmin") {
-      effectiveRole = (dbRole === "suspended" || dbRole === "buyer") ? dbRole : tokenRole;
+      if (dbFetchError || dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
+        effectiveRole = "suspended";
+      } else if (userDocExists && (dbRole === "admin" || dbRole === "superadmin")) {
+        effectiveRole = tokenRole;
+      } else if (userDocExists && dbRole) {
+        effectiveRole = dbRole;
+      } else {
+        effectiveRole = "buyer";
+      }
     } else {
-      effectiveRole = (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") ? dbRole : "buyer";
+      if (dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
+        effectiveRole = "suspended";
+      } else if (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") {
+        effectiveRole = dbRole;
+      } else {
+        effectiveRole = "buyer";
+      }
     }
 
-    req.user = { ...decodedToken, role: effectiveRole, capabilities: dbCapabilities };
+    req.user = {
+      ...decodedToken,
+      role: effectiveRole,
+      status: dbStatus,
+      capabilities: dbCapabilities,
+      adminValidated: effectiveRole === "admin" || effectiveRole === "superadmin",
+    };
     return next();
   } catch {
-    // Treat invalid tokens as anonymous
+    // Treat invalid or revoked tokens as anonymous
     return next();
   }
 };
 
 export const authorizeAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+  if (
+    !req.user ||
+    (req.user.role !== "admin" && req.user.role !== "superadmin") ||
+    req.user.status === "suspended" ||
+    req.user.status === "blocked"
+  ) {
     return res.status(403).json({ error: "Accès refusé. Privilèges Administrateur requis." });
   }
   next();

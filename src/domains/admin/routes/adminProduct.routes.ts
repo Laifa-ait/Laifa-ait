@@ -3,6 +3,7 @@ import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../.
 import { ProductApprovalSchema } from "../../../validators/adminValidators";
 import { AdminProductService } from "../services/adminProduct.service";
 import * as admin from "firebase-admin";
+import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 
@@ -78,7 +79,7 @@ router.post("/admin/products/recalculate-scores", authenticateToken, authorizeAd
     const result = await AdminProductService.recalculateProductScores({ adminId });
     res.json({ success: true, count: result.count });
   } catch (error: unknown) {
-    console.error("Error recalculating quality scores:", error);
+    safeLogger.error("Error recalculating quality scores", { err: error instanceof Error ? error.message : String(error) });
     const message = error instanceof Error ? error.message : "Erreur serveur";
     res.status(500).json({ error: message });
   }

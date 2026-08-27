@@ -18,6 +18,7 @@ import {
   CreditCard
 } from "lucide-react";
 import { BrandIcon } from "./ui/BrandIcon";
+import { safeLogger } from "../utils/logger";
 
 export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false }) => {
   const { t, i18n } = useTranslation();
@@ -41,7 +42,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
           }
         }
       } catch (error) {
-        if (!cancelled) console.error("Error fetching support email:", error);
+        if (!cancelled) safeLogger.error("Error fetching support email", { err: error instanceof Error ? error.message : String(error) });
       }
     };
     fetchSettings();
@@ -72,7 +73,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
       toast.success(t("newsletter_success") || "Inscription réussie aux alertes Olmart !");
       setEmail("");
     } catch (error: unknown) {
-      console.error("Erreur lors de l'inscription à la newsletter:", error);
+      safeLogger.error("Erreur lors de l'inscription à la newsletter", { err: error instanceof Error ? error.message : String(error) });
       if (error instanceof Error && error.message === "ALREADY_SUBSCRIBED") {
         toast.error(t("already_subscribed") || "Vous êtes déjà inscrit !");
       } else {

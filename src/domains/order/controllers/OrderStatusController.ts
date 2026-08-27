@@ -2,8 +2,10 @@ import { Response, Router } from "express";
 import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, optionalAuthenticateToken, authorizeSeller, AuthenticatedRequest } from "../../../middlewares/auth";
+import { strictLimiter } from "../../../middlewares/rateLimiters";
 import { checkSellerVelocityLimit } from "../../../utils/velocity";
 import { Product, ProductVariant } from "../../product/product.types";
+import { safeLogger } from "../../../utils/logger";
 
 export class BusinessError extends Error {
   constructor(public statusCode: number, message: string) {
@@ -56,7 +58,7 @@ router.post(
               globalCommissionRate = Number(commDoc.data()?.globalRate) || 0;
           }
         } catch (err) {
-          console.warn("Failed retrieving global commission", err);
+          safeLogger.warn("Failed retrieving global commission", { err: err instanceof Error ? err.message : String(err) });
         }
 
         // Structure to collect read results safely before doing any write operations
@@ -235,7 +237,7 @@ router.post(
             }
             updatePayload.restocked = true;
             updatePayload.restockedAt = admin.firestore.FieldValue.serverTimestamp();
-            console.log(`[Olmart Workers] 📦 RTO Stock Restored automatically for order #${id}`);
+            safeLogger.info("[Olmart Workers] 📦 RTO Stock Restored automatically", { orderId: id });
           }
 
           if (tStatus === "refunded" && cStatus !== "refunded") {
@@ -332,7 +334,7 @@ router.post(
 
       res.json({ success: true });
     } catch (err: unknown) {
-      console.error("Order update error:", err);
+      safeLogger.error("Order update error", { err: err instanceof Error ? err.message : String(err) });
       if (err instanceof BusinessError) {
         return res.status(err.statusCode).json({ error: err.message });
       }
@@ -444,7 +446,7 @@ router.post(
 
       res.json({ success: true });
     } catch (err: unknown) {
-      console.error("Order cancel error:", err);
+      safeLogger.error("Order cancel error", { err: err instanceof Error ? err.message : String(err) });
       if (err instanceof BusinessError) {
         return res.status(err.statusCode).json({ error: err.message });
       }
@@ -453,7 +455,7 @@ router.post(
   }
 );
 
-router.post("/checkout/confirm-delivery", optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/checkout/confirm-delivery", strictLimiter, optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id, fullName, email, phone, wilaya, commune, address, deliveryMethod, items, total, userId } = req.body as {
       id?: string;
@@ -498,7 +500,7 @@ router.post("/checkout/confirm-delivery", optionalAuthenticateToken, async (req:
 
     return res.status(200).json({ success: true, registrationId: id });
   } catch (err: unknown) {
-    console.error("Server-side delivery confirmation failed:", err);
+    safeLogger.error("Server-side delivery confirmation failed", { err: err instanceof Error ? err.message : String(err) });
     return res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne lors de la validation." });
   }
 });

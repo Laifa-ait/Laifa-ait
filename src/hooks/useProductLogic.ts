@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { productsApi } from "../services/api/products.api";
 import { queryKeys } from "../lib/queryKeys";
+import { safeLogger } from "../utils/logger";
 
 export const useProductLogic = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,7 +60,7 @@ export const useProductLogic = () => {
       if (recents.length > 20) recents = recents.slice(0, 20);
       localStorage.setItem("olma_recently_viewed", JSON.stringify(recents));
     } catch (storageErr) {
-      console.error("Could not update recently viewed:", storageErr);
+      safeLogger.error("Could not update recently viewed", { err: storageErr instanceof Error ? storageErr.message : String(storageErr) });
     }
   }, [product, selectedColor, selectedSize]);
 

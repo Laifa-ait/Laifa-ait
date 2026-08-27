@@ -1,4 +1,5 @@
 import { admin, db } from "../../../config/firebase-admin";
+import { safeLogger } from "../../../utils/logger";
 
 export interface ModerationResult {
   cleanText: string;
@@ -74,7 +75,7 @@ export class MessageModerationService {
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error("[MessageModerationService] ❌ Failed to record DLP alert:", errorMsg);
+      safeLogger.error("[MessageModerationService] ❌ Failed to record DLP alert", { err: errorMsg });
     }
   }
 }

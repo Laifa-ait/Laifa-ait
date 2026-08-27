@@ -1,5 +1,6 @@
 import { admin, db } from "../config/firebase-admin";
 import { firestore } from "firebase-admin";
+import { safeLogger } from "./logger";
 
 export async function checkSellerVelocityLimit(sellerId: string, transaction?: firestore.Transaction) {
   try {
@@ -55,11 +56,11 @@ export async function checkSellerVelocityLimit(sellerId: string, transaction?: f
           if (hasSuccessfulPurchase || isOldAccount) {
             pendingCount++;
           } else {
-            (process.env.NODE_ENV === 'development' ? console.log : function(){})(`[VELOCITY DOS DEFENSE] Ignored unverified/guest/new COD order ${doc.id} for seller ${sellerId} to prevent malicious shutdown attacks.`);
+            safeLogger.info("Velocity defense: Ignored unverified COD order", { orderId: doc.id, sellerId });
           }
         } else {
           // Anonymous or untracked buyer accounts are ignored from velocity counts to block bots
-          (process.env.NODE_ENV === 'development' ? console.log : function(){})(`[VELOCITY DOS DEFENSE] Ignored untracked buyer order ${doc.id} for seller ${sellerId} to prevent malicious shutdowns.`);
+          safeLogger.info("Velocity defense: Ignored untracked buyer order", { orderId: doc.id, sellerId });
         }
       }
     }
@@ -99,16 +100,16 @@ export async function checkSellerVelocityLimit(sellerId: string, transaction?: f
           resolved: false
         });
       }
-      (process.env.NODE_ENV === 'development' ? console.log : function(){})(`[KILL SWITCH] Suspended seller ${sellerId} (${pendingCount} pending orders).`);
+      safeLogger.warn("Kill switch: Suspended seller exceeding velocity limit", { sellerId, pendingCount });
     } else if (pendingCount <= 5 && sellerData?.velocitySuspended) {
       if (transaction) {
         transaction.update(sellerRef, updateData);
       } else {
         await sellerRef.update(updateData);
       }
-      (process.env.NODE_ENV === 'development' ? console.log : function(){})(`[KILL SWITCH] Realigned seller ${sellerId} (${pendingCount} pending orders).`);
+      safeLogger.info("Kill switch: Realigned seller within velocity limit", { sellerId, pendingCount });
     }
   } catch (err) {
-    console.error("Error in checkSellerVelocityLimit:", err);
+    safeLogger.error("Error in checkSellerVelocityLimit", { sellerId, err: err instanceof Error ? err.message : String(err) });
   }
 }

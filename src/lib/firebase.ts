@@ -6,6 +6,7 @@ import {
 } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { safeLogger } from "../utils/logger";
 
 const isTestEnv =
   (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
@@ -25,7 +26,7 @@ const requiredVars = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VIT
 if (!isTestEnv) {
   for (const key of requiredVars) {
     if (!import.meta.env?.[key]) {
-      console.warn(`[Firebase Client] ⚠️ Variable d'environnement manquante : ${key}`);
+      safeLogger.warn("[Firebase Client] ⚠️ Variable d'environnement manquante", { key });
     }
   }
 }
@@ -50,14 +51,14 @@ try {
     const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID;
     db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
   } else if (isTestEnv) {
-    console.warn("[Firebase Client] ⚠️ Initialisation Firebase en mode test tolérée avec fallback:", err);
+    safeLogger.warn("[Firebase Client] ⚠️ Initialisation Firebase en mode test tolérée avec fallback", { err: String(err) });
     app = (getApps()[0] || {}) as FirebaseApp;
     auth = {} as Auth;
     storage = {} as FirebaseStorage;
     db = {} as Firestore;
   } else {
     const errorMsg = errorObj?.message || String(err);
-    console.error("[Firebase Client] ❌ Échec critique de l'initialisation Firebase :", errorMsg);
+    safeLogger.error("[Firebase Client] ❌ Échec critique de l'initialisation Firebase", { err: errorMsg });
     throw new Error(`[Firebase Client] Échec d'initialisation : ${errorMsg}`);
   }
 }
@@ -116,7 +117,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path,
   };
-  console.error("Firestore Error: ", JSON.stringify(errInfo));
+  safeLogger.error("Firestore Error", { errInfo: JSON.stringify(errInfo) });
   throw new Error(JSON.stringify(errInfo));
 }
 

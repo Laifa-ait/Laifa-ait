@@ -8,14 +8,15 @@ import swaggerUi from "swagger-ui-express";
 
 import { verifyAndFixDb } from "./src/config/firebase-admin";
 import { startProductPublisherWorker, stopProductPublisherWorker } from "./src/workers/productPublisher";
-import { apiLimiter, debugLimiter } from "./src/middlewares/rateLimiters";
-import { helmetMiddleware, corsMiddleware } from "./src/middlewares/security";
+import { apiLimiter, debugLimiter, webhookLimiter, strictLimiter } from "./src/middlewares/rateLimiters";
+import { helmetMiddleware, corsMiddleware, preventDirectCloudRunAccess, nonceMiddleware } from "./src/middlewares/security";
 import { handleCspReport } from "./src/middlewares/cspReporter";
 import { csrfProtection, getCsrfTokenHandler } from "./src/middlewares/csrf";
 import { deprecationMiddleware } from "./src/middlewares/deprecation";
 import { generateOpenApiSpec } from "./src/swagger/openapi";
 import { stopProductCacheCleanupTimer } from "./src/services/ProductSeoService";
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
+import { safeLogger } from "./src/utils/logger";
 
 import healthRouter from "./src/routes/health";
 import authRouter from "./src/routes/auth";
@@ -57,9 +58,15 @@ const httpServer = http.createServer(app);
 app.set("trust proxy", 1);
 
 // Security & Parsing Middlewares
+app.use(preventDirectCloudRunAccess);
+app.use("/api/v1/webhooks", webhookLimiter);
+app.use("/webhooks", webhookLimiter);
+app.use("/api/v1/admin", strictLimiter);
+app.use("/admin", strictLimiter);
 if (process.env.NODE_ENV !== "development" && process.env.SKIP_RATE_LIMITS !== "true") {
   app.use("/api/v1", apiLimiter);
 }
+app.use(nonceMiddleware);
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.post(
@@ -119,12 +126,16 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   const isError = err instanceof Error;
   const message = isError ? err.message : String(err);
   const stack = isError ? err.stack : undefined;
-  console.error(`[Global Error Handler] ❌ Request to ${req.method} ${req.path} failed:`, message, stack || "");
+  safeLogger.error(`[Global Error Handler] ❌ Request to ${req.method} ${req.path} failed`, { message, stack: stack || "" });
   res.status(500).json({ error: "Une erreur interne du serveur est survenue." });
 });
 
 setupViteAndStaticServing(app).then(async () => {
-  const logDev = process.env.NODE_ENV !== "production" ? console.log : function () {};
+  const logDev = (msg: string) => {
+    if (process.env.NODE_ENV !== "production") {
+      safeLogger.info(msg);
+    }
+  };
 
   // Database migrations - Off by default on web instances to prevent race conditions across cluster nodes
   if (process.env.RUN_MIGRATIONS === "true") {
@@ -134,7 +145,7 @@ setupViteAndStaticServing(app).then(async () => {
       logDev("[Database] ✅ Startup database checks completed successfully.");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error("[Database] ❌ Firestore Admin verification/migration failed:", errorMsg);
+      safeLogger.error("[Database] ❌ Firestore Admin verification/migration failed", { err: errorMsg });
     }
   }
 
@@ -144,42 +155,33 @@ setupViteAndStaticServing(app).then(async () => {
     startProductPublisherWorker();
   }
 
-  console.log(`[Olmart Gateway] 🚀 Booting Express HTTP Server...`);
+  safeLogger.info(`[Olmar Gateway] 🚀 Booting Express HTTP Server...`);
   const server = httpServer.listen(PORT, "0.0.0.0", () => {
     const startupDuration = ((Date.now() - bootStartTime) / 1000).toFixed(2);
-    console.log(`
-OLMART STARTUP
-─────────────────────────────
-✓ Environment variables
-✓ Firebase Admin SDK
-✓ Security Middleware & CSP
-✓ Rate Limiting & Deprecation
-✓ Health & OpenAPI Docs
-✓ Product SEO & Static Cache
-
-Server: READY
-Port: ${PORT}
-Environment: ${process.env.NODE_ENV || "development"}
-Startup Time: ${startupDuration}s
-─────────────────────────────
-`);
+    safeLogger.info(`OLMART STARTUP READY - Port: ${PORT}, Environment: ${process.env.NODE_ENV || "development"}, Startup Time: ${startupDuration}s`);
   });
 
   const shutdown = (signal: string) => {
-    logDev(`\n[Olmart Gateway] 🛑 Received ${signal}. Shutting down gracefully...`);
+    logDev(`[Olmar Gateway] 🛑 Received ${signal}. Shutting down gracefully...`);
     stopProductCacheCleanupTimer();
     stopProductPublisherWorker();
     server.close(() => {
-      logDev("[Olmart Gateway] 💤 Closed remaining active connections.");
+      logDev("[Olmar Gateway] 💤 Closed remaining active connections.");
       process.exit(0);
     });
 
     setTimeout(() => {
-      console.error("[Olmart Gateway] ❌ Forcefully shutting down after 10s timeout.");
+      safeLogger.error("[Olmar Gateway] ❌ Forcefully shutting down after 10s timeout.");
       process.exit(1);
     }, 10000);
   };
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
+}).catch((err: unknown) => {
+  const errorMsg = err instanceof Error ? err.message : String(err);
+  safeLogger.error("[Olmar Gateway] ❌ Failed to initialize Vite/static serving, booting Express fallback HTTP server...", { err: errorMsg });
+  httpServer.listen(PORT, "0.0.0.0", () => {
+    safeLogger.info(`OLMART STARTUP READY (Fallback) - Port: ${PORT}, Environment: ${process.env.NODE_ENV || "development"}`);
+  });
 });

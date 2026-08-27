@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../../middlewares/auth";
 import { db, admin } from "../../../config/firebase-admin";
+import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 
@@ -8,7 +9,7 @@ const router = Router();
 async function clearHomepageCache() {
   try {
     await db.collection("public").doc("homepage_cache").delete();
-    console.log("[Olmart Gateway] 🧹 Homepage cache invalidated successfully");
+    safeLogger.info("[Olmart Gateway] 🧹 Homepage cache invalidated successfully");
   } catch {
     // Ignore cache clear error if document did not exist
   }
@@ -23,11 +24,11 @@ router.get("/admin/homepage/sections", async (_req: Request, res: Response) => {
       ...doc.data(),
     }));
     sections.sort((a, b) => (Number(a.orderIndex) || 0) - (Number(b.orderIndex) || 0));
-    console.log(`[Olmart Gateway] 🚀 Loaded ${sections.length} homepage sections`);
+    safeLogger.info("[Olmart Gateway] 🚀 Loaded homepage sections", { count: sections.length });
     res.json({ success: true, data: sections });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
-    console.error("[Olmart Gateway] ❌ Error fetching homepage sections:", message);
+    safeLogger.error("[Olmart Gateway] ❌ Error fetching homepage sections", { err: message });
     res.status(500).json({ error: message });
   }
 });
@@ -51,11 +52,11 @@ router.post("/admin/homepage/sections", authenticateToken, authorizeAdmin, async
     const docRef = await db.collection("homepage_sections").add(payload);
     await clearHomepageCache();
 
-    console.log(`[Olmart Gateway] 🟢 Created homepage section: ${docRef.id}`);
+    safeLogger.info("[Olmart Gateway] 🟢 Created homepage section", { sectionId: docRef.id });
     res.json({ success: true, data: { id: docRef.id, ...payload } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur création section";
-    console.error("[Olmart Gateway] ❌ Error creating homepage section:", message);
+    safeLogger.error("[Olmart Gateway] ❌ Error creating homepage section", { err: message });
     res.status(500).json({ error: message });
   }
 });
@@ -81,11 +82,11 @@ router.put("/admin/homepage/sections/:id", authenticateToken, authorizeAdmin, as
     await docRef.set(payload, { merge: true });
     await clearHomepageCache();
 
-    console.log(`[Olmart Gateway] 🟢 Updated homepage section: ${id}`);
+    safeLogger.info("[Olmart Gateway] 🟢 Updated homepage section", { sectionId: id });
     res.json({ success: true, data: { id, ...payload } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur modification section";
-    console.error("[Olmart Gateway] ❌ Error updating homepage section:", message);
+    safeLogger.error("[Olmart Gateway] ❌ Error updating homepage section", { err: message });
     res.status(500).json({ error: message });
   }
 });
@@ -97,11 +98,11 @@ router.delete("/admin/homepage/sections/:id", authenticateToken, authorizeAdmin,
     await db.collection("homepage_sections").doc(id).delete();
     await clearHomepageCache();
 
-    console.log(`[Olmart Gateway] 🗑️ Deleted homepage section: ${id}`);
+    safeLogger.info("[Olmart Gateway] 🗑️ Deleted homepage section", { sectionId: id });
     res.json({ success: true, data: { id } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur suppression section";
-    console.error("[Olmart Gateway] ❌ Error deleting homepage section:", message);
+    safeLogger.error("[Olmart Gateway] ❌ Error deleting homepage section", { err: message });
     res.status(500).json({ error: message });
   }
 });
@@ -128,11 +129,11 @@ router.put("/admin/homepage/sections/reorder", authenticateToken, authorizeAdmin
     await batch.commit();
     await clearHomepageCache();
 
-    console.log(`[Olmart Gateway] ⚡ Reordered ${orderedIds.length} homepage sections (ACID batch)`);
+    safeLogger.info("[Olmart Gateway] ⚡ Reordered homepage sections (ACID batch)", { count: orderedIds.length });
     res.json({ success: true, data: { count: orderedIds.length } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur réordonnancement";
-    console.error("[Olmart Gateway] ❌ Error reordering sections:", message);
+    safeLogger.error("[Olmart Gateway] ❌ Error reordering sections", { err: message });
     res.status(500).json({ error: message });
   }
 });
@@ -164,7 +165,7 @@ router.put("/admin/homepage/categories/:id", authenticateToken, authorizeAdmin, 
     await db.collection("homepage_categories_v2").doc(id).set(payload, { merge: true });
     await clearHomepageCache();
 
-    console.log(`[Olmart Gateway] 🟢 Updated category configuration: ${id}`);
+    safeLogger.info("[Olmart Gateway] 🟢 Updated category configuration", { categoryId: id });
     res.json({ success: true, data: { id, ...payload } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur modification catégorie";
@@ -206,7 +207,7 @@ router.post("/admin/homepage/versions", authenticateToken, authorizeAdmin, async
     };
 
     const docRef = await db.collection("homepage_versions").add(payload);
-    console.log(`[Olmart Gateway] 💾 Created homepage version point: ${docRef.id}`);
+    safeLogger.info("[Olmart Gateway] 💾 Created homepage version point", { versionId: docRef.id });
     res.json({ success: true, data: { id: docRef.id, ...payload } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur création version";
@@ -243,7 +244,7 @@ router.post("/admin/homepage/versions/:id/restore", authenticateToken, authorize
     }
 
     await clearHomepageCache();
-    console.log(`[Olmart Gateway] 🔄 Restored homepage version: ${id} (${sections.length} sections)`);
+    safeLogger.info("[Olmart Gateway] 🔄 Restored homepage version", { versionId: id, sectionsCount: sections.length });
     res.json({ success: true, data: { restoredCount: sections.length } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur restauration version";

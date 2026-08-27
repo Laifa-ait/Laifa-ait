@@ -4,6 +4,7 @@ import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../.
 import { firestore } from "firebase-admin";
 import { GoogleGenAI } from "@google/genai";
 import { validateFileContent } from "../../../utils/fileSignatureValidator";
+import { safeLogger } from "../../../utils/logger";
 
 export class BusinessError extends Error {
   constructor(public statusCode: number, message: string) {
@@ -54,7 +55,7 @@ async function getGeminiImagePart(photoStr: string) {
       }
     }
   } catch (err) {
-    console.error("Error fetching photo for Gemini in DisputeController:", err);
+    safeLogger.error("Error fetching photo for Gemini in DisputeController", { err: err instanceof Error ? err.message : String(err) });
   }
   return null;
 }
@@ -77,7 +78,7 @@ router.get("/", authenticateToken, async (req: AuthenticatedRequest, res: Respon
     const disputes = disputesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ success: true, disputes });
   } catch (error: unknown) {
-    console.error("Error fetching disputes:", error);
+    safeLogger.error("Error fetching disputes", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
 });
@@ -152,7 +153,7 @@ router.get("/:disputeId/attachments/:attachmentId", authenticateToken, async (re
 
     file.createReadStream()
       .on("error", (err) => {
-        console.error("Dispute attachment stream error:", err);
+        safeLogger.error("Dispute attachment stream error", { err: err instanceof Error ? err.message : String(err) });
         if (!res.headersSent) {
           res.status(500).json({ error: "Erreur de lecture du fichier" });
         }
@@ -160,7 +161,7 @@ router.get("/:disputeId/attachments/:attachmentId", authenticateToken, async (re
       .pipe(res);
 
   } catch (error: unknown) {
-    console.error("Dispute attachment retrieval error:", error);
+    safeLogger.error("Dispute attachment retrieval error", { err: error instanceof Error ? error.message : String(error) });
     const messageStr = error instanceof Error ? error.message : "Erreur serveur";
     return res.status(500).json({ error: messageStr });
   }
@@ -205,7 +206,7 @@ router.get("/:id", authenticateToken, async (req: AuthenticatedRequest, res: Res
     
     res.json({ success: true, dispute, messages });
   } catch (error: unknown) {
-    console.error("Error fetching dispute:", error);
+    safeLogger.error("Error fetching dispute", { disputeId, err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
 });
@@ -394,7 +395,7 @@ Veuillez réanalyser le dossier complet incluant la nouvelle réponse du vendeur
             });
           }
         } catch (aiErr) {
-          console.error("AI Seller response analysis failed:", aiErr);
+          safeLogger.error("AI Seller response analysis failed", { err: aiErr instanceof Error ? aiErr.message : String(aiErr) });
         }
       })();
     }
@@ -404,7 +405,7 @@ Veuillez réanalyser le dossier complet incluant la nouvelle réponse du vendeur
     if (error instanceof BusinessError) {
       return res.status(error.statusCode).json({ error: error.message });
     }
-    console.error("Error posting dispute message:", error);
+    safeLogger.error("Error posting dispute message", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
 });
@@ -416,7 +417,7 @@ router.get("/admin/all", authenticateToken, authorizeAdmin, async (req: Authenti
     const disputes = disputesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ success: true, disputes });
   } catch (error: unknown) {
-    console.error("Error fetching all disputes:", error);
+    safeLogger.error("Error fetching all disputes", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
 });
@@ -488,7 +489,7 @@ router.post("/admin/:id/resolve", authenticateToken, authorizeAdmin, async (req:
     
     res.json({ success: true, message: "Litige résolu avec succès. Tâche financière asynchrone créée." });
   } catch (error: unknown) {
-    console.error("Error resolving dispute:", error);
+    safeLogger.error("Error resolving dispute", { disputeId, err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
 });
@@ -610,7 +611,7 @@ router.post("/:id/upload", authenticateToken, async (req: AuthenticatedRequest, 
         try {
           await fileUpload.delete();
         } catch (cleanupError) {
-          console.error("Dispute Storage cleanup failed:", cleanupError);
+          safeLogger.error("Dispute Storage cleanup failed", { err: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) });
         }
       }
       throw writeError;
@@ -631,7 +632,7 @@ router.post("/:id/upload", authenticateToken, async (req: AuthenticatedRequest, 
       status: "success"
     });
 
-    console.log(`[Firestore Core] 🟢 Dispute file uploaded securely to ${uniquePath} (${buffer.length} bytes)`);
+    safeLogger.info("[Firestore Core] 🟢 Dispute file uploaded securely", { path: uniquePath, bytes: buffer.length });
 
     return res.json({
       success: true,
@@ -642,7 +643,7 @@ router.post("/:id/upload", authenticateToken, async (req: AuthenticatedRequest, 
       fileSize: buffer.length
     });
   } catch (error: unknown) {
-    console.error("[Firestore Core] ❌ Dispute upload error:", error);
+    safeLogger.error("[Firestore Core] ❌ Dispute upload error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Erreur serveur lors de l'upload de la pièce jointe." });
   }
 });

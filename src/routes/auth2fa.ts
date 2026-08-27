@@ -4,6 +4,7 @@ import { db, admin } from "../config/firebase-admin";
 import { authenticateToken } from "../middlewares/auth";
 import { pinLimiter } from "../middlewares/rateLimiters";
 import type { AuthenticatedRequest } from "./core";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -29,10 +30,11 @@ router.post(
             Date.now() + 10 * 60 * 1000,
           ),
         });
-      (process.env.NODE_ENV === 'development' ? console.log : function(){})(`[SIMULATION] Sending code ${code} to user ${userId}`);
+      safeLogger.info("2FA verification code dispatched", { userId });
       res.json({ success: true, method: "email" });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
+      safeLogger.error("2FA send code error", { userId, err: errorMsg });
       res.status(500).json({ error: errorMsg });
     }
   },

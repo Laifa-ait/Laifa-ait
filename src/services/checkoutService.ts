@@ -1,5 +1,6 @@
 import { auth } from '../lib/firebase';
 import { CartItem } from '../domains/product/product.types';
+import { safeLogger } from '../utils/logger';
 
 const parsedMinOrder = import.meta.env.VITE_MIN_ORDER_AMOUNT ? parseInt(import.meta.env.VITE_MIN_ORDER_AMOUNT, 10) : 100;
 const MIN_ORDER_AMOUNT = Number.isInteger(parsedMinOrder) && parsedMinOrder >= 0 ? parsedMinOrder : 100;
@@ -75,7 +76,9 @@ export const processCheckout = async (payload: CheckoutPayload): Promise<Checkou
       codAmount: grandTotal,
     }; 
   } catch (error: unknown) {
-    console.error("Erreur backend checkout:", error);
+    if (import.meta.env.DEV) {
+      safeLogger.error("[Checkout] Checkout error", { err: error instanceof Error ? error.message : "Internal error" });
+    }
     const message = error instanceof Error ? error.message : "Erreur critique lors du traitement de la commande.";
     throw new Error(message, { cause: error });
   }

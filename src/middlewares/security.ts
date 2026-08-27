@@ -1,34 +1,109 @@
+import { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import cors from "cors";
+import crypto from "crypto";
+import { safeLogger } from "../utils/logger";
+
+/**
+ * Parses and returns the list of exact allowed origins for production CORS.
+ */
+function getParsedAllowedOrigins(): string[] {
+  const list = [
+    "https://olmart.dz",
+    "https://www.olmart.dz",
+    // Dev App URL
+    "https://ais-dev-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+    // Shared App URL
+    "https://ais-pre-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+  ];
+
+  const envOrigins = process.env.ALLOWED_ORIGINS;
+  if (envOrigins) {
+    envOrigins.split(",").forEach((item) => {
+      const trimmed = item.trim();
+      if (trimmed) {
+        list.push(trimmed);
+      }
+    });
+  }
+  return list;
+}
+
+/**
+ * Validates if the origin is a trusted Google AI Studio preview, localhost, or standard Google domain.
+ * This is restricted to non-production only to ensure no wildcard patterns leak into production.
+ */
+function isAllowedPreviewOrigin(origin: string): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname.toLowerCase();
+
+    const isGoogleStudio =
+      hostname === "ai.studio" ||
+      hostname === "aistudio.google.com" ||
+      hostname.endsWith(".ai.studio") ||
+      hostname.endsWith(".aistudio.google.com");
+
+    const isGoogle =
+      hostname === "google.com" ||
+      hostname.endsWith(".google.com") ||
+      hostname === "googleusercontent.com" ||
+      hostname.endsWith(".googleusercontent.com");
+
+    const isLocal =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1";
+
+    return (isGoogleStudio || isGoogle || isLocal) && (url.protocol === "https:" || url.protocol === "http:");
+  } catch {
+    return false;
+  }
+}
 
 export const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin) return callback(null, true);
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const allowedOrigins = getParsedAllowedOrigins();
+    const isAllowedExact = allowedOrigins.includes(origin);
+    const isAllowedPreview = isAllowedPreviewOrigin(origin);
 
-    const isOlmartDomain =
-      origin === "https://olmart.dz" ||
-      origin === "https://www.olmart.dz" ||
-      /^https:\/\/.*\.olmart\.dz$/.test(origin) ||
-      /^https:\/\/.*\.run\.app$/.test(origin);
+    if (isAllowedExact || isAllowedPreview) {
+      return callback(null, true);
+    }
 
-    const isPreviewDomain =
-      !isProduction &&
-      (/^https:\/\/.*\.ai\.studio$/.test(origin) ||
-        /^https:\/\/.*\.aistudio\.google\.com$/.test(origin) ||
-        origin === "https://aistudio.google.com" ||
-        origin === "https://ai.studio" ||
-        /^https:\/\/.*\.google\.com$/.test(origin) ||
-        /^https:\/\/.*\.googleusercontent\.com$/.test(origin) ||
-        /^http:\/\/localhost:\d+$/.test(origin) ||
-        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin));
-
-    const isAllowed = isOlmartDomain || isPreviewDomain;
-
-    callback(null, Boolean(isAllowed));
+    return callback(new Error("Blocked by CORS: Origin not authorized."));
   },
-  credentials: true,
+  credentials: (req: Request, origin: string | undefined) => {
+    if (!origin) return false;
+
+    const allowedOrigins = getParsedAllowedOrigins();
+    const isAllowedExact = allowedOrigins.includes(origin);
+    const isAllowedPreview = isAllowedPreviewOrigin(origin);
+
+    if (!isAllowedExact && !isAllowedPreview) {
+      return false;
+    }
+
+    // Disable credentials on endpoints that don't need them
+    const path = req.path || (req.originalUrl ? req.originalUrl.split("?")[0] : "");
+    const safeMethods = ["GET", "HEAD", "OPTIONS"];
+
+    const isWebhook = path.startsWith("/api/v1/webhooks/") || path.startsWith("/webhooks/");
+    const isCspReport = path === "/api/v1/csp-report";
+    const isCron = path.startsWith("/api/v1/cron/");
+    const isHealth = path === "/api/v1/health" || path === "/api/v1/health/live" || path === "/api/health";
+    const isSafeMethod = safeMethods.includes((req.method || "").toUpperCase());
+
+    if (isWebhook || isCspReport || isCron || isHealth || isSafeMethod) {
+      return false;
+    }
+
+    return true;
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
@@ -42,7 +117,141 @@ export const corsOptions: cors.CorsOptions = {
 
 export const corsMiddleware = cors(corsOptions);
 
-const frameAncestorsList = [
+/**
+ * Middleware to prevent direct access to the default Cloud Run URL in production.
+ * Only the official domain (olmart.dz / www.olmart.dz) must be public.
+ */
+export function preventDirectCloudRunAccess(req: Request, res: Response, next: NextFunction) {
+  if (process.env.NODE_ENV === "production") {
+    const host = (req.headers.host || "").toLowerCase();
+
+    // Block or redirect direct accesses to default Google Cloud Run URL (*.run.app)
+    if (host.endsWith(".run.app") || host === "run.app") {
+      safeLogger.warn("[Olmart Security] ⚠️ Blocking direct Cloud Run access", { host });
+
+      if (req.method === "GET" && !req.path.startsWith("/api/")) {
+        return res.redirect(301, `https://olmart.dz${req.originalUrl}`);
+      }
+
+      return res.status(403).json({
+        success: false,
+        error: "L'accès direct au domaine Cloud Run est interdit en production. Veuillez utiliser https://olmart.dz",
+      });
+    }
+  }
+  next();
+}
+
+/**
+ * Middleware to generate a cryptographically secure nonce on every request.
+ */
+export function nonceMiddleware(req: Request, res: Response, next: NextFunction) {
+  res.locals.cspNonce = crypto.randomBytes(16).toString("base64");
+  next();
+}
+
+/**
+ * Dynamically injects the generated nonce into all <script> elements and placeholder tokens.
+ */
+export function injectNonceToHtml(html: string, nonce: string): string {
+  if (!nonce) return html;
+  return html
+    .replace(/%%CSP_NONCE%%/g, nonce)
+    .replace(/<script\b([^>]*)>/gi, (match, attrs) => {
+      if (attrs.includes("nonce=")) {
+        return match;
+      }
+      return `<script nonce="${nonce}"${attrs}>`;
+    });
+}
+
+// -----------------------------------------------------------------------------
+// DUAL CONTENT SECURITY POLICY DEFINITIONS
+// -----------------------------------------------------------------------------
+
+const frameAncestorsProd = [
+  "'self'",
+  "https://olmart.dz",
+  "https://www.olmart.dz",
+  "https://aistudio.google.com",
+  "https://ai.studio",
+  "https://*.aistudio.google.com",
+  "https://*.ai.studio",
+];
+
+const scriptSrcProd: (string | ((req: Request, res: Response) => string))[] = [
+  "'self'",
+  (req: Request, res: Response) => `'nonce-${String((res.locals as Record<string, unknown>).cspNonce || "")}'`,
+  "https://apis.google.com",
+  "https://maps.googleapis.com",
+  "https://www.googletagmanager.com",
+  "https://cdn.jsdelivr.net",
+];
+
+const connectSrcProd = [
+  "'self'",
+  "https://firestore.googleapis.com",
+  "https://identitytoolkit.googleapis.com",
+  "https://securetoken.googleapis.com",
+  "https://olmart.dz",
+  "https://www.olmart.dz",
+  "https://ais-dev-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+  "https://ais-pre-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+  "https://region1-active-directory.googleapis.com",
+  "https://www.google-analytics.com",
+  "wss:", // Allowed for secure real-time syncing only (never plain ws:)
+];
+
+const styleSrcProd = ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"];
+const fontSrcProd = ["'self'", "https://fonts.gstatic.com", "data:", "https://cdn.jsdelivr.net"];
+
+const imgSrcProd = [
+  "'self'",
+  "data:",
+  "blob:",
+  "https://olmart.dz",
+  "https://*.olmart.dz",
+  "https://firebasestorage.googleapis.com",
+  "https://lh3.googleusercontent.com",
+  "https://images.unsplash.com",
+  "https://api.qrserver.com",
+  "https://www.transparenttextures.com",
+];
+
+const helmetProd = helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    reportOnly: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: scriptSrcProd as unknown as string[],
+      scriptSrcElem: scriptSrcProd as unknown as string[],
+      workerSrc: ["'self'", "blob:"],
+      styleSrc: styleSrcProd,
+      fontSrc: fontSrcProd,
+      imgSrc: imgSrcProd,
+      connectSrc: connectSrcProd,
+      frameSrc: [
+        "'self'",
+        "https://*.firebaseapp.com",
+        "https://*.google.com",
+        "https://apis.google.com",
+        "https://*.googleusercontent.com",
+      ],
+      frameAncestors: frameAncestorsProd,
+      objectSrc: ["'none'"],
+      reportUri: "/api/v1/csp-report",
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  xFrameOptions: false,
+  noSniff: true,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+});
+
+const frameAncestorsDev = [
   "'self'",
   "https://*.google.com",
   "https://*.googleusercontent.com",
@@ -55,7 +264,7 @@ const frameAncestorsList = [
   "http://127.0.0.1:*",
 ];
 
-const scriptSrcDirectives = [
+const scriptSrcDev = [
   "'self'",
   "'unsafe-inline'",
   "'unsafe-eval'",
@@ -70,33 +279,18 @@ const scriptSrcDirectives = [
   "https://cdn.jsdelivr.net",
 ];
 
-export const helmetMiddleware = helmet({
+const helmetDev = helmet({
   contentSecurityPolicy: {
     useDefaults: false,
     reportOnly: false,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: scriptSrcDirectives,
-      scriptSrcElem: scriptSrcDirectives,
+      scriptSrc: scriptSrcDev,
+      scriptSrcElem: scriptSrcDev,
       workerSrc: ["'self'", "blob:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:", "https://cdn.jsdelivr.net"],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "blob:",
-        "https://olmart.dz",
-        "https://*.olmart.dz",
-        "https://firebasestorage.googleapis.com",
-        "https://lh3.googleusercontent.com",
-        "https://images.unsplash.com",
-        "https://api.qrserver.com",
-        "https://*.transparenttextures.com",
-        "https://www.transparenttextures.com",
-        "https://*.google.com",
-        "https://*.gstatic.com",
-        "https://*.googleapis.com",
-      ],
+      imgSrc: ["*", "data:", "blob:"],
       connectSrc: [
         "'self'",
         "https://*.googleapis.com",
@@ -109,7 +303,7 @@ export const helmetMiddleware = helmet({
         "https://*.clients6.google.com",
         "https://*.google-analytics.com",
         "wss:",
-        "ws:",
+        "ws:", // Vite WebSocket dev reload client is allowed in non-production
       ],
       frameSrc: [
         "'self'",
@@ -118,7 +312,7 @@ export const helmetMiddleware = helmet({
         "https://apis.google.com",
         "https://*.googleusercontent.com",
       ],
-      frameAncestors: frameAncestorsList,
+      frameAncestors: frameAncestorsDev,
       objectSrc: ["'none'"],
       reportUri: "/api/v1/csp-report",
     },
@@ -128,5 +322,15 @@ export const helmetMiddleware = helmet({
   crossOriginOpenerPolicy: false,
   xFrameOptions: false,
   noSniff: true,
-  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
 });
+
+/**
+ * Dynamic Content Security Policy switcher.
+ */
+export function helmetMiddleware(req: Request, res: Response, next: NextFunction) {
+  if (process.env.NODE_ENV === "production") {
+    return helmetProd(req, res, next);
+  } else {
+    return helmetDev(req, res, next);
+  }
+}

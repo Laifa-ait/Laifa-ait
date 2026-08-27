@@ -10,6 +10,7 @@ import {
 import { BRICOLAGE_CATEGORIES, TOP_VERIFIED_ARTISANS } from '../data/bricolageData';
 import { apiGet, apiPost } from '../lib/api';
 import { auth } from '../lib/firebase';
+import { safeLogger } from '../utils/logger';
 
 export const SAMPLE_REVIEWS: BricolageReview[] = [
   {
@@ -54,7 +55,9 @@ export async function fetchBricolageCategories(): Promise<BricolageServiceCatego
       }
     }
   } catch (err) {
-    console.warn('[Bricolage API] Fallback to default categories:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Bricolage API] Fallback to default categories', { err: err instanceof Error ? err.message : "Erreur" });
+    }
   }
   return BRICOLAGE_CATEGORIES;
 }
@@ -75,7 +78,9 @@ export async function fetchVerifiedArtisans(wilaya?: string, specialty?: string)
       }
     }
   } catch (err) {
-    console.warn('[Bricolage API] Fallback to default artisans:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Bricolage API] Fallback to default artisans', { err: err instanceof Error ? err.message : "Erreur" });
+    }
   }
 
   let list = TOP_VERIFIED_ARTISANS;
@@ -164,7 +169,9 @@ export async function upgradeToArtisanProfile(payload: ArtisanRegistrationPayloa
     }
     return { success: false, message: json?.error || 'Erreur lors de la soumission de la demande d’artisan.' };
   } catch (err: unknown) {
-    console.warn('[Bricolage API] Fallback artisan upgrade:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Bricolage API] Fallback artisan upgrade', { err: err instanceof Error ? err.message : "Erreur" });
+    }
     const hasDocs = Boolean(payload.identityDoc || payload.diplomaDoc || payload.registryDoc);
     const now = new Date().toISOString();
     const localProfile: ActiveArtisanProfile = {
@@ -232,7 +239,9 @@ export async function fetchPendingArtisanVerifications(): Promise<ActiveArtisanP
       return json.data;
     }
   } catch (err) {
-    console.warn('[Bricolage API] Error fetching pending verifications:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Bricolage API] Error fetching pending verifications', { err: err instanceof Error ? err.message : "Erreur" });
+    }
   }
   return [];
 }
@@ -268,7 +277,9 @@ export async function fetchBricolageReviews(): Promise<BricolageReview[]> {
       }
     }
   } catch (err) {
-    console.warn('[Bricolage API] Fallback to sample reviews:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Bricolage API] Fallback to sample reviews', { err: err instanceof Error ? err.message : "Erreur" });
+    }
   }
   return SAMPLE_REVIEWS;
 }
@@ -289,7 +300,9 @@ export async function getArtisanOpportunities(
       try {
         authToken = await auth.currentUser.getIdToken();
       } catch (e) {
-        console.warn('[Bricolage API] Error getting idToken:', e);
+        if (import.meta.env.DEV) {
+          safeLogger.warn('[Bricolage API] Error getting idToken', { err: e instanceof Error ? e.message : "Erreur" });
+        }
       }
     }
 
@@ -352,7 +365,9 @@ export async function acceptQuoteOffer(
       try {
         authToken = await auth.currentUser.getIdToken();
       } catch (e) {
-        console.warn('[Bricolage API] Error getting idToken for acceptQuoteOffer:', e);
+        if (import.meta.env.DEV) {
+          safeLogger.warn('[Bricolage API] Error getting idToken for acceptQuoteOffer', { err: e instanceof Error ? e.message : "Erreur" });
+        }
       }
     }
 

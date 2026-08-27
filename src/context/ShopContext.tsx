@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Product } from "../domains/product/product.types";
 import { PRODUCT_HIERARCHY } from "../constants";
 import { apiGet, apiPost } from "../lib/api";
+import { safeLogger } from "../utils/logger";
 
 class LocalMemoryCache<T = unknown> {
   private cache: Record<string, { data: T; expiry: number }> = {};
@@ -24,14 +25,7 @@ const cacheEngine = new LocalMemoryCache<Product[]>();
 
 function handleDevQuotaLogger(context: string, isFromCache: boolean) {
   if (import.meta.env.DEV) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(
-        `%c[Olma Dev-Safe Layer] %c${context} %c${isFromCache ? "⚡ SWR CACHED" : "📦 LIVE (REST)"}`,
-        "color: #C95D3B; font-weight: bold;",
-        "color: inherit;",
-        isFromCache ? "color: #38bdf8; font-weight: bold;" : "color: #34d399; font-weight: bold;"
-      );
-    }
+    safeLogger.info(`[Olma Dev-Safe Layer] ${context} ${isFromCache ? "⚡ SWR CACHED" : "📦 LIVE (REST)"}`);
   }
 }
 
@@ -95,7 +89,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCategoryHierarchy(sortedHierarchy);
       }
     } catch (err) {
-      console.error("Error refreshing hierarchy:", err);
+      safeLogger.error("Error refreshing hierarchy", { err: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -119,7 +113,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return [];
     } catch (err) {
-      console.error("fetchFeaturedProducts failed:", err);
+      safeLogger.error("fetchFeaturedProducts failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
     }
   };
@@ -143,7 +137,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return [];
     } catch (err) {
-      console.error("fetchProductsByCategory failed:", err);
+      safeLogger.error("fetchProductsByCategory failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
     }
   };
@@ -166,7 +160,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return [];
     } catch (err) {
-      console.error("fetchProductsByIds failed:", err);
+      safeLogger.error("fetchProductsByIds failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
     }
   };
@@ -187,7 +181,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return [];
     } catch (err) {
-      console.error("fetchCrossSellProducts failed:", err);
+      safeLogger.error("fetchCrossSellProducts failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
     }
   }, []);
@@ -220,7 +214,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       cacheEngine.set(cacheKey, fallback);
       return fallback;
     } catch (err) {
-      console.error("Error fetching recommended products:", err);
+      safeLogger.error("Error fetching recommended products", { err: err instanceof Error ? err.message : String(err) });
       return fetchFeaturedProducts(nbLimit);
     }
   };

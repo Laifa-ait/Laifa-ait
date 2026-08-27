@@ -4,6 +4,7 @@ import { loginLimiter } from "../../middlewares/rateLimiters";
 import { admin, db } from "../../config/firebase-admin";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../constants";
 import { CouponService } from "../marketing/coupon.service";
+import { safeLogger } from "../../utils/logger";
 
 const router = Router();
 
@@ -77,7 +78,7 @@ router.post("/onboard", loginLimiter, authenticateToken, async (req: Authenticat
 
     return res.json({ success: true, message: "Onboarding completed successfully" });
   } catch (error: unknown) {
-    console.error("Onboarding error:", error);
+    safeLogger.error("Onboarding error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -136,7 +137,7 @@ router.post("/seller-onboard", authenticateToken, async (req: AuthenticatedReque
 
     return res.json({ success: true, message: "Seller onboarding completed successfully" });
   } catch (error: unknown) {
-    console.error("Seller onboarding error:", error);
+    safeLogger.error("Seller onboarding error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -176,7 +177,7 @@ router.post("/sync-user-claims", authenticateToken, async (req: AuthenticatedReq
       return res.status(404).json({ error: "User not found in Firestore" });
     }
   } catch (error: unknown) {
-    console.error("Error syncing claims:", error);
+    safeLogger.error("Error syncing claims", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -228,7 +229,7 @@ router.post("/sync", authenticateToken, async (req: AuthenticatedRequest, res: R
             read: false,
           });
         } catch (err) {
-          console.warn("Failed sending seller registration internal notification", err);
+          safeLogger.warn("Failed sending seller registration internal notification", { err: err instanceof Error ? err.message : String(err) });
         }
       }
 
@@ -237,7 +238,7 @@ router.post("/sync", authenticateToken, async (req: AuthenticatedRequest, res: R
       return res.json({ success: true, profile: { uid: userDoc.id, ...userDoc.data() } });
     }
   } catch (error: unknown) {
-    console.error("Error syncing user profile:", error);
+    safeLogger.error("Error syncing user profile", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -252,7 +253,7 @@ router.get("/profile", authenticateToken, async (req: AuthenticatedRequest, res:
       return res.status(404).json({ error: "User not found in Firestore" });
     }
   } catch (error: unknown) {
-    console.error("Error fetching profile:", error);
+    safeLogger.error("Error fetching profile", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -266,7 +267,7 @@ router.get("/cart", authenticateToken, async (req: AuthenticatedRequest, res: Re
     }
     return res.json({ items: [] });
   } catch (error: unknown) {
-    console.error("Get cart error:", error);
+    safeLogger.error("Get cart error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -281,7 +282,7 @@ router.post("/cart", authenticateToken, async (req: AuthenticatedRequest, res: R
     }, { merge: true });
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Save cart error:", error);
+    safeLogger.error("Save cart error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -295,7 +296,7 @@ router.get("/wishlist", authenticateToken, async (req: AuthenticatedRequest, res
     }
     return res.json({ items: [] });
   } catch (error: unknown) {
-    console.error("Get wishlist error:", error);
+    safeLogger.error("Get wishlist error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -310,7 +311,7 @@ router.post("/wishlist", authenticateToken, async (req: AuthenticatedRequest, re
     }, { merge: true });
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Save wishlist error:", error);
+    safeLogger.error("Save wishlist error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -344,7 +345,7 @@ router.get("/notifications", authenticateToken, async (req: AuthenticatedRequest
 
     return res.json({ orders, direct, coupons });
   } catch (error: unknown) {
-    console.error("Fetch notifications backend error:", error);
+    safeLogger.error("Fetch notifications backend error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -355,7 +356,7 @@ router.post("/notifications/:id/read", authenticateToken, async (req: Authentica
     await db.collection("user_notifications").doc(id).update({ read: true });
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Mark notification read error:", error);
+    safeLogger.error("Mark notification read error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
@@ -376,7 +377,7 @@ router.post("/notifications/read-all", authenticateToken, async (req: Authentica
 
     return res.json({ success: true });
   } catch (error: unknown) {
-    console.error("Mark all notifications read error:", error);
+    safeLogger.error("Mark all notifications read error", { err: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });

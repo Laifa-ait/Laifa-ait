@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiGet, apiPost } from '../lib/api';
 import { scheduleVerificationMeet } from '../services/googleWorkspace';
 import toast from 'react-hot-toast';
+import { safeLogger } from '../utils/logger';
 
 import { Shop } from '../domains/seller/shop.types';
 
@@ -69,7 +70,7 @@ export function useSellerModeration() {
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.total || 0);
       } catch (err: unknown) {
-        console.error('[useSellerModeration] Fetch sellers API error:', err);
+        safeLogger.error('[useSellerModeration] Fetch sellers API error', { err: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }
@@ -126,7 +127,7 @@ export function useSellerModeration() {
       setSelectedSellerIds([]);
       toast.success(t('Vendeurs approuvés avec succès'));
     } catch (err: unknown) {
-      console.error('[useSellerModeration] Error performing bulk approve:', err);
+      safeLogger.error('[useSellerModeration] Error performing bulk approve', { err: err instanceof Error ? err.message : String(err) });
       toast.error(t("Erreur lors de l'approbation en lot"));
     } finally {
       setBulkLoading(false);
@@ -148,7 +149,7 @@ export function useSellerModeration() {
       setSelectedSellerIds([]);
       toast.success(t('Vendeurs suspendus avec succès'));
     } catch (err: unknown) {
-      console.error('[useSellerModeration] Error performing bulk suspend:', err);
+      safeLogger.error('[useSellerModeration] Error performing bulk suspend', { err: err instanceof Error ? err.message : String(err) });
       toast.error(t('Erreur lors de la suspension en lot'));
     } finally {
       setBulkLoading(false);
@@ -170,7 +171,7 @@ export function useSellerModeration() {
       setSelectedSellerIds([]);
       toast.success(t('Vendeurs supprimés avec succès'));
     } catch (err: unknown) {
-      console.error('[useSellerModeration] Error performing bulk delete:', err);
+      safeLogger.error('[useSellerModeration] Error performing bulk delete', { err: err instanceof Error ? err.message : String(err) });
       toast.error(t('Erreur lors de la suppression en lot'));
     } finally {
       setBulkLoading(false);
@@ -216,7 +217,7 @@ export function useSellerModeration() {
 
       toast.success(isArabic ? `تم ${statusText} بنجاح.` : `Vendeur ${statusText} avec succès.`);
     } catch (err: unknown) {
-      console.error('Failed to update status:', err);
+      safeLogger.error('Failed to update status', { err: err instanceof Error ? err.message : String(err) });
       toast.error(t('Erreur lors de la mise à jour du statut.'));
     }
   };
@@ -224,7 +225,7 @@ export function useSellerModeration() {
   const handleScheduleMeet = async (sellerId: string, email: string) => {
     try {
       if (typeof scheduleVerificationMeet !== 'function') {
-        console.warn('scheduleVerificationMeet non disponible');
+        safeLogger.warn('scheduleVerificationMeet non disponible');
         toast.error(isArabic ? 'خدمة الجدولة غير متاحة.' : "Le service de planification n'est pas disponible.");
         return;
       }

@@ -1,5 +1,6 @@
 import { OlmaAppModule, OlmaUniversResponse, WaitlistRegistrationPayload } from '../types/olmaUnivers';
 import { DEFAULT_OLMA_APPS } from '../data/olmaUniversData';
+import { safeLogger } from '../utils/logger';
 
 interface ApiResponse {
   success?: boolean;
@@ -17,7 +18,9 @@ export async function fetchOlmaUniversApps(): Promise<OlmaAppModule[]> {
       }
     }
   } catch (error) {
-    console.warn('[Olma Univers API] Fetch fallback to default seed apps:', error);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Fetch fallback to default seed apps', { err: error instanceof Error ? error.message : "Erreur" });
+    }
   }
   return DEFAULT_OLMA_APPS;
 }
@@ -35,7 +38,9 @@ export async function registerAppWaitlist(payload: WaitlistRegistrationPayload):
       message: json.message || (json.success ? 'Inscription enregistrée !' : 'Erreur d\'inscription')
     };
   } catch (err: unknown) {
-    console.warn('[Olma Univers API] Waitlist error:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Waitlist error', { err: err instanceof Error ? err.message : "Erreur" });
+    }
     return { success: true, message: 'Votre intérêt a été enregistré avec succès !' };
   }
 }
@@ -56,7 +61,9 @@ export async function updateAdminOlmaApp(app: Partial<OlmaAppModule> & { id: str
       message: json.message || (json.success ? 'Application mise à jour avec succès' : 'Échec de la mise à jour')
     };
   } catch (err: unknown) {
-    console.warn('[Olma Univers API] Admin update error:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Admin update error', { err: err instanceof Error ? err.message : "Erreur" });
+    }
     return { success: false, message: 'Erreur réseau lors de la mise à jour admin.' };
   }
 }
@@ -76,7 +83,9 @@ export async function seedAdminOlmaApps(token?: string): Promise<{ success: bool
       message: json.message || (json.success ? 'Base de données univers initialisée' : 'Échec de réinitialisation')
     };
   } catch (err: unknown) {
-    console.warn('[Olma Univers API] Admin seed error:', err);
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Admin seed error', { err: err instanceof Error ? err.message : "Erreur" });
+    }
     return { success: false, message: 'Erreur réseau lors du seed' };
   }
 }

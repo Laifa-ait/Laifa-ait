@@ -3,6 +3,7 @@ import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
 import { optionalAuthenticateToken, AuthenticatedRequest } from "../../../middlewares/auth";
 import { validateRequest } from "../../../middlewares/validation";
+import { strictLimiter } from "../../../middlewares/rateLimiters";
 import { ALGERIA_SHIPPING_DATA } from "../../../constants";
 import { placeOrderSchema } from "../../../utils/validation";
 import { checkSellerVelocityLimit } from "../../../utils/velocity";
@@ -11,6 +12,7 @@ import { resolveProductPrice } from "../../../utils/priceResolver";
 import { CouponService, ProductItemForCoupon } from "../../marketing/coupon.service";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { safeLogger } from "../../../utils/logger";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.ethereal.email",
@@ -24,7 +26,7 @@ const transporter = nodemailer.createTransport({
 const sendLowStockEmail = async (sellerEmail: string, message: string) => {
   try {
     if (!process.env.SMTP_USER) {
-      console.log("Mock Email Sent (SMTP not configured). To:", sellerEmail, "Message:", message);
+      safeLogger.info("Mock Email Sent (SMTP not configured)", { to: sellerEmail, message });
       return;
     }
     await transporter.sendMail({
@@ -34,7 +36,7 @@ const sendLowStockEmail = async (sellerEmail: string, message: string) => {
       text: message,
     });
   } catch (err) {
-    console.error("Failed to send stock alert email", err);
+    safeLogger.error("Failed to send stock alert email", { err: err instanceof Error ? err.message : String(err) });
   }
 };
 
@@ -54,7 +56,7 @@ const sendOrderConfirmationEmails = async (
 ) => {
   try {
     if (!process.env.SMTP_USER) {
-      console.log(`Mock Email Sent (SMTP not configured). To: ${buyerEmail} (Buyer) - Order: ${orderId}`);
+      safeLogger.info("Mock Email Sent (SMTP not configured)", { to: buyerEmail, orderId });
       return;
     }
 
@@ -93,14 +95,14 @@ const sendOrderConfirmationEmails = async (
       }
     }
   } catch (err) {
-    console.error("Failed to send order confirmation emails", err);
+    safeLogger.error("Failed to send order confirmation emails", { err: err instanceof Error ? err.message : String(err) });
   }
 };
 
 const router = Router();
 
 // Update Order Status Securely
-router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrderSchema), async (req: AuthenticatedRequest, res: Response) => {
+router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRequest(placeOrderSchema), async (req: AuthenticatedRequest, res: Response) => {
   const { cart, shippingAddress, couponCode, deliveryMethod, idempotencyKey } = req.body;
   const isGuest = !req.user;
   const userId = req.user ? req.user.uid : `guest_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -118,7 +120,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
         });
       }
     } catch (e) {
-      console.error("Error reading idempotency_keys collection, falling back:", e);
+      safeLogger.error("Error reading idempotency_keys collection, falling back", { err: e instanceof Error ? e.message : String(e) });
     }
 
     const existingOrder = await db
@@ -160,7 +162,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
         globalCommissionRate = commDoc.data()?.globalRate ?? 0;
       }
     } catch (err) {
-      console.warn("Failed to fetch global settings, using fallback", err);
+      safeLogger.warn("Failed to fetch global settings, using fallback", { err: err instanceof Error ? err.message : String(err) });
     }
 
     const uniqueProductIds: string[] = Array.from(new Set(cart.map((item: { id: string }) => item.id)));
@@ -763,7 +765,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       } catch (e) {
-        console.error("Failed to store idempotency key in idempotency_keys:", e);
+        safeLogger.error("Failed to store idempotency key in idempotency_keys", { err: e instanceof Error ? e.message : String(e) });
       }
     }
 
@@ -774,7 +776,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
       result.orderId,
       result.total,
       result.subOrdersForEmail
-    ).catch(console.error);
+    ).catch((e) => safeLogger.error("Failed to process order confirmation emails", { err: e instanceof Error ? e.message : String(e) }));
 
     // Process out-of-band email alerts asynchronously
     if (emailAlerts.length > 0) {
@@ -787,10 +789,10 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
               await sendLowStockEmail(email, alert.message);
             }
           } catch (e) {
-            console.error("Erreur lors de l'envoi de l'email de stock bas", e);
+            safeLogger.error("Erreur lors de l'envoi de l'email de stock bas", { err: e instanceof Error ? e.message : String(e) });
           }
         })
-      ).catch(console.error);
+      ).catch((e) => safeLogger.error("Failed to send low stock alert emails", { err: e instanceof Error ? e.message : String(e) }));
     }
 
     res.json({
@@ -800,7 +802,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
       codAmount: result.codAmount,
     });
   } catch (error: unknown) {
-    console.error("Place order err:", error);
+    safeLogger.error("Place order err", { err: error instanceof Error ? error.message : String(error) });
     const errObj = error as { code?: string; message?: string };
     if (errObj.code === "PRICE_CONFLICT") {
       return res.status(409).json({ error: errObj.message });
@@ -811,7 +813,7 @@ router.post("/place-order", optionalAuthenticateToken, validateRequest(placeOrde
 });
 
 
-router.post("/validate-coupon", optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/validate-coupon", strictLimiter, optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const { code, items } = req.body;
   const userId = req.user?.uid;
   const isGuest = !req.user;
@@ -862,7 +864,7 @@ router.post("/validate-coupon", optionalAuthenticateToken, async (req: Authentic
       eligibleSubtotal: validation.eligibleSubtotal,
     });
   } catch (error: unknown) {
-    console.error("Coupon validation error:", error);
+    safeLogger.error("Coupon validation error", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Erreur serveur lors de la validation." });
   }
 });

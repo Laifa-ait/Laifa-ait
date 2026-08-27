@@ -265,6 +265,15 @@ export class AdminSellerService {
       suspendedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    try {
+      await admin.auth().revokeRefreshTokens(sellerId);
+    } catch (authErr: unknown) {
+      safeLogger.warn("Failed to revoke refresh tokens for suspended seller", {
+        sellerId,
+        err: authErr instanceof Error ? authErr.message : String(authErr),
+      });
+    }
+
     await db.collection("audit_logs").add({
       type: "SELLER_MODERATION",
       action: "SUSPENDED",

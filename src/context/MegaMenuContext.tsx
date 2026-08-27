@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useShop } from "./ShopContext";
 import { apiGet, apiPost } from "../lib/api";
 import toast from "react-hot-toast";
+import { safeLogger } from "../utils/logger";
 
 export interface MegaMenuLink {
   name: string;
@@ -62,7 +63,7 @@ export const MegaMenuProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return;
         }
       } catch (err) {
-        console.warn("[Olmart Core] Using local megamenu fallback due to settings notice:", err);
+        safeLogger.warn("[Olmart Core] Using local megamenu fallback due to settings notice", { err: err instanceof Error ? err.message : String(err) });
       }
 
       const saved = localStorage.getItem("olma_megamenu_data_v6");
@@ -71,7 +72,7 @@ export const MegaMenuProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           existingData = JSON.parse(saved);
         } catch (e) {
-          console.warn("Failed to parse saved megamenu:", e);
+          safeLogger.warn("Failed to parse saved megamenu", { err: e instanceof Error ? e.message : String(e) });
         }
       }
 
@@ -163,7 +164,7 @@ export const MegaMenuProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       toast.success("Mega Menu enregistré avec succès ! ✨🚀", { id: "save-megamenu" });
     } catch (err) {
-      console.error("Error saving megamenu to backend:", err);
+      safeLogger.error("Error saving megamenu to backend", { err: err instanceof Error ? err.message : String(err) });
       toast.error("Erreur lors de la sauvegarde du Mega Menu", { id: "save-megamenu" });
     }
   };

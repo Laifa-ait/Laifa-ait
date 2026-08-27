@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { safeLogger } from "../utils/logger";
 
 const loggedDeprecations = new Set<string>();
 
@@ -23,7 +24,7 @@ export const deprecationMiddleware = (req: Request, res: Response, next: NextFun
     
     if (!loggedDeprecations.has(normalizedUrl)) {
       loggedDeprecations.add(normalizedUrl);
-      console.warn(`[Deprecation Warning] ⚠️ Legacy endpoint accessed: "${normalizedUrl}". Please migrate the client-side call to the secure "/api/v1" prefix. (Warning logged once)`);
+      safeLogger.warn("[Deprecation Warning] ⚠️ Legacy endpoint accessed. Migrate to /api/v1", { endpoint: normalizedUrl });
     }
   }
 

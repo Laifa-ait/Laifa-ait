@@ -35,12 +35,12 @@ export const pinLimiter = rateLimit({
 
 export const strictLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 300, // Strict limit for sensitive endpoints
+  max: 30, // Strict limit for sensitive endpoints (payments, exports, admin, sensitive real estate)
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.status(429).json({ error: "Trop de requêtes, veuillez réessayer dans une minute." });
+    res.status(429).json({ error: "Trop de requêtes sur cette opération sensible, veuillez réessayer dans une minute." });
   }
 });
 
@@ -55,7 +55,7 @@ export const debugLimiter = rateLimit({
 
 export const webhookLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // Max 100 webhook requests per minute
+  max: 60, // Max 60 webhook requests per minute
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {

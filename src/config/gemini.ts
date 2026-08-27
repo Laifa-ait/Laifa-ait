@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { safeLogger } from "../utils/logger";
 
 // Determine the active API key: prioritize user's custom key if provided, then fallback to default
 const activeApiKey = process.env.GEMINI_API_KEY || "missing_key_force_error";
@@ -54,12 +55,20 @@ ai.models.generateContent = async function (params: Parameters<typeof originalGe
         if (attempt <= availableFallbacks.length) {
           const fallbackModel = availableFallbacks[attempt - 1];
           if (fallbackModel) {
-            console.warn(`⚠️ [Gemini Resiliency] Model ${localParams.model} experienced a transient error (${status}). Falling back to ${fallbackModel}.`);
+            safeLogger.warn("[Gemini Resiliency] Model experienced transient error, falling back", {
+              currentModel: localParams.model,
+              fallbackModel,
+              status: String(status),
+            });
             localParams.model = fallbackModel;
           }
         }
 
-        console.warn(`⚠️ [Gemini Resiliency] Attempt ${attempt} failed with ${status}. Retrying in ${delay}ms...`);
+        safeLogger.warn("[Gemini Resiliency] Attempt failed, retrying", {
+          attempt,
+          status: String(status),
+          delayMs: delay,
+        });
         await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 2; // exponential backoff
       } else {

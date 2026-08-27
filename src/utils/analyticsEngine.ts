@@ -1,3 +1,5 @@
+import { safeLogger } from './logger';
+
 export interface AnalyticsEvent {
   id: string;
   name: 'product_view' | 'add_to_cart' | 'remove_from_cart' | 'checkout_start' | 'purchase_complete' | 'delivery_info_confirmed' | 'wishlist_toggle' | 'search_query';
@@ -40,16 +42,13 @@ class AnalyticsEngine {
       this.eventQueue.push(newEvent);
       this.scheduleFlush();
 
-      if (process.env.NODE_ENV === "development") {
-        (process.env.NODE_ENV === 'development' ? console.log : function(){})(
-          `%c[Olma Analytics Engine] %cTracked "${name}"`,
-          'color: #ea580c; font-weight: bold;',
-          'color: #3f3f46;',
-          metadata
-        );
+      if (import.meta.env.DEV) {
+        safeLogger.info(`[Olma Analytics Engine] Tracked "${name}"`);
       }
     } catch (err: unknown) {
-      console.error('Failed to log analytics event', err);
+      if (import.meta.env.DEV) {
+        safeLogger.error('Failed to log analytics event', { err: err instanceof Error ? err.message : "Erreur" });
+      }
     }
   }
 
@@ -73,7 +72,9 @@ class AnalyticsEngine {
         body: JSON.stringify({ events: eventsToSend })
       });
     } catch (err: unknown) {
-      console.error("Failed to sync analytics events", err);
+      if (import.meta.env.DEV) {
+        safeLogger.error("Failed to sync analytics events", { err: err instanceof Error ? err.message : "Erreur" });
+      }
       // Revert events if failed? Simple fallback: don't revert for now.
     }
   }

@@ -1,4 +1,5 @@
 import { admin } from "../config/firebase-admin";
+import { safeLogger } from "../utils/logger";
 
 const CHECK_INTERVAL = 60 * 1000; // 1 minute
 let workerInterval: NodeJS.Timeout | null = null;
@@ -47,26 +48,20 @@ export const startProductPublisherWorker = () => {
 
       if (updatedCount > 0) {
         await batch.commit();
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`[Worker] Publié ${updatedCount} produit(s) programmé(s).`);
-        }
+        safeLogger.info("[Olmart Workers] Published scheduled products", { updatedCount });
       }
     } catch (err) {
-      console.error("[Worker] Erreur lors de la publication des produits:", err);
+      safeLogger.error("[Olmart Workers] Product publisher worker error", { err: err instanceof Error ? err.message : String(err) });
     }
   }, CHECK_INTERVAL);
   
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[Olmart Workers] ⚡ Product Publisher Worker démarré avec succès.");
-  }
+  safeLogger.info("[Olmart Workers] ⚡ Product Publisher Worker active.");
 };
 
 export const stopProductPublisherWorker = () => {
   if (workerInterval) {
     clearInterval(workerInterval);
     workerInterval = null;
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[Olmart Workers] 🛑 Product Publisher Worker arrêté.");
-    }
+    safeLogger.info("[Olmart Workers] 🛑 Product Publisher Worker stopped.");
   }
 };

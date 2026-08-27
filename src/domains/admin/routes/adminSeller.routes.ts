@@ -7,6 +7,7 @@ import {
   SellerDetailsUpdateSchema,
 } from "../../../validators/adminValidators";
 import { AdminSellerService } from "../services/adminSeller.service";
+import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 
@@ -42,7 +43,7 @@ router.get("/admin/sellers", authenticateToken, authorizeAdmin, async (req: Auth
 
     res.json(result);
   } catch (error: unknown) {
-    console.error("Error fetching sellers:", error);
+    safeLogger.error("Error fetching sellers", { err: error instanceof Error ? error.message : String(error) });
     const message = error instanceof Error ? error.message : "Erreur serveur";
     res.status(500).json({ error: message });
   }

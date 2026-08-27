@@ -217,4 +217,122 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
       expect(permissions).toEqual(["ALL"]);
     });
   });
+
+  describe("11: Administrateur suspendu + Firestore indisponible (Fail-Closed)", () => {
+    it("fails closed and denies admin access with 403 when Firestore is unreachable for a suspended admin", async () => {
+      // 1. Token still carries admin custom claim
+      const mockVerifyIdToken = vi.spyOn(admin.auth(), "verifyIdToken").mockResolvedValueOnce({
+        uid: "suspended_admin_123",
+        email: "suspended.admin@olmart.dz",
+        role: "admin",
+      } as unknown as admin.auth.DecodedIdToken);
+
+      // 2. Firestore is down / unreachable / throws network failure
+      const mockDocGet = vi.fn().mockRejectedValueOnce(new Error("Firestore connection timeout / 503 Service Unavailable"));
+      const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
+      const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
+
+      const mockReq: Partial<AuthenticatedRequest> = {
+        headers: {
+          authorization: "Bearer admin_token_bearing_claims",
+        },
+      };
+
+      // 3. Run authenticateToken middleware
+      await authenticateToken(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      // 4. Verify that authenticateToken failed closed by setting role to 'suspended'
+      expect(mockReq.user?.role).toBe("suspended");
+      expect(mockReq.user?.adminValidated).toBe(false);
+      expect(mockNext).toHaveBeenCalled();
+
+      // 5. Verify that authorizeAdmin fails closed with 403 Forbidden
+      mockNext = vi.fn();
+      mockStatus.mockClear();
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockNext).not.toHaveBeenCalled();
+
+      mockVerifyIdToken.mockRestore();
+      mockCollection.mockRestore();
+    });
+  });
+
+  describe("12: Administrateur suspendu dans Firestore + Firestore disponible -> 403 Forbidden", () => {
+    it("denies access when admin user is marked as suspended in Firestore", async () => {
+      const mockVerifyIdToken = vi.spyOn(admin.auth(), "verifyIdToken").mockResolvedValueOnce({
+        uid: "suspended_admin_456",
+        email: "suspended@olmart.dz",
+        role: "admin",
+      } as unknown as admin.auth.DecodedIdToken);
+
+      const mockDocGet = vi.fn().mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ role: "admin", status: "suspended" }),
+      });
+
+      const mockDoc = vi.fn().mockReturnValue({ get: mockDocGet });
+      const mockCollection = vi.spyOn(db, "collection").mockReturnValue({ doc: mockDoc } as unknown as CollectionReference);
+
+      const mockReq: Partial<AuthenticatedRequest> = {
+        headers: {
+          authorization: "Bearer valid_signed_token",
+        },
+      };
+
+      await authenticateToken(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockReq.user?.role).toBe("suspended");
+
+      mockNext = vi.fn();
+      mockStatus.mockClear();
+      authorizeAdmin(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockNext).not.toHaveBeenCalled();
+
+      mockVerifyIdToken.mockRestore();
+      mockCollection.mockRestore();
+    });
+  });
+
+  describe("13: Révocation de jeton (checkRevoked = true) -> 401 Unauthorized", () => {
+    it("returns 401 when verifyIdToken detects a revoked token", async () => {
+      const revokedError = new Error("Firebase ID token has been revoked.");
+      (revokedError as unknown as { code: string }).code = "auth/id-token-revoked";
+
+      const mockVerifyIdToken = vi.spyOn(admin.auth(), "verifyIdToken").mockRejectedValueOnce(revokedError);
+
+      const mockReq: Partial<AuthenticatedRequest> = {
+        headers: {
+          authorization: "Bearer revoked_token_string",
+        },
+      };
+
+      await authenticateToken(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockStatus).toHaveBeenCalledWith(401);
+      expect(mockJson).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: "Jeton révoqué. Veuillez vous reconnecter.",
+        })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+
+      mockVerifyIdToken.mockRestore();
+    });
+  });
+
+  describe("14: Invalidation des refresh tokens lors d'une suspension", () => {
+    it("calls admin.auth().revokeRefreshTokens when a user or seller is suspended", async () => {
+      const revokeTokensSpy = vi.spyOn(admin.auth(), "revokeRefreshTokens").mockResolvedValueOnce();
+
+      const targetUserId = "malicious_user_789";
+      await admin.auth().revokeRefreshTokens(targetUserId);
+
+      expect(revokeTokensSpy).toHaveBeenCalledWith(targetUserId);
+      revokeTokensSpy.mockRestore();
+    });
+  });
 });

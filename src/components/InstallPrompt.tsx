@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Smartphone } from 'lucide-react';
 import { useTranslation } from "react-i18next";
+import { safeLogger } from '../utils/logger';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -47,9 +48,9 @@ export const InstallPrompt: React.FC = () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      (process.env.NODE_ENV === 'development' ? console.log : function(){})('User accepted the install prompt');
+      safeLogger.info('User accepted the install prompt');
     } else {
-      (process.env.NODE_ENV === 'development' ? console.log : function(){})('User dismissed the install prompt');
+      safeLogger.info('User dismissed the install prompt');
     }
     setDeferredPrompt(null);
   };

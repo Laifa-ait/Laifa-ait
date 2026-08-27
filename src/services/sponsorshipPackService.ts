@@ -1,5 +1,6 @@
 import { db } from "../config/firebase-admin";
 import { SponsorshipPackConfig, SponsorshipTier, DEFAULT_SPONSORSHIP_PACKS } from "../domains/seller/sponsorship.types";
+import { safeLogger } from "../utils/logger";
 
 export class SponsorshipPackService {
   static async getPacks(): Promise<Record<SponsorshipTier, SponsorshipPackConfig>> {
@@ -9,7 +10,7 @@ export class SponsorshipPackService {
         return docSnap.data()?.packs as Record<SponsorshipTier, SponsorshipPackConfig>;
       }
     } catch (error) {
-      console.warn("🟢 [Firestore Core] Unable to load custom sponsorship packs, falling back to defaults", error);
+      safeLogger.warn("Unable to load custom sponsorship packs, falling back to defaults", { err: error instanceof Error ? error.message : String(error) });
     }
     return DEFAULT_SPONSORSHIP_PACKS;
   }
@@ -19,6 +20,6 @@ export class SponsorshipPackService {
       packs,
       updatedAt: new Date()
     }, { merge: true });
-    console.log("🟢 [Firestore Core] 🟢 Sponsorship packs updated dynamically in app_config.");
+    safeLogger.info("Sponsorship packs updated dynamically in app_config");
   }
 }

@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import { safeLogger } from "../../utils/logger";
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn("Failed to verify code:", msg);
+      safeLogger.warn("Failed to verify code", { err: msg });
       toast.error("Code invalide ou expiré.");
     } finally {
       setLoading(false);

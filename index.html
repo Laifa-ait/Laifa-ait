@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script>
+    <script nonce="%%CSP_NONCE%%">
       window.addEventListener("unhandledrejection", function (e) {
         var r = e && e.reason ? (typeof e.reason === "string" ? e.reason : (e.reason.message || String(e.reason))) : "";
         if (r.indexOf("WebSocket") !== -1 || r.indexOf("websocket") !== -1 || r.indexOf("closed without opened") !== -1 || r.indexOf("failed to connect") !== -1) {

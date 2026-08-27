@@ -1,6 +1,7 @@
 import { db, admin } from "../config/firebase-admin";
 import Fuse from "fuse.js";
 import { Request } from "express";
+import { safeLogger } from "../utils/logger";
 
 export interface SearchableProduct {
   id: string;
@@ -134,7 +135,7 @@ export class ProductSearchService {
           cachedStores = allStores;
         }
       } catch (err: unknown) {
-        console.warn("Failed to fetch via HTTP for cache, falling back to db.", err);
+        safeLogger.warn("Failed to fetch via HTTP for cache, falling back to db", { err: err instanceof Error ? err.message : String(err) });
         const [prodSnap, profilesSnap] = await Promise.all([
           db.collection("products").where("status", "==", "active").get(),
           db.collection("publicProfiles").get()
@@ -306,7 +307,7 @@ export class ProductSearchService {
       };
       admin.firestore().collection("search_logs").add(logData).catch(() => {});
     } catch (logErr: unknown) {
-      console.error("[ProductSearchService] Failed to log search:", logErr);
+      safeLogger.error("[ProductSearchService] Failed to log search", { err: logErr instanceof Error ? logErr.message : String(logErr) });
     }
 
     const totalCount = finalProducts.length;

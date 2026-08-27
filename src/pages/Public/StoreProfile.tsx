@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, MapPin, SearchX, Star, Package, ChevronLeft, Store, Truck, Undo2, Building2, Info, UserPlus, UserCheck, Users, Camera, Search, X } from 'lucide-react';
+import { ShieldCheck, MapPin, SearchX, Star, Package, ChevronLeft, Store, Info, UserPlus, UserCheck, Users, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { db } from '../../lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc, limit, setDoc, deleteDoc, updateDoc, increment } from 'firebase/firestore';
@@ -16,9 +16,10 @@ import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { ImageAdjusterModal } from '../../components/ui/ImageAdjusterModal';
 import { OptimizedImage } from '../../components/ui/OptimizedImage';
 import { AnimatePresence } from 'motion/react';
-import { ALGERIA_REGIONS } from '../../data/algeriaRegions';
 import { maskSensitiveData, hasExternalChannel } from '../../utils/masking';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
+import { StoreProductsFilter } from '../../components/Store/StoreProductsFilter';
+import { StoreAboutView } from '../../components/Store/StoreAboutView';
 
 export interface PublicStoreInfo {
   id: string;
@@ -1104,83 +1105,16 @@ export const StoreProfile: React.FC = () => {
                <div className="space-y-10">
                   {/* Dynamic Products Search & Filter Panel */}
                   {products.length > 0 && (
-                     <div className="bg-white border border-zinc-100 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-                        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-                           {/* Live Search inside Store */}
-                           <div className="relative flex-1">
-                              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                              <input
-                                 type="text"
-                                 value={searchQuery}
-                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                 placeholder={isRTL ? "بحث في هذا المتجر..." : "Rechercher dans cette boutique..."}
-                                 className="w-full pl-11 pr-10 py-3 bg-zinc-50 border border-zinc-150 rounded-xl text-xs font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-800 focus:bg-white transition-all shadow-inner"
-                              />
-                              {searchQuery && (
-                                 <button 
-                                    onClick={() => setSearchQuery('')} 
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
-                                 >
-                                    <X className="w-3.5 h-3.5" />
-                                 </button>
-                              )}
-                           </div>
-                           
-                           {/* Category Horizontal Scrolling Pills */}
-                           {storeCategories.length > 0 && (
-                              <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0 max-w-full lg:max-w-2xl xl:max-w-3xl">
-                                 <button
-                                    onClick={() => setSelectedCategory(null)}
-                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all border ${
-                                       selectedCategory === null 
-                                          ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm' 
-                                          : 'bg-zinc-50 text-zinc-500 border-zinc-100 hover:bg-zinc-100'
-                                    }`}
-                                 >
-                                    {isRTL ? "الكل" : "Tout voir"}
-                                 </button>
-                                 {storeCategories.map(cat => (
-                                    <button
-                                       key={cat}
-                                       onClick={() => setSelectedCategory(cat)}
-                                       className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all border flex items-center gap-1.5 ${
-                                          selectedCategory === cat
-                                             ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm' 
-                                             : 'bg-zinc-50/50 text-zinc-600 border-zinc-100 hover:bg-zinc-100 hover:border-zinc-200'
-                                       }`}
-                                    >
-                                       <span>{cat}</span>
-                                       <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold ${
-                                          selectedCategory === cat ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-500'
-                                       }`}>
-                                          {getCategoryCount(cat)}
-                                       </span>
-                                    </button>
-                                 ))}
-                              </div>
-                           )}
-                        </div>
-
-                        {/* Search Indicator bar */}
-                        {(searchQuery || selectedCategory) && (
-                           <div className="flex items-center justify-between text-xs font-bold text-zinc-500 bg-zinc-50/60 p-2.5 px-4 rounded-xl border border-zinc-100">
-                              <div className="flex items-center gap-1.5">
-                                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                                 <span>
-                                    {isRTL 
-                                       ? `تم العثور على ${filteredProducts.length} من المنتجات المطابقة`
-                                       : `${filteredProducts.length} articles correspondent à vos filtres`}
-                                 </span>
-                              </div>
-                              <button 
-                                 onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-                                 className="text-orange-600 hover:text-orange-700 underline text-[10px] uppercase font-sans font-bold tracking-wider"
-                              >
-                                 {isRTL ? "إعادة تعيين" : "Réinitialiser"}
-                              </button>
-                           </div>
-                        )}
-                     </div>
+                     <StoreProductsFilter
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        selectedCategory={selectedCategory}
+                        setSelectedCategory={setSelectedCategory}
+                        storeCategories={storeCategories}
+                        getCategoryCount={getCategoryCount}
+                        filteredCount={filteredProducts.length}
+                        isRTL={isRTL}
+                     />
                   )}
 
                   {/* Products Grid rendering */}
@@ -1274,205 +1208,20 @@ export const StoreProfile: React.FC = () => {
                </div>
             ) : (
                /* ABOUT & GUARANTEES TAB - High contrast Bento structure */
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in text-left">
-                  {/* Left Column: Brand Story */}
-                  <div className="lg:col-span-5 space-y-6">
-                     <div className="bg-white border border-zinc-100 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-                        <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                           <div className="flex items-center gap-3">
-                              <Store className="w-5 h-5 text-orange-500" />
-                              <h3 className="text-sm font-sans font-bold uppercase text-zinc-900 tracking-wider">
-                                 {isRTL ? "عن العلامة التجارية" : `La Boutique ${storeInfo.shopName || 'Boutique'}`}
-                              </h3>
-                           </div>
-                           {isOwner && (
-                              <button
-                                 onClick={() => setIsEditingAbout(!isEditingAbout)}
-                                 className="text-[10px] font-sans font-bold uppercase tracking-widest text-orange-600 hover:text-orange-700 bg-orange-50 px-3 py-1.5 rounded-lg transition-colors border border-orange-100"
-                              >
-                                 {isEditingAbout ? (isRTL ? "إلغاء التعديل" : "Annuler") : (isRTL ? "تعديل" : "Modifier")}
-                              </button>
-                           )}
-                        </div>
-
-                        {isEditingAbout ? (
-                           <div className="space-y-4">
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "اسم المتجر" : "Nom de la boutique"}</label>
-                                 <input
-                                    type="text"
-                                    value={editForm.shopName}
-                                    onChange={(e) => setEditForm(prev => ({...prev, shopName: e.target.value}))}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                    placeholder={isRTL ? "اسم متجرك..." : "Nom de votre boutique..."}
-                                 />
-                              </div>
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "وصف المتجر" : "Description de la boutique"}</label>
-                                 <textarea
-                                    value={editForm.shopDescription}
-                                    onChange={(e) => setEditForm(prev => ({...prev, shopDescription: e.target.value}))}
-                                    rows={4}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                    placeholder={isRTL ? "وصف متجرك..." : "Décrivez votre boutique..."}
-                                 />
-                              </div>
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "الولاية" : "Wilaya"}</label>
-                                 <select
-                                    value={editForm.wilaya}
-                                    onChange={(e) => setEditForm(prev => ({...prev, wilaya: e.target.value}))}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                 >
-                                    <option value="">{isRTL ? "اختر الولاية" : "Sélectionnez votre Wilaya"}</option>
-                                    {Object.values(ALGERIA_REGIONS).map((w) => (
-                                       <option key={w.code} value={`${w.code} ${w.name}`}>{w.code} {w.name}</option>
-                                    ))}
-                                 </select>
-                              </div>
-                           </div>
-                        ) : (
-                           <p className="text-zinc-600 text-xs sm:text-sm leading-relaxed font-semibold">
-                              {storeInfo.shopDescription || (isRTL ? "مرحبًا بكم في متجرنا الرسمي على Olma. لقد تم التحقق من متجرنا لتزويدك بأفضل السلع والخدمات بأمان تام." : "Bienvenue dans notre boutique officielle sur Olma. Découvrez notre rigoureuse sélection d'articles d'excellence aux meilleurs prix du marché.")}
-                           </p>
-                        )}
-
-                        <div className="space-y-3 pt-2">
-                           {!isEditingAbout && (
-                              <div className="flex justify-between items-center text-xs border-b border-zinc-50 pb-2.5">
-                                 <span className="text-zinc-400 font-bold">{isRTL ? "موقع البائع" : "Région d'expédition"}</span>
-                                 <span className="text-zinc-800 font-extrabold">{storeInfo.wilaya || 'Algérie'}</span>
-                              </div>
-                           )}
-                           <div className="flex justify-between items-center text-xs border-b border-zinc-50 pb-2.5">
-                              <span className="text-zinc-400 font-bold">{isRTL ? "تاريخ الانضمام" : "Partenaire depuis"}</span>
-                              <span className="text-zinc-800 font-extrabold">2026</span>
-                           </div>
-                           <div className="flex justify-between items-center text-xs border-b border-zinc-50 pb-2.5">
-                              <span className="text-zinc-400 font-bold">{isRTL ? "إجمالي المنتجات" : "Total d'articles actifs"}</span>
-                              <span className="text-zinc-800 font-extrabold">{totalCount || 0}</span>
-                           </div>
-                           <div className="flex justify-between items-center text-xs">
-                              <span className="text-zinc-400 font-bold">{isRTL ? "المتابعون" : "Abonnés vérifiés"}</span>
-                              <span className="text-indigo-600 font-extrabold">{(storeInfo.followersCount || 0)}</span>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Right Column: Policies and Seals */}
-                  <div className="lg:col-span-7 space-y-6">
-                     <div className="bg-white border border-zinc-100 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-                        <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                           <div className="flex items-center gap-3">
-                              <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                              <h3 className="text-sm font-sans font-bold uppercase text-zinc-900 tracking-wider">
-                                 {isRTL ? "التزامات المتجر وخدمة العملاء" : "Engagements & Service Client"}
-                              </h3>
-                           </div>
-                           {isOwner && (
-                              <button
-                                 onClick={() => setIsEditingAbout(!isEditingAbout)}
-                                 className="text-[10px] font-sans font-bold uppercase tracking-widest text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100"
-                              >
-                                 {isEditingAbout ? (isRTL ? "إلغاء التعديل" : "Annuler") : (isRTL ? "تعديل" : "Modifier")}
-                              </button>
-                           )}
-                        </div>
-
-                        {isEditingAbout ? (
-                           <div className="space-y-5">
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "الوضع القانوني (اختياري)" : "Statut Légal (Optionnel)"}</label>
-                                 <input
-                                    type="text"
-                                    value={editForm.legalStatus}
-                                    onChange={(e) => setEditForm(prev => ({...prev, legalStatus: e.target.value}))}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                    placeholder="SARL, EURL, Auto-entrepreneur..."
-                                 />
-                              </div>
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "متوسط وقت التحضير" : "Délai moyen de préparation"}</label>
-                                 <input
-                                    type="text"
-                                    value={editForm.avgPreparationTime}
-                                    onChange={(e) => setEditForm(prev => ({...prev, avgPreparationTime: e.target.value}))}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                    placeholder="ex: 24 - 48 heures"
-                                 />
-                              </div>
-                              <div className="space-y-1.5">
-                                 <label className="text-[10px] uppercase font-sans font-bold tracking-widest text-zinc-500">{isRTL ? "سياسة الإرجاع" : "Politique de retour et garantie"}</label>
-                                 <textarea
-                                    value={editForm.returnPolicy}
-                                    onChange={(e) => setEditForm(prev => ({...prev, returnPolicy: e.target.value}))}
-                                    rows={3}
-                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-                                    placeholder={isRTL ? "أدخل سياسة الإرجاع..." : "Saisissez votre politique..."}
-                                 />
-                              </div>
-
-                              <div className="pt-4 flex justify-end">
-                                 <button
-                                    onClick={saveAboutInfo}
-                                    disabled={savingAbout}
-                                    className="px-8 py-3.5 bg-zinc-950 text-white hover:bg-zinc-800 rounded-xl font-sans font-bold text-[11px] uppercase tracking-widest transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                                 >
-                                    {savingAbout ? (isRTL ? "جاري الحفظ..." : "Enregistrement...") : (isRTL ? "حفظ التغييرات" : "Enregistrer les modifications")}
-                                 </button>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="space-y-6">
-                              {/* Legal Status badge */}
-                              {storeInfo.legalStatus && (
-                                 <div className="flex gap-4 p-4 rounded-2xl bg-zinc-50/50 border border-zinc-100">
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-zinc-100 flex items-center justify-center shrink-0 shadow-sm">
-                                       <Building2 className="w-4 h-4 text-zinc-500" />
-                                    </div>
-                                    <div>
-                                       <h4 className="text-[10px] font-sans font-bold text-zinc-400 uppercase tracking-wider">{d('legalStatus')}</h4>
-                                       <p className="text-xs font-sans font-bold text-zinc-800 mt-0.5">{storeInfo.legalStatus}</p>
-                                       <p className="text-[11px] text-zinc-400 font-medium mt-1">{t("store_profile.verified_desc", "Vendeur certifié ayant fourni ses documents d'immatriculation officiels.")}</p>
-                                    </div>
-                                 </div>
-                              )}
-
-                              {/* Ship timeline / average prep speed */}
-                              {storeInfo.avgPreparationTime && (
-                                 <div className="flex gap-4 p-4 rounded-2xl bg-orange-50/20 border border-orange-100/50">
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-orange-100/50 flex items-center justify-center shrink-0 shadow-sm">
-                                       <Truck className="w-4 h-4 text-orange-500" />
-                                    </div>
-                                    <div className="flex-1">
-                                       <h4 className="text-[10px] font-sans font-bold text-orange-700 uppercase tracking-wider">{d('prepTime')}</h4>
-                                       <p className="text-xs font-sans font-bold text-zinc-800 mt-0.5">{storeInfo.avgPreparationTime}</p>
-                                       <p className="text-[11px] text-zinc-500 font-semibold mt-1">{t("store_profile.dispatch_desc", "Délai estimé pour confier votre commande à l'agence d'expédition agréée.")}</p>
-                                    </div>
-                                 </div>
-                              )}
-
-                              {/* Returns & Exchange Guarantee Policies */}
-                              {storeInfo.returnPolicy && (
-                                 <div className="flex gap-4 p-4 rounded-2xl bg-blue-50/20 border border-blue-100/50">
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-blue-100/50 flex items-center justify-center shrink-0 shadow-sm">
-                                       <Undo2 className="w-4 h-4 text-blue-500" />
-                                    </div>
-                                    <div className="flex-1">
-                                       <h4 className="text-[10px] font-sans font-bold text-blue-700 uppercase tracking-wider">{d('returnPolicy')}</h4>
-                                       <p className="text-xs font-sans font-bold text-zinc-800 leading-relaxed mt-1 italic">
-                                          "{storeInfo.returnPolicy}"
-                                       </p>
-                                       <p className="text-[11px] text-zinc-400 font-medium mt-2">{t("store_profile.guarantee_desc", "La conformité de la marchandise est garantie selon la législation algérienne sur le commerce électronique.")}</p>
-                                    </div>
-                                 </div>
-                              )}
-                           </div>
-                        )}
-                     </div>
-                  </div>
-               </div>
+               <StoreAboutView
+                  storeInfo={storeInfo}
+                  isOwner={isOwner}
+                  isEditingAbout={isEditingAbout}
+                  setIsEditingAbout={setIsEditingAbout}
+                  savingAbout={savingAbout}
+                  editForm={editForm}
+                  setEditForm={setEditForm}
+                  saveAboutInfo={saveAboutInfo}
+                  totalCount={totalCount}
+                  isRTL={isRTL}
+                  d={d}
+                  t={t}
+               />
             )}
          </div>
       </div>

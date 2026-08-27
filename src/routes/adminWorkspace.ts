@@ -3,6 +3,7 @@ import { db, admin } from "../config/firebase-admin";
 import { ai } from "../config/gemini";
 import { authenticateToken, authorizeAdmin } from "../middlewares/auth";
 import type { AuthenticatedRequest } from "./core";
+import { safeLogger } from "../utils/logger";
 
 const router = Router();
 
@@ -85,7 +86,7 @@ router.post(
 
       res.json({ success: true });
     } catch (error: unknown) {
-      console.error("Resolve Dispute Error:", error);
+      safeLogger.error("Resolve Dispute Error", { orderId, err: error instanceof Error ? error.message : String(error) });
       const message = error instanceof Error ? error.message : "Erreur serveur";
       res.status(500).json({ error: message });
     }
@@ -140,13 +141,13 @@ Retourne UNIQUEMENT un objet JSON valide avec les clés suivantes :
     try {
       parsed = JSON.parse(extractedJson);
     } catch {
-      console.error("Failed to parse Gemini OCR response:", responseText);
+      safeLogger.error("Failed to parse Gemini OCR response", { responseTextLength: responseText.length });
       parsed = { error: "Failed to parse JSON" };
     }
 
     res.json({ result: parsed });
   } catch (err: unknown) {
-    console.error("OCR Error:", err);
+    safeLogger.error("OCR Error", { sellerId: req.params.id, err: err instanceof Error ? err.message : String(err) });
     const message = err instanceof Error ? err.message : "Erreur serveur";
     res.status(500).json({ error: message });
   }
@@ -328,7 +329,7 @@ router.post("/api/v1/admin/sponsorship-packs", authenticateToken, authorizeAdmin
       return res.status(400).json({ error: "Configuration des packs invalide." });
     }
     await SponsorshipPackService.updatePacks(packs);
-    console.log(`🟢 [Olmart Gateway] 🚀 Admin updated Sponsorship Packs configuration.`);
+    safeLogger.info("Admin updated Sponsorship Packs configuration");
     return res.json({ success: true, message: "Configuration des packs de sponsoring enregistrée avec succès." });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Erreur serveur";
@@ -378,7 +379,7 @@ router.post("/api/v1/admin/sponsorship-requests/:id/status", authenticateToken, 
       }
     });
 
-    console.log(`🟢 [Olmart Gateway] 🚀 Admin updated sponsorship request ${id} to status '${status}'.`);
+    safeLogger.info("Admin updated sponsorship request status", { requestId: id, status });
     return res.json({
       success: true,
       message: `Requête de sponsoring ${status === "approved" ? "approuvée" : status === "rejected" ? "rejetée" : "expirée"} avec succès.`

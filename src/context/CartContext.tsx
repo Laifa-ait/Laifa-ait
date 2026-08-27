@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 import { analyticsEngine } from "../utils/analyticsEngine";
 import { apiGet, apiPost } from "../lib/api";
 import toast from "react-hot-toast";
+import { safeLogger } from "../utils/logger";
 
 interface CartContextType {
   cart: CartItem[];
@@ -54,7 +55,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       }
     } catch (e) {
-      console.error("Hydration batch API error:", e);
+      safeLogger.error("Hydration batch API error", { err: e instanceof Error ? e.message : String(e) });
     }
 
     const hydrated = cartItems.map((item) => {
@@ -111,7 +112,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               cloudCart = cartRes.items;
             }
           } catch (err) {
-            console.warn("CartContext: Cloud cart fetch failed. Falling back to local storage.", err);
+            safeLogger.warn("CartContext: Cloud cart fetch failed, falling back to local storage", { err: err instanceof Error ? err.message : String(err) });
           }
 
           try {
@@ -120,7 +121,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               cloudWishlist = wishRes.items;
             }
           } catch (err) {
-            console.warn("CartContext: Cloud wishlist fetch failed. Falling back to local storage.", err);
+            safeLogger.warn("CartContext: Cloud wishlist fetch failed, falling back to local storage", { err: err instanceof Error ? err.message : String(err) });
           }
 
           // Fallback to localStorage if cloud is empty
@@ -168,10 +169,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           finalCart = await hydrateCart(finalCart);
         } catch (hydErr) {
-          console.warn("CartContext: Hydration error, using raw cart:", hydErr);
+          safeLogger.warn("CartContext: Hydration error, using raw cart", { err: hydErr instanceof Error ? hydErr.message : String(hydErr) });
         }
       } catch (globalErr) {
-        console.error("CartContext: Error during auth change sync:", globalErr);
+        safeLogger.error("CartContext: Error during auth change sync", { err: globalErr instanceof Error ? globalErr.message : String(globalErr) });
         finalCart = guestCart;
         finalWishlist = guestWishlist;
       }
@@ -208,7 +209,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       Promise.all([
         apiPost("/api/v1/auth/cart", { items: cartPointers }),
         apiPost("/api/v1/auth/wishlist", { items: wishlist }),
-      ]).catch((err) => console.error("Error syncing cart/wishlist to cloud", err));
+      ]).catch((err) => safeLogger.error("Error syncing cart/wishlist to cloud", { err: err instanceof Error ? err.message : String(err) }));
     }
   }, [cart, wishlist, isInitialized, auth.currentUser]);
 
@@ -321,7 +322,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             );
           }
         } catch (e) {
-          console.warn("Deduplicated background fetch catch:", e);
+          safeLogger.warn("Deduplicated background fetch catch", { err: e instanceof Error ? e.message : String(e) });
         }
         return;
       }
@@ -334,7 +335,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             return data;
           }
         } catch (err) {
-          console.error("Error fetching single product details", err);
+          safeLogger.error("Error fetching single product details", { err: err instanceof Error ? err.message : String(err) });
         }
         return null;
       })();
@@ -361,7 +362,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
         }
       } catch (err) {
-        console.warn("Background fetch of product details skipped:", err);
+        safeLogger.warn("Background fetch of product details skipped", { err: err instanceof Error ? err.message : String(err) });
       } finally {
         delete activeProductFetches.current[productId];
       }

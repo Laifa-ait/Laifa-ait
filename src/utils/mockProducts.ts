@@ -1,4 +1,5 @@
 import { Product } from "../domains/product/product.types";
+import { safeLogger } from "./logger";
 
 export const MOCK_PRODUCTS: Product[] = [
   { id: 'p1', name: 'Robe Kabyle Traditionnelle', price: 12000, promoPrice: 9500, category: 'Mode', image: '/images/placeholders/product.svg', sellerName: 'Artisanat Béjaïa', rating: 4.8, description: 'Robe traditionnelle kabyle faite main.', stock: 15, sellerId: 's1', wilaya: '15', status: 'approved' },
@@ -32,12 +33,7 @@ export const cacheEngine = new LocalMemoryCache();
  * Returns a gorgeous customized message in dev mode of the active safe-by-design layer
  */
 export function handleDevQuotaLogger(context: string, isFromCache: boolean) {
-  if (process.env.NODE_ENV === "development") {
-    (process.env.NODE_ENV === 'development' ? console.log : function(){})(
-      `%c[Olma Dev-Safe Layer] %c${context} %c${isFromCache ? "⚡ SWR CACHED" : "📦 LIVE (Firestore)"}`,
-      "color: #C95D3B; font-weight: bold;",
-      "color: inherit;",
-      isFromCache ? "color: #38bdf8; font-weight: bold;" : "color: #34d399; font-weight: bold;"
-    );
+  if (import.meta.env.DEV) {
+    safeLogger.info(`[Olma Dev-Safe Layer] ${context} ${isFromCache ? "SWR CACHED" : "LIVE (Firestore)"}`);
   }
 }

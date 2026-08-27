@@ -1,3 +1,5 @@
+import { safeLogger } from './logger';
+
 export const forceDownload = async (url: string | undefined, filename: string) => {
   if (!url) return;
   try {
@@ -12,7 +14,9 @@ export const forceDownload = async (url: string | undefined, filename: string) =
     window.URL.revokeObjectURL(blobUrl);
     document.body.removeChild(a);
   } catch (error) {
-    console.error("Error downloading file", error);
+    if (import.meta.env.DEV) {
+      safeLogger.error("Error downloading file", { err: error instanceof Error ? error.message : "Erreur" });
+    }
     window.open(url, '_blank');
   }
 };

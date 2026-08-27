@@ -1,4 +1,5 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { safeLogger } from '../utils/logger';
 
 /**
  * Ce service gère les interactions côté client pour les APIs Google Workspace
@@ -36,7 +37,9 @@ export const getGoogleToken = async (forceRefresh = false): Promise<string> => {
       throw new Error("Impossible de récupérer le token d'accès Google.");
     }
   } catch (error) {
-    console.error("Erreur de connexion Google Workspace", error);
+    if (import.meta.env.DEV) {
+      safeLogger.error("Erreur de connexion Google Workspace", { err: error instanceof Error ? error.message : "Erreur inconnue" });
+    }
     throw error;
   }
 };

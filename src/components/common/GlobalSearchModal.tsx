@@ -17,22 +17,16 @@ import {
 } from "lucide-react";
 import { apiGet } from "../../lib/api";
 import { Product } from "../../domains/product/product.types";
+import { SearchStoreResult, SearchApiResponse } from "../../types/search";
 import { formatPrice } from "../../utils/format";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
-
-interface StoreResult {
-  id?: string;
-  shopName?: string;
-  displayName?: string;
-  logoUrl?: string;
-  wilaya?: string | number;
-}
+import { safeLogger } from "../../utils/logger";
 
 export const GlobalSearchModal: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
-  const [stores, setStores] = useState<StoreResult[]>([]);
+  const [stores, setStores] = useState<SearchStoreResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -75,10 +69,7 @@ export const GlobalSearchModal: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const queryParam = encodeURIComponent(search.trim());
-        const searchRes = await apiGet<{
-          products?: Product[];
-          stores?: StoreResult[];
-        }>(`/api/v1/search?q=${queryParam}&limit=5`).catch(() => null);
+        const searchRes = await apiGet<SearchApiResponse>(`/api/v1/search?q=${queryParam}&limit=5`).catch(() => null);
 
         if (active) {
           if (searchRes && Array.isArray(searchRes.products)) {
@@ -95,7 +86,7 @@ export const GlobalSearchModal: React.FC = () => {
         }
       } catch (err) {
         if (active) {
-          console.error("Global search error:", err);
+          safeLogger.error("Global search error", { err: err instanceof Error ? err.message : String(err) });
           setProducts([]);
           setStores([]);
         }
