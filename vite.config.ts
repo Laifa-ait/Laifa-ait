@@ -14,9 +14,6 @@ export default defineConfig(({mode}) => {
   return {
     define: {
       'process.env.NODE_ENV': JSON.stringify(mode),
-      'process.env': {
-        NODE_ENV: JSON.stringify(mode),
-      }
     },
     oxc: {
       target: 'es2022',
@@ -221,10 +218,8 @@ export default defineConfig(({mode}) => {
       },
     },
     optimizeDeps: {
-      rolldownOptions: {
-        transform: {
-          target: 'es2022',
-        },
+      esbuildOptions: {
+        target: 'es2022',
       },
       include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts']
     },

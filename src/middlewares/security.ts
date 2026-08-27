@@ -118,7 +118,6 @@ export const helmetMiddleware = helmet({
       ],
       frameAncestors: frameAncestorsList,
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: null,
       reportUri: "/api/v1/csp-report",
     },
   },
@@ -127,5 +126,5 @@ export const helmetMiddleware = helmet({
   crossOriginOpenerPolicy: false,
   xFrameOptions: false,
   noSniff: true,
-  hsts: false,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
 });

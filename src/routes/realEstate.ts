@@ -4,6 +4,7 @@ import {
   authenticateToken,
   optionalAuthenticateToken,
   authorizePropertyOwner,
+  authorizeAdmin,
   AuthenticatedRequest,
 } from '../middlewares/auth';
 import { validateRequest, validateQuery } from '../middlewares/validation';
@@ -35,7 +36,7 @@ import {
 
 export const realEstateRouter = Router();
 
-const SEED_REAL_ESTATE_PROPERTIES: Property[] = [
+export const SEED_REAL_ESTATE_PROPERTIES: Property[] = [
   {
     id: 'PROP-ALG-001',
     ownerId: 'owner_demo_oran_01',
@@ -311,7 +312,7 @@ const SEED_REAL_ESTATE_PROPERTIES: Property[] = [
   },
 ];
 
-async function ensureInitialSeedProperties(firestore: FirebaseFirestore.Firestore) {
+export async function ensureInitialSeedProperties(firestore: FirebaseFirestore.Firestore) {
   try {
     const snap = await firestore.collection('real_estate_properties').limit(1).get();
     if (snap.empty) {
@@ -397,8 +398,6 @@ realEstateRouter.get(
           limit: Number(limit),
         });
       }
-
-      await ensureInitialSeedProperties(db);
 
       let query: FirebaseFirestore.Query = db.collection('real_estate_properties');
 
@@ -629,8 +628,6 @@ realEstateRouter.get(
         }
         return res.json({ success: true, data: fallback.map(toPropertyMapResult) });
       }
-
-      await ensureInitialSeedProperties(db);
 
       let query: FirebaseFirestore.Query = db.collection('real_estate_properties');
 
@@ -2119,7 +2116,7 @@ realEstateRouter.put(
 );
 
 // 7. POST /api/v1/real-estate/seed (Admin/Dev Seed trigger)
-realEstateRouter.post('/seed', async (_req, res) => {
+realEstateRouter.post('/seed', authenticateToken, authorizeAdmin, async (_req, res) => {
   try {
     if (!db) {
       return res.status(500).json({ success: false, error: 'Database unavailable.' });

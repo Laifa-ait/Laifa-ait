@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
 import { AuthenticatedRequest, authenticateToken } from "../middlewares/auth";
-import { strictLimiter } from "../middlewares/rateLimiters";
+import { rateLimit } from "express-rate-limit";
 import {
   CreateNegotiationSchema,
   InitiateConversationSchema,
@@ -14,8 +14,9 @@ import { PushNotificationService } from "../domains/notifications/services/PushN
 
 const router = Router();
 
-// Apply strict rate limiting on message and negotiation routes
-router.use(strictLimiter);
+// Apply permissive rate limiting on message and negotiation routes
+const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 60 });
+router.use(chatLimiter);
 
 /**
  * GET /api/v1/messaging/conversations

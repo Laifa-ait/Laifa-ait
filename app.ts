@@ -1,5 +1,5 @@
-const bootStartTime = Date.now();
 import "dotenv/config";
+const bootStartTime = Date.now();
 import * as Sentry from "@sentry/node";
 import http from "http";
 import express, { Request, Response, NextFunction } from "express";
@@ -46,7 +46,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 const httpServer = http.createServer(app);
 
 // Express running behind Cloud Run / Nginx reverse proxy (1 hop).
