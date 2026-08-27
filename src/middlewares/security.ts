@@ -85,6 +85,8 @@ export const helmetMiddleware = helmet({
         "'self'",
         "data:",
         "blob:",
+        "https://olmart.dz",
+        "https://*.olmart.dz",
         "https://firebasestorage.googleapis.com",
         "https://lh3.googleusercontent.com",
         "https://images.unsplash.com",
