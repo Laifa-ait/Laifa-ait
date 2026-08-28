@@ -15,7 +15,7 @@
     "start": "NODE_ENV=production node dist/server.cjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=0 playwright test",
     "lint": "NODE_OPTIONS=\"--max-old-space-size=1024\" eslint \"{src,scripts}/**/*.{ts,tsx}\" server.ts app.ts",
     "typecheck": "NODE_OPTIONS=\"--max-old-space-size=1536\" node ./node_modules/typescript/bin/tsc --noEmit",
     "format": "prettier --write \"{src,scripts}/**/*.{js,jsx,ts,tsx,css,md}\" server.ts app.ts",

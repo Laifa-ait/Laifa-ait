@@ -12,21 +12,47 @@ const isTestEnv =
   (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
   (typeof import.meta !== "undefined" && import.meta.env?.MODE === "test");
 
+const isStringAndValid = (val: unknown): val is string => 
+  typeof val === "string" && 
+  val.trim().length > 0 && 
+  val !== "undefined" && 
+  val !== "null" && 
+  !val.includes("YOUR_") && 
+  !val.includes("your_");
+
+const rawApiKey = import.meta.env?.VITE_FIREBASE_API_KEY;
+const rawAuthDomain = import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN;
+const rawProjectId = import.meta.env?.VITE_FIREBASE_PROJECT_ID;
+const rawStorageBucket = import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET;
+const rawMessagingSenderId = import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID;
+const rawAppId = import.meta.env?.VITE_FIREBASE_APP_ID;
+
+const apiKey = (isStringAndValid(rawApiKey) && rawApiKey.trim().startsWith("AIzaSy"))
+  ? rawApiKey.trim()
+  : "AIzaSyFakeKeyForRenderingPurposeOnly123";
+
+const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "olmart-marketplace.firebaseapp.com";
+const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "olmart-marketplace";
+const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "olmart-marketplace.appspot.com";
+const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : "1234567890";
+const appId = (isStringAndValid(rawAppId) && rawAppId.includes(":")) ? rawAppId.trim() : "1:1234567890:web:abcdef";
+
 const clientConfig = {
-  apiKey: import.meta.env?.VITE_FIREBASE_API_KEY || (isTestEnv ? "fake-test-key" : ""),
-  authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || (isTestEnv ? "localhost" : ""),
-  projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || (isTestEnv ? "test-project" : ""),
-  storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || (isTestEnv ? "test-project.appspot.com" : ""),
-  messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || (isTestEnv ? "1234567890" : ""),
-  appId: import.meta.env?.VITE_FIREBASE_APP_ID || (isTestEnv ? "1:1234567890:web:abcdef" : ""),
+  apiKey,
+  authDomain,
+  projectId,
+  storageBucket,
+  messagingSenderId,
+  appId,
   measurementId: import.meta.env?.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const requiredVars = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VITE_FIREBASE_PROJECT_ID"];
 if (!isTestEnv) {
   for (const key of requiredVars) {
-    if (!import.meta.env?.[key]) {
-      safeLogger.warn("[Firebase Client] ⚠️ Variable d'environnement manquante", { key });
+    const val = import.meta.env?.[key];
+    if (!isStringAndValid(val)) {
+      safeLogger.warn("[Firebase Client] ⚠️ Variable d'environnement manquante ou invalide", { key });
     }
   }
 }
@@ -50,16 +76,13 @@ try {
     storage = getStorage(app);
     const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID;
     db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
-  } else if (isTestEnv) {
-    safeLogger.warn("[Firebase Client] ⚠️ Initialisation Firebase en mode test tolérée avec fallback", { err: String(err) });
+  } else {
+    const errorMsg = errorObj?.message || String(err);
+    safeLogger.error("[Firebase Client] ❌ Échec critique de l'initialisation Firebase, fallback actif pour éviter l'écran blanc", { err: errorMsg });
     app = (getApps()[0] || {}) as FirebaseApp;
     auth = {} as Auth;
     storage = {} as FirebaseStorage;
     db = {} as Firestore;
-  } else {
-    const errorMsg = errorObj?.message || String(err);
-    safeLogger.error("[Firebase Client] ❌ Échec critique de l'initialisation Firebase", { err: errorMsg });
-    throw new Error(`[Firebase Client] Échec d'initialisation : ${errorMsg}`);
   }
 }
 
