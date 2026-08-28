@@ -68,7 +68,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     onConfirm();
                     onClose();
                   }}
-                  className="flex-1 px-4 py-3 bg-[var(--color-slate-900, #0f172a)] hover:bg-[#0a0b0c] text-white rounded-xl font-bold tracking-wide transition-colors shadow-lg"
+                  className="flex-1 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md hover:shadow-lg cursor-pointer"
                 >
                   {confirmText}
                 </button>

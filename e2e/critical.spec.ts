@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Parcours E2E Critiques OLMART', () => {
 
   test('1. Visiteur — Homepage, Header & Navigation', async ({ page }) => {
+    page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+    page.on('pageerror', err => console.log('BROWSER EXCEPTION:', err.message, err.stack));
+
     // 1. Accès page d'accueil
     await page.goto('/');
     await expect(page).toHaveTitle(/Olma/i);

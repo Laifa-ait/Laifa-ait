@@ -249,7 +249,7 @@ export const Navbar: React.FC = () => {
                 aria-expanded={isLangDropdownOpen}
                 aria-haspopup="true"
                 aria-label="Changer de langue"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors py-1.5 px-3 bg-slate-100 rounded-lg cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 transition-all h-10 px-3 bg-slate-50 rounded-full cursor-pointer"
               >
                 <Globe className="w-4 h-4 text-slate-500" />
                 <span className="uppercase">{lang ? lang.split("-")[0] : "fr"}</span>
@@ -284,11 +284,11 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={() => setIsWishlistOpen(true)}
-              className="hidden lg:flex items-center justify-center text-slate-600 hover:bg-pink-50 hover:text-pink-500 transition-colors cursor-pointer relative bg-transparent border-none w-9 h-9 sm:w-10 sm:h-10 rounded-full"
+              className="hidden lg:flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 transition-all cursor-pointer relative bg-slate-50 w-10 h-10 rounded-full"
             >
-              <Heart className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]" />
+              <Heart className="w-5 h-5 stroke-[1.5] text-slate-500" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center text-[10px] font-bold">
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm border border-white">
                   {wishlist.length}
                 </span>
               )}
@@ -297,11 +297,11 @@ export const Navbar: React.FC = () => {
             {/* Panier */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center justify-center text-slate-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors cursor-pointer relative bg-transparent border-none w-9 h-9 sm:w-10 sm:h-10 rounded-full"
+              className="flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 transition-all cursor-pointer relative bg-slate-50 w-10 h-10 rounded-full"
             >
-              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]" />
+              <ShoppingBag className="w-5 h-5 stroke-[1.5] text-slate-500" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[11px] font-bold shadow-sm">
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm border border-white">
                   {cartCount}
                 </span>
               )}
@@ -321,9 +321,9 @@ export const Navbar: React.FC = () => {
               aria-expanded={isUserDropdownOpen}
               aria-haspopup="true"
               aria-label="Menu utilisateur"
-              className="flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-zinc-900 transition-colors cursor-pointer bg-transparent border-none w-9 h-9 sm:w-10 sm:h-10 rounded-full"
+              className="flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 transition-all cursor-pointer bg-slate-50 w-10 h-10 rounded-full"
             >
-              <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]" />
+              <UserIcon className="w-5 h-5 stroke-[1.5] text-slate-500" />
             </button>
 
             {isUserDropdownOpen && (
@@ -413,10 +413,10 @@ export const Navbar: React.FC = () => {
             {/* PC Version Hamburger / Sandwich Menu on the Right */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="hidden lg:flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-zinc-900 transition-all cursor-pointer bg-transparent border-none w-10 h-10 rounded-full shrink-0 ml-1"
+              className="hidden lg:flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 transition-all cursor-pointer bg-slate-50 w-10 h-10 rounded-full shrink-0"
               title={t("menu") || "Menu"}
             >
-              <Menu className="w-6 h-6 stroke-[1.5]" />
+              <Menu className="w-5 h-5 stroke-[1.5] text-slate-500" />
             </button>
           </div>
         </div>

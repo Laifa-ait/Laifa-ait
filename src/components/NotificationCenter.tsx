@@ -410,22 +410,22 @@ export const NotificationCenter: React.FC = () => {
     <div className="relative shrink-0" ref={dropdownRef}>
       <motion.button
         onClick={toggleOpen}
-        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full items-center justify-center bg-white/50 text-[var(--color-slate-900, #0f172a)] border border-[var(--color-orange-600, #ea580c)]/50 hover:bg-white transition-all active:scale-95 cursor-pointer relative flex group"
+        className="w-10 h-10 rounded-full items-center justify-center bg-slate-50 text-slate-600 border border-slate-200/60 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 cursor-pointer relative flex group shadow-none"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         title={t("Notifications") || "Notifications"}
       >
-        <Bell className="w-5 h-5 stroke-[2] text-[var(--color-slate-900, #0f172a)]/70 group-hover:text-[var(--color-slate-900, #0f172a)]" />
+        <Bell className="w-5 h-5 stroke-[1.5] text-slate-500 group-hover:text-slate-900" />
         <AnimatePresence>
           {unreadCount > 0 && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-1 -right-1 w-4 h-4 shrink-0"
+              className="absolute -top-1 -right-1 w-4.5 h-4.5 shrink-0"
             >
-              <span className="absolute inline-flex w-full h-full rounded-full bg-[var(--color-orange-600, #ea580c)] opacity-75 animate-ping" />
-              <span className="relative flex bg-[var(--color-orange-600, #ea580c)] text-white text-[9px] rtl:text-[11px] font-sans font-bold w-4 h-4 rounded-full items-center justify-center border border-[#FAF8F5] shadow-sm">
+              <span className="absolute inline-flex w-full h-full rounded-full bg-orange-600 opacity-75 animate-ping" />
+              <span className="relative flex bg-orange-600 text-white text-[9px] rtl:text-[11px] font-sans font-bold w-4.5 h-4.5 rounded-full items-center justify-center border border-white shadow-sm">
                 {unreadCount}
               </span>
             </motion.div>

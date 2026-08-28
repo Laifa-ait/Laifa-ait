@@ -47,7 +47,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const httpServer = http.createServer(app);
 
 // Express running behind Cloud Run / Nginx reverse proxy (1 hop).

@@ -32,7 +32,7 @@ export const ShippingLabelSettings: React.FC<ShippingLabelSettingsProps> = ({
               <button
                 key={sz.id}
                 onClick={() => setLabelSize(sz.id)}
-                className={`py-2 px-2 rounded-xl text-[10px] rtl:text-[12px] font-black uppercase tracking-wider rtl:tracking-normal transition-all border cursor-pointer ${labelSize === sz.id ? "bg-[var(--color-slate-900, #0f172a)] text-white border-transparent" : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:bg-zinc-100"}`}
+                className={`py-2 px-2 rounded-xl text-[10px] rtl:text-[12px] font-black uppercase tracking-wider rtl:tracking-normal transition-all border cursor-pointer ${labelSize === sz.id ? "bg-slate-900 text-white border-transparent" : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:bg-zinc-100"}`}
               >
                 {sz.label}
               </button>
@@ -69,7 +69,7 @@ export const ShippingLabelSettings: React.FC<ShippingLabelSettingsProps> = ({
       </div>
 
       {/* Direct Seller Logistics Info Box */}
-      <div className="bg-[var(--color-slate-900, #0f172a)] text-white rounded-3xl p-6 shadow-md space-y-4">
+      <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-md space-y-4">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-orange-400" />
           <h4 className="text-xs rtl:text-sm font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-[#FAF8F5]">
