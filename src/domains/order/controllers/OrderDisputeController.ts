@@ -242,7 +242,7 @@ Veuillez analyser ces éléments textuels ainsi que les photos d'évidence joint
           }
 
           const aiResponse = await genAI.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.0-flash",
             contents: { parts },
             config: {
               systemInstruction: systemInstruction,

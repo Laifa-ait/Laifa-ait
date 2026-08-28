@@ -8,12 +8,12 @@ import { useUI } from "../context/UIContext";
 export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnRoutes = [] }) => {
   const { currentUser, userProfile } = useAuth();
   const { cart, wishlist } = useCart();
-  const { setIsCartOpen, setIsWishlistOpen } = useUI();
+  const { setIsCartOpen, setIsWishlistOpen, isStickyBuyBarVisible } = useUI();
   const location = useLocation();
   const navigate = useNavigate();
 
   const isHidden = hideOnRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + "/"));
-  if (isHidden) {
+  if (isHidden || isStickyBuyBarVisible) {
     return null;
   }
 
@@ -28,6 +28,8 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
         {/* Home */}
         <button
           onClick={() => navigate("/")}
+          aria-label="Accueil"
+          aria-current={isActive("/") ? "page" : undefined}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
         >
           {isActive("/") && <div className="absolute inset-0 bg-sky-50 rounded-2xl -z-10" />}
@@ -40,6 +42,8 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
         {/* Categories */}
         <button
           onClick={() => navigate("/categories")}
+          aria-label="Catégories"
+          aria-current={isActive("/categories") ? "page" : undefined}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
         >
           {isActive("/categories") && <div className="absolute inset-0 bg-sky-50 rounded-2xl -z-10" />}
@@ -52,6 +56,7 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
         {/* Wishlist */}
         <button
           onClick={() => setIsWishlistOpen(true)}
+          aria-label={wishlist.length > 0 ? `Favoris, ${wishlist.length} ${wishlist.length === 1 ? "article" : "articles"}` : "Favoris"}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all relative bg-transparent border-none cursor-pointer"
         >
           <Heart
@@ -66,6 +71,7 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
         {/* Cart */}
         <button
           onClick={() => setIsCartOpen(true)}
+          aria-label={cart.length > 0 ? `Panier, ${cart.length} ${cart.length === 1 ? "article" : "articles"}` : "Panier"}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all relative bg-transparent border-none cursor-pointer"
         >
           <div className="relative">
@@ -74,7 +80,10 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
               strokeWidth={cart.length > 0 ? 2.5 : 2}
             />
             {cart.length > 0 && (
-              <span className="absolute -top-1.5 -right-2 w-4.5 h-4.5 bg-zinc-900 text-white text-[9px] rounded-full flex items-center justify-center font-bold border-[1.5px] border-white shadow-sm">
+              <span 
+                className="absolute -top-1.5 -right-2 w-4.5 h-4.5 bg-zinc-900 text-white text-[9px] rounded-full flex items-center justify-center font-bold border-[1.5px] border-white shadow-sm"
+                aria-hidden="true"
+              >
                 {cart.length}
               </span>
             )}
@@ -96,6 +105,8 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
               navigate("/dashboard/buyer");
             }
           }}
+          aria-label="Compte"
+          aria-current={location.pathname.startsWith("/dashboard") ? "page" : undefined}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
         >
           {location.pathname.startsWith("/dashboard") && (

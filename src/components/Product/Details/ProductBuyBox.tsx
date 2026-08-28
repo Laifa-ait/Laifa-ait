@@ -3,6 +3,7 @@ import { ShoppingBag, Heart, Share2, ShieldCheck, Scale } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useComparatorStore } from "../../../store/useComparatorStore";
 import { Product } from "../../../domains/product/product.types";
+import { useUI } from "../../../context/UIContext";
 
 interface BuyBoxProps {
   product: Product;
@@ -28,11 +29,20 @@ export const ProductBuyBox: React.FC<BuyBoxProps> = ({
   const { t } = useTranslation();
   const { products: comparedProducts, addProduct: addToCompare, removeProduct: removeFromCompare } = useComparatorStore();
   const isCompared = comparedProducts.some(p => p.id === product.id);
+  const { setIsStickyBuyBarVisible } = useUI();
+
+  React.useEffect(() => {
+    setIsStickyBuyBarVisible(!!isSticky);
+    return () => {
+      setIsStickyBuyBarVisible(false);
+    };
+  }, [isSticky, setIsStickyBuyBarVisible]);
 
   return (
     <div
       ref={stickyRef}
       className={`z-40 ${isSticky ? "fixed bottom-0 left-0 right-0 p-3 sm:p-5 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-[0_-10px_30px_rgba(40,30,20,0.08)] animate-in slide-in-from-bottom-12 duration-300" : "relative"}`}
+      style={isSticky ? { paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" } : undefined}
     >
       <div className={`flex gap-2 sm:gap-3.5 max-w-7xl mx-auto ${isSticky ? "justify-center" : ""}`}>
         <button

@@ -13,13 +13,12 @@ export const ai = new GoogleGenAI({
 // Decorate generateContent to add automatic retries (exponential backoff) and fallback models on 503/429 errors
 const originalGenerateContent = ai.models.generateContent.bind(ai.models);
 
-export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
 
 const FALLBACK_MODELS = [
-  "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-1.5-flash",
-  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
 ];
 
 ai.models.generateContent = async function (params: Parameters<typeof originalGenerateContent>[0]) {

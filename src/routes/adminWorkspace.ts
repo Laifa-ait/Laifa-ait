@@ -122,7 +122,7 @@ Retourne UNIQUEMENT un objet JSON valide avec les clés suivantes :
 `;
 
     const result = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.0-flash",
       contents: [
         { role: "user", parts: [{ inlineData: { data: base64Data, mimeType } }, { text: prompt }] }
       ]

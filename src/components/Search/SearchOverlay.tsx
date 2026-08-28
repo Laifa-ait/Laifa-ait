@@ -46,6 +46,8 @@ export const SearchOverlay: React.FC = () => {
   const trendingSearches = useTrendingSearches();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastActiveElementRef = useRef<HTMLElement | null>(null);
   const isRtl = i18n.language === "ar";
 
   // Global '/' listener
@@ -72,9 +74,45 @@ export const SearchOverlay: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setIsSearchOpen]);
 
+  // Focus Trap inside the search overlay
+  useEffect(() => {
+    if (!isSearchOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        if (!containerRef.current) return;
+        const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          // Shift + Tab -> Wrap to last element
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          // Tab -> Wrap to first element
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchOpen]);
+
   // Handle opening state, scroll lock, and autofocus
   useEffect(() => {
     if (isSearchOpen) {
+      lastActiveElementRef.current = document.activeElement as HTMLElement;
       document.body.style.overflow = "hidden";
       setTimeout(() => inputRef.current?.focus(), 150);
 
@@ -108,6 +146,15 @@ export const SearchOverlay: React.FC = () => {
       setLocalSearch("");
       setResults([]);
       setApiError(false);
+
+      // Restore focus to the element that triggered the search overlay
+      if (lastActiveElementRef.current) {
+        const elementToFocus = lastActiveElementRef.current;
+        setTimeout(() => {
+          elementToFocus.focus();
+        }, 50);
+        lastActiveElementRef.current = null;
+      }
     }
     return () => {
       document.body.style.overflow = "";
@@ -227,6 +274,10 @@ export const SearchOverlay: React.FC = () => {
     <AnimatePresence>
       {isSearchOpen && (
         <motion.div
+          ref={containerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="global-search-title"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -234,11 +285,20 @@ export const SearchOverlay: React.FC = () => {
           className="fixed inset-0 z-[1000] bg-transparent/95 backdrop-blur-xl overflow-y-auto flex flex-col justify-start min-h-screen text-[var(--color-slate-900, #0f172a)] pb-16"
           dir={isRtl ? "rtl" : "ltr"}
         >
+          {/* Live Announcement for screen readers (Accessibility) */}
+          <div className="sr-only" aria-live="polite" role="status">
+            {localSearch.trim() && !isSearching && (
+              results.length > 0 || matchedStores.length > 0
+                ? `${results.length} ${t("articles") || "articles"} et ${matchedStores.length} ${t("matching_stores") || "boutiques"} trouvés.`
+                : `${t("search_no_results") || "Aucun résultat trouvé pour"} ${localSearch}`
+            )}
+          </div>
+
           {/* Header Bar */}
           <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 flex items-center justify-between border-b border-[var(--color-orange-600, #ea580c)] shrink-0">
             <div className="flex items-center gap-3">
               <Compass className="w-6 h-6 text-[var(--color-orange-600, #ea580c)] animate-pulse" />
-              <span className="font-display italic text-lg tracking-wide uppercase text-[var(--color-slate-900, #0f172a)]/90">
+              <span id="global-search-title" className="font-display italic text-lg tracking-wide uppercase text-[var(--color-slate-900, #0f172a)]/90">
                 {t("search_global") || "Recherche globale"}
               </span>
               <div className="hidden sm:flex items-center gap-1 bg-[var(--color-slate-900, #0f172a)]/5 border border-[var(--color-slate-900, #0f172a)]/10 px-2 py-0.5 rounded-lg text-[10px] rtl:text-[12px] text-zinc-500 font-mono">

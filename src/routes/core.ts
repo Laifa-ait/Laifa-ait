@@ -1038,7 +1038,7 @@ Format de retour JSON STRICT (sans markdown, uniquement le JSON):
 Répondez uniquement avec le JSON.`;
 
         const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-2.0-flash",
           contents: prompt,
           config: { responseMimeType: "application/json" }
         });

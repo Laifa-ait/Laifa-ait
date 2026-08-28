@@ -370,7 +370,7 @@ Veuillez réanalyser le dossier complet incluant la nouvelle réponse du vendeur
           }
 
           const aiResponse = await genAI.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.0-flash",
             contents: { parts },
             config: {
               systemInstruction: systemInstruction,
