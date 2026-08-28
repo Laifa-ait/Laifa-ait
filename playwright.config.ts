@@ -24,6 +24,10 @@ export default defineConfig({
   webServer: {
     command: 'npm run start',
     url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
+    env: {
+      NODE_ENV: 'production',
+      CSRF_SECRET: 'olmart_production_test_csrf_secret_key_2026_secure_abcdef123456789',
+    },
   },
 });
