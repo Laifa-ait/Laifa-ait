@@ -75,7 +75,7 @@ export const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
-    return callback(new Error("Blocked by CORS: Origin not authorized."));
+    return callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

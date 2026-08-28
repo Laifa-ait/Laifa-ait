@@ -20,7 +20,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
     const token = generateCsrfToken("user_123");
     expect(token).toBeDefined();
     expect(typeof token).toBe("string");
-    expect(verifyCsrfToken(token)).toBe(true);
+    expect(verifyCsrfToken(token, "user_123")).toBe(true);
   });
 
   it("rejects tampered or forged CSRF tokens", () => {
@@ -48,7 +48,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
     const token = generateCsrfToken("prod_user_456");
     expect(token).toBeDefined();
-    expect(verifyCsrfToken(token)).toBe(true);
+    expect(verifyCsrfToken(token, "prod_user_456")).toBe(true);
   });
 
   it("allows safe HTTP methods (GET, HEAD, OPTIONS) without checking token", () => {
@@ -110,7 +110,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("allows requests with valid X-CSRF-Token header", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "test_prod_key";
+    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
 
     const token = generateCsrfToken("user_789");
     let nextCalled = false;
@@ -119,6 +119,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
       headers: {
         "x-csrf-token": token,
       },
+      user: { uid: "user_789" },
       originalUrl: "/api/v1/user/profile",
     } as unknown as Request;
 
