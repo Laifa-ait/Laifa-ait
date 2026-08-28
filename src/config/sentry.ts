@@ -1,9 +1,11 @@
 import * as Sentry from "@sentry/react";
 import { safeLogger } from "../utils/logger";
 
-if (process.env.NODE_ENV === "production") {
+const isProduction = typeof import.meta !== "undefined" && import.meta.env?.PROD;
+
+if (isProduction) {
   try {
-    const dsn = process.env.VITE_SENTRY_DSN || import.meta.env.VITE_SENTRY_DSN;
+    const dsn = typeof import.meta !== "undefined" ? import.meta.env?.VITE_SENTRY_DSN : undefined;
     if (dsn && dsn !== "https://dummy@sentry.io/1" && !dsn.includes("dummy")) {
       Sentry.init({
         dsn: dsn,

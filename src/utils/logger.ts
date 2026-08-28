@@ -59,7 +59,7 @@ export function sanitizeVal<T>(val: T): T {
 
 // Configured Pino instance
 export const loggerInstance = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level: (typeof process !== "undefined" && process.env?.LOG_LEVEL) || "info",
   formatters: {
     level: (label) => {
       return { level: label.toUpperCase() };
