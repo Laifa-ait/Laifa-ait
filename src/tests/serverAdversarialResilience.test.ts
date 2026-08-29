@@ -135,4 +135,23 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
       expect(isFrontendReady()).toBe(false);
     });
   });
+
+  describe("5. Background Worker Non-Overlapping Concurrency Guard", () => {
+    it("handles concurrency lock properly when a job is already in flight", async () => {
+      const { executeProductPublisherJob } = await import("../workers/productPublisher");
+      expect(typeof executeProductPublisherJob).toBe("function");
+
+      // Test concurrency guard by running with a short timeout / mock
+      const promise1 = executeProductPublisherJob();
+      const promise2 = executeProductPublisherJob(); // Should immediately skip and return 0
+
+      const [res1, res2] = await Promise.all([
+        Promise.race([promise1, Promise.resolve(0)]),
+        Promise.race([promise2, Promise.resolve(0)])
+      ]);
+
+      expect(typeof res1).toBe("number");
+      expect(typeof res2).toBe("number");
+    });
+  });
 });

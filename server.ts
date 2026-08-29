@@ -97,12 +97,26 @@ export async function startServer(): Promise<http.Server> {
       startProductPublisherWorker();
     }
 
-    // 5. Bind and listen on Port 3000 with explicit error rejection
+    // 5. Bind and listen on Port 3000 with explicit error rejection and cleanup rollback
     safeLogger.info(`[Olmart Gateway] 🚀 Booting Express HTTP Server...`);
     return new Promise<http.Server>((resolve, reject) => {
       const onError = (err: Error) => {
         httpServer.off("error", onError);
         startServerPromise = null;
+
+        // Rollback all initialized subsystems on listen failure
+        try {
+          stopProductCacheCleanupTimer();
+        } catch {
+          // Safe no-op
+        }
+        try {
+          stopProductPublisherWorker();
+        } catch {
+          // Safe no-op
+        }
+
+        safeLogger.error("[Olmart Gateway] ❌ HTTP Listen error during startup, all subsystems rolled back", { err: err.message });
         reject(err);
       };
 
@@ -126,6 +140,15 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("unhandledRejection", (reason: unknown) => {
   const errorMsg = reason instanceof Error ? reason.stack || reason.message : String(reason);
   safeLogger.error("[Olmar Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg });
+
+  // If unhandled rejection indicates a fatal system/driver error, trigger graceful shutdown
+  if (
+    typeof errorMsg === "string" &&
+    (errorMsg.includes("FATAL_DB_CORRUPTION") || errorMsg.includes("EADDRINUSE") || errorMsg.includes("MODULE_NOT_FOUND"))
+  ) {
+    safeLogger.error("[Olmar Gateway] 🚨 Critical unhandled rejection encountered. Initiating emergency shutdown...");
+    shutdown("CRITICAL_UNHANDLED_REJECTION");
+  }
 });
 
 process.on("uncaughtException", (error: Error) => {
