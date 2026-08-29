@@ -9,6 +9,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    testTimeout: 30000,
+    hookTimeout: 30000,
     setupFiles: ['./src/tests/setup.ts'],
     include: ['src/tests/**/*.test.ts', 'src/tests/**/*.test.tsx', 'src/tests/**/*.spec.ts'],
     alias: {
@@ -22,10 +24,10 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       thresholds: {
-        lines: 30,
-        functions: 30,
-        branches: 25,
-        statements: 30,
+        lines: 35,
+        functions: 35,
+        branches: 30,
+        statements: 35,
       },
       exclude: [
         'coverage/**',

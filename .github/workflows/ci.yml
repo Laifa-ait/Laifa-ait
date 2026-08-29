@@ -42,18 +42,32 @@ jobs:
           cache: 'npm'
 
       - name: Install Clean Dependencies
+        timeout-minutes: 5
         run: npm ci
 
-      - name: Security Audit (Production Dependencies)
-        run: npm audit --audit-level=critical --omit=dev
+      - name: Verify Lockfile Integrity & No Drift
+        timeout-minutes: 2
+        run: |
+          git diff --exit-code package-lock.json || (echo "❌ package-lock.json is out of sync with package.json" && exit 1)
+
+      - name: Security Audit (Production Dependencies - High+)
+        timeout-minutes: 3
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Security Audit (All Dependencies - High+)
+        timeout-minutes: 3
+        run: npm audit --audit-level=high
 
       - name: ESLint Code Quality
+        timeout-minutes: 3
         run: npm run lint
 
       - name: TypeScript Typecheck
+        timeout-minutes: 3
         run: npm run typecheck
 
       - name: Run Vitest Test Suite with Coverage (with Firebase Emulators)
+        timeout-minutes: 6
         run: npx firebase emulators:exec --only firestore,storage "npm run test:coverage"
 
       - name: Upload Test Coverage Report
@@ -65,10 +79,19 @@ jobs:
           retention-days: 7
 
       - name: Validate Image Assets
+        timeout-minutes: 2
         run: npm run validate:assets
 
       - name: Build Application (SPA + Server)
+        timeout-minutes: 5
         run: npm run build
+
+      - name: Upload Build Artifacts for E2E
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 1
 
   e2e:
     name: Playwright E2E Tests (Chromium)
@@ -87,15 +110,21 @@ jobs:
           cache: 'npm'
 
       - name: Install Clean Dependencies
+        timeout-minutes: 5
         run: npm ci
 
+      - name: Download Build Artifacts from Previous Job
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
       - name: Install Playwright Browsers (Chromium)
+        timeout-minutes: 5
         run: npx playwright install --with-deps chromium
 
-      - name: Build Application
-        run: npm run build
-
       - name: Run Playwright E2E Tests (Headless Chromium)
+        timeout-minutes: 8
         env:
           CSRF_SECRET: olmart_production_test_csrf_secret_key_2026_secure_abcdef123456789
         run: npx playwright test --project=chromium
