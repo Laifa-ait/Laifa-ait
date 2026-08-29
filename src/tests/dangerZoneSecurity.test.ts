@@ -43,13 +43,15 @@ vi.mock("../config/firebase-admin", () => {
     },
     db: {
       collection: (_name: string) => {
-        return {
+        const collMock = {
           add: auditLogsAddMock,
-          get: vi.fn().mockResolvedValue({ docs: [] }),
+          get: vi.fn().mockResolvedValue({ empty: true, docs: [], size: 0 }),
+          limit: vi.fn().mockImplementation(() => collMock),
           doc: (docName: string) => ({
             get: docName === "danger_zone" ? dangerZoneGetMock : vi.fn().mockResolvedValue({ exists: false }),
           }),
         };
+        return collMock;
       },
       batch: () => ({
         delete: vi.fn(),
