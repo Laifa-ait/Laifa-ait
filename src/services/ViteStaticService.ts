@@ -25,7 +25,30 @@ export function isFrontendReady(): boolean {
   if (process.env.NODE_ENV !== "production") {
     return true;
   }
-  return isStaticBuildValid && cachedHtmlTemplate.length > 50;
+  return isStaticBuildValid && cachedHtmlTemplate.length > 50 && cachedHtmlTemplate.includes('id="root"');
+}
+
+/**
+ * Validates production HTML template structure and ensures all referenced JavaScript asset chunks exist on disk.
+ */
+export function validateProductionHtmlTemplate(content: string, distPath: string): boolean {
+  if (!content || content.trim().length <= 50 || !content.includes('id="root"')) {
+    return false;
+  }
+
+  // Deep verification: Extract ALL referenced /assets/*.js script chunks and ensure each exists on disk
+  const scriptMatches = content.matchAll(/src=["'](\/assets\/[^"']+\.js)["']/gi);
+  for (const match of scriptMatches) {
+    if (match[1]) {
+      const referencedJsPath = path.join(distPath, match[1].replace(/^\//, ""));
+      if (!existsSync(referencedJsPath)) {
+        safeLogger.error("[CRITICAL BUILD ERROR] Referenced JS asset chunk does not exist on disk", { referencedJsPath });
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 export async function setupViteAndStaticServing(app: Express): Promise<void> {
@@ -85,26 +108,11 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
   try {
     if (existsSync(indexHtmlPath)) {
       const content = await fsPromises.readFile(indexHtmlPath, "utf-8");
-      if (content && content.trim().length > 50 && content.includes('id="root"')) {
-        // Deep verification: Check referenced JS entry script/asset exists
-        const scriptMatch = content.match(/src=["'](\/assets\/[^"']+\.js)["']/i);
-        let assetsValid = true;
-        if (scriptMatch && scriptMatch[1]) {
-          const referencedJsPath = path.join(distPath, scriptMatch[1].replace(/^\//, ""));
-          if (!existsSync(referencedJsPath)) {
-            safeLogger.error("[CRITICAL BUILD ERROR] Referenced main JS chunk does not exist on disk", { referencedJsPath });
-            assetsValid = false;
-          }
-        }
-
-        if (assetsValid) {
-          cachedHtmlTemplate = content;
-          isStaticBuildValid = true;
-        } else {
-          isStaticBuildValid = false;
-        }
+      if (validateProductionHtmlTemplate(content, distPath)) {
+        cachedHtmlTemplate = content;
+        isStaticBuildValid = true;
       } else {
-        safeLogger.error("[CRITICAL BUILD ERROR] dist/index.html is empty or invalid (missing root container)");
+        safeLogger.error("[CRITICAL BUILD ERROR] dist/index.html failed production structural/asset verification");
         isStaticBuildValid = false;
       }
     } else {

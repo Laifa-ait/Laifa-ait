@@ -116,13 +116,28 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
       setStaticStateForTesting(true, "<html><head><title>No Root</title></head><body>Empty</body></html>");
       
       const ready = isFrontendReady();
-      expect(ready).toBe(true); // Content length check; deep validation in ViteStaticService ensures root presence
+      expect(ready).toBe(false); // Validated: missing id="root" correctly marks frontend as NOT ready
     });
 
     it("marks frontend as unavailable if index.html template is under 50 characters", () => {
       process.env.NODE_ENV = "production";
       setStaticStateForTesting(true, "short");
       expect(isFrontendReady()).toBe(false);
+    });
+
+    it("marks frontend as ready only when valid, length > 50, and id='root' is present", () => {
+      process.env.NODE_ENV = "production";
+      setStaticStateForTesting(true, '<html><head><title>Olmart</title></head><body><div id="root">App Content</div></body></html>');
+      expect(isFrontendReady()).toBe(true);
+    });
+
+    it("validateProductionHtmlTemplate validates all referenced JS chunks across multiple tags", async () => {
+      const { validateProductionHtmlTemplate } = await import("../services/ViteStaticService");
+      
+      const htmlWithNonExistentChunk = '<!DOCTYPE html><html><head><script src="/assets/index-ABC.js"></script><script src="/assets/vendor-XYZ.js"></script></head><body><div id="root"></div></body></html>';
+      // In tests / temporary path where files don't exist, validateProductionHtmlTemplate returns false
+      const isValid = validateProductionHtmlTemplate(htmlWithNonExistentChunk, "/tmp/nonexistent-dist");
+      expect(isValid).toBe(false);
     });
 
     it("readiness probe distinguishes between dev mode (always ready) and production bundle state", () => {
@@ -137,21 +152,29 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
   });
 
   describe("5. Background Worker Non-Overlapping Concurrency Guard", () => {
-    it("handles concurrency lock properly when a job is already in flight", async () => {
+    it("strictly locks concurrent executions and drops redundant overlapping cycles", async () => {
       const { executeProductPublisherJob } = await import("../workers/productPublisher");
+      const { admin } = await import("../config/firebase-admin");
       expect(typeof executeProductPublisherJob).toBe("function");
 
-      // Test concurrency guard by running with a short timeout / mock
-      const promise1 = executeProductPublisherJob();
-      const promise2 = executeProductPublisherJob(); // Should immediately skip and return 0
+      // Mock Firestore query to resolve after a slight delay to realistically test concurrency lock without timeout
+      const getSpy = vi.spyOn(admin.firestore(), "collection").mockReturnValue({
+        where: () => ({
+          get: () => new Promise((resolve) => setTimeout(() => resolve({ empty: true }), 50)),
+        }),
+      } as unknown as ReturnType<typeof admin.firestore.prototype.collection>);
 
-      const [res1, res2] = await Promise.all([
-        Promise.race([promise1, Promise.resolve(0)]),
-        Promise.race([promise2, Promise.resolve(0)])
-      ]);
+      // Verify that concurrent invocation returns 0 for the overlapping call
+      const firstCallPromise = executeProductPublisherJob();
+      const secondCallPromise = executeProductPublisherJob(); // Must immediately hit isJobRunning guard and return 0
 
-      expect(typeof res1).toBe("number");
-      expect(typeof res2).toBe("number");
+      const secondResult = await secondCallPromise;
+      expect(secondResult).toBe(0);
+
+      const firstResult = await firstCallPromise;
+      expect(firstResult).toBe(0);
+
+      getSpy.mockRestore();
     });
   });
 });

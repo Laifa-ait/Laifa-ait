@@ -76,8 +76,12 @@ export async function startServer(): Promise<http.Server> {
       safeLogger.error("[Olmar Gateway] ❌ Failed to initialize Vite/static serving pipeline", { err: errorMsg });
     }
 
-    // 2. Start Product SEO cache cleanup timer
-    startProductCacheCleanupTimer();
+    // 2. Start Product SEO cache cleanup timer with rollback guard
+    try {
+      startProductCacheCleanupTimer();
+    } catch (err: unknown) {
+      safeLogger.error("[Olmart Gateway] ❌ Failed to start SEO cache timer", { err: String(err) });
+    }
 
     // 3. Database migrations - Off by default on web instances to prevent race conditions across cluster nodes
     if (process.env.RUN_MIGRATIONS === "true") {
@@ -93,8 +97,11 @@ export async function startServer(): Promise<http.Server> {
 
     // 4. Background workers - Off by default on web HTTP instances to prevent duplicate background jobs across cluster nodes
     if (process.env.ENABLE_WORKERS === "true") {
-      safeLogger.info("[Olmart Workers] ⚡ Product Publisher Worker active.");
-      startProductPublisherWorker();
+      try {
+        startProductPublisherWorker();
+      } catch (err: unknown) {
+        safeLogger.error("[Olmart Workers] ❌ Failed to initialize background worker", { err: String(err) });
+      }
     }
 
     // 5. Bind and listen on Port 3000 with explicit error rejection and cleanup rollback
@@ -139,14 +146,16 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 
 process.on("unhandledRejection", (reason: unknown) => {
   const errorMsg = reason instanceof Error ? reason.stack || reason.message : String(reason);
-  safeLogger.error("[Olmar Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg });
+  const errorCode = reason && typeof reason === "object" && "code" in reason ? String((reason as { code: unknown }).code) : "";
+  safeLogger.error("[Olmar Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg, code: errorCode });
 
-  // If unhandled rejection indicates a fatal system/driver error, trigger graceful shutdown
+  // If unhandled rejection indicates a fatal system/driver error with structured error code or critical corruption
+  const criticalCodes = ["EADDRINUSE", "EACCES", "MODULE_NOT_FOUND", "ERR_SERVER_ALREADY_LISTEN"];
   if (
-    typeof errorMsg === "string" &&
-    (errorMsg.includes("FATAL_DB_CORRUPTION") || errorMsg.includes("EADDRINUSE") || errorMsg.includes("MODULE_NOT_FOUND"))
+    criticalCodes.includes(errorCode) ||
+    (typeof errorMsg === "string" && errorMsg.includes("FATAL_DB_CORRUPTION"))
   ) {
-    safeLogger.error("[Olmar Gateway] 🚨 Critical unhandled rejection encountered. Initiating emergency shutdown...");
+    safeLogger.error("[Olmar Gateway] 🚨 Critical unhandled rejection encountered. Initiating emergency shutdown...", { code: errorCode });
     shutdown("CRITICAL_UNHANDLED_REJECTION");
   }
 });
