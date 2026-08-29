@@ -218,10 +218,21 @@ export default defineConfig(({mode}) => {
       },
     },
     optimizeDeps: {
-      rolldownOptions: {
-        target: 'es2022',
-      },
-      include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts']
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+        'firebase/storage',
+        'lucide-react',
+        'motion/react',
+        '@tanstack/react-query',
+        'zustand',
+        'date-fns',
+        'recharts'
+      ]
     },
     server: {
       hmr: {
