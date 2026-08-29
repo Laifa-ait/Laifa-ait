@@ -19,80 +19,89 @@ export async function checkSellerVelocityLimit(sellerId: string, transaction?: f
       return pendingStatuses.includes(status);
     });
 
-    // Cache buyer verification results during this run to eliminate redundant queries
-    const buyerCache = new Map<string, boolean>();
+    // Cache buyer verification Promises during this run to eliminate both sequential and concurrent duplicate queries
+    const buyerPromiseCache = new Map<string, Promise<boolean>>();
 
-    const checkBuyerVerified = async (buyerId: string): Promise<boolean> => {
-      if (buyerCache.has(buyerId)) {
-        return buyerCache.get(buyerId)!;
+    const checkBuyerVerified = (buyerId: string): Promise<boolean> => {
+      if (buyerPromiseCache.has(buyerId)) {
+        return buyerPromiseCache.get(buyerId)!;
       }
 
-      try {
-        // Fetch buyer's orders history
-        const buyerOrdersSnap = await db.collection("orders")
-          .where("userId", "==", buyerId)
-          .orderBy("createdAt", "desc")
-          .limit(20)
-          .get();
-        
-        const hasSuccessfulPurchase = buyerOrdersSnap.docs.some(d => {
-          const dData = d.data();
-          const dStatus = (dData.status || '').toLowerCase();
-          return ['shipped', 'delivered', 'completed', 'received'].includes(dStatus);
-        });
+      const promise = (async (): Promise<boolean> => {
+        try {
+          // Fetch buyer's orders history
+          const buyerOrdersSnap = await db.collection("orders")
+            .where("userId", "==", buyerId)
+            .orderBy("createdAt", "desc")
+            .limit(20)
+            .get();
+          
+          const hasSuccessfulPurchase = buyerOrdersSnap.docs.some(d => {
+            const dData = d.data();
+            const dStatus = (dData.status || '').toLowerCase();
+            return ['shipped', 'delivered', 'completed', 'received'].includes(dStatus);
+          });
 
-        if (hasSuccessfulPurchase) {
-          buyerCache.set(buyerId, true);
-          return true;
+          if (hasSuccessfulPurchase) {
+            return true;
+          }
+
+          // Fetch buyer's profile creation date for age check as a fallback
+          const buyerRef = db.collection("users").doc(buyerId);
+          const buyerSnap = await buyerRef.get();
+          const buyerData = buyerSnap.exists ? buyerSnap.data() : null;
+          let isOldAccount = false;
+          if (buyerData && buyerData.createdAt) {
+            const createdAtTime = buyerData.createdAt.toDate 
+              ? buyerData.createdAt.toDate().getTime() 
+              : new Date(buyerData.createdAt).getTime();
+            isOldAccount = (Date.now() - createdAtTime) > 2 * 24 * 60 * 60 * 1000; // Account > 2 days old
+          }
+
+          return isOldAccount;
+        } catch (err) {
+          safeLogger.error("Failed to check buyer verification in velocity check", { buyerId, err: err instanceof Error ? err.message : String(err) });
+          return false;
         }
+      })();
 
-        // Fetch buyer's profile creation date for age check as a fallback
-        const buyerRef = db.collection("users").doc(buyerId);
-        const buyerSnap = await buyerRef.get();
-        const buyerData = buyerSnap.exists ? buyerSnap.data() : null;
-        let isOldAccount = false;
-        if (buyerData && buyerData.createdAt) {
-          const createdAtTime = buyerData.createdAt.toDate 
-            ? buyerData.createdAt.toDate().getTime() 
-            : new Date(buyerData.createdAt).getTime();
-          isOldAccount = (Date.now() - createdAtTime) > 2 * 24 * 60 * 60 * 1000; // Account > 2 days old
-        }
-
-        const isVerified = isOldAccount;
-        buyerCache.set(buyerId, isVerified);
-        return isVerified;
-      } catch (err) {
-        safeLogger.error("Failed to check buyer verification in velocity check", { buyerId, err: err instanceof Error ? err.message : String(err) });
-        buyerCache.set(buyerId, false);
-        return false;
-      }
+      buyerPromiseCache.set(buyerId, promise);
+      return promise;
     };
 
-    // Evaluate pending orders in parallel for buyer checks
-    const evaluationPromises = pendingDocs.map(async (doc) => {
-      const orderData = doc.data();
-      const paymentStatus = (orderData.paymentStatus || '').toLowerCase();
-      
-      // 1. If it's prepaid (Card, etc.) and already paid, it's safe to count towards velocity limit
-      if (paymentStatus === 'paid') {
-        return true;
-      }
+    // Evaluate pending orders in bounded concurrency batches (concurrency capped at 10)
+    const results: boolean[] = [];
+    const BATCH_SIZE = 10;
 
-      // 2. Otherwise (COD or Split COD), check if the buyer is established to prevent competitor spam DoS
-      const buyerId = orderData.userId || orderData.buyerId;
-      if (!buyerId) {
-        safeLogger.info("Velocity defense: Ignored untracked buyer order", { orderId: doc.id, sellerId });
-        return false;
-      }
+    for (let i = 0; i < pendingDocs.length; i += BATCH_SIZE) {
+      const batch = pendingDocs.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(async (doc) => {
+          const orderData = doc.data();
+          const paymentStatus = (orderData.paymentStatus || '').toLowerCase();
+          
+          // 1. If it's prepaid (Card, etc.) and already paid, it's safe to count towards velocity limit
+          if (paymentStatus === 'paid') {
+            return true;
+          }
 
-      const isVerified = await checkBuyerVerified(buyerId);
-      if (!isVerified) {
-        safeLogger.info("Velocity defense: Ignored unverified COD order", { orderId: doc.id, sellerId });
-      }
-      return isVerified;
-    });
+          // 2. Otherwise (COD or Split COD), check if the buyer is established to prevent competitor spam DoS
+          const buyerId = orderData.userId || orderData.buyerId;
+          if (!buyerId) {
+            safeLogger.info("Velocity defense: Ignored untracked buyer order", { orderId: doc.id, sellerId });
+            return false;
+          }
 
-    const results = await Promise.all(evaluationPromises);
+          const isVerified = await checkBuyerVerified(buyerId);
+          if (!isVerified) {
+            safeLogger.info("Velocity defense: Ignored unverified COD order", { orderId: doc.id, sellerId });
+          }
+          return isVerified;
+        })
+      );
+      results.push(...batchResults);
+    }
+
     const pendingCount = results.filter(Boolean).length;
     
     const sellerRef = db.collection("users").doc(sellerId);
