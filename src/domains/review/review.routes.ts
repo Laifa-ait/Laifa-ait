@@ -128,8 +128,12 @@ router.post("/reply", authenticateToken, authorizeSeller, async (req: Authentica
     const userId = req.user?.uid || "";
     const result = await reviewService.replyToReview(reviewId, userId, replyText);
     
-    // Check velocity after replying
-    await checkSellerVelocityLimit(userId);
+    // Check velocity asynchronously in background
+    setImmediate(() => {
+      checkSellerVelocityLimit(userId).catch(err => {
+        safeLogger.error("Background velocity limit check failed", { userId, err: err instanceof Error ? err.message : String(err) });
+      });
+    });
     
     res.json(result);
   } catch (error: unknown) {

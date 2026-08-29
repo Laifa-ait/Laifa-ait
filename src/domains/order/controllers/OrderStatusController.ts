@@ -136,7 +136,7 @@ router.post(
 
         // PHASE 2: WRITE PHASE (All writes executed, absolutely zero reads)
         for (const orderInfo of ordersData) {
-          const { id, orderRef, data, targetSellerUid, sellerCommissionRate, productSnaps } = orderInfo;
+          const { id, orderRef, data, sellerCommissionRate, productSnaps } = orderInfo;
 
           const sellerIds = data.sellerIds as string[] | undefined;
           const isUserSeller = sellerIds?.includes(sellerId) || data.sellerId === sellerId;
@@ -322,14 +322,16 @@ router.post(
               createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
           }
-          
-          await checkSellerVelocityLimit(targetSellerUid, t);
         }
       });
 
-      // Automatically check / lift velocity limit suspension when backlog decreases
+      // Automatically check / lift velocity limit suspension asynchronously when backlog decreases
       if (req.user?.role !== 'admin') {
-        await checkSellerVelocityLimit(sellerId);
+        setImmediate(() => {
+          checkSellerVelocityLimit(sellerId).catch((err) => {
+            safeLogger.error("Background velocity limit check failed", { sellerId, err: err instanceof Error ? err.message : String(err) });
+          });
+        });
       }
 
       res.json({ success: true });

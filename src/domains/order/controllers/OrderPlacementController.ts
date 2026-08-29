@@ -771,10 +771,14 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
       userId
     );
 
-    // Enforce instant velocity limits right after placing the order
-    for (const sellerId of sellerIdsSet) {
-      await checkSellerVelocityLimit(sellerId);
-    }
+    // Enforce velocity limits asynchronously in background to prevent HTTP response latency
+    setImmediate(() => {
+      for (const sellerId of sellerIdsSet) {
+        checkSellerVelocityLimit(sellerId).catch((err) => {
+          safeLogger.error("Background velocity limit check failed", { sellerId, err: err instanceof Error ? err.message : String(err) });
+        });
+      }
+    });
 
     if (idempotencyKey) {
       try {
