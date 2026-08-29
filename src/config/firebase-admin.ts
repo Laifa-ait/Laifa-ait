@@ -4,6 +4,27 @@ import fs from "fs";
 import path from "path";
 import { safeLogger } from "../utils/logger";
 
+export enum FirebaseInitState {
+  INITIALIZING = "INITIALIZING",
+  READY = "READY",
+  FAILED = "FAILED",
+}
+
+export let firebaseInitState: FirebaseInitState = FirebaseInitState.INITIALIZING;
+export let firebaseInitError: string | null = null;
+
+export const getFirebaseInitState = (): FirebaseInitState => firebaseInitState;
+export const getFirebaseInitError = (): string | null => firebaseInitError;
+export const isFirebaseReady = (): boolean => firebaseInitState === FirebaseInitState.READY && !!db;
+
+/**
+ * Test helper to simulate Firebase initialization states during unit & resilience tests.
+ */
+export const setFirebaseInitStateForTesting = (state: FirebaseInitState, error: string | null = null): void => {
+  firebaseInitState = state;
+  firebaseInitError = error;
+};
+
 // Load Firebase Config
 export let firebaseConfig: Record<string, string | number | boolean> = {};
 
@@ -25,6 +46,8 @@ try {
 } catch (err: unknown) {
   const message = err instanceof Error ? err.message : String(err);
   safeLogger.error("[Firebase Config] ❌ Unable to parse firebase-applet-config.json", { err: message });
+  firebaseInitState = FirebaseInitState.FAILED;
+  firebaseInitError = `Invalid firebase-applet-config.json: ${message}`;
 }
 
 // Initialize Firebase Admin
@@ -66,6 +89,8 @@ try {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         safeLogger.error("[Firebase Admin] ❌ FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON", { err: message });
+        firebaseInitState = FirebaseInitState.FAILED;
+        firebaseInitError = `Invalid FIREBASE_SERVICE_ACCOUNT_KEY: ${message}`;
       }
 
       if (serviceAccount) {
@@ -73,7 +98,7 @@ try {
           credential: admin.credential.cert(serviceAccount),
           projectId: runtimeProjectId,
         });
-      } else {
+      } else if (firebaseInitState !== FirebaseInitState.FAILED) {
         admin.initializeApp({ projectId: runtimeProjectId });
       }
     } else {
@@ -85,10 +110,17 @@ try {
 } catch (e: unknown) {
   const message = e instanceof Error ? e.message : String(e);
   safeLogger.error("[Firebase Admin] ❌ Initialization failed", { err: message });
+  firebaseInitState = FirebaseInitState.FAILED;
+  firebaseInitError = message;
 }
 
 export let db: admin.firestore.Firestore;
 const setupFirestore = () => {
+  if (firebaseInitState === FirebaseInitState.FAILED) {
+    safeLogger.warn("[Firestore Core] ⚠️ Skipping Firestore setup because Firebase Admin SDK initialization failed.");
+    return;
+  }
+
   try {
     const adminApp = admin.app();
     const configDatabaseId =
@@ -114,15 +146,28 @@ const setupFirestore = () => {
       db = adminApp.firestore();
       logDev("[Firestore Core] 🟢 Mapped default database instance.");
     }
+
+    firebaseInitState = FirebaseInitState.READY;
+    firebaseInitError = null;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     safeLogger.error("[Firestore Core] ❌ Critical mapping failure", { err: message });
+    firebaseInitState = FirebaseInitState.FAILED;
+    firebaseInitError = message;
   }
 };
 
+/**
+ * Verifies Firestore database connectivity with an application-level deadline safeguard.
+ *
+ * NOTE ON FIRESTORE SDK CANCELLATION LIMITATION:
+ * The Firebase Admin Firestore SDK (@google-cloud/firestore) does not support per-query AbortSignal cancellation tokens.
+ * This application-level timeout safeguard ensures the Node.js event loop and HTTP handlers never block indefinitely
+ * when Firestore encounters network partitions or degraded backend latency.
+ */
 export const verifyAndFixDb = async (timeoutMs = 6000): Promise<void> => {
-  if (!db) {
-    throw new Error("Firestore Admin SDK DB instance is not initialized.");
+  if (!db || firebaseInitState !== FirebaseInitState.READY) {
+    throw new Error(`Firestore Admin SDK DB is not ready (State: ${firebaseInitState}). Error: ${firebaseInitError || "none"}`);
   }
   
   // Try a tiny read to check connectivity with strict deadline protection

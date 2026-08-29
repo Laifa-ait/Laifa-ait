@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { admin, db } from "../config/firebase-admin";
+import { admin, db, isFirebaseReady, getFirebaseInitState, getFirebaseInitError, FirebaseInitState } from "../config/firebase-admin";
 import { isFrontendReady } from "../services/ViteStaticService";
 import { safeLogger } from "../utils/logger";
 
@@ -17,8 +17,19 @@ router.get(["/api/health/live", "/api/v1/health/live"], (req: Request, res: Resp
 /**
  * Internal helper to check readiness of critical dependencies
  * (Firestore connection & frontend static build in production).
+ *
+ * Enforces that if Firebase Admin SDK initialization failed, the probe returns unavailable / degraded (503).
  */
 async function checkReadiness(): Promise<{ ready: boolean; firebase: string; frontend?: string }> {
+  const firebaseState = getFirebaseInitState();
+  if (firebaseState === FirebaseInitState.FAILED || !isFirebaseReady()) {
+    safeLogger.warn("[Readiness Probe] ⚠️ Firebase Admin SDK is not ready or failed to initialize", {
+      state: firebaseState,
+      error: getFirebaseInitError(),
+    });
+    return { ready: false, firebase: "unavailable" };
+  }
+
   const isFirebaseInit = !!(admin && admin.apps && admin.apps.length > 0 && db);
   if (!isFirebaseInit) {
     return { ready: false, firebase: "unavailable" };
@@ -28,13 +39,18 @@ async function checkReadiness(): Promise<{ ready: boolean; firebase: string; fro
   let firebaseStatus = "ok";
   if (process.env.NODE_ENV !== "test") {
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Firestore timeout")), 1500)
-      );
-      await Promise.race([
-        db.collection("_health").doc("probe").get(),
-        timeoutPromise
-      ]);
+      let pingTimer: NodeJS.Timeout | null = null;
+      const timeoutPromise = new Promise((_, reject) => {
+        pingTimer = setTimeout(() => reject(new Error("Firestore timeout")), 1500);
+      });
+      try {
+        await Promise.race([
+          db.collection("_health").doc("probe").get(),
+          timeoutPromise
+        ]);
+      } finally {
+        if (pingTimer) clearTimeout(pingTimer);
+      }
     } catch {
       // On cold start or transient network latency, as long as Firebase Admin SDK is initialized,
       // we log a warning but keep firebaseStatus as "ok" so Cloud Run health probes succeed.
