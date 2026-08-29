@@ -174,13 +174,53 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
     const shopSnapshots = new Map<string, firestore.DocumentSnapshot>();
     const emailAlerts: { sellerId: string; message: string }[] = [];
 
+    // Pre-fetch initial product snapshots and seller profiles OUTSIDE transaction
+    // to validate seller availability fast and keep the transaction read-set strictly minimal.
+    const preProductRefs = uniqueProductIds.map((pId) => db.collection("products").doc(pId));
+    const preProductSnaps = await db.getAll(...preProductRefs);
+
+    preProductSnaps.forEach((productSnap, idx) => {
+      const pId = uniqueProductIds[idx];
+      if (!productSnap.exists) {
+        throw new Error(`Produit ${pId} introuvable.`);
+      }
+      const sId = productSnap.data()?.sellerId;
+      if (sId) sellerIdsSet.add(sId);
+    });
+
+    sellerIdsArray = Array.from(sellerIdsSet);
+    if (sellerIdsArray.length > 0) {
+      const sellerRefs = sellerIdsArray.map((sId) => db.collection("users").doc(sId));
+      const sellerSnaps = await db.getAll(...sellerRefs);
+
+      sellerSnaps.forEach((shopSnap, idx) => {
+        const sellerId = sellerIdsArray[idx];
+        if (shopSnap.exists) {
+          const sd = shopSnap.data();
+          if (sd && (sd.isActive === false || sd.is_active === false || sd.velocitySuspended)) {
+            throw new Error(
+              `La boutique "${sd.shopName || sd.displayName || sellerId}" est fermée temporairement (capacité de commande maximale atteinte).`
+            );
+          }
+          shopSnapshots.set(sellerId, sd as firestore.DocumentSnapshot);
+        } else {
+          shopSnapshots.set(sellerId, {} as firestore.DocumentSnapshot);
+        }
+      });
+    }
+
+    const internalNotificationsToCreate: { ref: firestore.DocumentReference; data: Record<string, unknown> }[] = [];
+    const pushQueueToCreate: { ref: firestore.DocumentReference; data: Record<string, unknown> }[] = [];
+
     const result = await orderBreaker.execute(
       () =>
         db.runTransaction(async (t: firestore.Transaction) => {
           emailAlerts.length = 0; // Clear on retry
+          internalNotificationsToCreate.length = 0;
+          pushQueueToCreate.length = 0;
 
           // =========================================================================
-          // PHASE 1 — TOUTES LES LECTURES TRANSACTIONNELLES (ZERO ÉCRITURE ICI)
+          // PHASE 1 — TOUTES LES LECTURES TRANSACTIONNELLES (MINIMAL READ SET)
           // =========================================================================
           let couponDoc: firestore.QueryDocumentSnapshot | null = null;
 
@@ -202,7 +242,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
             }
           }
 
-          // 1.1 Lecture des produits du panier
+          // 1.1 Lecture sous verrou transactionnel des SEULS produits du panier
           const productSnaps = new Map<string, firestore.DocumentSnapshot>();
           const productRefs = new Map<string, firestore.DocumentReference>();
 
@@ -216,32 +256,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
             }
             productSnaps.set(pId, productSnap);
             productRefs.set(pId, refs[idx]);
-
-            const sellerId = productSnap.data()?.sellerId;
-            if (sellerId) sellerIdsSet.add(sellerId);
           });
-
-          // 1.2 Lecture des vendeurs et boutiques
-          sellerIdsArray = Array.from(sellerIdsSet);
-          if (sellerIdsArray.length > 0) {
-            const sellerRefs = sellerIdsArray.map((sId) => db.collection("users").doc(sId));
-            const sellerSnaps = await t.getAll(...sellerRefs);
-
-            sellerSnaps.forEach((shopSnap, idx: number) => {
-              const sellerId = sellerIdsArray[idx];
-              if (shopSnap.exists) {
-                const sd = shopSnap.data();
-                if (sd && (sd.isActive === false || sd.is_active === false || sd.velocitySuspended)) {
-                  throw new Error(
-                    `La boutique "${sd.shopName || sd.displayName || sellerId}" est fermée temporairement (capacité de commande maximale atteinte).`
-                  );
-                }
-                shopSnapshots.set(sellerId, sd as firestore.DocumentSnapshot);
-              } else {
-                shopSnapshots.set(sellerId, {} as firestore.DocumentSnapshot);
-              }
-            });
-          }
 
           // 1.3 Reconstitution des snapshots d'articles pour le panier
           const productDocs: {
@@ -376,14 +391,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
             };
           }
 
-          interface TransactionalNotification {
-            ref: firestore.DocumentReference;
-            data: Record<string, unknown>;
-          }
-
           const stockUpdates: TransactionalStockUpdate[] = [];
-          const internalNotificationsToCreate: TransactionalNotification[] = [];
-          const pushQueueToCreate: TransactionalNotification[] = [];
 
           for (const pId of uniqueProductIds) {
             const finalData = productInMemoryStates.get(pId)!;
@@ -763,17 +771,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
           // 3.5 Création de la commande maître
           t.set(masterOrderRef, masterOrderData);
 
-          // 3.6 Création des notifications internes (ex: alertes stock critique)
-          for (const notif of internalNotificationsToCreate) {
-            t.set(notif.ref, notif.data);
-          }
-
-          // 3.7 Création des éléments dans push_queue
-          for (const push of pushQueueToCreate) {
-            t.set(push.ref, push.data);
-          }
-
-          // 3.8 Inscription transactionnelle atomique de la clé d'idempotence
+          // 3.6 Inscription transactionnelle atomique de la clé d'idempotence
           if (idempotencyDocRef) {
             t.set(idempotencyDocRef, {
               orderId: subOrdersToCreate[0].ref.id,
@@ -804,6 +802,24 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
         orderId: result.orderId,
         status: "already_processed",
         message: "Commande déjà traitée",
+      });
+    }
+
+    // Write non-critical alerts and push notifications asynchronously post-transaction
+    if (internalNotificationsToCreate.length > 0 || pushQueueToCreate.length > 0) {
+      setImmediate(async () => {
+        try {
+          const batch = db.batch();
+          for (const notif of internalNotificationsToCreate) {
+            batch.set(notif.ref, notif.data);
+          }
+          for (const push of pushQueueToCreate) {
+            batch.set(push.ref, push.data);
+          }
+          await batch.commit();
+        } catch (err) {
+          safeLogger.error("Failed to commit post-transaction notifications batch", { err: err instanceof Error ? err.message : String(err) });
+        }
       });
     }
 
