@@ -37,6 +37,13 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         'scripts/**',
+        'src/constants.tsx',
+        'src/utils/translations.ts',
+        'src/swagger/openapi.ts',
+        'src/data/**',
+        'src/domains/**/data/**',
+        'src/components/**',
+        'src/types/**',
       ],
     },
     env: {
