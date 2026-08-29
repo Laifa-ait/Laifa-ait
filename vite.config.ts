@@ -218,7 +218,7 @@ export default defineConfig(({mode}) => {
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
+      rolldownOptions: {
         target: 'es2022',
       },
       include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'lucide-react', 'motion/react', '@tanstack/react-query', 'zustand', 'date-fns', 'recharts']
