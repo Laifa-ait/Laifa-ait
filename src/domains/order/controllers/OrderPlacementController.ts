@@ -184,6 +184,24 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
           // =========================================================================
           let couponDoc: firestore.QueryDocumentSnapshot | null = null;
 
+          // 1.0 Vérification transactionnelle atomique de la clé d'idempotence
+          let idempotencyDocRef: firestore.DocumentReference | null = null;
+          if (idempotencyKey) {
+            idempotencyDocRef = db.collection("idempotency_keys").doc(idempotencyKey);
+            const keySnap = await t.get(idempotencyDocRef);
+            if (keySnap.exists) {
+              const keyData = keySnap.data();
+              return {
+                alreadyProcessed: true,
+                orderId: keyData?.orderId || "",
+                total: keyData?.total || 0,
+                codAmount: keyData?.codAmount || 0,
+                userId: keyData?.userId || userId,
+                subOrdersForEmail: []
+              };
+            }
+          }
+
           // 1.1 Lecture des produits du panier
           const productSnaps = new Map<string, firestore.DocumentSnapshot>();
           const productRefs = new Map<string, firestore.DocumentReference>();
@@ -755,7 +773,17 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
             t.set(push.ref, push.data);
           }
 
+          // 3.8 Inscription transactionnelle atomique de la clé d'idempotence
+          if (idempotencyDocRef) {
+            t.set(idempotencyDocRef, {
+              orderId: subOrdersToCreate[0].ref.id,
+              userId,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+
           return { 
+            alreadyProcessed: false,
             orderId: subOrdersToCreate[0].ref.id, 
             total: grandTotal, 
             codAmount, 
@@ -771,6 +799,14 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
       userId
     );
 
+    if (result.alreadyProcessed) {
+      return res.json({
+        orderId: result.orderId,
+        status: "already_processed",
+        message: "Commande déjà traitée",
+      });
+    }
+
     // Enforce velocity limits asynchronously in background to prevent HTTP response latency
     setImmediate(() => {
       for (const sellerId of sellerIdsSet) {
@@ -779,18 +815,6 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
         });
       }
     });
-
-    if (idempotencyKey) {
-      try {
-        await db.collection("idempotency_keys").doc(idempotencyKey).set({
-          userId,
-          orderId: result.orderId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-      } catch (e) {
-        safeLogger.error("Failed to store idempotency key in idempotency_keys", { err: e instanceof Error ? e.message : String(e) });
-      }
-    }
 
     // Process order confirmation emails asynchronously
     sendOrderConfirmationEmails(
