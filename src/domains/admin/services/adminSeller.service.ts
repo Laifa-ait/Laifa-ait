@@ -137,6 +137,7 @@ export class AdminSellerService {
       role: "seller",
       status: "active",
       isVerified: true,
+      sellerTrustScore: 90,
       approvedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -147,9 +148,26 @@ export class AdminSellerService {
         logoUrl: userData.logoUrl || "",
         bannerUrl: userData.bannerUrl || "",
         wilaya: userData.wilaya || "",
+        isVerified: true,
+        status: "ACTIVE",
+        sellerTrustScore: 90,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
+
+    // Explicitly set seller custom claim upon authorized admin approval
+    try {
+      await admin.auth().setCustomUserClaims(sellerId, {
+        role: "seller",
+        isAdmin: false,
+      });
+    } catch (claimErr) {
+      safeLogger.warn("Failed to set seller custom claim during admin approval", {
+        sellerId,
+        err: claimErr instanceof Error ? claimErr.message : String(claimErr),
+      });
+    }
 
     await db.collection("user_notifications").add({
       recipientId: sellerId,
@@ -200,11 +218,24 @@ export class AdminSellerService {
 
     await userRef.update({
       status: "rejected",
+      isVerified: false,
       rejectionReasons: reasons,
       rejectionComment: comment || "",
       rejectedBy: adminId,
       rejectedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    try {
+      await admin.auth().setCustomUserClaims(sellerId, {
+        role: "buyer",
+        isAdmin: false,
+      });
+    } catch (claimErr) {
+      safeLogger.warn("Failed to reset seller custom claim on rejection", {
+        sellerId,
+        err: claimErr instanceof Error ? claimErr.message : String(claimErr),
+      });
+    }
 
     await userRef.collection("moderation_logs").add({
       status: "rejected",
@@ -265,6 +296,18 @@ export class AdminSellerService {
       status: "suspended",
       suspendedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    try {
+      await admin.auth().setCustomUserClaims(sellerId, {
+        role: "buyer",
+        isAdmin: false,
+      });
+    } catch (claimErr) {
+      safeLogger.warn("Failed to reset seller custom claim on suspension", {
+        sellerId,
+        err: claimErr instanceof Error ? claimErr.message : String(claimErr),
+      });
+    }
 
     try {
       await admin.auth().revokeRefreshTokens(sellerId);

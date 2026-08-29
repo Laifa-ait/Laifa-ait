@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -14,11 +14,51 @@ import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
 import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { ProApplicationSection } from '../../components/OlmaImmo/ProApplicationSection';
 import { ProfileFavoritesSection } from '../../components/OlmaImmo/ProfileFavoritesSection';
+import { apiPost } from '../../lib/api';
+import toast from 'react-hot-toast';
+import { safeLogger } from '../../utils/logger';
 
 export const OlmaImmoProfile: React.FC = () => {
   const { currentUser, userProfile, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'favorites' | 'stays' | 'pro' | 'settings'>('favorites');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [formData, setFormData] = useState({
+    displayName: '',
+    phone: '',
+    wilaya: '',
+    address: '',
+  });
+
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        displayName: userProfile.displayName || '',
+        phone: userProfile.phone || '',
+        wilaya: userProfile.wilaya || '',
+        address: userProfile.address || '',
+      });
+    }
+  }, [userProfile]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const res = await apiPost<{ success: boolean; error?: string }>('/api/v1/auth/profile', formData);
+      if (res?.success) {
+        toast.success('Profil mis à jour avec succès');
+      } else {
+        toast.error(res?.error || 'Erreur lors de la mise à jour');
+      }
+    } catch (err) {
+      safeLogger.error('Failed to update user profile', { err: err instanceof Error ? err.message : String(err) });
+      toast.error('Erreur lors de la sauvegarde');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -218,32 +258,88 @@ export const OlmaImmoProfile: React.FC = () => {
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#1a3831]">Compte</span>
                     <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
-                      Paramètres du profil
+                      Paramètres & Coordonnées du Profil
                     </h3>
                   </div>
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Nom complet</label>
-                    <input
-                      type="text"
-                      disabled
-                      value={userProfile?.displayName || currentUser?.email || ''}
-                      className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium"
-                    />
+                <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nom complet</label>
+                      <input
+                        type="text"
+                        value={formData.displayName}
+                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                        required
+                        placeholder="Votre nom et prénom"
+                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Adresse e-mail</label>
+                      <input
+                        type="email"
+                        disabled
+                        value={currentUser?.email || ''}
+                        className="w-full bg-[#f4efe4]/60 border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-500 font-medium cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Numéro de téléphone</label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="Ex: 0550 12 34 56"
+                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Wilaya de résidence</label>
+                      <input
+                        type="text"
+                        value={formData.wilaya}
+                        onChange={(e) => setFormData({ ...formData, wilaya: e.target.value })}
+                        placeholder="Ex: 16 - Alger, 31 - Oran"
+                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Adresse e-mail</label>
+                    <label className="block font-bold text-slate-700 mb-1">Adresse postale / Commune</label>
                     <input
-                      type="email"
-                      disabled
-                      value={currentUser?.email || ''}
-                      className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium"
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder="Ex: Bab Ezzouar, Alger"
+                      className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
                     />
                   </div>
-                </div>
+
+                  <div className="pt-2 flex items-center justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="py-3 px-6 bg-[#1a3831] hover:bg-[#122b24] disabled:opacity-50 text-[#ebdcb8] rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md flex items-center gap-2"
+                    >
+                      {isSaving ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-[#ebdcb8] border-t-transparent rounded-full animate-spin" />
+                          <span>Enregistrement...</span>
+                        </>
+                      ) : (
+                        <span>Enregistrer les modifications</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
           </div>

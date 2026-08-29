@@ -60,7 +60,11 @@ export const startProductPublisherWorker = () => {
 
 export const stopProductPublisherWorker = () => {
   if (workerInterval) {
-    clearInterval(workerInterval);
+    try {
+      clearInterval(workerInterval);
+    } catch {
+      // Safe no-op
+    }
     workerInterval = null;
     safeLogger.info("[Olmart Workers] 🛑 Product Publisher Worker stopped.");
   }

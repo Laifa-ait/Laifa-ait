@@ -99,8 +99,11 @@ export function preventDirectCloudRunAccess(req: Request, res: Response, next: N
   if (process.env.NODE_ENV === "production") {
     const host = (req.headers.host || "").toLowerCase();
 
-    // Block or redirect direct accesses to default Google Cloud Run URL (*.run.app)
-    if (host.endsWith(".run.app") || host === "run.app") {
+    // Do not block AI Studio preview and dev Cloud Run URLs
+    const isAiStudioPreview = host.includes("ais-") || host.includes("google") || host.includes("localhost") || host.includes("127.0.0.1");
+
+    // Block or redirect direct accesses to default generic Google Cloud Run URL (*.run.app)
+    if (!isAiStudioPreview && (host.endsWith(".run.app") || host === "run.app")) {
       safeLogger.warn("[Olmart Security] ⚠️ Blocking direct Cloud Run access", { host });
 
       if (req.method === "GET" && !req.path.startsWith("/api/")) {

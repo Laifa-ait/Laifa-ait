@@ -10,6 +10,14 @@ let cachedHtmlTemplate = "";
 let isStaticBuildValid = false;
 
 /**
+ * Resets or overrides static state for testing purposes only.
+ */
+export function setStaticStateForTesting(valid: boolean, template: string): void {
+  isStaticBuildValid = valid;
+  cachedHtmlTemplate = template;
+}
+
+/**
  * Returns true if the frontend static build is ready in production,
  * or if running in development mode.
  */
@@ -78,10 +86,25 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     if (existsSync(indexHtmlPath)) {
       const content = await fsPromises.readFile(indexHtmlPath, "utf-8");
       if (content && content.trim().length > 50 && content.includes('id="root"')) {
-        cachedHtmlTemplate = content;
-        isStaticBuildValid = true;
+        // Deep verification: Check referenced JS entry script/asset exists
+        const scriptMatch = content.match(/src=["'](\/assets\/[^"']+\.js)["']/i);
+        let assetsValid = true;
+        if (scriptMatch && scriptMatch[1]) {
+          const referencedJsPath = path.join(distPath, scriptMatch[1].replace(/^\//, ""));
+          if (!existsSync(referencedJsPath)) {
+            safeLogger.error("[CRITICAL BUILD ERROR] Referenced main JS chunk does not exist on disk", { referencedJsPath });
+            assetsValid = false;
+          }
+        }
+
+        if (assetsValid) {
+          cachedHtmlTemplate = content;
+          isStaticBuildValid = true;
+        } else {
+          isStaticBuildValid = false;
+        }
       } else {
-        safeLogger.error("[CRITICAL BUILD ERROR] dist/index.html is empty or invalid");
+        safeLogger.error("[CRITICAL BUILD ERROR] dist/index.html is empty or invalid (missing root container)");
         isStaticBuildValid = false;
       }
     } else {

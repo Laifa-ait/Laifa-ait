@@ -71,22 +71,27 @@ router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, requir
     ];
 
     for (const collName of collectionsToClear) {
-      const snap = await db.collection(collName).get();
-      const batchSize = 400;
-      let batch = db.batch();
-      let count = 0;
+      let hasMore = true;
+      let iterations = 0;
+      const MAX_BATCH_ROUNDS = 50; // Safety guard: max 22,500 docs per collection per wipe
 
-      for (const doc of snap.docs) {
-        batch.delete(doc.ref);
-        count++;
-        if (count >= batchSize) {
-          await batch.commit();
-          batch = db.batch();
-          count = 0;
+      while (hasMore && iterations < MAX_BATCH_ROUNDS) {
+        iterations++;
+        const snap = await db.collection(collName).limit(450).get();
+        if (snap.empty) {
+          hasMore = false;
+          break;
         }
-      }
-      if (count > 0) {
+
+        const batch = db.batch();
+        snap.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
         await batch.commit();
+
+        if (snap.size < 450) {
+          hasMore = false;
+        }
       }
     }
 

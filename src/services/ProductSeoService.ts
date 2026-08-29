@@ -58,18 +58,30 @@ export class TrueLRUMap<K, V> extends Map<K, V> {
 const productCache = new TrueLRUMap<string, CacheEntry<ProductSeoData>>(1000);
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-let cleanupInterval: NodeJS.Timeout | null = setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of productCache.entries()) {
-    if (now - value.timestamp > CACHE_TTL_MS) {
-      productCache.delete(key);
-    }
-  }
-}, 10 * 60 * 1000);
+let cleanupInterval: NodeJS.Timeout | null = null;
 
-export function stopProductCacheCleanupTimer() {
+export function startProductCacheCleanupTimer(): void {
+  if (cleanupInterval) return;
+  cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of productCache.entries()) {
+      if (now - value.timestamp > CACHE_TTL_MS) {
+        productCache.delete(key);
+      }
+    }
+  }, 10 * 60 * 1000);
+  if (cleanupInterval.unref) {
+    cleanupInterval.unref();
+  }
+}
+
+export function stopProductCacheCleanupTimer(): void {
   if (cleanupInterval) {
-    clearInterval(cleanupInterval);
+    try {
+      clearInterval(cleanupInterval);
+    } catch {
+      // Safe no-op
+    }
     cleanupInterval = null;
   }
 }

@@ -98,8 +98,10 @@ export const ShortTermBookingCalendar: React.FC<ShortTermBookingCalendarProps> =
         const curr = new Date(startDate);
         const end = new Date(dateStr);
         let hasBlockedInBetween = false;
+        let safetyDays = 0;
 
-        while (curr < end) {
+        while (curr < end && safetyDays < 366) {
+          safetyDays++;
           const currStr = curr.toISOString().split('T')[0];
           if (isDateDisabled(currStr)) {
             hasBlockedInBetween = true;

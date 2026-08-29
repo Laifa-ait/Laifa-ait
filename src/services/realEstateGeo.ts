@@ -34,6 +34,7 @@ export function encodeGeohash(lat: number, lng: number, precision = 7): string {
     throw new Error('Coordonnées géographiques invalides pour l\'encodage Geohash.');
   }
 
+  const safePrecision = Math.max(1, Math.min(Math.floor(precision || 7), 12));
   let isEven = true;
   let latMin = -90;
   let latMax = 90;
@@ -42,8 +43,11 @@ export function encodeGeohash(lat: number, lng: number, precision = 7): string {
   let bit = 0;
   let ch = 0;
   let geohash = '';
+  let steps = 0;
+  const MAX_STEPS = 120;
 
-  while (geohash.length < precision) {
+  while (geohash.length < safePrecision && steps < MAX_STEPS) {
+    steps++;
     if (isEven) {
       const mid = (lngMin + lngMax) / 2;
       if (lng >= mid) {
@@ -214,7 +218,9 @@ export function getGeohashRangesForBoundingBox(
   let prefixes = getPrefixesForPrecision(precision);
 
   // Si le nombre de préfixes dépasse 16 (limite optimale Firestore), on regroupe à la précision inférieure
-  while (prefixes.length > 16 && precision > 2) {
+  let reductions = 0;
+  while (prefixes.length > 16 && precision > 2 && reductions < 10) {
+    reductions++;
     precision -= 1;
     prefixes = Array.from(new Set(prefixes.map((p) => p.substring(0, precision))));
   }

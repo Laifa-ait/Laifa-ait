@@ -1,9 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Property, PropertyMapResult } from '../../types/realEstate';
-import { MapPin, Plus, Minus, RotateCcw } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { PropertyMapPreview } from './PropertyMapPreview';
 import { useVectorClustering, MapCluster, GEO_BOUNDS } from './useVectorClustering';
 import { OlmaMapCanvas } from './OlmaMapCanvas';
+import { MapCategoryFilterBar, MapFilterCategory } from './MapCategoryFilterBar';
+import { MapZoomControls } from './MapZoomControls';
+
+export type { MapFilterCategory };
 
 interface OlmaVectorMapProps {
   properties: (Property | PropertyMapResult)[];
@@ -11,6 +15,8 @@ interface OlmaVectorMapProps {
   onSelectProperty?: (id: string) => void;
   onBoundsChange?: (bbox: string) => void;
   className?: string;
+  activeFilter?: MapFilterCategory;
+  onFilterChange?: (filter: MapFilterCategory) => void;
 }
 
 export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
@@ -19,8 +25,29 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
   onSelectProperty,
   onBoundsChange,
   className = 'w-full h-full min-h-[400px]',
+  activeFilter: controlledFilter,
+  onFilterChange,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [internalFilter, setInternalFilter] = useState<MapFilterCategory>('all');
+  const activeFilter = controlledFilter !== undefined ? controlledFilter : internalFilter;
+
+  const handleFilterClick = (cat: MapFilterCategory) => {
+    setInternalFilter(cat);
+    if (onFilterChange) onFilterChange(cat);
+  };
+
+  const filteredProperties = useMemo(() => {
+    return properties.filter((p) => {
+      if (activeFilter === 'all') return true;
+      if (activeFilter === 'sale') return p.listingType === 'sale';
+      if (activeFilter === 'rent') return p.listingType === 'rent_long' || p.listingType === 'rent_short';
+      if (activeFilter === 'house') return p.propertyType === 'villa' || p.propertyType === 'house';
+      if (activeFilter === 'commercial') return p.propertyType === 'commercial' || p.propertyType === 'office';
+      return true;
+    });
+  }, [properties, activeFilter]);
 
   const [zoom, setZoom] = useState(1.8);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -28,7 +55,7 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasMovedZone, setHasMovedZone] = useState(false);
 
-  const { validProperties, gpsToPercent, clusters } = useVectorClustering(properties, zoom);
+  const { validProperties, gpsToPercent, clusters } = useVectorClustering(filteredProperties, zoom);
 
   const formatPriceShort = (price: number, period?: string) => {
     let suffix = '';
@@ -52,9 +79,7 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
         const sLat = 'location' in selected ? selected.location.lat : selected.lat;
         const sLng = 'location' in selected ? selected.location.lng : selected.lng;
         const pos = gpsToPercent(sLat, sLng);
-        const targetX = (50 - pos.x) * 4 * zoom;
-        const targetY = (50 - pos.y) * 4 * zoom;
-        setOffset({ x: targetX, y: targetY });
+        setOffset({ x: (50 - pos.x) * 4 * zoom, y: (50 - pos.y) * 4 * zoom });
       }
     }
   }, [selectedPropertyId, validProperties, gpsToPercent, zoom]);
@@ -70,27 +95,10 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
     setHasMovedZone(true);
   };
 
-  const handleMouseUp = () => setIsDragging(false);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setIsDragging(true);
-      setDragStart({ x: e.touches[0].clientX - offset.x, y: e.touches[0].clientY - offset.y });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || e.touches.length !== 1) return;
-    setOffset({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y });
-    setHasMovedZone(true);
-  };
-
   const handleClusterClick = (cluster: MapCluster) => {
     const pos = gpsToPercent(cluster.lat, cluster.lng);
     setZoom((z) => Math.min(z + 1.2, 5.5));
-    const targetX = (50 - pos.x) * 4 * (zoom + 1.2);
-    const targetY = (50 - pos.y) * 4 * (zoom + 1.2);
-    setOffset({ x: targetX, y: targetY });
+    setOffset({ x: (50 - pos.x) * 4 * (zoom + 1.2), y: (50 - pos.y) * 4 * (zoom + 1.2) });
   };
 
   const handleSearchThisArea = () => {
@@ -118,64 +126,50 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
       className={`relative rounded-3xl overflow-hidden border border-[#d8d2c4] bg-[#f4efe4] shadow-md select-none ${className}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
+      onMouseUp={() => setIsDragging(false)}
+      onMouseLeave={() => setIsDragging(false)}
+      onTouchStart={(e) => {
+        if (e.touches.length === 1) {
+          setIsDragging(true);
+          setDragStart({ x: e.touches[0].clientX - offset.x, y: e.touches[0].clientY - offset.y });
+        }
+      }}
+      onTouchMove={(e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        setOffset({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y });
+        setHasMovedZone(true);
+      }}
       onTouchEnd={() => setIsDragging(false)}
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >
+      <MapCategoryFilterBar activeFilter={activeFilter} onFilterChange={handleFilterClick} />
+
       {hasMovedZone && (
         <button
           onClick={handleSearchThisArea}
-          className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center bg-[#1e3835] text-white px-4 py-2 rounded-full border border-white/20 text-xs font-bold shadow-2xl hover:bg-[#152725] transition-all cursor-pointer"
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-30 flex items-center bg-[#1e3835] text-white px-4 py-2 rounded-full border border-white/20 text-xs font-bold shadow-2xl hover:bg-[#152725] transition-all cursor-pointer"
         >
           <MapPin className="w-3.5 h-3.5 text-emerald-400 me-1.5" />
           <span>Rechercher dans cette zone</span>
         </button>
       )}
 
-      {/* Map Controls */}
-      <div className="absolute top-4 left-4 z-30 flex flex-col gap-2 pointer-events-auto">
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-[#d8d2c4] shadow-md p-1 flex flex-col items-center">
-          <button
-            onClick={() => {
-              setZoom((z) => Math.min(z + 0.5, 6.0));
-              setHasMovedZone(true);
-            }}
-            aria-label="Zoom avant"
-            className="w-8 h-8 flex items-center justify-center font-black text-slate-800 hover:bg-[#f2eee5] rounded-xl text-base cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-[#1e3835]" />
-          </button>
-          <div className="w-5 h-[1px] bg-[#e8e2d4]" />
-          <button
-            onClick={() => {
-              setZoom((z) => Math.max(z - 0.5, 1.0));
-              setHasMovedZone(true);
-            }}
-            aria-label="Zoom arrière"
-            className="w-8 h-8 flex items-center justify-center font-black text-slate-800 hover:bg-[#f2eee5] rounded-xl text-base cursor-pointer"
-          >
-            <Minus className="w-4 h-4 text-[#1e3835]" />
-          </button>
-        </div>
+      <MapZoomControls
+        onZoomIn={() => {
+          setZoom((z) => Math.min(z + 0.5, 6.0));
+          setHasMovedZone(true);
+        }}
+        onZoomOut={() => {
+          setZoom((z) => Math.max(z - 0.5, 1.0));
+          setHasMovedZone(true);
+        }}
+        onReset={() => {
+          setZoom(1.8);
+          setOffset({ x: 0, y: 0 });
+          setHasMovedZone(false);
+        }}
+      />
 
-        <button
-          onClick={() => {
-            setZoom(1.8);
-            setOffset({ x: 0, y: 0 });
-            setHasMovedZone(false);
-          }}
-          aria-label="Recentrer la carte"
-          title="Recentrer sur l'Algérie"
-          className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl border border-[#d8d2c4] shadow-md flex items-center justify-center text-slate-800 hover:bg-[#f2eee5] cursor-pointer"
-        >
-          <RotateCcw className="w-4 h-4 text-[#1e3835]" />
-        </button>
-      </div>
-
-      {/* Scaled Surface Canvas */}
       <div
         className="w-full h-full relative transition-transform duration-75 ease-out"
         style={{
@@ -185,7 +179,6 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
       >
         <OlmaMapCanvas />
 
-        {/* Map Elements Layer */}
         <div className="absolute inset-0 pointer-events-auto">
           {clusters.map((item) => {
             const pos = gpsToPercent(item.lat, item.lng);
@@ -217,9 +210,7 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onSelectProperty) {
-                    onSelectProperty(p.id);
-                  }
+                  if (onSelectProperty) onSelectProperty(p.id);
                 }}
                 className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 z-10 group ${
                   isSelected ? 'z-40 scale-110' : 'hover:scale-105'
@@ -253,9 +244,7 @@ export const OlmaVectorMap: React.FC<OlmaVectorMapProps> = ({
           <PropertyMapPreview
             property={selectedProperty}
             onClose={() => {
-              if (onSelectProperty) {
-                onSelectProperty('');
-              }
+              if (onSelectProperty) onSelectProperty('');
             }}
           />
         </div>

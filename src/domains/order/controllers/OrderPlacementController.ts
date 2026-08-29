@@ -105,7 +105,9 @@ const router = Router();
 router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRequest(placeOrderSchema), async (req: AuthenticatedRequest, res: Response) => {
   const { cart, shippingAddress, couponCode, deliveryMethod, idempotencyKey } = req.body;
   const isGuest = !req.user;
-  const userId = req.user ? req.user.uid : `guest_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  const userId = req.user ? req.user.uid : `guest_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
+  const guestRecoveryToken = isGuest ? crypto.randomBytes(32).toString("hex") : null;
+  const guestTokenHash = guestRecoveryToken ? crypto.createHash("sha256").update(guestRecoveryToken).digest("hex") : null;
 
   if (idempotencyKey) {
     try {
@@ -665,6 +667,8 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
           const masterOrderData = {
             id: parentOrderId,
             userId,
+            isGuest: !!isGuest,
+            guestTokenHash: isGuest ? guestTokenHash : null,
             subtotal,
             shippingTotal: totalShipping,
             discountAmount,
@@ -701,7 +705,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
             });
           }
 
-          // 3.3 Création du profil invité si nécessaire
+          // 3.3 Création du profil invité et jeton de récupération sécurisé si nécessaire
           if (isGuest) {
             const userRef = db.collection("users").doc(userId);
             t.set(userRef, {
@@ -710,12 +714,27 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
               displayName: shippingAddress.fullName || "",
               role: "buyer",
               isGuest: true,
+              guestTokenHash: guestTokenHash || null,
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
               phone: shippingAddress.phone || "",
               wilaya: shippingAddress.wilaya || "",
               commune: shippingAddress.commune || "",
               address: shippingAddress.address || "",
             });
+
+            if (guestTokenHash) {
+              const tokenRef = db.collection("guest_recovery_tokens").doc(userId);
+              t.set(tokenRef, {
+                guestUserId: userId,
+                tokenHash: guestTokenHash,
+                email: shippingAddress.email ? String(shippingAddress.email).toLowerCase().trim() : "",
+                parentOrderId,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+                used: false,
+                convertedToUid: null,
+              });
+            }
           }
 
           // 3.4 Création des sous-commandes
@@ -795,11 +814,23 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
       ).catch((e) => safeLogger.error("Failed to send low stock alert emails", { err: e instanceof Error ? e.message : String(e) }));
     }
 
+    if (isGuest && guestRecoveryToken) {
+      res.cookie("olmart_guest_claim_token", `${userId}:${guestRecoveryToken}`, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/",
+      });
+    }
+
     res.json({
       success: true,
       orderId: result.orderId,
       grandTotal: result.total,
       codAmount: result.codAmount,
+      guestUserId: isGuest ? userId : undefined,
+      guestRecoveryToken: isGuest && guestRecoveryToken ? guestRecoveryToken : undefined,
     });
   } catch (error: unknown) {
     safeLogger.error("Place order err", { err: error instanceof Error ? error.message : String(error) });

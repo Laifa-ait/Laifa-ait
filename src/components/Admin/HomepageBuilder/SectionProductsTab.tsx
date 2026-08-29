@@ -39,11 +39,18 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
     })
     .slice(0, 30);
 
+  const padTo18 = (arr: string[]): string[] => {
+    const result = [...arr];
+    for (let i = result.length; i < 18; i++) {
+      result.push("");
+    }
+    return result.slice(0, 18);
+  };
+
   const handleToggleProduct = (productId: string) => {
     if (activeSelectedIds.includes(productId)) {
       const newLinks = secManualLinks.filter((id) => id !== productId);
-      while (newLinks.length < 18) newLinks.push("");
-      setSecManualLinks(newLinks);
+      setSecManualLinks(padTo18(newLinks));
     } else {
       const firstEmptyIndex = secManualLinks.findIndex((id) => !id || !id.trim());
       if (firstEmptyIndex !== -1) {
@@ -58,8 +65,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
 
   const handleRemoveSelected = (productId: string) => {
     const next = secManualLinks.filter((id) => id !== productId);
-    while (next.length < 18) next.push("");
-    setSecManualLinks(next);
+    setSecManualLinks(padTo18(next));
   };
 
   const categoriesList = Array.from(new Set(allProducts.map((p) => p.category).filter(Boolean)));

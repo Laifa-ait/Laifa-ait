@@ -47,12 +47,12 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
       {/* Header section with clean title & action */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-stone-900 font-['Poppins',sans-serif] tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
+          <h2 className="text-base sm:text-lg font-bold text-[#1a3831] font-['Playfair_Display',serif] tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
             <span>Explorer par catégorie</span>
           </h2>
-          <p className="text-[11px] sm:text-xs text-stone-400 font-medium">
-            Filtrez les séjours & biens selon vos envies
+          <p className="text-[11px] sm:text-xs text-stone-500 font-medium">
+            Filtrez les séjours & biens selon vos critères
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => onCategorySelect('all')}
-            className="text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors cursor-pointer bg-transparent border-none"
+            className="text-xs font-semibold text-[#1a3831] hover:underline transition-colors cursor-pointer bg-transparent border-none"
           >
             Réinitialiser
           </motion.button>
@@ -83,13 +83,13 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
               onClick={() => onCategorySelect(cat.id)}
               className={`rounded-full h-11 px-5 border flex items-center gap-2.5 font-medium text-xs sm:text-sm transition-all cursor-pointer shrink-0 select-none whitespace-nowrap ${
                 isSelected
-                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white border-transparent shadow-md shadow-orange-500/25 font-bold'
-                  : 'border-stone-200 bg-white text-stone-700 hover:border-orange-300 hover:bg-orange-50/40 hover:text-orange-600 shadow-2xs'
+                  ? 'bg-[#1a3831] text-[#ebdcb8] border-[#1a3831] shadow-md shadow-[#1a3831]/20 font-bold'
+                  : 'border-[#e8e2d4] bg-white text-stone-700 hover:border-[#1a3831]/40 hover:bg-[#f4ecd8]/40 hover:text-[#1a3831] shadow-2xs'
               }`}
             >
               <Icon
                 className={`w-4 h-4 shrink-0 transition-colors ${
-                  isSelected ? 'text-white stroke-[2.2]' : 'text-stone-500'
+                  isSelected ? 'text-[#ebdcb8] stroke-[2.2]' : 'text-stone-500'
                 }`}
               />
               <span className="tracking-tight">{cat.label}</span>

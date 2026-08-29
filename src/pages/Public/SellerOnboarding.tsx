@@ -37,12 +37,12 @@ export const SellerOnboarding: React.FC = () => {
         documentId: formData.documentId,
         rib: formData.rib
       });
-      toast.success(t("Bienvenue sur votre espace vendeur !"));
+      toast.success(t("Dossier soumis ! Votre boutique sera active dès validation par nos équipes."));
       navigate('/dashboard/seller');
     } catch (error) {
       console.error(error);
       const errorMsg = error instanceof Error ? error.message : String(error);
-      toast.error(errorMsg || t("Erreur lors de la finalisation."));
+      toast.error(errorMsg || t("Erreur lors de la soumission du dossier."));
     } finally {
       setLoading(false);
     }

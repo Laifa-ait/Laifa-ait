@@ -18,6 +18,8 @@ export interface CheckoutResponse {
   orderId: string;
   total: number;
   codAmount: number;
+  guestUserId?: string;
+  guestRecoveryToken?: string;
 }
 
 export const processCheckout = async (payload: CheckoutPayload): Promise<CheckoutResponse> => {
@@ -61,6 +63,8 @@ export const processCheckout = async (payload: CheckoutPayload): Promise<Checkou
       error?: string;
       orderId?: string;
       grandTotal?: number;
+      guestUserId?: string;
+      guestRecoveryToken?: string;
     };
 
     if (!response.ok) {
@@ -69,11 +73,15 @@ export const processCheckout = async (payload: CheckoutPayload): Promise<Checkou
     
     const grandTotal = typeof data.grandTotal === 'number' ? data.grandTotal : 0;
     const orderId = typeof data.orderId === 'string' ? data.orderId : '';
+    const guestUserId = typeof data.guestUserId === 'string' ? data.guestUserId : undefined;
+    const guestRecoveryToken = typeof data.guestRecoveryToken === 'string' ? data.guestRecoveryToken : undefined;
 
     return {
       orderId,
       total: grandTotal,
       codAmount: grandTotal,
+      guestUserId,
+      guestRecoveryToken,
     }; 
   } catch (error: unknown) {
     if (import.meta.env.DEV) {

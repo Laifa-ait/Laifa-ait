@@ -169,12 +169,13 @@ describe("OLMART — BOLA and RBAC Authorization Security Policies", () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it("allows seller user through", () => {
+    it("allows active seller user through", () => {
       const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "seller123",
           email: "seller.standard@olmart.dz",
           role: "seller",
+          status: "active",
           auth_time: Math.floor(Date.now() / 1000),
         },
       };
@@ -184,12 +185,45 @@ describe("OLMART — BOLA and RBAC Authorization Security Policies", () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
+    it("rejects pending_verification seller with 403 Forbidden", () => {
+      const mockReq: Partial<AuthenticatedRequest> = {
+        user: {
+          uid: "seller_pending_123",
+          email: "seller.pending@olmart.dz",
+          role: "seller",
+          status: "pending_verification",
+          auth_time: Math.floor(Date.now() / 1000),
+        },
+      };
+      authorizeSeller(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it("rejects suspended seller with 403 Forbidden", () => {
+      const mockReq: Partial<AuthenticatedRequest> = {
+        user: {
+          uid: "seller_suspended_123",
+          email: "seller.suspended@olmart.dz",
+          role: "seller",
+          status: "suspended",
+          auth_time: Math.floor(Date.now() / 1000),
+        },
+      };
+      authorizeSeller(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
     it("allows admin user to access seller routes", () => {
       const mockReq: Partial<AuthenticatedRequest> = {
         user: {
           uid: "admin123",
           email: "admin.manager@olmart.dz",
           role: "admin",
+          status: "active",
           auth_time: Math.floor(Date.now() / 1000),
         },
       };

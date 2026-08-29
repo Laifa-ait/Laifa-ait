@@ -28,6 +28,12 @@ export default defineConfig({
     env: {
       NODE_ENV: 'production',
       CSRF_SECRET: 'olmart_production_test_csrf_secret_key_2026_secure_abcdef123456789',
+      VITE_FIREBASE_API_KEY: 'AIzaSyFakeKeyForCiTesting1234567890',
+      VITE_FIREBASE_AUTH_DOMAIN: 'olmart-ci-demo.firebaseapp.com',
+      VITE_FIREBASE_PROJECT_ID: 'olmart-ci-demo',
+      VITE_FIREBASE_STORAGE_BUCKET: 'olmart-ci-demo.appspot.com',
+      VITE_FIREBASE_MESSAGING_SENDER_ID: '123456789012',
+      VITE_FIREBASE_APP_ID: '1:123456789012:web:abcdef1234567890',
     },
   },
 });

@@ -89,7 +89,7 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
       // Non-admin token roles
       if (dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
         effectiveRole = "suspended";
-      } else if (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") {
+      } else if ((dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") && dbStatus === "active") {
         effectiveRole = dbRole;
       } else {
         effectiveRole = "buyer";
@@ -168,7 +168,7 @@ export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: 
     } else {
       if (dbStatus === "suspended" || dbStatus === "blocked" || dbRole === "suspended" || dbRole === "blocked") {
         effectiveRole = "suspended";
-      } else if (dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") {
+      } else if ((dbRole === "seller" || dbRole === "artisan" || dbRole === "property_owner") && dbStatus === "active") {
         effectiveRole = dbRole;
       } else {
         effectiveRole = "buyer";
@@ -202,8 +202,11 @@ export const authorizeAdmin = (req: AuthenticatedRequest, res: Response, next: N
 };
 
 export const authorizeSeller = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  if (!req.user || (req.user.role !== "seller" && req.user.role !== "admin")) {
-    return res.status(403).json({ error: "Accès refusé. Privilèges Vendeur ou Administrateur requis." });
+  const isAdmin = (req.user?.role === "admin" || req.user?.role === "superadmin") && req.user?.status !== "suspended" && req.user?.status !== "blocked";
+  const isSeller = req.user?.role === "seller" && req.user?.status === "active";
+
+  if (!req.user || (!isAdmin && !isSeller)) {
+    return res.status(403).json({ error: "Accès refusé. Privilèges Vendeur actif vérifié ou Administrateur requis." });
   }
   next();
 };

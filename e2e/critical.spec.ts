@@ -2,6 +2,18 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Parcours E2E Critiques OLMART', () => {
 
+  test.beforeEach(async ({ page }) => {
+    // Intercepter et bloquer les requêtes sortantes vers les APIs Google Firebase en mode test
+    // afin d'éviter les erreurs HTTP 403 (Forbidden) lors de l'utilisation de fausses clés
+    await page.route(/(identitytoolkit|firestore|securetoken)\.googleapis\.com/, route => {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, documents: [] }),
+      });
+    });
+  });
+
   test('1. Visiteur — Homepage, Header & Navigation', async ({ page }) => {
     page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
     page.on('pageerror', err => console.log('BROWSER EXCEPTION:', err.message, err.stack));

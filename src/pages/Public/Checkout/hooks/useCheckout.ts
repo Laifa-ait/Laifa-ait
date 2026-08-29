@@ -19,6 +19,7 @@ export interface CheckoutOrderSummary {
   id: string;
   total: number;
   guestUserId: string;
+  guestRecoveryToken?: string | null;
 }
 
 export const useCheckout = () => {
@@ -482,7 +483,8 @@ export const useCheckout = () => {
       setOrderSummary({ 
          id: data.orderId || deliveryRegId || `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`, 
          total: data.total || grandTotal, 
-         guestUserId: currentUser?.uid || "guest" 
+         guestUserId: data.guestUserId || (currentUser?.uid || "guest"),
+         guestRecoveryToken: data.guestRecoveryToken || null,
       });
 
       analyticsEngine.track('purchase_complete', {
@@ -519,7 +521,8 @@ export const useCheckout = () => {
         wilaya: formData.wilaya,
         commune: formData.commune,
         address: formData.address,
-        guestUserId: orderSummary?.guestUserId || null
+        guestUserId: orderSummary?.guestUserId || null,
+        guestRecoveryToken: orderSummary?.guestRecoveryToken || null,
       });
 
       toast.success(t("account_converted_success") || "Compte créé avec succès ! Vos commandes sont maintenant associées.");
