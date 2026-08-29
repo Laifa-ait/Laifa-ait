@@ -3,6 +3,7 @@ import { validateExternalUrl } from "../utils/security";
 import fs from "fs";
 import path from "path";
 import { safeLogger } from "../utils/logger";
+import { resilientFetch } from "../utils/resilientFetch";
 
 export class AiService {
   private static parseJsonSafely<T = Record<string, unknown>>(rawText: string, fallback: T): T {
@@ -164,7 +165,13 @@ export class AiService {
     // SSRF URL Validation
     const validatedUrl = validateExternalUrl(imageUrl);
 
-    const responseImage = await fetch(validatedUrl.toString(), { redirect: "error" });
+    const responseImage = await resilientFetch(validatedUrl.toString(), { redirect: "error" }, {
+      timeoutMs: 8000,
+      totalDeadlineMs: 15000,
+      maxRetries: 2,
+      operationName: "analyzeSellerImage.fetchImage"
+    });
+
     if (!responseImage.ok) {
       throw new Error("Impossible de télécharger l'image distante");
     }

@@ -120,14 +120,26 @@ const setupFirestore = () => {
   }
 };
 
-export const verifyAndFixDb = async () => {
+export const verifyAndFixDb = async (timeoutMs = 6000): Promise<void> => {
   if (!db) {
     throw new Error("Firestore Admin SDK DB instance is not initialized.");
   }
-  // Try a tiny read to check permissions
-  await db.collection("products").limit(1).get();
-  logDev("Firestore: Connection verified.");
+  
+  // Try a tiny read to check connectivity with strict deadline protection
+  let timer: NodeJS.Timeout | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`[Firestore Core] Verification ping exceeded deadline of ${timeoutMs}ms`)), timeoutMs);
+  });
 
+  try {
+    const readPromise = db.collection("products").limit(1).get();
+    await Promise.race([readPromise, timeoutPromise]);
+    logDev("Firestore: Connection verified.");
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+
+  // Migrations: strictly decoupled from standard web startup
   if (process.env.RUN_MIGRATIONS === "true") {
     try {
       logDev("Triggering category migration dynamically...");
