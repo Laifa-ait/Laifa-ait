@@ -3,7 +3,7 @@ import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
 import { admin, db } from "../config/firebase-admin";
 import { Readable } from "stream";
-import router from "../routes/support";
+import router from "../domains/support/support.routes";
 
 const app = express();
 app.use(express.json());

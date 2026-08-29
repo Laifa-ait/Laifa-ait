@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import { realEstateRouter } from '../routes/realEstate';
+import { realEstateRouter } from '../domains/realEstate/realEstate.routes';
 import { AuthenticatedRequest } from '../middlewares/auth';
 import { db } from '../config/firebase-admin';
 import { CollectionReference } from 'firebase-admin/firestore';

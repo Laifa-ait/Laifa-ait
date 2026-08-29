@@ -2,7 +2,7 @@ import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
 import { admin, db } from "../config/firebase-admin";
-import workspaceRouter from "../routes/workspace";
+import workspaceRouter from "../domains/workspace/workspace.routes";
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));

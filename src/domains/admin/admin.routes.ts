@@ -4,6 +4,7 @@ import adminProductRouter from "./routes/adminProduct.routes";
 import adminMarketingRouter from "./routes/adminMarketing.routes";
 import adminHomepageRouter from "./routes/adminHomepage.routes";
 import adminSystemRouter from "./routes/adminSystem.routes";
+import adminAIRouter from "./routes/adminAI.routes";
 
 const adminRouter = Router();
 
@@ -12,5 +13,6 @@ adminRouter.use(adminProductRouter);
 adminRouter.use(adminMarketingRouter);
 adminRouter.use(adminHomepageRouter);
 adminRouter.use(adminSystemRouter);
+adminRouter.use(adminAIRouter);
 
 export default adminRouter;

@@ -8,7 +8,7 @@ import { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } from "./s
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
 import { safeLogger } from "./src/utils/logger";
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const bootStartTime = Date.now();
 
 export const httpServer = http.createServer(app);

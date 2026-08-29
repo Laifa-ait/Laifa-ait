@@ -13,21 +13,22 @@ import { deprecationMiddleware } from "./src/middlewares/deprecation";
 import { generateOpenApiSpec } from "./src/swagger/openapi";
 import { safeLogger } from "./src/utils/logger";
 
-import healthRouter from "./src/routes/health";
-import authRouter from "./src/routes/auth";
-import aiRouter from "./src/routes/ai";
-import ordersRouter from "./src/routes/orders";
-import adminRouter from "./src/routes/admin";
-import coreRouter from "./src/routes/core";
-import productsRouter from "./src/routes/products";
-import reviewsRouter from "./src/routes/reviews";
-import workspaceRouter from "./src/routes/workspace";
+import healthRouter from "./src/domains/health/health.routes";
+import authRouter from "./src/domains/auth/auth.routes";
+import aiRouter from "./src/domains/ai/ai.routes";
+import ordersRouter from "./src/domains/order/order.routes";
+import adminRouter from "./src/domains/admin/admin.routes";
+import coreRouter from "./src/domains/core.routes";
+import productsRouter from "./src/domains/product/product.routes";
+import reviewsRouter from "./src/domains/review/review.routes";
+import workspaceRouter from "./src/domains/workspace/workspace.routes";
 import disputesRouter from "./src/domains/dispute/controllers/DisputeController";
 import shippingRouter from "./src/domains/shipping/routes";
-import { olmaUniversRouter } from "./src/routes/olmaUnivers";
-import { bricolageRouter } from "./src/routes/bricolage";
-import { realEstateRouter } from "./src/routes/realEstate";
-import messagingRouter from "./src/routes/messaging";
+import { olmaUniversRouter } from "./src/domains/olmaUnivers/olmaUnivers.routes";
+import { bricolageRouter } from "./src/domains/bricolage/bricolage.routes";
+import { realEstateRouter } from "./src/domains/realEstate/realEstate.routes";
+import messagingRouter from "./src/domains/messaging/messaging.routes";
+import paymentRouter from "./src/domains/payment/payment.routes";
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
@@ -102,6 +103,7 @@ app.use("/api/v1", olmaUniversRouter);
 app.use("/api/v1", bricolageRouter);
 app.use("/api/v1/real-estate", realEstateRouter);
 app.use("/api/v1/messaging", messagingRouter);
+app.use("/api/v1/payment", paymentRouter);
 
 // Domain catalog & core gateways
 app.use("/", productsRouter);

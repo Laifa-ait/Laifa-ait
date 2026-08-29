@@ -2,7 +2,7 @@ import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
 import { admin, db } from "../config/firebase-admin";
-import router from "../routes/auth2fa";
+import router from "../domains/auth/auth2fa.routes";
 
 const app = express();
 app.use(express.json());

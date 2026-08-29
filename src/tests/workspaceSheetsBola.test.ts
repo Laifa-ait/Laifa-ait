@@ -2,8 +2,8 @@ import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
 import { admin, db } from "../config/firebase-admin";
-import workspaceRouter from "../routes/workspace";
-import adminWorkspaceRouter from "../routes/adminWorkspace";
+import workspaceRouter from "../domains/workspace/workspace.routes";
+import adminWorkspaceRouter from "../domains/workspace/controllers/adminWorkspace.controller";
 
 // 1. MOCK GOOGLE WORKSPACE APIS (Zero External Network Calls)
 const { mockSpreadsheetCreate, mockValuesUpdate, mockBatchUpdate } = vi.hoisted(() => {
