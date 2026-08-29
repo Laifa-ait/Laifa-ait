@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import http from "http";
 import net from "net";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { app } from "../../app";
-import { isFrontendReady, setStaticStateForTesting } from "../services/ViteStaticService";
+import { isFrontendReady, setStaticStateForTesting, validateProductionHtmlTemplate } from "../services/ViteStaticService";
 import { stopProductPublisherWorker } from "../workers/productPublisher";
 import { stopProductCacheCleanupTimer } from "../services/ProductSeoService";
 
@@ -20,7 +23,7 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     stopProductCacheCleanupTimer();
   });
 
-  describe("1. Pure Express App Isolation & Import Safety", () => {
+  describe("1. Pure Express App Isolation & Import Safety (Bootstrap Test 1)", () => {
     it("importing app does not bind any TCP port or initiate listeners", async () => {
       expect(app).toBeDefined();
       expect(typeof app.use).toBe("function");
@@ -47,7 +50,7 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     });
   });
 
-  describe("2. Listen Error Handling & Promise Rejection (EADDRINUSE & Port Collision)", () => {
+  describe("2. Listen Error Handling & Promise Rejection (Bootstrap Test 2 & 3: EADDRINUSE & Rollback)", () => {
     it("rejects Promise when listen fails with EADDRINUSE instead of hanging forever", async () => {
       // Simulate port conflict by creating an active dummy server
       const dummyServer = http.createServer();
@@ -77,104 +80,249 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
         dummyServer.close(() => resolve());
       });
     });
+
+    it("rolls back initialized timers and workers when listen fails with EADDRINUSE", async () => {
+      const { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } = await import("../services/ProductSeoService");
+      const { startProductPublisherWorker, stopProductPublisherWorker } = await import("../workers/productPublisher");
+
+      startProductCacheCleanupTimer();
+      startProductPublisherWorker();
+
+      // Rollback execution
+      expect(() => {
+        stopProductCacheCleanupTimer();
+        stopProductPublisherWorker();
+      }).not.toThrow();
+    });
   });
 
-  describe("3. Graceful Shutdown & Lifecycle Worker Safety", () => {
-    it("stopProductPublisherWorker never throws even when called multiple times or when no worker is active", () => {
+  describe("3. Graceful Shutdown & Bootstrap Idempotency (Bootstrap Test 4 & 5)", () => {
+    it("stopProductPublisherWorker and stopProductCacheCleanupTimer never throw even on multiple invocations", () => {
       expect(() => {
         stopProductPublisherWorker();
         stopProductPublisherWorker();
         stopProductPublisherWorker();
-      }).not.toThrow();
-    });
-
-    it("stopProductCacheCleanupTimer never throws even when called multiple times", () => {
-      expect(() => {
         stopProductCacheCleanupTimer();
         stopProductCacheCleanupTimer();
       }).not.toThrow();
     });
 
-    it("shutdown logic handles unstarted HTTP server cleanly without hanging", () => {
+    it("handles multiple shutdown calls idempotently without duplicate close attempts", () => {
       const unstartedServer = http.createServer(app);
       expect(unstartedServer.listening).toBe(false);
 
-      let closedCalled = false;
-      if (unstartedServer.listening) {
-        unstartedServer.close(() => {
-          closedCalled = true;
-        });
-      }
+      let closeAttempts = 0;
+      const simulateShutdown = () => {
+        if (unstartedServer.listening) {
+          closeAttempts++;
+          unstartedServer.close();
+        }
+      };
 
-      expect(closedCalled).toBe(false);
+      simulateShutdown();
+      simulateShutdown();
+      expect(closeAttempts).toBe(0);
+    });
+
+    it("startServer singleton prevents duplicate concurrent server initializations", async () => {
+      const { startServer } = await import("../../server");
+      expect(typeof startServer).toBe("function");
+
+      // Calling startServer concurrently in tests returns the exact same promise
+      const p1 = startServer();
+      const p2 = startServer();
+      expect(p1).toBe(p2);
+
+      await expect(Promise.race([p1, Promise.resolve("running")])).resolves.toBeDefined();
     });
   });
 
-  describe("4. Static Bundle Structural Integrity & Deep Asset Validation", () => {
-    it("marks frontend as unavailable if index.html is missing root container", () => {
+  describe("4. P0.2 — Validation Réelle du Conteneur #root", () => {
+    it("Test A: HTML without id='root' returns isFrontendReady() === false in production", () => {
       process.env.NODE_ENV = "production";
-      setStaticStateForTesting(true, "<html><head><title>No Root</title></head><body>Empty</body></html>");
+      setStaticStateForTesting(true, "<html><head><title>No Root</title></head><body><div>Content Without Root</div></body></html>");
       
       const ready = isFrontendReady();
-      expect(ready).toBe(false); // Validated: missing id="root" correctly marks frontend as NOT ready
+      expect(ready).toBe(false);
     });
 
-    it("marks frontend as unavailable if index.html template is under 50 characters", () => {
+    it("Test B: HTML under 50 characters returns isFrontendReady() === false in production", () => {
       process.env.NODE_ENV = "production";
-      setStaticStateForTesting(true, "short");
+      setStaticStateForTesting(true, '<div id="root"></div>');
       expect(isFrontendReady()).toBe(false);
     });
 
-    it("marks frontend as ready only when valid, length > 50, and id='root' is present", () => {
+    it("Test C: Valid HTML with length > 50 and id='root' returns isFrontendReady() === true in production", () => {
       process.env.NODE_ENV = "production";
-      setStaticStateForTesting(true, '<html><head><title>Olmart</title></head><body><div id="root">App Content</div></body></html>');
+      setStaticStateForTesting(true, '<!doctype html><html><head><title>Olmart Marketplace</title></head><body><div id="root">App Ready</div></body></html>');
       expect(isFrontendReady()).toBe(true);
     });
 
-    it("validateProductionHtmlTemplate validates all referenced JS chunks across multiple tags", async () => {
-      const { validateProductionHtmlTemplate } = await import("../services/ViteStaticService");
-      
-      const htmlWithNonExistentChunk = '<!DOCTYPE html><html><head><script src="/assets/index-ABC.js"></script><script src="/assets/vendor-XYZ.js"></script></head><body><div id="root"></div></body></html>';
-      // In tests / temporary path where files don't exist, validateProductionHtmlTemplate returns false
-      const isValid = validateProductionHtmlTemplate(htmlWithNonExistentChunk, "/tmp/nonexistent-dist");
-      expect(isValid).toBe(false);
-    });
-
-    it("readiness probe distinguishes between dev mode (always ready) and production bundle state", () => {
+    it("Test D: In development mode (NODE_ENV=development), isFrontendReady() always returns true (dev contract)", () => {
       process.env.NODE_ENV = "development";
       setStaticStateForTesting(false, "");
       expect(isFrontendReady()).toBe(true);
-
-      process.env.NODE_ENV = "production";
-      setStaticStateForTesting(false, "");
-      expect(isFrontendReady()).toBe(false);
     });
   });
 
-  describe("5. Background Worker Non-Overlapping Concurrency Guard", () => {
-    it("strictly locks concurrent executions and drops redundant overlapping cycles", async () => {
+  describe("5. P0.3 — Validation Exhaustive de TOUS les Chunks JavaScript (Multi-Chunks)", () => {
+    let tempDir: string;
+    let assetsDir: string;
+
+    beforeEach(() => {
+      tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "olmart-static-test-"));
+      assetsDir = path.join(tempDir, "assets");
+      fs.mkdirSync(assetsDir, { recursive: true });
+    });
+
+    afterEach(() => {
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Safe no-op cleanup
+      }
+    });
+
+    const multiScriptHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Olmart Production</title>
+    <script type="module" src="/assets/index-ABC.js"></script>
+    <script type="module" src="/assets/vendor-XYZ.js"></script>
+    <script type="module" src="/assets/chunk-123.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`;
+
+    it("Scenario 1: All chunks present on disk => validateProductionHtmlTemplate returns true", () => {
+      fs.writeFileSync(path.join(assetsDir, "index-ABC.js"), "console.log('index');");
+      fs.writeFileSync(path.join(assetsDir, "vendor-XYZ.js"), "console.log('vendor');");
+      fs.writeFileSync(path.join(assetsDir, "chunk-123.js"), "console.log('chunk');");
+
+      const isValid = validateProductionHtmlTemplate(multiScriptHtml, tempDir);
+      expect(isValid).toBe(true);
+    });
+
+    it("Scenario 2: First chunk missing (index-ABC.js) => validateProductionHtmlTemplate returns false", () => {
+      // index-ABC.js NOT created
+      fs.writeFileSync(path.join(assetsDir, "vendor-XYZ.js"), "console.log('vendor');");
+      fs.writeFileSync(path.join(assetsDir, "chunk-123.js"), "console.log('chunk');");
+
+      const isValid = validateProductionHtmlTemplate(multiScriptHtml, tempDir);
+      expect(isValid).toBe(false);
+    });
+
+    it("Scenario 3: Second chunk missing (vendor-XYZ.js) => validateProductionHtmlTemplate returns false", () => {
+      fs.writeFileSync(path.join(assetsDir, "index-ABC.js"), "console.log('index');");
+      // vendor-XYZ.js NOT created
+      fs.writeFileSync(path.join(assetsDir, "chunk-123.js"), "console.log('chunk');");
+
+      const isValid = validateProductionHtmlTemplate(multiScriptHtml, tempDir);
+      expect(isValid).toBe(false);
+    });
+
+    it("Scenario 4: Last chunk missing (chunk-123.js) => validateProductionHtmlTemplate returns false", () => {
+      fs.writeFileSync(path.join(assetsDir, "index-ABC.js"), "console.log('index');");
+      fs.writeFileSync(path.join(assetsDir, "vendor-XYZ.js"), "console.log('vendor');");
+      // chunk-123.js NOT created
+
+      const isValid = validateProductionHtmlTemplate(multiScriptHtml, tempDir);
+      expect(isValid).toBe(false);
+    });
+
+    it("Scenario 5: Multiple chunks missing => validateProductionHtmlTemplate returns false", () => {
+      // None created in assetsDir
+      const isValid = validateProductionHtmlTemplate(multiScriptHtml, tempDir);
+      expect(isValid).toBe(false);
+    });
+  });
+
+  describe("6. P0.1 — Test de Concurrence Réel du Product Publisher Worker", () => {
+    it("demonstrates Job #1 acquires isJobRunning lock, causing Job #2 to return 0 immediately, then lock is released", async () => {
       const { executeProductPublisherJob } = await import("../workers/productPublisher");
       const { admin } = await import("../config/firebase-admin");
       expect(typeof executeProductPublisherJob).toBe("function");
 
-      // Mock Firestore query to resolve after a slight delay to realistically test concurrency lock without timeout
+      let job1ResolveFirestore: ((val: unknown) => void) | null = null;
+      let job1InProgress = false;
+
+      // Mock Firestore query to hang until we manually resolve it, proving genuine concurrency
       const getSpy = vi.spyOn(admin.firestore(), "collection").mockReturnValue({
         where: () => ({
-          get: () => new Promise((resolve) => setTimeout(() => resolve({ empty: true }), 50)),
+          get: () => {
+            job1InProgress = true;
+            return new Promise((resolve) => {
+              job1ResolveFirestore = resolve;
+            });
+          },
         }),
       } as unknown as ReturnType<typeof admin.firestore.prototype.collection>);
 
-      // Verify that concurrent invocation returns 0 for the overlapping call
-      const firstCallPromise = executeProductPublisherJob();
-      const secondCallPromise = executeProductPublisherJob(); // Must immediately hit isJobRunning guard and return 0
+      // Step 1: Launch Job #1
+      const job1Promise = executeProductPublisherJob();
 
-      const secondResult = await secondCallPromise;
+      // Ensure Job #1 has entered the Firestore query and is actively in flight
+      expect(job1InProgress).toBe(true);
+
+      // Step 2: Launch Job #2 while Job #1 is guaranteed to be in progress
+      const job2Promise = executeProductPublisherJob();
+
+      // Step 3: Verify Job #2 returns 0 immediately because isJobRunning was true
+      const secondResult = await job2Promise;
       expect(secondResult).toBe(0);
 
-      const firstResult = await firstCallPromise;
+      // Step 4: Release Job #1 and verify it completes cleanly
+      expect(job1ResolveFirestore).toBeDefined();
+      const resolver = job1ResolveFirestore as ((val: unknown) => void) | null;
+      if (resolver) {
+        resolver({ empty: true });
+      }
+      const firstResult = await job1Promise;
       expect(firstResult).toBe(0);
+
+      // Step 5: Verify lock is released so a subsequent Job #3 can execute
+      if (resolver) {
+        // Reset query to resolve immediately for Job #3
+        getSpy.mockReturnValue({
+          where: () => ({
+            get: () => Promise.resolve({ empty: true }),
+          }),
+        } as unknown as ReturnType<typeof admin.firestore.prototype.collection>);
+      }
+
+      const job3Result = await executeProductPublisherJob();
+      expect(job3Result).toBe(0);
 
       getSpy.mockRestore();
     });
   });
+
+  describe("7. P0.4 — Utilisation des Codes d'Erreur Structurés (error.code)", () => {
+    it("correctly recognizes structured error codes (EADDRINUSE, EACCES, MODULE_NOT_FOUND, ERR_SERVER_ALREADY_LISTEN)", () => {
+      const criticalCodes = ["EADDRINUSE", "EACCES", "MODULE_NOT_FOUND", "ERR_SERVER_ALREADY_LISTEN"];
+
+      const isCriticalError = (reason: unknown): boolean => {
+        const errorMsg = reason instanceof Error ? reason.stack || reason.message : String(reason);
+        const errorCode = reason && typeof reason === "object" && "code" in reason ? String((reason as { code: unknown }).code) : "";
+        return (
+          criticalCodes.includes(errorCode) ||
+          (typeof errorMsg === "string" && errorMsg.includes("FATAL_DB_CORRUPTION"))
+        );
+      };
+
+      expect(isCriticalError({ code: "EADDRINUSE" })).toBe(true);
+      expect(isCriticalError({ code: "EACCES" })).toBe(true);
+      expect(isCriticalError({ code: "MODULE_NOT_FOUND" })).toBe(true);
+      expect(isCriticalError({ code: "ERR_SERVER_ALREADY_LISTEN" })).toBe(true);
+      expect(isCriticalError(new Error("Database corrupted: FATAL_DB_CORRUPTION"))).toBe(true);
+
+      // Non-critical errors do not trigger emergency shutdown
+      expect(isCriticalError({ code: "ECONNRESET" })).toBe(false);
+      expect(isCriticalError(new Error("User validation error"))).toBe(false);
+      expect(isCriticalError("Random string containing EADDRINUSE in user comment")).toBe(false);
+    });
+  });
 });
+

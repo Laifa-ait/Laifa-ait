@@ -56,7 +56,7 @@ export const shutdown = (signal: string): void => {
   }
 };
 
-export async function startServer(): Promise<http.Server> {
+export function startServer(): Promise<http.Server> {
   if (startServerPromise) {
     return startServerPromise;
   }
