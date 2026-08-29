@@ -22,7 +22,10 @@ export interface CheckoutResponse {
   guestRecoveryToken?: string;
 }
 
-export const processCheckout = async (payload: CheckoutPayload): Promise<CheckoutResponse> => {
+export const processCheckout = async (payload: CheckoutPayload, timeoutMs = 25000): Promise<CheckoutResponse> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const user = auth.currentUser;
     
@@ -43,20 +46,37 @@ export const processCheckout = async (payload: CheckoutPayload): Promise<Checkou
        headers['Authorization'] = `Bearer ${token}`;
     }
 
-    let response = await fetch('/api/v1/place-order', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload)
-    });
+    let response: Response;
+    try {
+      response = await fetch('/api/v1/place-order', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+    } catch (fetchErr: unknown) {
+      if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+        throw new Error("Le délai de traitement de la commande a été dépassé (25s). Cliquez à nouveau sur 'Valider la commande' pour vérifier si elle a été confirmée.");
+      }
+      throw fetchErr;
+    }
 
     if ((response.status === 401 || response.status === 403) && user) {
       token = await user.getIdToken(true); // force refresh
       headers['Authorization'] = `Bearer ${token}`;
-      response = await fetch('/api/v1/place-order', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
+      try {
+        response = await fetch('/api/v1/place-order', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+      } catch (fetchErr: unknown) {
+        if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+          throw new Error("Le délai de traitement de la commande a été dépassé (25s). Cliquez à nouveau sur 'Valider la commande' pour vérifier si elle a été confirmée.");
+        }
+        throw fetchErr;
+      }
     }
     
     const data = (await response.json()) as {
@@ -89,6 +109,8 @@ export const processCheckout = async (payload: CheckoutPayload): Promise<Checkou
     }
     const message = error instanceof Error ? error.message : "Erreur critique lors du traitement de la commande.";
     throw new Error(message, { cause: error });
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 

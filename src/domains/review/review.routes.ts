@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { authenticateToken, authorizeAdmin, authorizeSeller } from "../../middlewares/auth";
 import { FirebaseReviewRepository } from "./review.repository";
 import { ReviewService } from "./review.service";
-import { checkSellerVelocityLimit } from "../../utils/velocity";
+import { enqueueSellerVelocityCheck } from "../../utils/velocity";
 
 const router = Router();
 const reviewRepo = new FirebaseReviewRepository();
@@ -128,12 +128,8 @@ router.post("/reply", authenticateToken, authorizeSeller, async (req: Authentica
     const userId = req.user?.uid || "";
     const result = await reviewService.replyToReview(reviewId, userId, replyText);
     
-    // Check velocity asynchronously in background
-    setImmediate(() => {
-      checkSellerVelocityLimit(userId).catch(err => {
-        safeLogger.error("Background velocity limit check failed", { userId, err: err instanceof Error ? err.message : String(err) });
-      });
-    });
+    // Enforce velocity limits durably in background queue
+    enqueueSellerVelocityCheck(userId);
     
     res.json(result);
   } catch (error: unknown) {

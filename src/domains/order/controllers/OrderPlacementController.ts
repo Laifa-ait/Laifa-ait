@@ -6,7 +6,7 @@ import { validateRequest } from "../../../middlewares/validation";
 import { strictLimiter } from "../../../middlewares/rateLimiters";
 import { ALGERIA_SHIPPING_DATA } from "../../../constants";
 import { placeOrderSchema } from "../../../utils/validation";
-import { checkSellerVelocityLimit } from "../../../utils/velocity";
+import { enqueueSellerVelocityCheck } from "../../../utils/velocity";
 import { orderBreaker } from "../../../utils/circuitBreaker";
 import { resolveProductPrice } from "../../../utils/priceResolver";
 import { CouponService, ProductItemForCoupon } from "../../marketing/coupon.service";
@@ -775,6 +775,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
           if (idempotencyDocRef) {
             t.set(idempotencyDocRef, {
               orderId: subOrdersToCreate[0].ref.id,
+              total: grandTotal,
               userId,
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
@@ -800,6 +801,7 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
     if (result.alreadyProcessed) {
       return res.json({
         orderId: result.orderId,
+        grandTotal: result.total || 0,
         status: "already_processed",
         message: "Commande déjà traitée",
       });
@@ -823,14 +825,10 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
       });
     }
 
-    // Enforce velocity limits asynchronously in background to prevent HTTP response latency
-    setImmediate(() => {
-      for (const sellerId of sellerIdsSet) {
-        checkSellerVelocityLimit(sellerId).catch((err) => {
-          safeLogger.error("Background velocity limit check failed", { sellerId, err: err instanceof Error ? err.message : String(err) });
-        });
-      }
-    });
+    // Enforce velocity limits durably in background queue to prevent HTTP response latency
+    for (const sellerId of sellerIdsSet) {
+      enqueueSellerVelocityCheck(sellerId);
+    }
 
     // Process order confirmation emails asynchronously
     sendOrderConfirmationEmails(

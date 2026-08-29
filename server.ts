@@ -3,6 +3,7 @@ import http from "http";
 import { app } from "./app";
 import { verifyAndFixDb } from "./src/config/firebase-admin";
 import { startProductPublisherWorker, stopProductPublisherWorker } from "./src/workers/productPublisher";
+import { startVelocityWorker, stopVelocityWorker, drainVelocityChecks } from "./src/utils/velocity";
 import { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } from "./src/services/ProductSeoService";
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
 import { safeLogger } from "./src/utils/logger";
@@ -35,8 +36,20 @@ export const shutdown = (signal: string): void => {
     safeLogger.warn("[Shutdown] Error stopping publisher worker", { err: String(err) });
   }
 
+  try {
+    stopVelocityWorker();
+  } catch (err) {
+    safeLogger.warn("[Shutdown] Error stopping velocity worker", { err: String(err) });
+  }
+
   if (httpServer.listening) {
-    httpServer.close(() => {
+    httpServer.close(async () => {
+      try {
+        await drainVelocityChecks(4000);
+      } catch (err) {
+        safeLogger.warn("[Shutdown] Error draining velocity checks", { err: String(err) });
+      }
+
       if (process.env.NODE_ENV !== "production") {
         safeLogger.info("[Olmart Gateway] 💤 Closed remaining active connections.");
       }
@@ -95,7 +108,13 @@ export function startServer(): Promise<http.Server> {
       }
     }
 
-    // 4. Background workers - Off by default on web HTTP instances to prevent duplicate background jobs across cluster nodes
+    // 4. Background workers & Reconciliation
+    try {
+      startVelocityWorker();
+    } catch (err: unknown) {
+      safeLogger.error("[Olmart Workers] ❌ Failed to initialize velocity reconciliation worker", { err: String(err) });
+    }
+
     if (process.env.ENABLE_WORKERS === "true") {
       try {
         startProductPublisherWorker();

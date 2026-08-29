@@ -3,7 +3,7 @@ import { firestore } from "firebase-admin";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, optionalAuthenticateToken, authorizeSeller, AuthenticatedRequest } from "../../../middlewares/auth";
 import { strictLimiter } from "../../../middlewares/rateLimiters";
-import { checkSellerVelocityLimit } from "../../../utils/velocity";
+import { enqueueSellerVelocityCheck } from "../../../utils/velocity";
 import { Product, ProductVariant } from "../../product/product.types";
 import { safeLogger } from "../../../utils/logger";
 
@@ -325,13 +325,9 @@ router.post(
         }
       });
 
-      // Automatically check / lift velocity limit suspension asynchronously when backlog decreases
+      // Automatically check / lift velocity limit suspension durably in background queue when backlog decreases
       if (req.user?.role !== 'admin') {
-        setImmediate(() => {
-          checkSellerVelocityLimit(sellerId).catch((err) => {
-            safeLogger.error("Background velocity limit check failed", { sellerId, err: err instanceof Error ? err.message : String(err) });
-          });
-        });
+        enqueueSellerVelocityCheck(sellerId);
       }
 
       res.json({ success: true });

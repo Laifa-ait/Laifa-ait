@@ -69,9 +69,9 @@ export const useCheckout = () => {
   const [activeAccordion, setActiveAccordion] = useState(1);
   const [successNotifPrompted, setSuccessNotifPrompted] = useState(false);
 
-  const idempotencyKey = useMemo(() => {
-    return `${currentUser?.uid || 'guest'}_${Date.now()}_${crypto.randomUUID()}`;
-  }, [currentUser]);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => {
+    return `ik_${currentUser?.uid || 'guest'}_${Date.now()}_${crypto.randomUUID()}`;
+  });
 
   useEffect(() => {
      let cancelled = false;
@@ -495,6 +495,7 @@ export const useCheckout = () => {
 
       if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
       clearCart(filterSellerId || undefined);
+      setIdempotencyKey(`ik_${currentUser?.uid || 'guest'}_${Date.now()}_${crypto.randomUUID()}`);
       setStep('success');
     } catch (err: unknown) {
       console.error("OLMART order finalization failed:", err);
