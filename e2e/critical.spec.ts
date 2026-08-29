@@ -3,13 +3,13 @@ import { test, expect } from '@playwright/test';
 test.describe('Parcours E2E Critiques OLMART', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Intercepter et bloquer les requêtes sortantes vers les APIs Google Firebase en mode test
+    // Intercepter et bloquer toutes les requêtes sortantes vers les APIs Google Firebase / Telemetry en mode test
     // afin d'éviter les erreurs HTTP 403 (Forbidden) lors de l'utilisation de fausses clés
-    await page.route(/(identitytoolkit|firestore|securetoken)\.googleapis\.com/, route => {
+    await page.route(/.*(googleapis\.com|firebaseio\.com|google-analytics\.com|googletagmanager\.com).*/, route => {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ok: true, documents: [] }),
+        body: JSON.stringify({ ok: true, documents: [], users: [] }),
       });
     });
   });
