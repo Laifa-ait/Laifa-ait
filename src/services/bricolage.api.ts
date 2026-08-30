@@ -176,13 +176,13 @@ export async function upgradeToArtisanProfile(payload: ArtisanRegistrationPayloa
     const now = new Date().toISOString();
     const localProfile: ActiveArtisanProfile = {
       id: `ARTISAN-${Date.now()}`,
-      fullName: payload.fullName,
+      fullName: payload.fullName || 'Artisan',
       specialty: payload.specialty,
       wilaya: payload.wilaya,
       commune: payload.commune || 'Centre',
       phone: payload.phone,
       registryNumber: payload.registryNumber || 'ART-2026-16098',
-      yearsOfExperience: payload.yearsOfExperience || 3,
+      yearsOfExperience: typeof payload.yearsOfExperience === 'number' ? payload.yearsOfExperience : (parseInt(String(payload.yearsOfExperience || 3), 10) || 3),
       isAvailable24_7: Boolean(payload.isAvailable24_7),
       registeredAt: now,
       verifiedBadge: false,
