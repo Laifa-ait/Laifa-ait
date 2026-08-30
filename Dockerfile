@@ -20,6 +20,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV CSRF_SECRET=olmart_prod_csrf_secret_key_fallback_32bytes_min_2026
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
