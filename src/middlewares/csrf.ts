@@ -163,6 +163,7 @@ function verifyWebhookSignatureHeader(req: Request): boolean {
     "x-signature",
     "x-hub-signature-256",
     "x-chargily-signature",
+    "x-baridimob-signature",
     "signature"
   ];
 
@@ -227,7 +228,10 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
   }
 
   // Webhook exemption - Must strictly start with webhook prefix AND have a valid cryptographic signature
-  const isWebhookPath = pathname.startsWith("/api/v1/webhooks/") || pathname.startsWith("/webhooks/");
+  const isWebhookPath =
+    pathname.includes("/webhooks/") ||
+    pathname.includes("/payment/webhook/") ||
+    pathname.includes("/webhook/");
   if (isWebhookPath) {
     if (verifyWebhookSignatureHeader(req)) {
       return next();

@@ -1,4 +1,4 @@
-import { Router, Response } from "express";
+import { Router, Request, Response } from "express";
 import { AuthenticatedRequest, authenticateToken, authorizeAdmin } from "../../middlewares/auth";
 import {
   CreateEscrowSchema,
@@ -8,6 +8,7 @@ import {
 } from "./payment.validators";
 import { EscrowService } from "./services/EscrowService";
 import { WalletService } from "./services/WalletService";
+import { WebhookService } from "./services/WebhookService";
 import { safeLogger } from "../../utils/logger";
 
 const router = Router();
@@ -247,6 +248,54 @@ router.post("/admin/withdrawals/:id/process", authenticateToken, authorizeAdmin,
     }
     safeLogger.error("Admin error processing payout", { err: message });
     return res.status(500).json({ error: `Erreur serveur : ${message}` });
+  }
+});
+
+/**
+ * POST /api/v1/payment/webhook/chargily
+ * Webhook handler for Chargily Pay V2 (Edahabia / CIB)
+ */
+router.post("/webhook/chargily", async (req: Request, res: Response) => {
+  try {
+    const signature = (req.headers["x-chargily-signature"] || req.headers["signature"]) as string | undefined;
+    const rawBody = JSON.stringify(req.body);
+
+    const isValid = WebhookService.verifyChargilySignature(rawBody, signature);
+    if (!isValid) {
+      safeLogger.warn("[Webhook Payment] Rejected Chargily webhook: Invalid signature");
+      return res.status(401).json({ error: "Signature de webhook invalide ou manquante." });
+    }
+
+    const result = await WebhookService.processChargilyEvent(req.body);
+    return res.status(200).json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    safeLogger.error("[Webhook Payment] Error processing Chargily webhook", { err: message });
+    return res.status(500).json({ error: "Erreur lors du traitement du webhook." });
+  }
+});
+
+/**
+ * POST /api/v1/payment/webhook/baridimob
+ * Webhook handler for BaridiMob payment callbacks
+ */
+router.post("/webhook/baridimob", async (req: Request, res: Response) => {
+  try {
+    const signature = (req.headers["x-baridimob-signature"] || req.headers["x-signature"] || req.headers["signature"]) as string | undefined;
+    const rawBody = JSON.stringify(req.body);
+
+    const isValid = WebhookService.verifyBaridiMobSignature(rawBody, signature);
+    if (!isValid) {
+      safeLogger.warn("[Webhook Payment] Rejected BaridiMob webhook: Invalid signature");
+      return res.status(401).json({ error: "Signature de webhook invalide ou manquante." });
+    }
+
+    const result = await WebhookService.processBaridiMobEvent(req.body);
+    return res.status(200).json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    safeLogger.error("[Webhook Payment] Error processing BaridiMob webhook", { err: message });
+    return res.status(500).json({ error: "Erreur lors du traitement du webhook." });
   }
 });
 
