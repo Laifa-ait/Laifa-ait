@@ -39,7 +39,13 @@ export interface AiAgentsConfigMap {
   moderator: AiAgentConfigModerator;
   support: AiAgentConfigSupport;
   sentinel: AiAgentConfigSentinel;
-  [key: string]: Record<string, unknown>;
+  [key: string]:
+    | AiAgentConfigGrowth
+    | AiAgentConfigCart
+    | AiAgentConfigModerator
+    | AiAgentConfigSupport
+    | AiAgentConfigSentinel
+    | Record<string, unknown>;
 }
 
 export interface AiTranslationPreviewResult {

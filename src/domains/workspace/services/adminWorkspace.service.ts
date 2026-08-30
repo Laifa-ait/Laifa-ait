@@ -146,8 +146,8 @@ Retourne UNIQUEMENT un objet JSON valide avec les clés suivantes :
 
     const ordersSnap = await ordersQuery.get();
     const rawOrders: WorkspaceOrderRecord[] = ordersSnap.docs.map((doc) => ({
+      ...(doc.data() as Omit<WorkspaceOrderRecord, "id">),
       id: doc.id,
-      ...(doc.data() as WorkspaceOrderRecord),
     }));
 
     for (const order of rawOrders) {
