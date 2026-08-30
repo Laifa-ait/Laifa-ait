@@ -10,7 +10,7 @@ const router = Router();
  * Pure lightweight check to verify that the Node.js process is responsive.
  * Does NOT query external services or databases.
  */
-router.get(["/api/health/live", "/api/v1/health/live"], (req: Request, res: Response) => {
+router.get(["/api/health/live", "/api/v1/health/live", "/health/live", "/health"], (req: Request, res: Response) => {
   res.status(200).json({ status: "alive", timestamp: new Date().toISOString() });
 });
 

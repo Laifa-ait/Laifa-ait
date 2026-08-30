@@ -97,6 +97,16 @@ export const corsMiddleware = cors(corsOptions);
  */
 export function preventDirectCloudRunAccess(req: Request, res: Response, next: NextFunction) {
   if (process.env.NODE_ENV === "production") {
+    // Always allow container health probes and readiness checks
+    if (
+      req.path === "/health" ||
+      req.path.startsWith("/health/") ||
+      req.path.startsWith("/api/health") ||
+      req.path.startsWith("/api/v1/health")
+    ) {
+      return next();
+    }
+
     const host = (req.headers.host || "").toLowerCase();
 
     // Do not block AI Studio preview and dev Cloud Run URLs
