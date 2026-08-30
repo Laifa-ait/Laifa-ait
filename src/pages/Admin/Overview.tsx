@@ -347,22 +347,11 @@ export const Overview: React.FC = () => {
              if(formattedTraffic.length > 0) {
                setRealTimeTraffic(formattedTraffic);
              } else {
-               // Seed some mock traffic if empty
-               setRealTimeTraffic([
-                  { time: '10:00', views: 12, carts: 2 },
-                  { time: '10:15', views: 15, carts: 3 },
-                  { time: '10:30', views: 25, carts: 5 },
-                  { time: '10:45', views: 22, carts: 4 },
-                  { time: '11:00', views: 30, carts: 8 }
-               ]);
+               setRealTimeTraffic([]);
              }
           } catch (err: unknown) {
              console.error("Error fetching real time traffic", err instanceof Error ? err.message : err);
-             setRealTimeTraffic([
-                { time: '10:00', views: 12, carts: 2 },
-                { time: '10:15', views: 15, carts: 3 },
-                { time: '10:30', views: 25, carts: 5 }
-             ]);
+             setRealTimeTraffic([]);
           }
         }
       } catch (err: unknown) {

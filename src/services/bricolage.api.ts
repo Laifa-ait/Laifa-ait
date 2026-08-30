@@ -7,43 +7,10 @@ import {
   ActiveArtisanProfile,
   ArtisanOpportunityDTO
 } from '../types/bricolage';
-import { BRICOLAGE_CATEGORIES, TOP_VERIFIED_ARTISANS } from '../data/bricolageData';
+import { BRICOLAGE_CATEGORIES } from '../data/bricolageData';
 import { apiGet, apiPost } from '../lib/api';
 import { auth } from '../lib/firebase';
 import { safeLogger } from '../utils/logger';
-
-export const SAMPLE_REVIEWS: BricolageReview[] = [
-  {
-    id: 'rev-01',
-    artisanName: 'Mourad Benali',
-    clientName: 'Karim M.',
-    wilaya: 'Alger (Hydra)',
-    serviceName: 'Chauffe-eau & Chaudière',
-    rating: 5,
-    comment: "Intervention très rapide pour une fuite de gaz sur la chaudière. Travail propre, professionnel et prix très raisonnable !",
-    date: 'Hier'
-  },
-  {
-    id: 'rev-02',
-    artisanName: 'Kamel Bricolage',
-    clientName: 'Yassine B.',
-    wilaya: 'Blida',
-    serviceName: 'Dépannage Court-circuit',
-    rating: 5,
-    comment: "Panne électrique générale résolue à 22h un vendredi soir. Électricien courtois et équipé.",
-    date: 'Il y a 3 jours'
-  },
-  {
-    id: 'rev-03',
-    artisanName: 'Atelier Hamza Alumi',
-    clientName: 'Amina S.',
-    wilaya: 'Oran',
-    serviceName: 'Fenêtres PVC & Aluminium',
-    rating: 4.9,
-    comment: "Installation de 4 fenêtres double vitrage aluminium. Finitions impeccables et respect des délais.",
-    date: 'Il y a 5 jours'
-  }
-];
 
 export async function fetchBricolageCategories(): Promise<BricolageServiceCategory[]> {
   try {
@@ -79,18 +46,10 @@ export async function fetchVerifiedArtisans(wilaya?: string, specialty?: string)
     }
   } catch (err) {
     if (import.meta.env.DEV) {
-      safeLogger.warn('[Bricolage API] Fallback to default artisans', { err: err instanceof Error ? err.message : "Erreur" });
+      safeLogger.warn('[Bricolage API] Error fetching artisans', { err: err instanceof Error ? err.message : "Erreur" });
     }
   }
-
-  let list = TOP_VERIFIED_ARTISANS;
-  if (wilaya) {
-    list = list.filter(a => a.wilaya.toLowerCase().includes(wilaya.toLowerCase()));
-  }
-  if (specialty && specialty !== 'all') {
-    list = list.filter(a => a.specialty.toLowerCase().includes(specialty.toLowerCase()));
-  }
-  return list;
+  return [];
 }
 
 export async function submitQuoteRequest(payload: QuoteRequestPayload): Promise<{ success: boolean; message: string; requestId?: string; estimatedPriceDZD?: { min: number; max: number } }> {
@@ -110,11 +69,10 @@ export async function submitQuoteRequest(payload: QuoteRequestPayload): Promise<
       };
     }
     return { success: false, message: json.error || 'Erreur lors de la soumission.' };
-  } catch {
+  } catch (err) {
     return {
-      success: true,
-      message: 'Demande enregistrée en mode hors-ligne ! Un conseiller Olma vous contactera sous peu.',
-      requestId: `LOCAL-${Date.now()}`
+      success: false,
+      message: err instanceof Error ? err.message : 'Erreur de connexion au serveur.'
     };
   }
 }
@@ -169,65 +127,10 @@ export async function upgradeToArtisanProfile(payload: ArtisanRegistrationPayloa
     }
     return { success: false, message: json?.error || 'Erreur lors de la soumission de la demande d’artisan.' };
   } catch (err: unknown) {
-    if (import.meta.env.DEV) {
-      safeLogger.warn('[Bricolage API] Fallback artisan upgrade', { err: err instanceof Error ? err.message : "Erreur" });
-    }
-    const hasDocs = Boolean(payload.identityDoc || payload.diplomaDoc || payload.registryDoc);
-    const now = new Date().toISOString();
-    const localProfile: ActiveArtisanProfile = {
-      id: `ARTISAN-${Date.now()}`,
-      fullName: payload.fullName || 'Artisan',
-      specialty: payload.specialty,
-      wilaya: payload.wilaya,
-      commune: payload.commune || 'Centre',
-      phone: payload.phone,
-      registryNumber: payload.registryNumber || 'ART-2026-16098',
-      yearsOfExperience: typeof payload.yearsOfExperience === 'number' ? payload.yearsOfExperience : (parseInt(String(payload.yearsOfExperience || 3), 10) || 3),
-      isAvailable24_7: Boolean(payload.isAvailable24_7),
-      registeredAt: now,
-      verifiedBadge: false,
-      rating: 0,
-      verificationStatus: hasDocs ? 'pending_review' : 'incomplete_docs',
-      verificationData: {
-        status: hasDocs ? 'pending_review' : 'incomplete_docs',
-        submittedAt: now,
-        identityDoc: payload.identityDoc ? {
-          id: `DOC-ID-${Date.now()}`,
-          docType: payload.identityDoc.type || 'cni',
-          title: payload.identityDoc.type === 'passport' ? 'Passeport Algérien' : 'Carte Nationale d\'Identité (CNI)',
-          docNumber: payload.identityDoc.number || 'CNI-DZ-102938',
-          fileName: payload.identityDoc.fileName || 'Piece_Identite.pdf',
-          fileUrl: payload.identityDoc.fileUrl || '',
-          status: 'pending',
-          uploadedAt: now
-        } : undefined,
-        diplomaDoc: payload.diplomaDoc ? {
-          id: `DOC-DIP-${Date.now()}`,
-          docType: 'diploma',
-          title: payload.diplomaDoc.title || 'Diplôme Professionnel CAP/IFP',
-          issuingInstitution: payload.diplomaDoc.institution || 'Ministère de la Formation Pro',
-          fileName: payload.diplomaDoc.fileName || 'Diplome_Qualification.pdf',
-          fileUrl: payload.diplomaDoc.fileUrl || '',
-          status: 'pending',
-          uploadedAt: now
-        } : undefined,
-        registryDoc: payload.registryDoc ? {
-          id: `DOC-REG-${Date.now()}`,
-          docType: 'artisan_card',
-          title: 'Carte d\'Artisan CAM / Registre de Commerce',
-          docNumber: payload.registryDoc.number || 'CAM-16-2026',
-          issuingInstitution: `CAM ${payload.registryDoc.camWilaya || payload.wilaya}`,
-          fileName: payload.registryDoc.fileName || 'Carte_Artisan_CAM.pdf',
-          fileUrl: payload.registryDoc.fileUrl || '',
-          status: 'pending',
-          uploadedAt: now
-        } : undefined
-      }
-    };
+    const errMsg = err instanceof Error ? err.message : 'Erreur lors de la soumission de la demande.';
     return {
-      success: true,
-      message: 'Votre dossier d’artisan et vos pièces justificatives ont été soumis à la modération Olmart !',
-      profile: localProfile
+      success: false,
+      message: errMsg
     };
   }
 }
@@ -272,16 +175,16 @@ export async function fetchBricolageReviews(): Promise<BricolageReview[]> {
     const res = await fetch('/api/v1/bricolage/reviews');
     if (res.ok) {
       const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      if (json.success && Array.isArray(json.data)) {
         return json.data;
       }
     }
   } catch (err) {
     if (import.meta.env.DEV) {
-      safeLogger.warn('[Bricolage API] Fallback to sample reviews', { err: err instanceof Error ? err.message : "Erreur" });
+      safeLogger.warn('[Bricolage API] Error fetching reviews', { err: err instanceof Error ? err.message : "Erreur" });
     }
   }
-  return SAMPLE_REVIEWS;
+  return [];
 }
 
 export async function getArtisanOpportunities(

@@ -105,9 +105,17 @@ export const Auth: React.FC = () => {
       const errCode = (error && typeof error === "object" && "code" in error && typeof (error as { code: unknown }).code === "string")
         ? (error as { code: string }).code
         : "";
-      if (errCode !== 'auth/popup-closed-by-user' && errCode !== 'auth/cancelled-popup-request') {
-         console.error("Erreur de connexion Google:", error);
-         toast.error(t("google_login_failed", "La connexion avec Google a échoué."));
+      if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request') {
+        // User voluntarily dismissed popup, no error toast needed
+      } else if (errCode === 'auth/popup-blocked') {
+        toast.error(t("auth_error_popup_blocked", "Veuillez autoriser les fenêtres pop-up dans votre navigateur pour vous connecter avec Google."));
+      } else if (errCode === 'auth/unauthorized-domain') {
+        toast.error(t("auth_error_unauthorized_domain", "Ce domaine n'est pas encore autorisé dans la console Firebase Auth."));
+      } else if (errCode === 'auth/network-request-failed') {
+        toast.error(t("auth_error_network_request_failed", "Erreur réseau. Veuillez vérifier votre connexion internet et réessayer."));
+      } else {
+        console.error("Erreur de connexion Google:", error);
+        toast.error(t("google_login_failed", "La connexion avec Google a échoué."));
       }
     } finally {
       setLoading(false);

@@ -83,80 +83,15 @@ class AnalyticsEngine {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(this.getStorageKey());
-      return data ? JSON.parse(data) : this.getSeedEvents();
+      return data ? JSON.parse(data) : [];
     } catch {
-      return this.getSeedEvents();
+      return [];
     }
   }
 
   public clear(): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(this.getStorageKey(), JSON.stringify([]));
-  }
-
-  // Pre-populate with realistic behavior records if empty, so the user has immediate insights to analyze
-  private getSeedEvents(): AnalyticsEvent[] {
-    const products = [
-      { id: '1', name: 'Miel de Sidr Royal de Ghardaïa', price: 9500, category: 'Supermarché' },
-      { id: '2', name: 'Robe Kabyle Traditionnelle', price: 21000, category: 'Mode' },
-      { id: '3', name: 'Vase Berbère en Argile Cuite', price: 6500, category: 'Supermarché' },
-      { id: '4', name: 'Miroir Oeil Soleil en Rotin', price: 14000, category: 'Maison & Déco' }
-    ];
-
-    const seed: AnalyticsEvent[] = [];
-    const baseTime = Date.now() - 3600000 * 24; // starting 24h ago
-
-    for (let i = 0; i < 40; i++) {
-      const timeOffset = Math.floor(Math.random() * 3600000 * 24);
-      const randomProduct = products[Math.floor(Math.random() * products.length)];
-      
-      // 60% views, 20% add_to_cart, 10% searches, 5% wishlists, 5% purchases
-      const roll = Math.random();
-      if (roll < 0.5) {
-        seed.push({
-          id: `seed_view_${i}`,
-          name: 'product_view',
-          timestamp: baseTime + timeOffset,
-          metadata: { productId: randomProduct.id, name: randomProduct.name, price: randomProduct.price, category: randomProduct.category },
-          userEmail: 'amel.dz@gmail.com'
-        });
-      } else if (roll < 0.7) {
-        seed.push({
-          id: `seed_search_${i}`,
-          name: 'search_query',
-          timestamp: baseTime + timeOffset,
-          metadata: { query: ['Kabyle', 'Sidr', 'Vase', 'Miroir'][Math.floor(Math.random() * 4)], resultsCount: Math.floor(Math.random() * 5) + 2 },
-          userEmail: 'sofiane.oran@gmail.com'
-        });
-      } else if (roll < 0.85) {
-        seed.push({
-          id: `seed_cart_${i}`,
-          name: 'add_to_cart',
-          timestamp: baseTime + timeOffset,
-          metadata: { productId: randomProduct.id, name: randomProduct.name, price: randomProduct.price, category: randomProduct.category },
-          userEmail: 'farid.alger@outlook.com'
-        });
-      } else if (roll < 0.95) {
-        seed.push({
-          id: `seed_wishlist_${i}`,
-          name: 'wishlist_toggle',
-          timestamp: baseTime + timeOffset,
-          metadata: { productId: randomProduct.id, name: randomProduct.name },
-          userEmail: 'rym.constantine@gmail.com'
-        });
-      } else {
-        seed.push({
-          id: `seed_purchase_${i}`,
-          name: 'purchase_complete',
-          timestamp: baseTime + timeOffset,
-          metadata: { orderId: `OR-${Math.floor(Math.random() * 9000) + 1000}`, totalAmount: randomProduct.price, itemsCount: 1, categories: [randomProduct.category] },
-          userEmail: 'walid.tlemcen@gmail.com'
-        });
-      }
-    }
-
-    // Sort by timestamp
-    return seed.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   // Calculate dynamic analytics KPI summaries

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Database, Search, Download, Settings, RefreshCw, FileCode, CheckCircle, Flame, MapPin, Sliders, Play, Key, Server, BarChart2, BookOpen } from 'lucide-react';
-import { MOCK_PRODUCTS } from '../../utils/mockProducts';
 import { useTranslation } from "react-i18next";
 import { apiGet, apiPut } from '../../lib/api';
 import { Product } from "../../domains/product/product.types";
@@ -86,19 +85,14 @@ export const SearchIndexAdmin: React.FC = () => {
         const fetchedProds: Product[] = prodRes?.products || [];
 
         if (!isCancelled) {
-        if (fetchedProds.length > 0) {
-            setProducts(fetchedProds);
-            setUsingDemoData(false);
-          } else {
-            setProducts(MOCK_PRODUCTS as unknown as Product[]);
-            setUsingDemoData(true);
-          }
+          setProducts(fetchedProds);
+          setUsingDemoData(false);
         }
       } catch (err: unknown) {
         console.error("Error initializing search index settings:", err as Error);
         if (!isCancelled) {
-          setProducts(MOCK_PRODUCTS);
-          setUsingDemoData(true);
+          setProducts([]);
+          setUsingDemoData(false);
         }
       } finally {
         if (!isCancelled) {

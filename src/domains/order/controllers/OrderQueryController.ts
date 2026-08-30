@@ -79,11 +79,6 @@ router.post("/calculate-commissions", authenticateToken, async (req: Authenticat
           }
         }
         validatedOrders.push(dbOrder);
-      } else {
-        // Fallback for mock/simulation if and only if caller is Admin (debugging/diagnostics)
-        if (userRole === "admin") {
-          validatedOrders.push(o as OrderItemDoc);
-        }
       }
     }
 

@@ -21,105 +21,12 @@ export const ArtisanVerificationAdminModal: React.FC<ArtisanVerificationAdminMod
   const loadPending = async () => {
     setLoading(true);
     const list = await fetchPendingArtisanVerifications();
-    
-    // Provide sample pending artisans if none in Firestore for full demo capability
-    if (!list || list.length === 0) {
-      const mockList: ActiveArtisanProfile[] = [
-        {
-          id: 'art-pending-01',
-          fullName: 'Brahim Khelil',
-          specialty: 'Plomberie & Chauffage',
-          wilaya: '16 - Alger',
-          commune: 'Bab Ezzouar',
-          phone: '0550 11 22 33',
-          registryNumber: 'CAM-16-2026-88',
-          yearsOfExperience: 7,
-          isAvailable24_7: true,
-          registeredAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-          verifiedBadge: false,
-          rating: 5.0,
-          verificationStatus: 'pending_review',
-          verificationData: {
-            status: 'pending_review',
-            submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-            identityDoc: {
-              id: 'doc-id-01',
-              docType: 'cni',
-              title: 'Carte Nationale d\'Identité (CNI)',
-              docNumber: '10982390192',
-              fileName: 'CNI_Recto_Verso_Brahim.pdf',
-              fileUrl: '',
-              status: 'pending',
-              uploadedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-            },
-            diplomaDoc: {
-              id: 'doc-dip-01',
-              docType: 'diploma',
-              title: 'Diplôme CAP Plomberie Sanitaire',
-              issuingInstitution: 'Institut National de Formation Professionnelle IFP Alger',
-              fileName: 'Diplome_CAP_Sanitaire.pdf',
-              fileUrl: '',
-              status: 'pending',
-              uploadedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-            },
-            registryDoc: {
-              id: 'doc-reg-01',
-              docType: 'artisan_card',
-              title: 'Carte d\'Artisan Professionnel',
-              docNumber: 'CAM-16-2026-88',
-              issuingInstitution: 'Chambre des Métiers et de l\'Artisanat (CAM Alger)',
-              fileName: 'Carte_Artisan_CAM_Alger.pdf',
-              fileUrl: '',
-              status: 'pending',
-              uploadedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-            }
-          }
-        },
-        {
-          id: 'art-pending-02',
-          fullName: 'Sofiane Mansouri',
-          specialty: 'Électricité Bâtiment',
-          wilaya: '31 - Oran',
-          commune: 'Bir El Djir',
-          phone: '0770 44 55 66',
-          registryNumber: 'CAM-31-2026-102',
-          yearsOfExperience: 10,
-          isAvailable24_7: false,
-          registeredAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-          verifiedBadge: false,
-          rating: 4.8,
-          verificationStatus: 'pending_review',
-          verificationData: {
-            status: 'pending_review',
-            submittedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-            identityDoc: {
-              id: 'doc-id-02',
-              docType: 'passport',
-              title: 'Passeport Algérien',
-              docNumber: 'DZ-77881920',
-              fileName: 'Passeport_Sofiane.jpg',
-              fileUrl: '',
-              status: 'pending',
-              uploadedAt: new Date(Date.now() - 3600000 * 12).toISOString()
-            },
-            diplomaDoc: {
-              id: 'doc-dip-02',
-              docType: 'diploma',
-              title: 'Brevet de Technicien BTP Électricité',
-              issuingInstitution: 'Centre de Formation Oran West',
-              fileName: 'Attestation_Technicien.pdf',
-              fileUrl: '',
-              status: 'pending',
-              uploadedAt: new Date(Date.now() - 3600000 * 12).toISOString()
-            }
-          }
-        }
-      ];
-      setPendingArtisans(mockList);
-      setSelectedArtisan(mockList[0]);
+    const cleanList = Array.isArray(list) ? list : [];
+    setPendingArtisans(cleanList);
+    if (cleanList.length > 0) {
+      setSelectedArtisan(cleanList[0]);
     } else {
-      setPendingArtisans(list);
-      if (list.length > 0) setSelectedArtisan(list[0]);
+      setSelectedArtisan(null);
     }
     setLoading(false);
   };

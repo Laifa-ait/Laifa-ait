@@ -9,7 +9,6 @@ import { Product } from "../../domains/product/product.types";
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { apiGet } from '../../lib/api';
-import { FALLBACK_SHOPS } from '../../data/fallbackShops';
 
 import { Spinner } from '../../components/ui/Spinner';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -411,21 +410,6 @@ export const StoreProfile: React.FC = () => {
             }
           } catch (e) {
             console.warn("[StoreProfile] PublicProfiles name query error:", e);
-          }
-        }
-
-        // 6. Try FALLBACK_SHOPS data
-        if (!data) {
-          const fb = FALLBACK_SHOPS.find(s => 
-            s.sellerId === sellerId || 
-            s.id === sellerId || 
-            s.shopName.toLowerCase() === decodedSellerId.toLowerCase()
-          );
-          if (fb) {
-            data = {
-              ...fb,
-              shopDescription: fb.description || "Bienvenue dans notre boutique partenaire.",
-            };
           }
         }
 

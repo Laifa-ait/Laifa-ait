@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useComparatorStore } from '../../store/useComparatorStore';
-import { Scale, ArrowLeft, Plus, Sparkles, Trophy, CheckCircle } from 'lucide-react';
+import { Scale, ArrowLeft, Plus, Trophy, CheckCircle } from 'lucide-react';
 import { PremiumLayout } from '../../components/Layout/PremiumLayout';
 import { ComparatorHeader } from '../../components/Comparator/ComparatorHeader';
 import { ComparatorTable } from '../../components/Comparator/ComparatorTable';
 import { ComparatorAddModal } from '../../components/Comparator/ComparatorAddModal';
 import { Product } from '../../domains/product/product.types';
 import { formatPrice } from '../../utils/format';
-import { demoProducts } from '../../data/demoProducts';
 
 export const ComparatorPage: React.FC = () => {
   const { t } = useTranslation();
@@ -34,11 +33,6 @@ export const ComparatorPage: React.FC = () => {
 
   const handleSelectProductFromModal = (product: Product) => {
     addProduct(product);
-  };
-
-  // Pre-load demo products for quick testing if empty
-  const handleLoadDemo = () => {
-    demoProducts.forEach(p => addProduct(p));
   };
 
   // Find winner recommendation
@@ -79,14 +73,6 @@ export const ComparatorPage: React.FC = () => {
               >
                 <Plus className="w-4 h-4" />
                 <span>{t("Ajouter des produits") || "Ajouter des produits"}</span>
-              </button>
-
-              <button
-                onClick={handleLoadDemo}
-                className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-sm px-6 py-3.5 rounded-2xl transition-all"
-              >
-                <Sparkles className="w-4 h-4 text-amber-600" />
-                <span>{t("Charger un exemple d'essai") || "Charger un exemple d'essai"}</span>
               </button>
 
               <button

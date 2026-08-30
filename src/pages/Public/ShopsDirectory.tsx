@@ -7,7 +7,6 @@ import { ShopsHeader } from "../../components/ShopsDirectory/ShopsHeader";
 import { ShopsStats } from "../../components/ShopsDirectory/ShopsStats";
 import { FeaturedShops } from "../../components/ShopsDirectory/FeaturedShops";
 import { ShopsGrid } from "../../components/ShopsDirectory/ShopsGrid";
-import { FALLBACK_SHOPS } from "../../data/fallbackShops";
 
 export const ShopsDirectory: React.FC = () => {
   const [shops, setShops] = useState<ShopDirectoryItem[]>([]);
@@ -53,12 +52,12 @@ export const ShopsDirectory: React.FC = () => {
             });
             setShops(fetched);
           } else {
-            setShops(FALLBACK_SHOPS);
+            setShops([]);
           }
         }
       } catch (err) {
         console.error("Error fetching shops directory:", err);
-        setShops(FALLBACK_SHOPS);
+        setShops([]);
       } finally {
         setIsLoading(false);
       }

@@ -12,7 +12,6 @@ import {
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { UserProfile } from "../domains/user/user.types";
-import toast from "react-hot-toast";
 import { apiGet, apiPost } from "../lib/api";
 import { safeLogger } from "../utils/logger";
 
@@ -101,26 +100,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        role: role || "buyer",
-        lastAuthMethod: "google"
-      });
-      if (data?.success && data?.profile) {
-        setUserProfile(data.profile);
+      try {
+        const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          role: role || "buyer",
+          lastAuthMethod: "google"
+        });
+        if (data?.success && data?.profile) {
+          setUserProfile(data.profile);
+        }
+      } catch (syncErr) {
+        safeLogger.warn("AuthContext: Google sign-in background sync will be retried by auth listener", {
+          err: syncErr instanceof Error ? syncErr.message : String(syncErr)
+        });
       }
     } catch (err: unknown) {
-      const errCode = (err && typeof err === "object" && "code" in err) ? String((err as { code: unknown }).code) : undefined;
-      if (errCode === "auth/popup-blocked") {
-        toast.error("Veuillez autoriser les popups pour vous connecter avec Google");
-      } else if (errCode === "auth/network-request-failed") {
-        toast.error("Erreur réseau. Vérifiez votre connexion.");
-      } else {
-        toast.error("Erreur de connexion Google");
-      }
       safeLogger.error("Google sign-in error", { err: err instanceof Error ? err.message : String(err) });
+      throw err;
     }
   };
 

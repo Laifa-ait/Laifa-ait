@@ -26,7 +26,7 @@ import {
   getGeohashRangesForBoundingBox,
 } from '../../../services/realEstateGeo';
 import { safeLogger } from '../../../utils/logger';
-import { SEED_REAL_ESTATE_PROPERTIES, toPropertyMapResult } from '../data/realEstateSeed';
+import { toPropertyMapResult } from '../data/realEstateSeed';
 
 type PropertySearchQuery = z.infer<typeof PropertySearchQuerySchema>;
 
@@ -60,21 +60,9 @@ realEstatePropertyRouter.get(
       } = req.query as unknown as PropertySearchQuery;
 
       if (!db) {
-        let fallback = SEED_REAL_ESTATE_PROPERTIES;
-        if (listingType) fallback = fallback.filter((p) => p.listingType === listingType);
-        if (propertyType) fallback = fallback.filter((p) => p.propertyType === propertyType);
-        if (wilaya && typeof wilaya === 'string' && wilaya.trim()) {
-          fallback = fallback.filter((p) => p.location.wilaya.toLowerCase().includes(wilaya.trim().toLowerCase()));
-        }
-        if (commune && typeof commune === 'string' && commune.trim()) {
-          fallback = fallback.filter((p) => p.location.commune.toLowerCase().includes(commune.trim().toLowerCase()));
-        }
-        return res.json({
-          success: true,
-          data: fallback,
-          total: fallback.length,
-          page: Number(page),
-          limit: Number(limit),
+        return res.status(503).json({
+          success: false,
+          error: 'Base de données Firestore temporairement indisponible.',
         });
       }
 
@@ -158,23 +146,6 @@ realEstatePropertyRouter.get(
           const data = doc.data() as Property;
           rawResultsMap.set(doc.id, { ...data, id: doc.id });
         });
-      }
-
-      if (!rawResultsMap.has('PROP-ALG-001')) {
-        SEED_REAL_ESTATE_PROPERTIES.forEach((p) => {
-          if (!rawResultsMap.has(p.id)) {
-            rawResultsMap.set(p.id, p);
-          }
-        });
-        try {
-          const batch = db.batch();
-          for (const p of SEED_REAL_ESTATE_PROPERTIES) {
-            batch.set(db.collection('real_estate_properties').doc(p.id), p, { merge: true });
-          }
-          batch.commit().catch(() => {});
-        } catch (seedErr) {
-          safeLogger.error('Seed sync notice in properties search', { err: seedErr instanceof Error ? seedErr.message : String(seedErr) });
-        }
       }
 
       let results: Array<Property & { distanceKm?: number }> = Array.from(rawResultsMap.values());
@@ -287,16 +258,7 @@ realEstatePropertyRouter.get(
       } = req.query as unknown as PropertySearchQuery;
 
       if (!db) {
-        let fallback = SEED_REAL_ESTATE_PROPERTIES;
-        if (listingType) fallback = fallback.filter((p) => p.listingType === listingType);
-        if (propertyType) fallback = fallback.filter((p) => p.propertyType === propertyType);
-        if (wilaya && typeof wilaya === 'string' && wilaya.trim()) {
-          fallback = fallback.filter((p) => p.location.wilaya.toLowerCase().includes(wilaya.trim().toLowerCase()));
-        }
-        if (commune && typeof commune === 'string' && commune.trim()) {
-          fallback = fallback.filter((p) => p.location.commune.toLowerCase().includes(commune.trim().toLowerCase()));
-        }
-        return res.json({ success: true, data: fallback.map(toPropertyMapResult) });
+        return res.status(503).json({ success: false, error: 'Base de données Firestore temporairement indisponible.' });
       }
 
       let query: FirebaseFirestore.Query = db.collection('real_estate_properties');
@@ -370,12 +332,6 @@ realEstatePropertyRouter.get(
         snapshot.forEach((doc) => {
           const data = doc.data() as Property;
           rawResultsMap.set(doc.id, { ...data, id: doc.id });
-        });
-      }
-
-      if (rawResultsMap.size === 0) {
-        SEED_REAL_ESTATE_PROPERTIES.forEach((p) => {
-          rawResultsMap.set(p.id, p);
         });
       }
 
@@ -453,13 +409,6 @@ realEstatePropertyRouter.get(
       }
 
       if (!property) {
-        const seedMatch = SEED_REAL_ESTATE_PROPERTIES.find((p) => p.id === id);
-        if (seedMatch) {
-          property = { ...seedMatch };
-        }
-      }
-
-      if (!property) {
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
@@ -509,19 +458,11 @@ realEstatePropertyRouter.get(
       const docRef = db.collection('real_estate_properties').doc(id);
       const snap = await docRef.get();
       
-      let property: Property | null = null;
-      if (snap.exists) {
-        property = snap.data() as Property;
-      } else {
-        const seedMatch = SEED_REAL_ESTATE_PROPERTIES.find((p) => p.id === id);
-        if (seedMatch) {
-          property = { ...seedMatch };
-        }
-      }
-
-      if (!property) {
+      if (!snap.exists) {
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
+
+      const property = snap.data() as Property;
 
       const nonPublicStatuses = ['draft', 'archived', 'pending'];
       if (nonPublicStatuses.includes(property.status)) {
@@ -592,39 +533,29 @@ realEstatePropertyRouter.get(
     }
 
     try {
-      let targetProp: Property | null = null;
-      if (db) {
-        const snap = await db.collection('real_estate_properties').doc(id).get();
-        if (snap.exists) {
-          targetProp = snap.data() as Property;
-          targetProp.id = snap.id;
-        }
-      }
-      if (!targetProp) {
-        targetProp = SEED_REAL_ESTATE_PROPERTIES.find((p) => p.id === id) || null;
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Base de données indisponible.' });
       }
 
-      let candidates: Property[] = [];
-      if (db) {
-        let query = db.collection('real_estate_properties').where('status', '==', 'active');
-        if (targetProp?.location?.wilaya) {
-          query = query.where('location.wilaya', '==', targetProp.location.wilaya);
-        }
-        const snap = await query.limit(10).get();
-        snap.forEach((doc) => {
-          if (doc.id !== id) {
-            candidates.push({ ...(doc.data() as Property), id: doc.id });
-          }
-        });
+      const snap = await db.collection('real_estate_properties').doc(id).get();
+      if (!snap.exists) {
+        return res.status(404).json({ success: false, error: 'Annonce introuvable.' });
       }
 
-      if (candidates.length === 0) {
-        candidates = SEED_REAL_ESTATE_PROPERTIES.filter((p) => p.id !== id);
-        if (targetProp) {
-          const sameWilaya = candidates.filter((p) => p.location.wilaya === targetProp!.location.wilaya);
-          if (sameWilaya.length >= 2) candidates = sameWilaya;
-        }
+      const targetProp = snap.data() as Property;
+      targetProp.id = snap.id;
+
+      const candidates: Property[] = [];
+      let query = db.collection('real_estate_properties').where('status', '==', 'active');
+      if (targetProp?.location?.wilaya) {
+        query = query.where('location.wilaya', '==', targetProp.location.wilaya);
       }
+      const listSnap = await query.limit(10).get();
+      listSnap.forEach((doc) => {
+        if (doc.id !== id) {
+          candidates.push({ ...(doc.data() as Property), id: doc.id });
+        }
+      });
 
       const similarList = candidates.slice(0, 4);
       return res.json({ success: true, data: similarList });
