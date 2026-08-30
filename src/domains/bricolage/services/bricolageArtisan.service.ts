@@ -3,7 +3,12 @@ import { safeLogger } from "../../../utils/logger";
 import { ArtisanUpgradePayload, ArtisanVerificationActionPayload } from "../../../types/bricolage";
 
 export class BricolageArtisanService {
-  static async getOpportunities(artisanWilaya?: string): Promise<Array<Record<string, unknown>>> {
+  static async getOpportunities(
+    _artisanUid?: string,
+    _userRole?: string,
+    artisanWilaya?: string,
+    category?: string
+  ): Promise<Array<Record<string, unknown>>> {
     if (!db) {
       return [
         {
@@ -21,6 +26,9 @@ export class BricolageArtisanService {
     let query: FirebaseFirestore.Query = db.collection("bricolage_quote_requests").where("status", "==", "pending");
     if (artisanWilaya) {
       query = query.where("wilaya", "==", artisanWilaya);
+    }
+    if (category) {
+      query = query.where("serviceCategoryId", "==", category);
     }
     const snapshot = await query.get();
     const list: Array<Record<string, unknown>> = [];

@@ -122,35 +122,44 @@ export interface ActiveArtisanProfile {
   verificationData?: ArtisanVerificationData;
 }
 
-export interface ArtisanRegistrationPayload {
-  fullName: string;
+export interface ArtisanUpgradePayload {
+  fullName?: string;
   specialty: string;
   wilaya: string;
-  commune: string;
+  commune?: string;
   phone: string;
   registryNumber?: string;
-  yearsOfExperience: number;
-  isAvailable24_7: boolean;
+  yearsOfExperience: number | string;
+  isAvailable24_7?: boolean;
   
   // Verification documents
   identityDoc?: {
-    type: 'cni' | 'passport' | 'permis';
-    number: string;
+    type?: 'cni' | 'passport' | 'permis';
+    number?: string;
     fileName?: string;
     fileUrl?: string;
   };
   diplomaDoc?: {
-    title: string;
-    institution: string;
+    title?: string;
+    institution?: string;
     fileName?: string;
     fileUrl?: string;
   };
   registryDoc?: {
-    number: string;
-    camWilaya: string;
+    number?: string;
+    camWilaya?: string;
     fileName?: string;
     fileUrl?: string;
   };
+}
+
+export type ArtisanRegistrationPayload = ArtisanUpgradePayload;
+
+export interface ArtisanVerificationActionPayload {
+  artisanId: string;
+  action: 'approve' | 'reject';
+  rejectionReason?: string;
+  docType?: 'identity' | 'diploma' | 'registry' | string;
 }
 
 export interface QuoteNotificationAlert {

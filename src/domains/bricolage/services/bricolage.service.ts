@@ -32,8 +32,13 @@ export class BricolageService {
     return BricolageQuoteService.acceptOffer(requestId, offerId, customerUid);
   }
 
-  static getOpportunities(artisanWilaya?: string): Promise<Array<Record<string, unknown>>> {
-    return BricolageArtisanService.getOpportunities(artisanWilaya);
+  static getOpportunities(
+    artisanUid?: string,
+    userRole?: string,
+    artisanWilaya?: string,
+    category?: string
+  ): Promise<Array<Record<string, unknown>>> {
+    return BricolageArtisanService.getOpportunities(artisanUid, userRole, artisanWilaya, category);
   }
 
   static upgradeToArtisan(uid: string, userEmail: string, payload: ArtisanUpgradePayload): Promise<Record<string, unknown>> {
