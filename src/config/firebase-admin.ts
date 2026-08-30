@@ -126,7 +126,7 @@ const setupFirestore = () => {
     const configDatabaseId =
       process.env.FIREBASE_DATABASE_ID ||
       process.env.VITE_FIREBASE_DATABASE_ID ||
-      (typeof firebaseConfig.firestoreDatabaseId === "string" ? firebaseConfig.firestoreDatabaseId : undefined);
+      (typeof firebaseConfig.firestoreDatabaseId === "string" ? firebaseConfig.firestoreDatabaseId : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915");
 
     logDev(`[Firestore Core] 📂 Mapping Firestore instance for Project: [${adminApp.options.projectId || targetProjectId}]`);
 

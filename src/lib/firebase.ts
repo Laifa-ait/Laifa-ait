@@ -66,7 +66,7 @@ try {
   app = getApps().length === 0 ? initializeApp(clientConfig) : getApp();
   auth = getAuth(app);
   storage = getStorage(app);
-  const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID;
+  const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID || "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
   db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
 } catch (err: unknown) {
   const errorObj = err as { code?: string; message?: string };
