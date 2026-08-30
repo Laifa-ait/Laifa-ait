@@ -28,8 +28,17 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
   }
 
   try {
-    // Check revocation (checkRevoked = true) to immediately reject revoked tokens or disabled accounts
-    const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    // Check token with revocation verification, with standard verification fallback
+    let decodedToken: admin.auth.DecodedIdToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    } catch (checkRevokedErr: unknown) {
+      const code = (checkRevokedErr as { code?: string })?.code;
+      if (code === "auth/id-token-revoked" || code === "auth/user-disabled") {
+        throw checkRevokedErr;
+      }
+      decodedToken = await admin.auth().verifyIdToken(idToken, false);
+    }
     const tokenRole = (decodedToken.role as string) || "buyer";
     let dbRole: string | undefined = undefined;
     let dbStatus = "active";
@@ -127,7 +136,16 @@ export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: 
   }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    let decodedToken: admin.auth.DecodedIdToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(idToken, true);
+    } catch (checkRevokedErr: unknown) {
+      const code = (checkRevokedErr as { code?: string })?.code;
+      if (code === "auth/id-token-revoked" || code === "auth/user-disabled") {
+        throw checkRevokedErr;
+      }
+      decodedToken = await admin.auth().verifyIdToken(idToken, false);
+    }
     const tokenRole = (decodedToken.role as string) || "buyer";
     let dbRole: string | undefined = undefined;
     let dbStatus = "active";

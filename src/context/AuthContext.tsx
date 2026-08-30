@@ -16,6 +16,7 @@ import { auth } from "../lib/firebase";
 import { UserProfile } from "../domains/user/user.types";
 import { apiGet, apiPost } from "../lib/api";
 import { safeLogger } from "../utils/logger";
+import { createBaselineProfile, syncUserProfileWithBackend } from "./authHelpers";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -43,27 +44,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (result?.user) {
           const user = result.user;
           const pendingRole = localStorage.getItem("olmart_pending_registration_role") || "buyer";
-          try {
-            const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-              displayName: user.displayName,
-              email: user.email,
-              photoURL: user.photoURL,
-              role: pendingRole,
-              lastAuthMethod: "google_redirect",
-            });
-            localStorage.removeItem("olmart_pending_registration_role");
-            if (data?.success && data?.profile) {
-              setUserProfile(data.profile);
-            }
-          } catch (syncErr) {
-            safeLogger.warn("AuthContext: Redirect result sync warning", {
-              err: syncErr instanceof Error ? syncErr.message : String(syncErr),
-            });
+          const profile = await syncUserProfileWithBackend(user, pendingRole, "google_redirect");
+          localStorage.removeItem("olmart_pending_registration_role");
+          if (profile) {
+            setUserProfile(profile);
           }
         }
       })
       .catch((err) => {
-        safeLogger.warn("AuthContext: getRedirectResult error", {
+        safeLogger.warn("AuthContext: getRedirectResult warning", {
           err: err instanceof Error ? err.message : String(err),
         });
       });
@@ -76,22 +65,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUserProfile(null);
         setLoading(false);
       } else {
-        // Guarantee loading clears within 1.5s even if api sync is slow
+        // Hydrate immediate baseline profile to prevent guest UI flicker
+        setUserProfile((prev) => prev || createBaselineProfile(user));
+
         const safetyTimer = setTimeout(() => setLoading(false), 1500);
 
-        // Sync & Fetch initial profile
         try {
-          const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-            lastAuthMethod: "auto_sync"
-          });
-          if (data?.success && data?.profile) {
-            setUserProfile(data.profile);
+          const profile = await syncUserProfileWithBackend(user, undefined, "auto_sync");
+          if (profile) {
+            setUserProfile(profile);
           }
-        } catch (err) {
-          safeLogger.warn("AuthContext: Sync retry finished on initial load", { err: err instanceof Error ? err.message : String(err) });
         } finally {
           clearTimeout(safetyTimer);
           setLoading(false);
@@ -102,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribeAuth();
   }, []);
 
-  // Poll for profile updates every 60s as a direct replacement for onSnapshot
+  // Poll for profile updates every 60s
   useEffect(() => {
     if (!currentUser) return;
 
@@ -113,7 +96,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUserProfile(data);
         }
       } catch (err) {
-        safeLogger.warn("AuthContext: Periodic profile fetch retry finished", { err: err instanceof Error ? err.message : String(err) });
+        safeLogger.warn("AuthContext: Periodic profile fetch retry finished", {
+          err: err instanceof Error ? err.message : String(err),
+        });
       }
     };
 
@@ -125,9 +110,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signInWithGoogle = async (role?: string) => {
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: "select_account",
-      });
+      provider.setCustomParameters({ prompt: "select_account" });
 
       if (role) {
         try {
@@ -135,40 +118,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch { /* ignore */ }
       }
 
-      // Check if mobile or in an environment where popups are problematic
       const isMobile = typeof navigator !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-      if (isMobile) {
-        try {
-          await signInWithPopup(auth, provider);
-        } catch (popupErr: unknown) {
-          const code = (popupErr && typeof popupErr === "object" && "code" in popupErr) ? String((popupErr as { code: unknown }).code) : "";
-          if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request" || code === "auth/popup-closed-by-user") {
-            safeLogger.info("AuthContext: Mobile popup dismissed or blocked, switching to redirect flow");
-            await signInWithRedirect(auth, provider);
-            return;
-          }
-          throw popupErr;
-        }
-      } else {
+      let user: FirebaseUser | null = null;
+      try {
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        user = result.user;
+      } catch (popupErr: unknown) {
+        const code = (popupErr && typeof popupErr === "object" && "code" in popupErr) ? String((popupErr as { code: unknown }).code) : "";
+        if (isMobile && (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request" || code === "auth/popup-closed-by-user")) {
+          safeLogger.info("AuthContext: Mobile popup blocked/dismissed, switching to redirect flow");
+          await signInWithRedirect(auth, provider);
+          return;
+        }
+        throw popupErr;
+      }
 
-        try {
-          const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-            role: role || "buyer",
-            lastAuthMethod: "google"
-          });
-          if (data?.success && data?.profile) {
-            setUserProfile(data.profile);
-          }
-        } catch (syncErr) {
-          safeLogger.warn("AuthContext: Google sign-in background sync will be retried by auth listener", {
-            err: syncErr instanceof Error ? syncErr.message : String(syncErr)
-          });
+      if (user) {
+        setCurrentUser(user);
+        setUserProfile(createBaselineProfile(user, (role as "buyer" | "seller" | "admin" | "artisan" | "property_owner") || "buyer"));
+
+        const profile = await syncUserProfileWithBackend(user, role, "google");
+        if (profile) {
+          setUserProfile(profile);
         }
       }
     } catch (err: unknown) {
@@ -180,19 +152,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signInWithEmail = async (email: string, pass: string) => {
     const result = await signInWithEmailAndPassword(auth, email, pass);
     const user = result.user;
+    setCurrentUser(user);
 
-    if (user.emailVerified) {
-      const pendingRole = localStorage.getItem("olmart_pending_registration_role") || "buyer";
-      const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-        displayName: user.displayName || email.split("@")[0],
-        email: user.email,
-        role: pendingRole,
-        lastAuthMethod: "email"
-      });
-      localStorage.removeItem("olmart_pending_registration_role");
-      if (data?.success && data?.profile) {
-        setUserProfile(data.profile);
-      }
+    const pendingRole = localStorage.getItem("olmart_pending_registration_role") || "buyer";
+    setUserProfile(createBaselineProfile(user, (pendingRole as "buyer" | "seller" | "admin" | "artisan" | "property_owner") || "buyer"));
+
+    const profile = await syncUserProfileWithBackend(user, pendingRole, "email");
+    localStorage.removeItem("olmart_pending_registration_role");
+    if (profile) {
+      setUserProfile(profile);
     }
   };
 
@@ -202,14 +170,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const userRole = role || "buyer";
 
     await updateProfile(user, { displayName: name });
-
     await apiPost("/api/v1/auth/sync", {
       displayName: name,
       email: email,
       role: userRole,
-      lastAuthMethod: "email"
+      lastAuthMethod: "email",
     });
-
     await sendEmailVerification(user);
 
     try {
@@ -223,11 +189,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const handleUnauthorized = async () => {
-      safeLogger.warn("AuthContext: Received auth:unauthorized event, logging out");
-      await logout();
+      safeLogger.warn("AuthContext: Received auth:unauthorized event");
+      if (auth.currentUser) {
+        try {
+          await auth.currentUser.getIdToken(true);
+        } catch {
+          await logout();
+        }
+      }
     };
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, []);
 
   const value = React.useMemo(

@@ -72,29 +72,31 @@ export const Auth: React.FC = () => {
   // Redirection automatique si déjà connecté
   useEffect(() => {
     if (currentUser) {
-      if (!currentUser.emailVerified) {
-        navigate('/verify-email');
+      const isPasswordUser = currentUser.providerData.some(p => p.providerId === "password");
+      if (!currentUser.emailVerified && isPasswordUser) {
+        navigate('/verify-email', { replace: true });
         return;
       }
       
       if (redirectPath) {
-        navigate(redirectPath);
+        navigate(redirectPath, { replace: true });
         return;
       }
 
-      if (!isLogin) {
-         navigate('/');
-      } else {
-         if (window.history.length > 2) {
-           navigate(-1);
-         } else {
-           navigate('/');
-         }
-      }
+      navigate('/', { replace: true });
     }
-  }, [currentUser, navigate, isLogin, redirectPath]);
+  }, [currentUser, navigate, redirectPath]);
 
-  if (currentUser) return null;
+  if (currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F2FAFB]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-[#0088A8] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-cyan-950">Redirection en cours...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleGoogleLogin = async () => {
     try {
