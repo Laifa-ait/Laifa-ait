@@ -105,17 +105,25 @@ export const Auth: React.FC = () => {
       const errCode = (error && typeof error === "object" && "code" in error && typeof (error as { code: unknown }).code === "string")
         ? (error as { code: string }).code
         : "";
+      const errMsg = (error && typeof error === "object" && "message" in error && typeof (error as { message: unknown }).message === "string")
+        ? (error as { message: string }).message
+        : "";
+
       if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request') {
         // User voluntarily dismissed popup, no error toast needed
       } else if (errCode === 'auth/popup-blocked') {
         toast.error(t("auth_error_popup_blocked", "Veuillez autoriser les fenêtres pop-up dans votre navigateur pour vous connecter avec Google."));
       } else if (errCode === 'auth/unauthorized-domain') {
-        toast.error(t("auth_error_unauthorized_domain", "Ce domaine n'est pas encore autorisé dans la console Firebase Auth."));
+        toast.error(t("auth_error_unauthorized_domain", "Ce domaine n'est pas encore autorisé dans Firebase Console (Authentication > Paramètres > Domaines autorisés). Vous pouvez vous connecter avec Email et Mot de passe ci-dessus."));
+      } else if (errCode === 'auth/operation-not-allowed') {
+        toast.error(t("auth_error_op_not_allowed", "La connexion Google n'est pas activée dans Firebase Console (Authentication > Sign-in method > Google)."));
+      } else if (errCode === 'auth/invalid-api-key' || errCode === 'auth/api-key-not-valid') {
+        toast.error(t("auth_error_invalid_key", "Configuration Firebase VITE_FIREBASE_API_KEY requise. Utilisez la connexion classique par Email / Mot de passe ci-dessus."));
       } else if (errCode === 'auth/network-request-failed') {
         toast.error(t("auth_error_network_request_failed", "Erreur réseau. Veuillez vérifier votre connexion internet et réessayer."));
       } else {
         console.error("Erreur de connexion Google:", error);
-        toast.error(t("google_login_failed", "La connexion avec Google a échoué."));
+        toast.error(errMsg ? `Échec Google : ${errMsg}` : t("google_login_failed", "La connexion avec Google a échoué. Utilisez la connexion par Email et Mot de passe ci-dessus."));
       }
     } finally {
       setLoading(false);
@@ -502,7 +510,24 @@ export const Auth: React.FC = () => {
                   disabled={loading || Boolean(!isLogin && registrationRules && !cgvAccepted)}
                   className="w-full py-4 flex items-center justify-center gap-3 bg-white border border-[#E8F6F8] rounded-2xl hover:bg-[#F2FAFB] hover:border-cyan-200 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group text-cyan-950"
                 >
-                  <img loading="lazy" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt={t("Google") || "Google"} className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
                   <span className="font-bold">{t("Google")}</span>
                 </button>
             </div>

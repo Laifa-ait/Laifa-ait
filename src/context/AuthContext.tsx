@@ -3,6 +3,8 @@ import {
   User as FirebaseUser,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -14,8 +16,6 @@ import { auth } from "../lib/firebase";
 import { UserProfile } from "../domains/user/user.types";
 import { apiGet, apiPost } from "../lib/api";
 import { safeLogger } from "../utils/logger";
-
-
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -35,6 +35,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Handle redirect result for mobile / fallback OAuth flows
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          const user = result.user;
+          const pendingRole = localStorage.getItem("olmart_pending_registration_role") || "buyer";
+          try {
+            const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
+              displayName: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              role: pendingRole,
+              lastAuthMethod: "google_redirect",
+            });
+            localStorage.removeItem("olmart_pending_registration_role");
+            if (data?.success && data?.profile) {
+              setUserProfile(data.profile);
+            }
+          } catch (syncErr) {
+            safeLogger.warn("AuthContext: Redirect result sync warning", {
+              err: syncErr instanceof Error ? syncErr.message : String(syncErr),
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        safeLogger.warn("AuthContext: getRedirectResult error", {
+          err: err instanceof Error ? err.message : String(err),
+        });
+      });
+  }, []);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -89,32 +122,54 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(interval);
   }, [currentUser]);
 
-
-
   const signInWithGoogle = async (role?: string) => {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({
         prompt: "select_account",
       });
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
 
-      try {
-        const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          role: role || "buyer",
-          lastAuthMethod: "google"
-        });
-        if (data?.success && data?.profile) {
-          setUserProfile(data.profile);
+      if (role) {
+        try {
+          localStorage.setItem("olmart_pending_registration_role", role);
+        } catch { /* ignore */ }
+      }
+
+      // Check if mobile or in an environment where popups are problematic
+      const isMobile = typeof navigator !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (popupErr: unknown) {
+          const code = (popupErr && typeof popupErr === "object" && "code" in popupErr) ? String((popupErr as { code: unknown }).code) : "";
+          if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request" || code === "auth/popup-closed-by-user") {
+            safeLogger.info("AuthContext: Mobile popup dismissed or blocked, switching to redirect flow");
+            await signInWithRedirect(auth, provider);
+            return;
+          }
+          throw popupErr;
         }
-      } catch (syncErr) {
-        safeLogger.warn("AuthContext: Google sign-in background sync will be retried by auth listener", {
-          err: syncErr instanceof Error ? syncErr.message : String(syncErr)
-        });
+      } else {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        try {
+          const data = await apiPost<{ success: boolean; profile: UserProfile }>("/api/v1/auth/sync", {
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: role || "buyer",
+            lastAuthMethod: "google"
+          });
+          if (data?.success && data?.profile) {
+            setUserProfile(data.profile);
+          }
+        } catch (syncErr) {
+          safeLogger.warn("AuthContext: Google sign-in background sync will be retried by auth listener", {
+            err: syncErr instanceof Error ? syncErr.message : String(syncErr)
+          });
+        }
       }
     } catch (err: unknown) {
       safeLogger.error("Google sign-in error", { err: err instanceof Error ? err.message : String(err) });

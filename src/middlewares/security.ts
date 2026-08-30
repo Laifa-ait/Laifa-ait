@@ -222,6 +222,8 @@ const imgSrcProd = [
   "https://images.unsplash.com",
   "https://api.qrserver.com",
   "https://www.transparenttextures.com",
+  "https://www.gstatic.com",
+  "https://*.gstatic.com",
 ];
 
 const helmetProd = helmet({
