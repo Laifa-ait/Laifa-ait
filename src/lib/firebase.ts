@@ -29,13 +29,13 @@ const rawAppId = import.meta.env?.VITE_FIREBASE_APP_ID;
 
 const apiKey = (isStringAndValid(rawApiKey) && rawApiKey.trim().startsWith("AIzaSy"))
   ? rawApiKey.trim()
-  : "AIzaSyFakeKeyForRenderingPurposeOnly123";
+  : "AIzaSyCsGYo1B0vavSQbKdFvu0-7jfzILFHvejA";
 
-const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "olmart-marketplace.firebaseapp.com";
-const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "olmart-marketplace";
-const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "olmart-marketplace.appspot.com";
-const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : "1234567890";
-const appId = (isStringAndValid(rawAppId) && rawAppId.includes(":")) ? rawAppId.trim() : "1:1234567890:web:abcdef";
+const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "original-micron-7sjh2.firebaseapp.com";
+const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "original-micron-7sjh2";
+const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "original-micron-7sjh2.firebasestorage.app";
+const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : "76420360525";
+const appId = (isStringAndValid(rawAppId) && rawAppId.includes(":")) ? rawAppId.trim() : "1:76420360525:web:d6781ea77ef0c2257aef04";
 
 const clientConfig = {
   apiKey,

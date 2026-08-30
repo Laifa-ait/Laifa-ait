@@ -15,6 +15,9 @@ function getParsedAllowedOrigins(): string[] {
     "https://ais-dev-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
     // Shared App URL
     "https://ais-pre-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+    // User Cloud Run Deployments
+    "https://laifa-ait-git-76420360525.europe-west1.run.app",
+    "https://gemini-visionary-76420360525.europe-west1.run.app",
   ];
 
   const canonicalDomain = process.env.CANONICAL_DOMAIN;
