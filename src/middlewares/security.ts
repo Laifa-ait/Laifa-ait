@@ -17,6 +17,15 @@ function getParsedAllowedOrigins(): string[] {
     "https://ais-pre-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
   ];
 
+  const canonicalDomain = process.env.CANONICAL_DOMAIN;
+  if (canonicalDomain) {
+    const clean = canonicalDomain.replace(/^https?:\/\//, "").trim();
+    if (clean) {
+      list.push(`https://${clean}`);
+      list.push(`https://www.${clean}`);
+    }
+  }
+
   const envOrigins = process.env.ALLOWED_ORIGINS;
   if (envOrigins) {
     envOrigins.split(",").forEach((item) => {
@@ -70,8 +79,9 @@ export const corsOptions: cors.CorsOptions = {
     const allowedOrigins = getParsedAllowedOrigins();
     const isAllowedExact = allowedOrigins.includes(origin);
     const isAllowedPreview = isAllowedPreviewOrigin(origin);
+    const isCloudRunOrigin = origin.endsWith(".run.app") || origin.endsWith(".googleusercontent.com");
 
-    if (isAllowedExact || isAllowedPreview) {
+    if (isAllowedExact || isAllowedPreview || isCloudRunOrigin) {
       return callback(null, true);
     }
 
@@ -92,11 +102,15 @@ export const corsOptions: cors.CorsOptions = {
 export const corsMiddleware = cors(corsOptions);
 
 /**
- * Middleware to prevent direct access to the default Cloud Run URL in production.
- * Only the official domain (olmart.dz / www.olmart.dz) must be public.
+ * Optional canonical domain redirect middleware.
+ * ONLY redirects if process.env.ENFORCE_CANONICAL_DOMAIN === "true" AND process.env.CANONICAL_DOMAIN is explicitly set.
+ * By default (ENFORCE_CANONICAL_DOMAIN !== "true"), Cloud Run URLs (*.run.app) and all hostnames are directly accepted.
  */
 export function preventDirectCloudRunAccess(req: Request, res: Response, next: NextFunction) {
-  if (process.env.NODE_ENV === "production") {
+  const enforceCanonical = process.env.ENFORCE_CANONICAL_DOMAIN === "true";
+  const canonicalDomain = process.env.CANONICAL_DOMAIN;
+
+  if (enforceCanonical && canonicalDomain) {
     // Always allow container health probes and readiness checks
     if (
       req.path === "/health" ||
@@ -108,24 +122,28 @@ export function preventDirectCloudRunAccess(req: Request, res: Response, next: N
     }
 
     const host = (req.headers.host || "").toLowerCase();
+    const cleanCanonical = canonicalDomain.replace(/^https?:\/\//, "").trim().toLowerCase();
 
-    // Do not block AI Studio preview and dev Cloud Run URLs
-    const isAiStudioPreview = host.includes("ais-") || host.includes("google") || host.includes("localhost") || host.includes("127.0.0.1");
+    // Do not redirect if already on canonical domain or www
+    const isCanonicalHost = host === cleanCanonical || host === `www.${cleanCanonical}`;
 
-    // Block or redirect direct accesses to default generic Google Cloud Run URL (*.run.app)
-    if (!isAiStudioPreview && (host.endsWith(".run.app") || host === "run.app")) {
-      safeLogger.warn("[Olmart Security] ⚠️ Blocking direct Cloud Run access", { host });
+    if (!isCanonicalHost) {
+      safeLogger.warn("[Olmart Security] ⚠️ Redirecting non-canonical host to canonical domain", {
+        host,
+        canonicalDomain: cleanCanonical,
+      });
 
       if (req.method === "GET" && !req.path.startsWith("/api/")) {
-        return res.redirect(301, `https://olmart.dz${req.originalUrl}`);
+        return res.redirect(301, `https://${cleanCanonical}${req.originalUrl}`);
       }
 
       return res.status(403).json({
         success: false,
-        error: "L'accès direct au domaine Cloud Run est interdit en production. Veuillez utiliser https://olmart.dz",
+        error: `L'accès direct via ${host} n'est pas autorisé. Veuillez utiliser https://${cleanCanonical}`,
       });
     }
   }
+
   next();
 }
 
@@ -164,6 +182,7 @@ const frameAncestorsProd = [
   "https://ai.studio",
   "https://*.aistudio.google.com",
   "https://*.ai.studio",
+  "https://*.run.app",
 ];
 
 const scriptSrcProd: (string | ((req: Request, res: Response) => string))[] = [
@@ -182,8 +201,7 @@ const connectSrcProd = [
   "https://securetoken.googleapis.com",
   "https://olmart.dz",
   "https://www.olmart.dz",
-  "https://ais-dev-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
-  "https://ais-pre-j3a4gyjlonu6y4k6skaqai-412943438773.europe-west2.run.app",
+  "https://*.run.app",
   "https://region1-active-directory.googleapis.com",
   "https://www.google-analytics.com",
   "wss:", // Allowed for secure real-time syncing only (never plain ws:)
@@ -198,6 +216,7 @@ const imgSrcProd = [
   "blob:",
   "https://olmart.dz",
   "https://*.olmart.dz",
+  "https://*.run.app",
   "https://firebasestorage.googleapis.com",
   "https://lh3.googleusercontent.com",
   "https://images.unsplash.com",
