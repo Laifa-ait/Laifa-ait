@@ -19,7 +19,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8080
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
@@ -30,8 +30,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/server.ts ./server.ts
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 8080 for Cloud Run
+EXPOSE 8080
 
 # Start the application
 CMD ["npm", "start"]
