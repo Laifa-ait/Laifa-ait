@@ -6,8 +6,11 @@ import { admin, db } from "../../config/firebase-admin";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../constants";
 import { CouponService } from "../marketing/coupon.service";
 import { safeLogger } from "../../utils/logger";
+import auth2faRouter from "./auth2fa.routes";
 
 const router = Router();
+
+router.use("/2fa", auth2faRouter);
 
 router.post("/onboard", loginLimiter, authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const uid = req.user?.uid || "";

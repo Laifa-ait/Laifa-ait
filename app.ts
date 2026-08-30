@@ -29,6 +29,7 @@ import { bricolageRouter } from "./src/domains/bricolage/bricolage.routes";
 import { realEstateRouter } from "./src/domains/realEstate/realEstate.routes";
 import messagingRouter from "./src/domains/messaging/messaging.routes";
 import paymentRouter from "./src/domains/payment/payment.routes";
+import bootstrapRouter from "./src/domains/bootstrap/bootstrap.routes";
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
@@ -104,6 +105,7 @@ app.use("/api/v1", bricolageRouter);
 app.use("/api/v1/real-estate", realEstateRouter);
 app.use("/api/v1/messaging", messagingRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1", bootstrapRouter);
 
 // Domain catalog & core gateways
 app.use("/", productsRouter);

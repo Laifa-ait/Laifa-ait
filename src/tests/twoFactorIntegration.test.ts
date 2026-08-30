@@ -1,12 +1,121 @@
 import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
+
+// In-Memory Firebase Admin Mock for 2FA Integration Tests
+const usersStore = new Map<string, Record<string, unknown>>();
+const deleteValueMarker = { __isDelete: true };
+
+const setNestedKey = (obj: Record<string, unknown>, keyPath: string, value: unknown) => {
+  if (value === deleteValueMarker) {
+    if (keyPath.includes(".")) {
+      const parts = keyPath.split(".");
+      let curr: Record<string, unknown> = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!curr[parts[i]] || typeof curr[parts[i]] !== "object") return;
+        curr = curr[parts[i]] as Record<string, unknown>;
+      }
+      delete curr[parts[parts.length - 1]];
+    } else {
+      delete obj[keyPath];
+    }
+    return;
+  }
+
+  if (keyPath.includes(".")) {
+    const parts = keyPath.split(".");
+    let curr: Record<string, unknown> = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!curr[parts[i]] || typeof curr[parts[i]] !== "object") {
+        curr[parts[i]] = {};
+      }
+      curr = curr[parts[i]] as Record<string, unknown>;
+    }
+    curr[parts[parts.length - 1]] = value;
+  } else {
+    obj[keyPath] = value;
+  }
+};
+
+const mockVerifyIdToken = vi.fn();
+const mockAuthObject = {
+  verifyIdToken: mockVerifyIdToken,
+};
+
+const cloneData = (data: unknown): unknown => {
+  if (data === null || data === undefined) return data;
+  if (typeof data === "object" && "toMillis" in data) {
+    return data;
+  }
+  if (Array.isArray(data)) {
+    return data.map(cloneData);
+  }
+  if (typeof data === "object") {
+    const copy: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(data)) {
+      copy[k] = cloneData(v);
+    }
+    return copy;
+  }
+  return data;
+};
+
+vi.mock("../config/firebase-admin", () => {
+  const mockAdmin = {
+    auth: () => mockAuthObject,
+    firestore: {
+      Timestamp: {
+        fromMillis: (ms: number) => ({
+          toMillis: () => ms,
+        }),
+      },
+      FieldValue: {
+        delete: () => deleteValueMarker,
+      },
+    },
+  };
+
+  const mockDb = {
+    collection: (_colName: string) => ({
+      doc: (docId: string) => ({
+        id: docId,
+        get: vi.fn(async () => {
+          const data = usersStore.get(docId);
+          return {
+            exists: !!data,
+            data: () => (data ? (cloneData(data) as Record<string, unknown>) : undefined),
+          };
+        }),
+        set: vi.fn(async (data: Record<string, unknown>) => {
+          usersStore.set(docId, cloneData(data) as Record<string, unknown>);
+        }),
+        update: vi.fn(async (data: Record<string, unknown>) => {
+          let existing = (usersStore.get(docId) || {}) as Record<string, unknown>;
+          existing = cloneData(existing) as Record<string, unknown>;
+          for (const [key, value] of Object.entries(data)) {
+            setNestedKey(existing, key, value);
+          }
+          usersStore.set(docId, existing);
+        }),
+        delete: vi.fn(async () => {
+          usersStore.delete(docId);
+        }),
+      }),
+    }),
+  };
+
+  return {
+    admin: mockAdmin,
+    db: mockDb,
+  };
+});
+
 import { admin, db } from "../config/firebase-admin";
 import router from "../domains/auth/auth2fa.routes";
 
 const app = express();
 app.use(express.json());
-app.use(router);
+app.use("/api/v1/auth/2fa", router);
 
 describe("OLMART — Two-Factor Authentication Route Integration & Security Suite", () => {
   const testUserUid = "test_2fa_user_999";

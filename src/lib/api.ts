@@ -75,6 +75,20 @@ async function parseJsonResponse<T>(res: Response, path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface AppBootstrapData {
+  megamenu?: unknown;
+  categories?: unknown;
+  featuredProducts?: unknown[];
+  profile?: unknown | null;
+  cart?: unknown[];
+  wishlist?: unknown[];
+}
+
+export async function fetchAppBootstrap(): Promise<AppBootstrapData> {
+  const res = await apiGet<{ success: boolean; data: AppBootstrapData }>("/api/v1/bootstrap");
+  return res.data;
+}
+
 export async function apiGet<T>(path: string, retries = 3): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
