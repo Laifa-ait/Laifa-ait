@@ -1,13 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  Wrench,
-  Home,
-  Car,
-  ShoppingBag,
-  Truck,
-  UtensilsCrossed,
-  Briefcase,
   Sparkles,
   ArrowRight,
   Users,
@@ -16,6 +9,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { OlmaAppModule } from '../../types/olmaUnivers';
+import { getAppIconComponent } from '../../utils/iconRegistry';
 
 interface AppCardProps {
   app: OlmaAppModule;
@@ -23,18 +17,8 @@ interface AppCardProps {
   onSelect: (app: OlmaAppModule) => void;
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  Wrench,
-  Home,
-  Car,
-  ShoppingBag,
-  Truck,
-  UtensilsCrossed,
-  Briefcase
-};
-
 export const AppCard: React.FC<AppCardProps> = ({ app, lang, onSelect }) => {
-  const IconComponent = ICON_MAP[app.icon] || Sparkles;
+  const IconComponent = getAppIconComponent(app.icon);
 
   const title = app.title[lang] || app.title.fr;
   const description = app.description[lang] || app.description.fr;

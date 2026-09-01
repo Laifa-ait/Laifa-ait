@@ -2,6 +2,7 @@ import { db, admin } from "../config/firebase-admin";
 import Fuse from "fuse.js";
 import { Request } from "express";
 import { safeLogger } from "../utils/logger";
+import { TrendingSearchesService } from "./TrendingSearchesService";
 
 export interface SearchableProduct {
   id: string;
@@ -110,7 +111,7 @@ export class ProductSearchService {
 
     if (productsToIndex.length === 0 || now - lastCacheUpdate > CACHE_TTL) {
       try {
-        const port = process.env.PORT || 3000;
+        const port = 3000;
         const host = req.hostname || "localhost";
         const protocol = req.protocol || "http";
         const [productsRes, storesRes] = await Promise.all([
@@ -297,6 +298,7 @@ export class ProductSearchService {
     });
 
     try {
+      TrendingSearchesService.recordSearch(queryStr);
       const logData = {
         query: queryStr,
         resultsCount: finalProducts.length,

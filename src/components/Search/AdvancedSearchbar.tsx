@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Search, X, Loader2, ArrowRight, TrendingUp, History } from "lucide-react";
+import { Search, X, Loader2, ArrowRight, TrendingUp, History, Flame, Store, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useShop } from "../../context/ShopContext";
@@ -11,6 +11,15 @@ import { useTrendingSearches } from "../../hooks/useTrendingSearches";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { useDebounce } from "../../hooks/useDebounce";
 
+const ROTATING_HINTS = [
+  "Robe de soirée luxe & Caftan",
+  "Sneakers en cuir DZ & Chaussures",
+  "Smartphones & Accessoires Tech",
+  "Électroménager & Maison",
+  "Pack mariée traditionnel",
+  "Outillage & Bricolage pro",
+];
+
 interface AdvancedSearchbarProps {
   className?: string;
   isMobile?: boolean;
@@ -20,7 +29,7 @@ interface AdvancedSearchbarProps {
 export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
   className = "",
   isMobile: _isMobile = false,
-  variant = "default",
+  variant: _variant = "default",
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -30,6 +39,8 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
   const [localQuery, setLocalQuery] = useState("");
   const debouncedQuery = useDebounce(localQuery, 300);
   const [results, setResults] = useState<Product[]>([]);
+  const [hintIndex, setHintIndex] = useState(0);
+
   interface SearchStoreResult {
   id?: string;
   uid?: string;
@@ -94,6 +105,15 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
     };
     fetchFallbacks();
   }, []);
+
+  // Rotate placeholder hints
+  useEffect(() => {
+    if (localQuery) return;
+    const interval = setInterval(() => {
+      setHintIndex((prev) => (prev + 1) % ROTATING_HINTS.length);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [localQuery]);
 
   // Sync with global query if cleared externally
   useEffect(() => {
@@ -264,6 +284,16 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
     }
   };
 
+  const clearAllRecentSearches = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem("olma_recent_searches");
+    } catch (err) {
+      console.warn("localStorage clear failed:", err);
+    }
+  };
+
   const highlightMatch = (text: string, query: string) => {
     if (!query) return text;
     const escapedQuery = query.replace(/[.+*?^${}()|[\]\\]/g, "\\$&");
@@ -272,7 +302,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
       <span>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <strong key={i} className="text-[teal-600] bg-[teal-600]/5 font-sans font-bold px-1 rounded">
+            <strong key={i} className="text-orange-600 bg-orange-50/80 font-bold px-1 rounded">
               {part}
             </strong>
           ) : (
@@ -285,7 +315,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
 
   return (
     <>
-      {/* Mega-Search Dark Glass Backdrop */}
+      {/* Search Backdrop Overlay */}
       {isOverlayActive &&
         createPortal(
           <div
@@ -294,138 +324,156 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
               setShowDropdown(false);
               inputRef.current?.blur();
             }}
-            className="fixed inset-0 bg-[teal-950]/40 backdrop-blur-md z-[90] transition-opacity duration-300"
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-[90] transition-opacity duration-200"
           />,
           document.body
         )}
 
       <div
         ref={containerRef}
-        className={`relative w-full transition-all duration-500 ease-out ${isOverlayActive ? "z-[50] sm:scale-[1.02]" : "z-[10]"} ${className}`}
+        className={`relative w-full ${isOverlayActive ? "z-[50]" : "z-[10]"} ${className}`}
       >
         <div
-          className={`flex items-center w-full transition-all duration-300 ease-out group h-10 sm:h-12 rounded-full px-1 ${
+          className={`flex items-center w-full h-10 sm:h-11 rounded-full p-0.5 sm:p-1 bg-white transition-all duration-200 ${
             isOverlayActive
-              ? "bg-white border border-teal-200 shadow-lg ring-4 ring-teal-500/10"
-              : variant === "glass"
-                ? "bg-white/10 backdrop-blur-md border border-white/20 text-white"
-                : "bg-sky-50/50 border border-sky-100/80 hover:bg-sky-50 hover:border-sky-200 shadow-sm"
+              ? "border-2 border-orange-500 shadow-md ring-2 ring-orange-500/20"
+              : "border border-slate-300 hover:border-orange-500 shadow-xs"
           }`}
         >
-          <button
-            onClick={handleSearchSubmit}
-            className={`ps-3 pe-2 flex items-center justify-center shrink-0 cursor-pointer bg-transparent border-none transition-colors duration-300 ${isOverlayActive ? "text-teal-600" : "text-teal-700/60 group-hover:text-teal-600"}`}
-          >
-            <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] stroke-[2]" />
-          </button>
+          {/* Search Icon */}
+          <div className="flex items-center justify-center shrink-0 text-orange-500 ps-3 pe-1.5">
+            <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] stroke-[2.2]" />
+          </div>
 
-          <input
-            ref={inputRef}
-            type="text"
-            value={localQuery}
-            onChange={(e) => {
-              setLocalQuery(e.target.value);
-              setShowDropdown(true);
-            }}
-            onFocus={() => {
-              setIsFocused(true);
-              setShowDropdown(true);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={isMobileView ? t("search") || "Recherche" : t("search_placeholder") || "Recherche..."}
-            className={`bg-transparent border-none text-[14px] sm:text-[15px] focus:outline-none w-full h-full px-2 font-medium shadow-none text-slate-800 placeholder:text-slate-500 text-ellipsis whitespace-nowrap`}
-          />
+          {/* Input with animated rotating hint when empty */}
+          <div className="relative flex-1 h-full flex items-center overflow-hidden">
+            <input
+              ref={inputRef}
+              type="text"
+              value={localQuery}
+              onChange={(e) => {
+                setLocalQuery(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => {
+                setIsFocused(true);
+                setShowDropdown(true);
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder={localQuery ? "" : ROTATING_HINTS[hintIndex]}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              className="bg-transparent border-none text-[13px] sm:text-[14px] focus:outline-none w-full h-full px-1 font-medium shadow-none text-slate-900 placeholder:text-slate-400 text-ellipsis whitespace-nowrap"
+            />
+          </div>
 
+          {/* Clear or Loader */}
           {isSearching ? (
-            <Loader2 className="w-4 h-4 text-slate-500 animate-spin me-2 shrink-0 animate-infinite" />
+            <Loader2 className="w-4 h-4 text-orange-500 animate-spin mx-1 shrink-0 animate-infinite" />
           ) : localQuery ? (
             <button
               onClick={clearSearch}
-              className="p-1.5 hover:text-sky-500 text-slate-500 transition-colors bg-transparent border-none flex items-center justify-center cursor-pointer me-1 rounded-full hover:bg-slate-100"
+              className="p-1 hover:text-orange-500 text-slate-400 transition-colors bg-transparent border-none flex items-center justify-center cursor-pointer mx-1 rounded-full hover:bg-slate-100"
             >
-              <X className="w-4 h-4 stroke-[1.5]" />
+              <X className="w-4 h-4 stroke-[2]" />
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.dispatchEvent(new CustomEvent("open-global-search"));
-              }}
-              title="Recherche globale rapide (Ctrl+K)"
-              className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono font-medium text-slate-400 hover:text-orange-500 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 me-2 shrink-0 cursor-pointer transition-colors"
-            >
-              <span>⌘K</span>
-            </button>
-          )}
+          ) : null}
+
+          {/* Solid Vibrant Orange Search Button */}
+          <button
+            type="button"
+            onClick={handleSearchSubmit}
+            className="h-full px-3.5 sm:px-5 bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] text-white font-bold text-xs sm:text-[13px] rounded-full shadow-xs flex items-center justify-center gap-1 active:scale-95 transition-all duration-150 shrink-0 cursor-pointer border-none"
+          >
+            <span>{isMobileView ? "Recherche" : "Rechercher"}</span>
+          </button>
         </div>
 
         {/* Predictive & Interactive Mega Search Dropdown Overlay */}
         {isOverlayActive && (
-          <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] md:left-1/2 md:-translate-x-1/2 w-full md:w-[850px] lg:w-[950px] bg-white border border-teal-100 border-b-4 border-b-teal-950 shadow-2xl z-[150] rounded-t-[1.5rem] rounded-b-[3.5rem] overflow-hidden md:backdrop-blur-xl max-h-[75vh] md:max-h-[85vh] overflow-y-auto">
-            <div className="p-4 md:p-8 space-y-4 md:space-y-8">
-              {/* Overlay Header for Mobile/Quick Exit */}
-              <div className="flex items-center justify-end pb-2 md:hidden">
+          <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] md:left-1/2 md:-translate-x-1/2 w-full md:w-[750px] lg:w-[850px] bg-white border border-slate-200/90 shadow-2xl z-[150] rounded-2xl md:rounded-3xl overflow-hidden max-h-[75vh] md:max-h-[80vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 space-y-5">
+              {/* Overlay Header with Close Button for Mobile */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  {localQuery.trim() ? "Résultats de recherche" : "Explorer sur Olmart"}
+                </span>
                 <button
                   onClick={() => {
                     setIsFocused(false);
                     setShowDropdown(false);
                     inputRef.current?.blur();
                   }}
-                  className="p-1.5 h-8 w-8 hover:bg-[#EBE5DF]/50 rounded-full flex items-center justify-center text-[teal-950] bg-transparent border-none cursor-pointer transition-colors"
+                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 bg-transparent border-none cursor-pointer transition-colors"
                 >
-                  <X className="w-5 h-5 stroke-[2]" />
+                  <X className="w-4 h-4 stroke-[2.2]" />
                 </button>
               </div>
 
               {/* Case A: Search bar is Empty -> Show History and Trending Categories */}
               {!localQuery.trim() ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                  {/* 1. Recents searches */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs sm:text-sm rtl:text-sm font-bold uppercase text-teal-950 tracking-wider flex items-center gap-2 pb-2.5 border-b-2 border-b-teal-600/30">
-                      <History className="w-4 h-4 text-teal-600 animate-pulse" />
-                      {t("recent_searches") || "Vos Recherches Récentes"}
-                    </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {/* 1. Recent Searches */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
+                        <History className="w-3.5 h-3.5 text-orange-500" />
+                        <span>{t("recent_searches") || "Recherches récentes"}</span>
+                      </h4>
+                      {recentSearches.length > 0 && (
+                        <button
+                          onClick={clearAllRecentSearches}
+                          className="text-[11px] text-slate-400 hover:text-red-500 font-medium flex items-center gap-1 bg-transparent border-none cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Effacer</span>
+                        </button>
+                      )}
+                    </div>
                     {recentSearches.length > 0 ? (
                       <ul className="space-y-1">
                         {recentSearches.map((term, i) => (
                           <li
                             key={i}
                             onClick={() => selectTrendingOrRecent(term)}
-                            className="flex items-center justify-between py-2 px-3 rounded-xl border border-transparent hover:bg-teal-50/50 hover:border-teal-200/40 text-[13.5px] font-semibold text-slate-700 hover:text-teal-900 hover:shadow-sm transition-all duration-300 cursor-pointer group"
+                            className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-orange-50/50 text-[13px] font-medium text-slate-700 hover:text-orange-600 transition-colors cursor-pointer group"
                           >
-                            <span className="truncate">{term}</span>
+                            <span className="truncate flex items-center gap-2">
+                              <History className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 shrink-0" />
+                              {term}
+                            </span>
                             <button
                               onClick={(e) => deleteRecentSearch(term, e)}
-                              className="text-[teal-950]/30 hover:text-red-500 p-1 bg-transparent border-none cursor-pointer transition-colors opacity-0 group-hover:opacity-100"
+                              className="text-slate-300 hover:text-red-500 p-1 bg-transparent border-none cursor-pointer transition-colors opacity-0 group-hover:opacity-100"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3.5 h-3.5" />
                             </button>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-[teal-950]/40 text-xs px-2 py-4 italic">
-                        {t("no_search_history") || "Aucun historique récent."}
+                      <p className="text-slate-400 text-xs px-2 py-3 italic">
+                        {t("no_search_history") || "Aucun historique pour le moment."}
                       </p>
                     )}
                   </div>
 
-                  {/* 2. Trending Searches (Viral of the day) */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs sm:text-sm rtl:text-sm font-bold uppercase text-amber-950 tracking-wider flex items-center gap-2 pb-2.5 border-b-2 border-b-amber-600/30">
-                      <TrendingUp className="w-4 h-4 text-amber-600 animate-bounce" style={{ animationDuration: "3s" }} />
-                      {t("trending_searches") || "Tendances du moment"}
+                  {/* 2. Trending Searches */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
+                      <Flame className="w-3.5 h-3.5 text-orange-500" />
+                      <span>{t("trending_searches") || "Tendances populaires"}</span>
                     </h4>
-                    <div className="flex flex-wrap gap-2.5 pt-1 md:pt-2">
+                    <div className="flex flex-wrap gap-2 pt-1">
                       {trendingSearches.map((tag, i) => (
                         <button
                           key={i}
                           onClick={() => selectTrendingOrRecent(tag)}
-                          className="px-4 py-2 text-[12.5px] font-bold border border-amber-200 bg-amber-50/50 hover:bg-amber-600 hover:text-white hover:border-amber-600 hover:scale-105 active:scale-95 text-amber-900 rounded-full transition-all duration-300 shadow-sm cursor-pointer flex items-center gap-1.5"
+                          className="px-3 py-1.5 text-xs font-semibold border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 active:scale-95 text-slate-700 rounded-full transition-all cursor-pointer flex items-center gap-1.5"
                         >
-                          {t(`trending_tag_${i}`) || tag}
+                          <TrendingUp className="w-3 h-3 text-orange-500/70" />
+                          <span>{tag}</span>
                         </button>
                       ))}
                     </div>
@@ -433,20 +481,21 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                 </div>
               ) : (
                 // Case B: Search bar has typing -> Show completion results or fallback recommendations
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {isSearching ? (
-                    <div className="p-12 flex justify-center items-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-[teal-600]" />
+                    <div className="py-12 flex justify-center items-center">
+                      <Loader2 className="w-7 h-7 animate-spin text-orange-500" />
                     </div>
                   ) : results.length > 0 || matchedStores.length > 0 ? (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {/* Stores Section */}
                       {matchedStores.length > 0 && (
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-[teal-950]">
-                            {t("matching_stores") || "Boutiques correspondantes"}
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
+                            <Store className="w-3.5 h-3.5 text-orange-500" />
+                            <span>{t("matching_stores") || "Boutiques certifiées"}</span>
                           </h4>
-                          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {matchedStores.map((store) => (
                               <li key={store.id || store.uid}>
                                 <button
@@ -454,9 +503,9 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                     navigate(`/store/${store.id || store.uid}`);
                                     setShowDropdown(false);
                                   }}
-                                  className="w-full text-left p-3 hover:bg-orange-50/50 flex items-center gap-4 group transition-colors rounded-2xl outline-none border border-transparent hover:border-[teal-600]/30 hover:shadow-sm cursor-pointer"
+                                  className="w-full text-left p-2.5 bg-slate-50/70 hover:bg-orange-50/50 border border-slate-100 hover:border-orange-200 flex items-center gap-3 group transition-colors rounded-xl outline-none cursor-pointer"
                                 >
-                                  <div className="w-12 h-12 rounded-xl bg-white overflow-hidden flex-shrink-0 border border-[teal-600]">
+                                  <div className="w-10 h-10 rounded-lg bg-white overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
                                     {store.logoUrl ? (
                                       <img
                                         loading="lazy"
@@ -465,22 +514,22 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                         className="w-full h-full object-cover"
                                       />
                                     ) : (
-                                      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                                        <span className="text-slate-500 font-sans font-bold text-xl uppercase">
+                                      <div className="w-full h-full bg-orange-50 flex items-center justify-center">
+                                        <span className="text-orange-600 font-bold text-base uppercase">
                                           {(store.shopName || store.displayName || "B").charAt(0)}
                                         </span>
                                       </div>
                                     )}
                                   </div>
-                                  <div className="flex flex-col flex-1 overflow-hidden">
-                                    <span className="font-semibold text-[14px] text-[teal-950] group-hover:text-[teal-600] truncate transition-colors">
+                                  <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+                                    <span className="font-bold text-[13px] text-slate-800 group-hover:text-orange-600 truncate transition-colors">
                                       {store.shopName || store.displayName}
                                     </span>
-                                    <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1 truncate">
+                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
                                       {t("Wilaya")} {store.wilaya ? store.wilaya : "58"}
                                     </span>
                                   </div>
-                                  <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-[teal-600] group-hover:translate-x-1 transition-all" />
+                                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
                                 </button>
                               </li>
                             ))}
@@ -490,48 +539,45 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
 
                       {/* Products Section */}
                       {results.length > 0 && (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between border-b border-[teal-600]/30 pb-2">
-                            <h4 className="text-sm font-semibold text-[teal-950]">
-                              {t("matching_creations") || "Créations correspondantes"}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between pb-1">
+                            <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                              {t("matching_creations") || "Produits correspondants"}
                             </h4>
                             {totalProductsCount > 5 && (
-                              <span className="text-xs text-[teal-950]/60 font-medium">
-                                {t("showing_5_of_total", { count: totalProductsCount }) || `Affichage de 5 sur ${totalProductsCount} créations`}
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                {t("showing_5_of_total", { count: totalProductsCount }) || `5 sur ${totalProductsCount} résultats`}
                               </span>
                             )}
                           </div>
-                          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                             {results.map((product) => {
                               return (
                                 <li key={product.id}>
                                   <button
                                     onClick={() => navigateToProduct(product.id, product.name)}
-                                    className="w-full text-left p-3 hover:bg-white flex items-center gap-4 group transition-colors rounded-2xl outline-none border border-transparent hover:border-[teal-600]/80 hover:shadow-sm bg-transparent cursor-pointer"
+                                    className="w-full text-left p-2.5 hover:bg-orange-50/40 border border-slate-100 hover:border-orange-200 flex items-center gap-3 group transition-colors rounded-xl outline-none bg-white cursor-pointer"
                                   >
-                                    <div className="w-14 h-14 rounded-xl bg-white overflow-hidden flex-shrink-0 border border-[teal-600] group-hover:border-[teal-600]/30">
+                                    <div className="w-12 h-12 rounded-lg bg-slate-50 overflow-hidden shrink-0 border border-slate-100">
                                       <img
                                         loading="lazy"
                                         src={getOptimizedImageUrl(product.image, 200)}
                                         alt={product.name}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                       />
                                     </div>
-                                    <div className="flex flex-col text-left overflow-hidden min-w-0">
-                                      <span className="font-semibold text-[15px] text-[teal-950] group-hover:text-[teal-600] transition-colors truncate">
+                                    <div className="flex flex-col text-left overflow-hidden min-w-0 flex-1">
+                                      <span className="font-semibold text-[13px] text-slate-800 group-hover:text-orange-600 transition-colors truncate">
                                         {highlightMatch(product.name, localQuery)}
                                       </span>
-                                      <span className="text-[11px] font-medium text-[teal-950]/50 uppercase tracking-wider rtl:tracking-normal mt-1 truncate">
-                                        {product.category} {t("• Wilaya")}
-                                        {product.wilaya ? product.wilaya : "58"}
+                                      <span className="text-[10.5px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
+                                        {product.category} {product.wilaya ? `• W.${product.wilaya}` : ""}
                                       </span>
-                                    </div>
-                                    <div className="ml-auto flex items-center gap-4 pl-2 shrink-0">
-                                      <span className="text-sm font-bold text-[teal-950]">
+                                      <span className="text-xs font-bold text-orange-600 mt-1">
                                         {formatPrice(product.price)}
                                       </span>
-                                      <ArrowRight className="w-4 h-4 text-[teal-950]/20 group-hover:text-[teal-600] group-hover:translate-x-1 transition-all" />
                                     </div>
+                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0" />
                                   </button>
                                 </li>
                               );
@@ -543,51 +589,52 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                       <div className="pt-2 flex justify-end">
                         <button
                           onClick={handleSearchSubmit}
-                          className="px-6 py-2.5 text-xs rtl:text-sm font-bold uppercase tracking-wider rtl:tracking-normal text-white bg-[teal-950] hover:bg-[teal-600] rounded-full transition-colors cursor-pointer border-none"
+                          className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] rounded-full shadow-xs transition-all cursor-pointer border-none flex items-center gap-1.5"
                         >
-                          {t("see_all_results") || "Voir tous les résultats"}
+                          <span>{t("see_all_results") || "Voir tous les résultats"}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
                   ) : (
-                    // Case C: Absolute Zero Results -> Show orange alert warning AND fallback beautiful creations!
-                    <div className="space-y-8">
-                      <div className="bg-white border border-[teal-600]/30 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-3">
-                        <Search className="w-6 h-6 text-[teal-600]/60" />
-                        <span className="text-lg font-semibold text-[teal-950]">
+                    // Case C: Absolute Zero Results -> Show clean fallback
+                    <div className="space-y-6">
+                      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2">
+                        <Search className="w-6 h-6 text-slate-300" />
+                        <span className="text-sm font-bold text-slate-800">
                           {t("no_results_for") || "Aucun résultat pour"} "{localQuery}"
                         </span>
-                        <p className="text-[13px] text-[teal-950]/60 max-w-lg mx-auto">
+                        <p className="text-xs text-slate-400 max-w-sm">
                           {t("no_exact_match_fallback") ||
-                            "Nous n'avons pas trouvé de correspondance exacte, mais voici quelques créations qui pourraient vous plaire."}
+                            "Vérifiez l'orthographe ou essayez d'autres mots-clés."}
                         </p>
                       </div>
 
                       {fallbackProducts.length > 0 && (
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-[teal-950] mb-4">
-                            {t("recommended_creations") || "Créations recommandées"}
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                            {t("recommended_creations") || "Suggestions populaires"}
                           </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                             {fallbackProducts.map((p) => (
                               <div
                                 key={p.id}
                                 onClick={() => navigateToProduct(p.id, p.name)}
-                                className="p-3 border border-transparent hover:border-[teal-600] hover:bg-white rounded-2xl transition-all cursor-pointer flex gap-4 text-left group hover:shadow-sm"
+                                className="p-2.5 border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 rounded-xl transition-all cursor-pointer flex gap-3 text-left group"
                               >
-                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-white shrink-0 border border-[teal-600] group-hover:border-[teal-600]/30">
+                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
                                   <img
                                     loading="lazy"
                                     src={getOptimizedImageUrl(p.image, 200)}
                                     alt={p.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
-                                <div className="flex flex-col min-w-0 justify-center">
-                                  <span className="font-semibold text-[15px] text-[teal-950] group-hover:text-[teal-600] truncate transition-colors">
+                                <div className="flex flex-col min-w-0 justify-center flex-1">
+                                  <span className="font-semibold text-xs text-slate-800 group-hover:text-orange-600 truncate transition-colors">
                                     {p.name}
                                   </span>
-                                  <span className="text-[13px] font-medium text-[teal-950]/60 mt-1">
+                                  <span className="text-xs font-bold text-orange-600 mt-0.5">
                                     {formatPrice(p.price)}
                                   </span>
                                 </div>

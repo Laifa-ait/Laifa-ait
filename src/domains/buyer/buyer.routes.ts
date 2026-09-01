@@ -2,9 +2,27 @@ import { Router, Response } from "express";
 import { authenticateToken } from "../../middlewares/auth";
 import type { AuthenticatedBuyerRequest, BuyerFollowStoreDTO, BuyerUnfollowStoreDTO } from "./types/buyer.types";
 import { BuyerService } from "./services/buyer.service";
+import { PersonalizedFeedService, AffinityDigestPayload } from "../../services/PersonalizedFeedService";
 import { safeLogger } from "../../utils/logger";
 
 const router = Router();
+
+// POST /api/v1/user/affinity-digest (1 single consolidated sync per day)
+router.post("/api/v1/user/affinity-digest", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+    const digest = req.body as AffinityDigestPayload;
+    await PersonalizedFeedService.saveUserDailyDigest(uid, digest);
+    return res.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Erreur serveur";
+    safeLogger.error("[Buyer Domain] Affinity digest sync error", { err: message });
+    return res.status(500).json({ error: message });
+  }
+});
 
 // GET buyer returns
 router.get("/api/v1/buyer/returns", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {

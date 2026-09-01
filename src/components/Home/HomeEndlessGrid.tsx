@@ -102,9 +102,9 @@ export const HomeEndlessGrid: React.FC = () => {
             <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-full mb-4" />
             <div className="w-64 h-8 bg-slate-200 animate-pulse rounded-lg mb-2" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 md:gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-[4/5] rounded-2xl bg-slate-200 animate-pulse" />
+              <div key={i} className="aspect-square rounded-xl sm:rounded-2xl bg-slate-100/80 animate-pulse border border-slate-200/60" />
             ))}
           </div>
         </div>
@@ -132,7 +132,7 @@ export const HomeEndlessGrid: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 md:gap-5">
         {products.map((product, i) => (
           <div key={product.id}>
             <ProductCard product={product} index={i} />

@@ -85,7 +85,47 @@ olmaUniversRouter.put("/admin/univers/apps/:id", async (req: Request, res: Respo
   }
 });
 
-// 4. Admin: Seed Initial Ecosystem Apps into Firestore
+// 4. Admin: Create New Application / Shortcut
+olmaUniversRouter.post("/admin/univers/apps", async (req: Request, res: Response) => {
+  const newApp = req.body as OlmaAppModule;
+  if (!newApp.id) {
+    newApp.id = `app-${Date.now()}`;
+  }
+
+  try {
+    if (db) {
+      await db.collection("olma_univers_apps").doc(newApp.id).set(newApp, { merge: true });
+    }
+    return res.json({
+      success: true,
+      data: newApp,
+      message: `Application ${newApp.title?.fr || newApp.id} créée avec succès.`
+    });
+  } catch (err) {
+    safeLogger.error("Admin app create error", { appId: newApp.id, err: err instanceof Error ? err.message : String(err) });
+    return res.status(500).json({ success: false, error: "Erreur lors de la création de l'application." });
+  }
+});
+
+// 5. Admin: Delete Application / Shortcut
+olmaUniversRouter.delete("/admin/univers/apps/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    if (db) {
+      await db.collection("olma_univers_apps").doc(id).delete();
+    }
+    return res.json({
+      success: true,
+      message: `L'application ${id} a été supprimée.`
+    });
+  } catch (err) {
+    safeLogger.error("Admin app delete error", { appId: id, err: err instanceof Error ? err.message : String(err) });
+    return res.status(500).json({ success: false, error: "Erreur lors de la suppression." });
+  }
+});
+
+// 6. Admin: Seed Initial Ecosystem Apps into Firestore
 olmaUniversRouter.post("/admin/univers/seed", async (_req: Request, res: Response) => {
   try {
     if (db) {

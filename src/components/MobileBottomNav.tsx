@@ -12,7 +12,12 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isHidden = hideOnRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + "/"));
+  const isHidden = hideOnRoutes.some(
+    (route) =>
+      location.pathname === route ||
+      location.pathname.startsWith(route + "/") ||
+      (route.length > 1 && location.pathname.startsWith(route))
+  );
   if (isHidden || isStickyBuyBarVisible) {
     return null;
   }
@@ -21,76 +26,77 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
 
   return (
     <div
-      className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-slate-100 z-50 shadow-[0_-8px_32px_rgba(0,0,0,0.04)] overflow-hidden"
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] overflow-hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex items-center justify-around h-[4.5rem] w-full px-2">
-        {/* Home */}
+      <div className="flex items-center justify-around h-[3.8rem] w-full px-1">
+        {/* Home / Accueil */}
         <button
           onClick={() => navigate("/")}
           aria-label="Accueil"
-          aria-current={isActive("/") ? "page" : undefined}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
+          className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all bg-transparent border-none cursor-pointer"
         >
-          {isActive("/") && <div className="absolute inset-0 bg-sky-50 rounded-2xl -z-10" />}
-          <Home
-            className={`w-6 h-6 transition-colors ${isActive("/") ? "text-sky-500" : "text-slate-500"}`}
-            strokeWidth={isActive("/") ? 2.5 : 2}
-          />
+          <div className={`p-1 rounded-xl transition-all ${isActive("/") ? "bg-orange-500 text-white shadow-xs" : "text-slate-500"}`}>
+            <Home className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <span className={`text-[10px] font-bold mt-0.5 ${isActive("/") ? "text-orange-600" : "text-slate-500"}`}>
+            Accueil
+          </span>
         </button>
 
         {/* Categories */}
         <button
           onClick={() => navigate("/categories")}
           aria-label="Catégories"
-          aria-current={isActive("/categories") ? "page" : undefined}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
+          className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all bg-transparent border-none cursor-pointer"
         >
-          {isActive("/categories") && <div className="absolute inset-0 bg-sky-50 rounded-2xl -z-10" />}
-          <LayoutGrid
-            className={`w-6 h-6 transition-colors ${isActive("/categories") ? "text-sky-500" : "text-slate-500"}`}
-            strokeWidth={isActive("/categories") ? 2.5 : 2}
-          />
+          <div className={`p-1 rounded-xl transition-all ${isActive("/categories") ? "bg-orange-50 text-orange-600" : "text-slate-500"}`}>
+            <LayoutGrid className="w-5 h-5 stroke-[2]" />
+          </div>
+          <span className={`text-[10px] font-bold mt-0.5 ${isActive("/categories") ? "text-orange-600" : "text-slate-500"}`}>
+            Catégories
+          </span>
         </button>
 
-        {/* Wishlist */}
+        {/* Wishlist / Favoris */}
         <button
           onClick={() => setIsWishlistOpen(true)}
-          aria-label={wishlist.length > 0 ? `Favoris, ${wishlist.length} ${wishlist.length === 1 ? "article" : "articles"}` : "Favoris"}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all relative bg-transparent border-none cursor-pointer"
+          aria-label={wishlist.length > 0 ? `Favoris, ${wishlist.length} articles` : "Favoris"}
+          className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all relative bg-transparent border-none cursor-pointer"
         >
-          <Heart
-            className={`w-6 h-6 transition-colors ${wishlist.length > 0 ? "text-pink-500 fill-pink-500/20" : "text-slate-500"}`}
-            strokeWidth={wishlist.length > 0 ? 2.5 : 2}
-          />
-          {wishlist.length > 0 && (
-            <span className="absolute top-2 right-3 w-2 h-2 bg-pink-500 border-2 border-white rounded-full shadow-sm" />
-          )}
+          <div className="relative p-1 rounded-xl text-slate-500">
+            <Heart className="w-5 h-5 stroke-[2]" />
+            {wishlist.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full shadow-xs" />
+            )}
+          </div>
+          <span className="text-[10px] font-bold text-slate-500 mt-0.5">
+            Favoris
+          </span>
         </button>
 
-        {/* Cart */}
+        {/* Cart / Panier */}
         <button
           onClick={() => setIsCartOpen(true)}
-          aria-label={cart.length > 0 ? `Panier, ${cart.length} ${cart.length === 1 ? "article" : "articles"}` : "Panier"}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all relative bg-transparent border-none cursor-pointer"
+          aria-label={cart.length > 0 ? `Panier, ${cart.length} articles` : "Panier"}
+          className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all relative bg-transparent border-none cursor-pointer"
         >
-          <div className="relative">
-            <ShoppingBag
-              className={`w-6 h-6 transition-colors ${cart.length > 0 ? "text-sky-500" : "text-slate-500"}`}
-              strokeWidth={cart.length > 0 ? 2.5 : 2}
-            />
+          <div className="relative p-1 rounded-xl text-slate-500">
+            <ShoppingBag className="w-5 h-5 stroke-[2]" />
             {cart.length > 0 && (
               <span 
-                className="absolute -top-1.5 -right-2 w-4.5 h-4.5 bg-zinc-900 text-white text-[9px] rounded-full flex items-center justify-center font-bold border-[1.5px] border-white shadow-sm"
-                aria-hidden="true"
+                className="absolute -top-0.5 -right-1 min-w-4 h-4 bg-[#FF5000] text-white text-[9px] rounded-full flex items-center justify-center font-extrabold px-1 border border-white shadow-xs"
               >
                 {cart.length}
               </span>
             )}
           </div>
+          <span className="text-[10px] font-bold text-slate-500 mt-0.5">
+            Panier
+          </span>
         </button>
 
-        {/* Account / Dashboard */}
+        {/* Account / Mon Olmart */}
         <button
           onClick={() => {
             if (!currentUser) {
@@ -105,19 +111,18 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
               navigate("/dashboard/buyer");
             }
           }}
-          aria-label="Compte"
-          aria-current={location.pathname.startsWith("/dashboard") ? "page" : undefined}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl active:scale-[0.92] transition-all bg-transparent border-none cursor-pointer relative"
+          aria-label="Mon compte"
+          className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all bg-transparent border-none cursor-pointer"
         >
-          {location.pathname.startsWith("/dashboard") && (
-            <div className="absolute inset-0 bg-sky-50 rounded-2xl -z-10" />
-          )}
-          <UserIcon
-            className={`w-6 h-6 transition-colors ${location.pathname.startsWith("/dashboard") ? "text-sky-500" : "text-slate-500"}`}
-            strokeWidth={location.pathname.startsWith("/dashboard") ? 2.5 : 2}
-          />
+          <div className={`p-1 rounded-xl ${location.pathname.startsWith("/dashboard") ? "bg-orange-50 text-orange-600" : "text-slate-500"}`}>
+            <UserIcon className="w-5 h-5 stroke-[2]" />
+          </div>
+          <span className={`text-[10px] font-bold mt-0.5 ${location.pathname.startsWith("/dashboard") ? "text-orange-600" : "text-slate-500"}`}>
+            Mon Olmart
+          </span>
         </button>
       </div>
     </div>
   );
 };
+

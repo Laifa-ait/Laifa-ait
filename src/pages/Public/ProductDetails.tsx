@@ -15,6 +15,7 @@ import { ProductLightbox } from "../../components/Product/ProductLightbox";
 import { ProductCard } from "../../components/Product/ProductCard";
 import { useProductLogic } from "../../hooks/useProductLogic";
 import { Breadcrumbs } from "../../components/Layout/Breadcrumbs";
+import { UserAffinityAccumulator } from "../../services/UserAffinityAccumulator";
 
 import {
   getCategoryTranslation,
@@ -64,6 +65,17 @@ export const ProductDetails: React.FC = () => {
   }, [setShowStickyBuyBar]);
 
   useEffect(() => {
+    if (product) {
+      UserAffinityAccumulator.track({
+        productId: product.id,
+        category: product.category,
+        subcategory: product.subcategory,
+        price: Number(product.promoPrice || product.price) || 0,
+        type: "view",
+        timestamp: Date.now(),
+      });
+    }
+
     const loadRecommendations = async () => {
       if (!product) return;
       try {

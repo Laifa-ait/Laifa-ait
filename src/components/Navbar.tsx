@@ -5,9 +5,15 @@ import {
   Heart,
   ShoppingBag,
   Globe,
+  Wrench,
+  Building2,
+  Store,
+  Scale,
+  Truck,
+  Headphones,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useShop } from "../context/ShopContext";
@@ -127,21 +133,98 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <div
-        className="bg-teal-950 text-teal-100/90 text-xs font-medium px-4 sm:px-6 lg:px-12 py-2.5 gap-4 overflow-x-auto whitespace-nowrap scrollbar-hide justify-between items-center relative overflow-hidden hidden lg:flex"
+        id="olmart-top-utility-bar"
+        className="bg-slate-950 text-slate-300 text-xs font-medium px-4 sm:px-6 lg:px-12 py-2 gap-4 overflow-x-auto whitespace-nowrap scrollbar-hide justify-between items-center relative hidden lg:flex border-b border-slate-800/80"
       >
         <div className="flex items-center mx-auto w-full max-w-[90rem] justify-between relative z-10">
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-              {t("trust_delivery")}
-            </span>
-            <span className="text-teal-800">|</span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0" />
-              {t("trust_quality")}
-            </span>
+          {/* Universes Navigation Hub */}
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/shop"
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                location.pathname === "/" || location.pathname.startsWith("/shop")
+                  ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Marketplace</span>
+            </Link>
+
+            <Link
+              to="/bricolage"
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                location.pathname.startsWith("/bricolage")
+                  ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Wrench className="w-3.5 h-3.5 text-amber-400" />
+              <span>Olma Bricolage</span>
+              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+                Artisans
+              </span>
+            </Link>
+
+            <Link
+              to="/immo"
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                location.pathname.startsWith("/immo")
+                  ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Olma Immo</span>
+            </Link>
+
+            <Link
+              to="/shops"
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                location.pathname.startsWith("/shops")
+                  ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Store className="w-3.5 h-3.5 text-blue-400" />
+              <span>Boutiques</span>
+            </Link>
+
+            <Link
+              to="/comparator"
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                location.pathname.startsWith("/comparator")
+                  ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Scale className="w-3.5 h-3.5 text-purple-400" />
+              <span>Comparateur</span>
+            </Link>
           </div>
-          <div className="flex items-center gap-6">
+
+          {/* Quick Tools & Seller CTA */}
+          <div className="flex items-center gap-4 text-xs font-medium">
+            <Link
+              to="/shipping-calculator"
+              className="text-slate-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            >
+              <Truck className="w-3.5 h-3.5 text-slate-400" />
+              <span>{t("shipping_calc") || "Tarifs Livraison 58 Wilayas"}</span>
+            </Link>
+
+            <span className="text-slate-700">|</span>
+
+            <Link
+              to="/support"
+              className="text-slate-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            >
+              <Headphones className="w-3.5 h-3.5 text-slate-400" />
+              <span>{t("support") || "Aide & Support"}</span>
+            </Link>
+
+            <span className="text-slate-700">|</span>
+
             <button
               onClick={() => {
                 if (currentUser && userProfile?.role === "seller") {
@@ -152,48 +235,30 @@ export const Navbar: React.FC = () => {
                   navigate("/auth?role=seller");
                 }
               }}
-              className="hover:text-amber-400 transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none font-semibold uppercase tracking-wider"
+              className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold hover:from-amber-400 hover:to-orange-400 transition-all shadow-xs cursor-pointer border-none uppercase tracking-wider text-[11px]"
             >
               {t("sell_on_olma")}
-            </button>
-            <span className="text-teal-800">|</span>
-            <button
-              onClick={() => navigate("/shipping-calculator")}
-              className="hover:text-amber-400 transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none font-medium"
-            >
-              {t("shipping_calc") || "Calculateur Livraison"}
-            </button>
-            <span className="text-teal-800">|</span>
-            <button
-              onClick={() => navigate("/support")}
-              className="hover:text-amber-400 transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none font-medium"
-            >
-              {t("support") || "Support"}
             </button>
           </div>
         </div>
       </div>
 
-      <nav className={`sticky top-0 z-[100] transition-all duration-300 ${
-        location.pathname === "/"
-          ? isScrolled
-            ? "py-1.5 bg-white border-b-4 border-b-teal-950 shadow-md"
-            : "py-3 sm:py-4 bg-transparent border-b border-transparent"
-          : "py-2 bg-white border-b-4 border-b-teal-950 shadow-md"
-      }`}>
-        <div className={`flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 md:px-8 mx-auto w-full max-w-[90rem] justify-between relative gap-3 lg:gap-0 ${
-          location.pathname === "/" && showCategories ? "pb-3.5 sm:pb-5" : ""
+      <nav className={`sticky top-0 z-[100] bg-white/98 backdrop-blur-md border-b border-slate-200/80 transition-shadow duration-200 ${
+        isScrolled ? "shadow-sm" : "shadow-xs"
+      } py-2 sm:py-2.5`}>
+        <div className={`flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 md:px-8 mx-auto w-full max-w-[90rem] justify-between relative gap-2 sm:gap-3 lg:gap-0 ${
+          location.pathname === "/" && showCategories ? "pb-2 sm:pb-3" : ""
         }`}>
           
-          <div className="flex items-center justify-between w-full lg:w-auto h-12 transition-all duration-300">
+          <div className="flex items-center justify-between w-full lg:w-auto h-11 sm:h-12">
             {/* Logo on Left */}
             <div className="flex shrink-0 items-center justify-start lg:w-1/4">
               <button
                  onClick={handleLogoClick}
                  className="flex items-center gap-2 shrink-0 select-none cursor-pointer group bg-transparent border-none"
                >
-                 <OlmaLogo className={`text-zinc-900 group-hover:scale-105 transition-all duration-300 ${isScrolled ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-8 h-8 sm:w-10 sm:h-10'}`} />
-                 <span className={`font-display font-bold tracking-tight text-slate-900 uppercase hidden sm:block transition-all duration-300 ${isScrolled ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'}`}>
+                 <OlmaLogo className="w-8 h-8 sm:w-9 sm:h-9 text-zinc-900 group-hover:scale-105 transition-transform duration-200" />
+                 <span className="font-display font-bold tracking-tight text-slate-900 uppercase hidden sm:block text-2xl sm:text-3xl">
                    {t("Olma")}
                    <span className="text-zinc-900">{t("rt")}</span>
                  </span>
@@ -420,6 +485,7 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
         </div>
+
         {location.pathname === "/" && <MegaMenu isVisible={showCategories} />}
       </nav>
     </>

@@ -21,7 +21,8 @@ import {
   Download,
   Activity,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Wrench
 } from "lucide-react";
 
 export const getNavGroups = (t: (key: string) => string) => [
@@ -58,6 +59,11 @@ export const getNavGroups = (t: (key: string) => string) => [
         to: "/dashboard/admin/sellers",
         icon: Users,
         label: t("admin.sidebar.sellers") !== "admin.sidebar.sellers" ? t("admin.sidebar.sellers") : "Vendeurs",
+      },
+      {
+        to: "/dashboard/admin/artisans",
+        icon: Wrench,
+        label: "Artisans & Pros (Organisation)",
       },
       {
         to: "/dashboard/admin/disputes",

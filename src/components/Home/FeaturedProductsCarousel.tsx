@@ -176,20 +176,19 @@ export const FeaturedProductsCarousel: React.FC = () => {
               getOptimizedImageUrl(product.image, 800) ||
               "/images/placeholders/product.svg";
 
-            // Bento logic: make the first item span 2 rows and columns
             const bentoClass =
               idx === 0
-                ? "col-span-2 row-span-2 aspect-square md:aspect-[4/4]"
-                : "col-span-1 row-span-1 aspect-[4/5] sm:aspect-square";
+                ? "col-span-2 row-span-2 aspect-square"
+                : "col-span-1 row-span-1 aspect-square";
 
             return (
               <div
                 key={`${product.id}-${currentPage}-${idx}`}
-                className={`${bentoClass} transition-all duration-500 hover:-translate-y-1`}
+                className={`${bentoClass} transition-all duration-300 hover:-translate-y-0.5`}
               >
                 <div
                   onClick={() => navigate(`/product/${product.id}`)}
-                  className="group relative flex flex-col rounded-[1.5rem] overflow-hidden cursor-pointer w-full h-full transition-all duration-500 ease-out bg-transparent border border-slate-100/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+                  className="group relative flex flex-col rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer w-full h-full transition-all duration-300 ease-out bg-white border border-slate-200/70 shadow-sm hover:shadow-lg"
                 >
                   <div className="absolute inset-0 bg-slate-900/5 mix-blend-multiply group-hover:bg-slate-900/10 transition-colors duration-500 z-10 pointer-events-none" />
 

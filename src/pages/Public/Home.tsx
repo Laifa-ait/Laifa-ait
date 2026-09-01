@@ -1,11 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import {
   Sparkles,
   ArrowRight,
   Star,
-  ChevronLeft,
-  ChevronRight,
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -42,38 +40,20 @@ interface HomeBanner extends Banner {
 import { ProductCard } from "../../components/Product/ProductCard";
 import { Product } from "../../domains/product/product.types";
 import { Helmet } from "react-helmet-async";
-import { MobileSwipeIndicator } from "../../components/ui/MobileSwipeIndicator";
 import { useUserHabits } from "../../hooks/useUserHabits";
 import { useHomeData } from "../../hooks/useHomeData";
 import { FeaturedProductsCarousel } from "../../components/Home/FeaturedProductsCarousel";
 import { BoutiquesMarques } from "../../components/Home/BoutiquesMarques";
 import { MonthlyUpdateBanner } from "../../components/Layout/MonthlyUpdateBanner";
 import { HomeEndlessGrid } from "../../components/Home/HomeEndlessGrid";
+import { AppShortcutsHub } from "../../components/Home/AppShortcutsHub";
+import { FloatingCouponStrip } from "../../components/Home/FloatingCouponStrip";
+import { UserAffinityAccumulator } from "../../services/UserAffinityAccumulator";
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
-  const rcmdScrollContainerRef = useRef<HTMLDivElement>(null);
-  const premiumScrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const scrollRcmd = (direction: "left" | "right") => {
-    if (rcmdScrollContainerRef.current) {
-      const container = rcmdScrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.7;
-      const leftScroll = direction === "right" ? scrollAmount : -scrollAmount;
-      container.scrollBy({ left: leftScroll, behavior: "smooth" });
-    }
-  };
-
-  const scrollPremium = (direction: "left" | "right") => {
-    if (premiumScrollContainerRef.current) {
-      const container = premiumScrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.7;
-      const leftScroll = direction === "right" ? scrollAmount : -scrollAmount;
-      container.scrollBy({ left: leftScroll, behavior: "smooth" });
-    }
-  };
   const { activeWilaya } = useShop();
   const { currentUser, userProfile } = useAuth();
 
@@ -234,6 +214,13 @@ export const Home: React.FC = () => {
       })
       .sort((a, b) => b.valueScore - a.valueScore);
   }, [featuredProducts, dbSellers]);
+
+  // Dynamic "Pour Vous" Personalized Product Recommendations based on accumulated affinity
+  const personalizedProducts = useMemo(() => {
+    if (!featuredProducts || featuredProducts.length === 0) return [];
+    const localDigest = UserAffinityAccumulator.getLocalDigest();
+    return UserAffinityAccumulator.scoreAndSortProducts(featuredProducts, localDigest);
+  }, [featuredProducts]);
 
   // Dynamic Target Filtering for Banners and Sections (Audience & wilayas targeting + Dates)
   const filterByTargeting = useCallback((item: Banner | HomepageSection, isBanner: boolean) => {
@@ -411,8 +398,16 @@ export const Home: React.FC = () => {
       </Helmet>
       <h1 className="sr-only">{t("home.sr_title")}</h1>
       
+      {/* Floating Welcome Coupon Voucher Strip */}
+      <FloatingCouponStrip />
+
+      {/* Asian Flagship Apps & Shortcuts Hub directly under the search bar */}
+      <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pt-1">
+        <AppShortcutsHub />
+      </div>
+
       {/* Casbah & Mediterranean Inspired Hero */}
-      <section className="w-full bg-transparent py-4 sm:py-6 lg:py-8 relative overflow-hidden">
+      <section className="w-full bg-transparent py-2 sm:py-4 relative overflow-hidden">
         <div className="max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8">
           {isBannersLoading ? (
             <div className="w-full min-h-[400px] sm:min-h-[500px] bg-slate-200 animate-pulse rounded-3xl border border-slate-100 mt-0" />
@@ -490,103 +485,62 @@ export const Home: React.FC = () => {
         <DynamicSection key={section.id} section={section} />
       ))}
       
-      {/* Selection Premium - Elegant Light Luxury Theme */}
+      {/* Selection Premium - Responsive Grid */}
       <section className="bg-transparent relative z-20 overflow-hidden mb-6 sm:mb-8">
         <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-          <div className="bg-white/90 backdrop-blur-sm rounded-t-[1.5rem] rounded-b-[4rem] shadow-sm border border-amber-200/80 border-b-4 border-b-amber-600 p-5 sm:p-8 relative overflow-hidden">
-            
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 pb-2 sm:pb-4 relative z-10 gap-4">
-              <div className="flex flex-col items-start">
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-sans font-bold text-slate-900 tracking-tight flex items-center gap-2 sm:gap-3">
-                  <span className="uppercase tracking-tight text-slate-900">{t("product.premium_selection")}</span>
-                </h3>
-                <div className="w-12 sm:w-16 h-1 sm:h-1.5 bg-amber-600 rounded-full mt-2 sm:mt-3 opacity-80"></div>
-              </div>
-                            
-              <button
-                onClick={() => navigate("/premium-collection")}
-                className="group relative flex items-center gap-2 px-2 py-2 sm:px-4 sm:py-3 rounded-xl bg-transparent text-amber-600 hover:text-amber-700 active:scale-95 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 w-fit border-none"
-              >
-                <span>{t("view_collection", "Voir la collection")}</span>
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 pb-2 relative z-10 gap-4">
+            <div className="flex flex-col items-start">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-sans font-bold text-slate-900 tracking-tight flex items-center gap-2 sm:gap-3">
+                <span className="uppercase tracking-tight text-slate-900">{t("product.premium_selection")}</span>
+              </h3>
+              <div className="w-12 sm:w-16 h-1 sm:h-1.5 bg-amber-600 rounded-full mt-2 sm:mt-3 opacity-80"></div>
             </div>
+                          
+            <button
+              onClick={() => navigate("/premium-collection")}
+              className="group relative flex items-center gap-2 px-2 py-2 sm:px-4 sm:py-3 rounded-xl bg-transparent text-amber-600 hover:text-amber-700 active:scale-95 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 w-fit border-none"
+            >
+              <span>{t("view_collection", "Voir la collection")}</span>
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-300" />
+            </button>
+          </div>
 
-            <div className="relative group/premium px-4 sm:px-0 z-10">
-              {/* Left Desktop Nav */}
-              <button
-                onClick={() => scrollPremium("left")}
-                className="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-amber-700 border border-amber-100 flex items-center justify-center hover:bg-amber-50 hover:text-amber-900 hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-sm cursor-pointer"
-                aria-label={t("Voir les produits précédents")}
-              >
-                <ChevronLeft className="w-5 h-5 stroke-[2]" />
-              </button>
-              
-              <div 
-                ref={premiumScrollContainerRef} 
-                className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 desktop-scrollbar snap-x snap-mandatory flex-nowrap select-none"
-                style={{ scrollBehavior: 'smooth' }}
-              >
-                {isLoadingProducts ? (
-                  Array(6).fill(0).map((_, i) => (
-                    <div key={i} className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)] h-[260px] sm:h-[320px] rounded-[1.5rem] bg-slate-100/80 animate-pulse border border-slate-200/60" />
-                  ))
-                ) : premiumProducts.length === 0 ? (
-                  <div className="w-full flex flex-col items-center justify-center py-8 sm:py-12 text-center bg-transparent/50 rounded-[1.5rem] border border-slate-200/60 shadow-inner">
-                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-amber-300 mb-3 sm:mb-4" />
-                    <p className="font-sans font-semibold text-slate-500 text-[10px] sm:text-xs uppercase tracking-widest">{t("product.next_arrival_soon", "Prochain arrivage imminent")}</p>
+          <div className="relative z-10">
+            {isLoadingProducts ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4">
+                {Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="aspect-square rounded-xl sm:rounded-2xl bg-slate-100/80 animate-pulse border border-slate-200/60" />
+                ))}
+              </div>
+            ) : premiumProducts.length === 0 ? (
+              <div className="w-full flex flex-col items-center justify-center py-8 sm:py-12 text-center bg-transparent/50 rounded-2xl border border-slate-200/60 shadow-inner">
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-amber-300 mb-3 sm:mb-4" />
+                <p className="font-sans font-semibold text-slate-500 text-[10px] sm:text-xs uppercase tracking-widest">{t("product.next_arrival_soon", "Prochain arrivage imminent")}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4">
+                {premiumProducts.slice(0, 6).map((product, i) => (
+                  <div key={`${product.id}-${i}`}>
+                    <ProductCard
+                      product={product}
+                      index={i}
+                      variant="premium_immersive"
+                      onClick={(p) => navigate(`/product/${p.id}`)}
+                    />
                   </div>
-                ) : (
-                  premiumProducts.slice(0, 8).map((product, i) => {
-                    return (
-                      <div 
-                        key={`${product.id}-${i}`}
-                        className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)]"
-                      >
-                        <ProductCard
-                          product={product}
-                          index={i}
-                          variant="premium_immersive"
-                          onClick={(p) => navigate(`/product/${p.id}`)}
-                        />
-                      </div>
-                    );
-                  })
-                )}
+                ))}
               </div>
-              
-              {/* Right Desktop Nav */}
-              <button
-                onClick={() => scrollPremium("right")}
-                className="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-amber-700 border border-amber-100 flex items-center justify-center hover:bg-amber-50 hover:text-amber-900 hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-sm cursor-pointer"
-                aria-label={t("Voir les produits suivants")}
-              >
-                <ChevronRight className="w-5 h-5 stroke-[2]" />
-              </button>
-            </div>
-            <MobileSwipeIndicator className="md:hidden block text-slate-500/60 mt-2" />
+            )}
           </div>
         </div>
       </section>
 
       
 
-      {/* Recommended Section (Point 4) - Casbah Arches & Sea Breeze */}
+      {/* Recommended Section (Pour Vous) - Responsive Grid */}
       <section className="bg-transparent relative z-20 overflow-hidden mb-6 sm:mb-8">
         <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-          {/* Using a larger border-radius to emulate Casbah arches and soft blue borders for Mediterranean feel */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-t-[1.5rem] rounded-b-[4rem] shadow-sm border border-teal-200/80 border-b-4 border-b-teal-600 p-5 sm:p-8 relative overflow-hidden">
-          
-          {/* Subtle sea breeze gradient */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          
-          {/* Playful Header Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 pb-2 sm:pb-4 relative z-10 gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 pb-2 relative z-10 gap-4">
             <div className="flex flex-col items-start">
               <h3 className="text-2xl sm:text-3xl md:text-4xl font-sans font-bold text-sky-950 tracking-tight flex items-center gap-2 sm:gap-3">
                 {lang === "ar" ? "خصيصاً لك" : <>
@@ -606,52 +560,31 @@ export const Home: React.FC = () => {
             </button>
           </div>
           
-          <div className="relative group/rcmd px-4 sm:px-0 z-10">
-            {/* Left Desktop Nav */}
-            <button
-              onClick={() => scrollRcmd("left")}
-              className="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-sky-700 border border-sky-100 flex items-center justify-center hover:bg-sky-50 hover:text-sky-900 hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-sm cursor-pointer"
-              aria-label={t("Voir les produits précédents")}
-            >
-              <ChevronLeft className="w-5 h-5 stroke-[2]" />
-            </button>
-
-            <div 
-              ref={rcmdScrollContainerRef} 
-              className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 desktop-scrollbar snap-x snap-mandatory flex-nowrap select-none"
-              style={{ scrollBehavior: 'smooth' }}
-            >
-              {featuredProducts.slice(0, 12).map((product, idx) => {
-                return (
-                  <div
-                    key={product.id}
-                    className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)]"
-                  >
-                    <ProductCard
-                      product={product}
-                      index={idx}
-                      sectionStyle="bg-white rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-all duration-300"
-                      onClick={(p) => navigate(`/product/${p.id}`)}
-                    />
-                  </div>
-                );
-              })}
+          <div className="relative z-10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4">
+              {personalizedProducts.slice(0, 6).map((product, idx) => (
+                <div key={product.id}>
+                  <ProductCard
+                    product={product}
+                    index={idx}
+                    onClick={(p) => {
+                      UserAffinityAccumulator.track({
+                        productId: p.id,
+                        category: p.category,
+                        subcategory: p.subcategory,
+                        price: Number(p.promoPrice || p.price) || 0,
+                        type: "click",
+                        timestamp: Date.now(),
+                      });
+                      navigate(`/product/${p.id}`);
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-
-            {/* Right Desktop Nav */}
-            <button
-              onClick={() => scrollRcmd("right")}
-              className="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-sky-700 border border-sky-100 flex items-center justify-center hover:bg-sky-50 hover:text-sky-900 hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-sm cursor-pointer"
-              aria-label={t("Voir plus de produits")}
-            >
-              <ChevronRight className="w-5 h-5 stroke-[2]" />
-            </button>
-            
-            <MobileSwipeIndicator className="-mt-3 md:hidden block" />
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
 
       {/* Brand Carousel: Redesigned Dynamic Boutiques & Marques Section */}

@@ -363,19 +363,19 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
   const getCardStyle = () => {
     switch (section.style) {
       case "glass":
-        return "bg-white/40 backdrop-blur-md border border-white/60 shadow-sm rounded-[1.5rem] hover:bg-white/60";
+        return "bg-white/80 backdrop-blur-md border border-white/80 shadow-sm rounded-xl sm:rounded-2xl hover:bg-white";
       case "minimal":
-        return "bg-transparent border border-zinc-200 rounded-[1.5rem] hover:border-zinc-300";
+        return "bg-transparent border border-slate-200 rounded-xl sm:rounded-2xl hover:border-slate-300";
       case "immersive":
-        return "bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-lg border border-slate-200/20 hover:shadow-2xl hover:-translate-y-1 relative";
+        return "bg-white rounded-xl sm:rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md hover:-translate-y-0.5 relative";
       case "premium":
       default:
-        return "bg-white rounded-[1.5rem] shadow-sm border border-teal-800/20 hover:border-teal-800/60 hover:shadow-md hover:-translate-y-1";
+        return "bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/70 hover:shadow-md hover:-translate-y-0.5";
     }
   };
 
   const getGridClasses = () => {
-    return "flex gap-4 overflow-x-auto pb-6 desktop-scrollbar snap-x snap-mandatory flex-nowrap";
+    return "flex gap-2.5 sm:gap-4 overflow-x-auto pb-4 desktop-scrollbar snap-x snap-mandatory flex-nowrap";
   };
 
   const renderThemeWrapper = () => {
@@ -486,7 +486,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="relative group/carousel px-4 sm:px-0">
+          <div className="relative group/carousel">
             {showLeftArrow && (
               <button
                 type="button"
@@ -556,7 +556,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="relative group/carousel px-4 sm:px-0">
+            <div className="relative group/carousel">
               {showLeftArrow && (
                 <button
                   type="button"

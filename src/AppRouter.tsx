@@ -255,10 +255,24 @@ const StoreProfile = React.lazy(() =>
   }))
 );
 
-const OlmaBricolage = React.lazy(() =>
-  import("./pages/Public/OlmaBricolage").then((module) => ({
-    default: module.OlmaBricolage,
-  }))
+// Artisans & Bricolage Ecosystem
+const ArtisansHome = React.lazy(() =>
+  import("./pages/Artisans/ArtisansHome").then((m) => ({ default: m.ArtisansHome }))
+);
+const ArtisanDetailPage = React.lazy(() =>
+  import("./pages/Artisans/ArtisanDetailPage").then((m) => ({ default: m.ArtisanDetailPage }))
+);
+const ArtisanApplyPage = React.lazy(() =>
+  import("./pages/Artisans/ArtisanApplyPage").then((m) => ({ default: m.ArtisanApplyPage }))
+);
+const ArtisanDashboardPage = React.lazy(() =>
+  import("./pages/Artisans/ArtisanDashboardPage").then((m) => ({ default: m.ArtisanDashboardPage }))
+);
+const ClientArtisanQuotesPage = React.lazy(() =>
+  import("./pages/Artisans/ClientArtisanQuotesPage").then((m) => ({ default: m.ClientArtisanQuotesPage }))
+);
+const ArtisansAdmin = React.lazy(() =>
+  import("./pages/Admin/ArtisansAdmin").then((m) => ({ default: m.ArtisansAdmin }))
 );
 
 // Olma Immo & Location Module
@@ -279,9 +293,6 @@ const MyBookings = React.lazy(() =>
 );
 const OlmaImmoProfile = React.lazy(() =>
   import("./pages/OlmaImmo/OlmaImmoProfile").then((m) => ({ default: m.OlmaImmoProfile }))
-);
-const BricolageProfile = React.lazy(() =>
-  import("./pages/Public/BricolageProfile").then((m) => ({ default: m.BricolageProfile }))
 );
 
 const ProductFilterPage = React.lazy(() =>
@@ -551,15 +562,58 @@ export const AppRouter: React.FC = () => {
                   </PageWrapper>
                 }
               />
+              
+              {/* Artisans & Bricolage Ecosystem Routes */}
               <Route
                 path="/bricolage"
                 element={
                   <PageWrapper>
-                    <OlmaBricolage />
+                    <ArtisansHome />
                   </PageWrapper>
                 }
               />
-              <Route path="/services/bricolage" element={<Navigate to="/bricolage" replace />} />
+              <Route
+                path="/artisans"
+                element={
+                  <PageWrapper>
+                    <ArtisansHome />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/artisans/profile/:id"
+                element={
+                  <PageWrapper>
+                    <ArtisanDetailPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/artisans/devenir-artisan"
+                element={
+                  <PageWrapper>
+                    <ArtisanApplyPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/artisans/dashboard"
+                element={
+                  <PageWrapper>
+                    <ArtisanDashboardPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/artisans/mes-demandes"
+                element={
+                  <PageWrapper>
+                    <ClientArtisanQuotesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route path="/bricolage/profile" element={<Navigate to="/artisans/dashboard" replace />} />
+              <Route path="/services/bricolage" element={<Navigate to="/artisans" replace />} />
 
               {/* Olma Immo & Location Routes */}
               <Route
@@ -615,14 +669,6 @@ export const AppRouter: React.FC = () => {
                 element={
                   <PageWrapper>
                     <OlmaImmoProfile />
-                  </PageWrapper>
-                }
-              />
-              <Route
-                path="/bricolage/profile"
-                element={
-                  <PageWrapper>
-                    <BricolageProfile />
                   </PageWrapper>
                 }
               />
@@ -737,6 +783,7 @@ export const AppRouter: React.FC = () => {
                 <Route path="push-notifications" element={<PushNotificationsAdmin />} />
                 <Route path="reports" element={<ReportsAdmin />} />
                 <Route path="sellers" element={<SellerModeration />} />
+                <Route path="artisans" element={<ArtisansAdmin />} />
                 <Route path="products-moderation" element={<ProductModeration />} />
                 <Route path="curation" element={<Curation />} />
                 <Route path="sponsorships" element={<SponsorshipsAdmin />} />

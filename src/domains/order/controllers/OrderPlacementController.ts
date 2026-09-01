@@ -13,6 +13,7 @@ import { CouponService, ProductItemForCoupon } from "../../marketing/coupon.serv
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { safeLogger } from "../../../utils/logger";
+import { TrendingSearchesService } from "../../../services/TrendingSearchesService";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.ethereal.email",
@@ -828,6 +829,19 @@ router.post("/place-order", strictLimiter, optionalAuthenticateToken, validateRe
     // Enforce velocity limits durably in background queue to prevent HTTP response latency
     for (const sellerId of sellerIdsSet) {
       enqueueSellerVelocityCheck(sellerId);
+    }
+
+    // Record purchased items for real-time trending platform popularity (zero DB cost)
+    try {
+      const purchasedItemsForTrends = result.subOrdersForEmail.flatMap((so) =>
+        so.items.map((it) => ({
+          name: it.name,
+          quantity: it.quantity,
+        }))
+      );
+      TrendingSearchesService.recordPurchase(purchasedItemsForTrends);
+    } catch {
+      // Non-blocking
     }
 
     // Process order confirmation emails asynchronously

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { db } from "../../config/firebase-admin";
 import { CoreService, LogErrorBody } from "../../services/CoreService";
+import { TrendingSearchesService } from "../../services/TrendingSearchesService";
 
 const router = Router();
 
@@ -167,6 +168,16 @@ router.get("/api/v1/public-profiles", async (_req: Request, res: Response) => {
     return res.json({ profiles });
   } catch (err: unknown) {
     return res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+  }
+});
+
+// GET /api/v1/platform-stats/trending_searches (Zero-cost cached real platform trends)
+router.get("/api/v1/platform-stats/trending_searches", async (_req: Request, res: Response) => {
+  try {
+    const terms = await TrendingSearchesService.getTrendingSearches();
+    return res.json({ success: true, terms });
+  } catch {
+    return res.json({ success: true, terms: [] });
   }
 });
 

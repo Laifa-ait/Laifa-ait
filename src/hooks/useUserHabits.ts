@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { apiGet, apiPost } from "../lib/api";
+import { apiPost } from "../lib/api";
+import { UserAffinityAccumulator } from "../services/UserAffinityAccumulator";
 
 // Interface définissant la structure de nos données d'habitudes
 export interface UserHabits {
@@ -28,7 +29,6 @@ export function useUserHabits() {
 
   // 3. État des habitudes de l'utilisateur
   const [habitudes, setHabitudes] = useState<UserHabits>(() => {
-    // Sécurité : On vérifie que window existe (pour éviter le crash SSR)
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("olma_habitudes");
@@ -42,38 +42,19 @@ export function useUserHabits() {
     return { historique_recherches: [], categories_visitees: {} };
   });
 
-  const habitudesRef = useRef(habitudes);
-  habitudesRef.current = habitudes;
-
-  // NEW: Sync with Server for authenticated users
+  // Synchronisation UNIQUE quotidienne (0 écriture répétée / 24h max)
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user && consentementAccepte) {
-        try {
-          const data = await apiGet<UserHabits>("/api/v1/auth/user-habits");
-
-          if (data && (data.historique_recherches || data.categories_visitees)) {
-            // Merge local and remote
-            setHabitudes((prev) => {
-              const mergedHabits: UserHabits = {
-                historique_recherches: Array.from(
-                  new Set([...prev.historique_recherches, ...(data.historique_recherches || [])])
-                ).slice(0, 10),
-                categories_visitees: { ...data.categories_visitees },
-              };
-              // Add counts from local to remote if they differ
-              Object.entries(prev.categories_visitees).forEach(([cat, count]) => {
-                mergedHabits.categories_visitees[cat] =
-                  (mergedHabits.categories_visitees[cat] || 0) + (count as number);
-              });
-              return mergedHabits;
-            });
-          } else {
-            // First time user, upload local habits
-            await apiPost("/api/v1/auth/user-habits", habitudesRef.current);
+        // Vérifie si le délai quotidien (24h) et le seuil de cumul sont atteints
+        if (UserAffinityAccumulator.shouldSync()) {
+          try {
+            const digest = UserAffinityAccumulator.getLocalDigest();
+            await apiPost("/api/v1/user/affinity-digest", digest);
+            UserAffinityAccumulator.markSyncCompleted();
+          } catch {
+            // Silencieux et non-bloquant
           }
-        } catch (e) {
-          console.error("Server habits sync error:", e);
         }
       }
     });
@@ -81,17 +62,10 @@ export function useUserHabits() {
     return () => unsub();
   }, [consentementAccepte]);
 
-  // Synchronisation des habitudes avec le localStorage à chaque modification (si consentement donné)
+  // Synchronisation locale dans le localStorage (0 écriture DB)
   useEffect(() => {
     if (consentementAccepte && typeof window !== "undefined") {
       localStorage.setItem("olma_habitudes", JSON.stringify(habitudes));
-
-      // Also update database if logged in
-      if (auth.currentUser) {
-        apiPost("/api/v1/auth/user-habits", habitudes).catch((err) =>
-          (process.env.NODE_ENV === "development" ? console.log : function () {})("Habits up error", err)
-        );
-      }
     }
   }, [habitudes, consentementAccepte]);
 
@@ -109,7 +83,6 @@ export function useUserHabits() {
     setAReponduConsentement(true);
     if (typeof window !== "undefined") {
       localStorage.setItem("olma_consentement", "false");
-      // On peut aussi nettoyer les anciennes données si l'utilisateur refuse.
       localStorage.removeItem("olma_habitudes");
       setHabitudes({ historique_recherches: [], categories_visitees: {} });
     }
@@ -117,7 +90,14 @@ export function useUserHabits() {
 
   // Fonction de tracking : Clic sur une catégorie
   const trackCategorie = (categorieId: string) => {
-    if (!consentementAccepte) return; // Pas de tracking sans consentement
+    if (!consentementAccepte) return;
+
+    // 1. Mise à jour du buffer de cumul
+    UserAffinityAccumulator.track({
+      category: categorieId,
+      type: "click",
+      timestamp: Date.now(),
+    });
 
     setHabitudes((prev) => {
       const currentCount = prev.categories_visitees[categorieId] || 0;
@@ -131,13 +111,37 @@ export function useUserHabits() {
     });
   };
 
+  // Fonction de tracking : Consultation / clic produit
+  const trackProductClick = (product: { id: string; category?: string; subcategory?: string; price?: number }) => {
+    if (!consentementAccepte) return;
+
+    UserAffinityAccumulator.track({
+      productId: product.id,
+      category: product.category,
+      subcategory: product.subcategory,
+      price: product.price,
+      type: "click",
+      timestamp: Date.now(),
+    });
+
+    if (product.category) {
+      trackCategorie(product.category);
+    }
+  };
+
   // Fonction de tracking : Soumission d'une recherche
   const trackRecherche = (motCle: string) => {
     const terme = motCle.trim();
     if (!consentementAccepte || !terme) return;
 
+    // Enregistrement dans le cumul
+    UserAffinityAccumulator.track({
+      query: terme,
+      type: "search",
+      timestamp: Date.now(),
+    });
+
     setHabitudes((prev) => {
-      // Ajoute le nouveau terme au début, en supprimant les doublons, max 5 éléments
       const historiquePropre = prev.historique_recherches.filter((k) => k.toLowerCase() !== terme.toLowerCase());
       const nvxHistorique = [terme, ...historiquePropre].slice(0, 5);
 
@@ -205,6 +209,7 @@ export function useUserHabits() {
     accepterConsentement,
     refuserConsentement,
     trackCategorie,
+    trackProductClick,
     trackRecherche,
     getCategorieFavorite,
     getSortedCategories,

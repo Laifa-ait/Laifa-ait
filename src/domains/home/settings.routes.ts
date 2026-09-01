@@ -16,6 +16,26 @@ router.get("/api/v1/settings/homepage-categories", async (_req: Request, res: Re
   }
 });
 
+// GET categories hierarchy (Public)
+router.get("/api/v1/settings/categories-hierarchy", async (_req: Request, res: Response) => {
+  try {
+    const data = await SettingsService.getCategoriesHierarchy();
+    return res.json(data);
+  } catch {
+    return res.json({});
+  }
+});
+
+// GET categories alias (Public)
+router.get("/api/v1/settings/categories", async (_req: Request, res: Response) => {
+  try {
+    const data = await SettingsService.getCategoriesHierarchy();
+    return res.json(data);
+  } catch {
+    return res.json({});
+  }
+});
+
 // GET any setting document by id
 router.get("/api/v1/settings/:id", async (req: Request, res: Response) => {
   try {

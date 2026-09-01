@@ -1,4 +1,17 @@
-export type OlmaAppStatus = 'active' | 'beta' | 'coming_soon' | 'maintenance';
+export type OlmaAppStatus = 'active' | 'beta' | 'coming_soon' | 'maintenance' | 'hidden';
+
+export type OlmaAppCategory = 
+  | 'services' 
+  | 'immo' 
+  | 'auto' 
+  | 'ecommerce' 
+  | 'logistics' 
+  | 'food' 
+  | 'deals' 
+  | 'tech' 
+  | 'fashion' 
+  | 'artisanat' 
+  | 'general';
 
 export interface OlmaAppModule {
   id: string;
@@ -7,15 +20,20 @@ export interface OlmaAppModule {
   description: Record<'fr' | 'ar' | 'en', string>;
   longDescription?: Record<'fr' | 'ar' | 'en', string>;
   icon: string;
-  category: 'services' | 'immo' | 'auto' | 'ecommerce' | 'logistics' | 'food';
+  gradient?: string;
+  badgeColor?: string;
+  category: OlmaAppCategory;
   status: OlmaAppStatus;
   badge?: Record<'fr' | 'ar' | 'en', string>;
   isFeatured: boolean;
   order: number;
   targetRoute?: string;
+  actionType?: 'route' | 'category' | 'filter' | 'external';
+  filterKey?: string;
   externalUrl?: string;
   tags?: string[];
   waitingListCount?: number;
+  showInHomeShortcuts?: boolean;
 }
 
 export interface OlmaUniversResponse {
@@ -31,3 +49,4 @@ export interface WaitlistRegistrationPayload {
   phone?: string;
   wilaya?: string;
 }
+

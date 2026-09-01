@@ -8,33 +8,17 @@ import {
   Mail,
   Phone,
   MapPin,
-  Send,
-  Wrench,
-  Home,
-  Car,
-  ShoppingBag,
-  Truck,
-  UtensilsCrossed,
-  Briefcase
+  Send
 } from 'lucide-react';
 import { OlmaAppModule } from '../../types/olmaUnivers';
 import { registerAppWaitlist } from '../../services/olmaUnivers.api';
+import { getAppIconComponent } from '../../utils/iconRegistry';
 
 interface AppModalProps {
   app: OlmaAppModule | null;
   lang: 'fr' | 'ar' | 'en';
   onClose: () => void;
 }
-
-const ICON_MAP: Record<string, React.ElementType> = {
-  Wrench,
-  Home,
-  Car,
-  ShoppingBag,
-  Truck,
-  UtensilsCrossed,
-  Briefcase
-};
 
 export const AppModal: React.FC<AppModalProps> = ({ app, lang, onClose }) => {
   const [email, setEmail] = useState('');
@@ -46,7 +30,7 @@ export const AppModal: React.FC<AppModalProps> = ({ app, lang, onClose }) => {
 
   if (!app) return null;
 
-  const IconComponent = ICON_MAP[app.icon] || Sparkles;
+  const IconComponent = getAppIconComponent(app.icon);
   const title = app.title[lang] || app.title.fr;
   const description = app.longDescription ? (app.longDescription[lang] || app.longDescription.fr) : (app.description[lang] || app.description.fr);
 

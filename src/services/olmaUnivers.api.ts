@@ -45,6 +45,52 @@ export async function registerAppWaitlist(payload: WaitlistRegistrationPayload):
   }
 }
 
+export async function createAdminOlmaApp(app: OlmaAppModule, token?: string): Promise<{ success: boolean; data?: OlmaAppModule; message: string }> {
+  try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch('/api/v1/admin/univers/apps', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(app)
+    });
+    const json: ApiResponse & { data?: OlmaAppModule } = await response.json();
+    return {
+      success: json.success ?? false,
+      data: json.data,
+      message: json.message || (json.success ? 'Application créée avec succès' : 'Échec de la création')
+    };
+  } catch (err: unknown) {
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Admin create error', { err: err instanceof Error ? err.message : "Erreur" });
+    }
+    return { success: false, message: 'Erreur réseau lors de la création admin.' };
+  }
+}
+
+export async function deleteAdminOlmaApp(appId: string, token?: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`/api/v1/admin/univers/apps/${appId}`, {
+      method: 'DELETE',
+      headers
+    });
+    const json: ApiResponse = await response.json();
+    return {
+      success: json.success ?? false,
+      message: json.message || (json.success ? 'Application supprimée' : 'Échec de la suppression')
+    };
+  } catch (err: unknown) {
+    if (import.meta.env.DEV) {
+      safeLogger.warn('[Olma Univers API] Admin delete error', { err: err instanceof Error ? err.message : "Erreur" });
+    }
+    return { success: false, message: 'Erreur réseau lors de la suppression admin.' };
+  }
+}
+
 export async function updateAdminOlmaApp(app: Partial<OlmaAppModule> & { id: string }, token?: string): Promise<{ success: boolean; message: string }> {
   try {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };

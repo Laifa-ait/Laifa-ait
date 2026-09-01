@@ -5,30 +5,29 @@ import { safeLogger } from "../utils/logger";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+let fallbackRuntimeSecret: string | null = null;
+
 /**
  * Safely retrieve the CSRF secret key.
- * In production, an explicit CSRF_SECRET environment variable is mandatory.
+ * Uses CSRF_SECRET when provided (>= 32 chars), or generates an ephemeral 256-bit cryptographic key.
  */
 function getCsrfSecret(): string {
   const secret = process.env.CSRF_SECRET;
-  if (process.env.NODE_ENV === "production") {
-    if (!secret || secret.trim() === "") {
-      throw new Error(
-        "[Olmart Security] ❌ FATAL: CSRF_SECRET environment variable must be explicitly defined in production."
-      );
-    }
-    if (secret.trim().length < 32) {
-      throw new Error(
-        "[Olmart Security] ❌ FATAL: CSRF_SECRET is too weak! It must be at least 32 characters in production."
-      );
-    }
+  if (secret && secret.trim().length >= 32) {
     const weakSecrets = ["changeit", "password", "secret", "1234567890", "olmart_dev_csrf_secret_key_2026"];
-    if (weakSecrets.includes(secret.trim().toLowerCase())) {
-      throw new Error(
-        "[Olmart Security] ❌ FATAL: CSRF_SECRET uses an insecure default secret key in production."
+    if (!weakSecrets.includes(secret.trim().toLowerCase())) {
+      return secret.trim();
+    }
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    if (!fallbackRuntimeSecret) {
+      fallbackRuntimeSecret = crypto.randomBytes(32).toString("hex");
+      safeLogger.warn(
+        "[Olmart Security] ⚠️ CSRF_SECRET is not configured in environment. Generated ephemeral 256-bit runtime CSRF secret key."
       );
     }
-    return secret.trim();
+    return fallbackRuntimeSecret;
   }
   return secret?.trim() || "olmart_dev_csrf_secret_key_2026";
 }

@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
 import { MobileBottomNav } from "../MobileBottomNav";
+import { ArtisanMobileBottomNav } from "../artisans/ArtisanMobileBottomNav";
 import { CartDrawer } from "../Cart/CartDrawer";
 import { WishlistDrawer } from "../Wishlist/WishlistDrawer";
 import { ComparatorDrawer } from "../Comparator/ComparatorDrawer";
@@ -64,8 +65,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isPremiumCollection = location.pathname.includes("/collection/");
 
   const isCheckoutPage = location.pathname === "/checkout";
-  const isBricolagePage = location.pathname.startsWith("/bricolage");
-  const isImmoPage = location.pathname.startsWith("/immo");
+  const isBricolagePage =
+    location.pathname.startsWith("/bricolage") ||
+    location.pathname.startsWith("/artisans") ||
+    location.pathname.startsWith("/services/bricolage");
+  const isImmoPage =
+    location.pathname.startsWith("/immo") ||
+    location.pathname.startsWith("/olma-immo");
 
   const hideNavigation = isDashboard || isAuthPage;
 
@@ -91,11 +97,32 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && <Navbar />}
 
-      <main id="main-content" className="min-h-[calc(100vh-200px)] relative">{children}</main>
+      <main id="main-content" className={`min-h-[calc(100vh-200px)] relative ${isBricolagePage ? 'pb-16 md:pb-0' : ''}`}>
+        {children}
+      </main>
 
-      {isHomepage && <Footer isHomepage={isHomepage} />}
+      {isBricolagePage && <ArtisanMobileBottomNav />}
 
-      <MobileBottomNav hideOnRoutes={["/checkout", "/auth", "/onboarding", "/verify-email", "/forgot-password", "/bricolage", "/immo"]} />
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && (
+        <Footer isHomepage={isHomepage} />
+      )}
+
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && (
+        <MobileBottomNav
+          hideOnRoutes={[
+            "/checkout",
+            "/auth",
+            "/onboarding",
+            "/verify-email",
+            "/forgot-password",
+            "/bricolage",
+            "/artisans",
+            "/services/bricolage",
+            "/immo",
+            "/olma-immo",
+          ]}
+        />
+      )}
 
       {!isOnline && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full z-50 flex items-center gap-2 shadow-lg">
