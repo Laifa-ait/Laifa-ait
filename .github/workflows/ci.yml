@@ -194,16 +194,30 @@ jobs:
     name: Deploy to Staging (Cloud Run)
     runs-on: ubuntu-latest
     needs: docker-build-scan
-    if: (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.GCP_CREDENTIALS_STAGING != ''
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     environment: staging
     steps:
+      - name: Check Staging Credentials
+        id: check_creds
+        env:
+          GCP_CREDS: ${{ secrets.GCP_CREDENTIALS_STAGING }}
+        run: |
+          if [ -n "$GCP_CREDS" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Notice: GCP_CREDENTIALS_STAGING secret is not configured. Skipping staging deployment."
+          fi
       - name: Checkout Source Code
+        if: steps.check_creds.outputs.configured == 'true'
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
       - name: Authenticate to Google Cloud
+        if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/auth@12060449e87204eca501a11f2f7f1483024afff0
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS_STAGING }}
       - name: Deploy to Cloud Run (Staging)
+        if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d
         with:
           service: olmart-staging
@@ -218,18 +232,32 @@ jobs:
     name: Deploy to Production (Cloud Run)
     runs-on: ubuntu-latest
     needs: deploy-staging
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.GCP_CREDENTIALS_PRODUCTION != ''
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     environment: 
       name: production
       url: https://olmart.dz
     steps:
+      - name: Check Production Credentials
+        id: check_creds
+        env:
+          GCP_CREDS: ${{ secrets.GCP_CREDENTIALS_PRODUCTION }}
+        run: |
+          if [ -n "$GCP_CREDS" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Notice: GCP_CREDENTIALS_PRODUCTION secret is not configured. Skipping production deployment."
+          fi
       - name: Checkout Source Code
+        if: steps.check_creds.outputs.configured == 'true'
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
       - name: Authenticate to Google Cloud
+        if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/auth@12060449e87204eca501a11f2f7f1483024afff0
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS_PRODUCTION }}
       - name: Deploy to Cloud Run (Production)
+        if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d
         with:
           service: olmart-production
