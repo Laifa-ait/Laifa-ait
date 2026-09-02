@@ -22,6 +22,8 @@ node_modules
 dist
 dist-ssr
 *.tsbuildinfo
+*.d.ts
+!src/vite-env.d.ts
 patch*.cjs
 tsc_output.txt
 test-results

@@ -31,6 +31,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false,
+    "incremental": false,
     "noUnusedLocals": false,
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false
@@ -45,6 +49,10 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "build",
+    "coverage",
+    "**/*.tsbuildinfo",
+    "*.d.ts"
   ]
 }

@@ -33,6 +33,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false,
+    "incremental": false,
     "noUnusedLocals": false,
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false
@@ -49,12 +53,12 @@
   "exclude": [
     "node_modules",
     "dist",
+    "build",
+    "coverage",
     "app",
-    "functions"
-  ],
-  "references": [
-    { "path": "./tsconfig.client.json" },
-    { "path": "./tsconfig.node.json" }
+    "functions",
+    "**/*.tsbuildinfo",
+    "*.d.ts"
   ]
 }
 
