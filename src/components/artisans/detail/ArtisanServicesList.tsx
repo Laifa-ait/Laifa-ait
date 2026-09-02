@@ -53,8 +53,8 @@ export const ArtisanServicesList: React.FC<ArtisanServicesListProps> = ({
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-xs">
                   <span className="font-black text-amber-700">
-                    {srv.startingPrice
-                      ? `Dès ${srv.startingPrice.toLocaleString('fr-DZ')} DZD`
+                    {srv.priceStartingFrom
+                      ? `Dès ${srv.priceStartingFrom.toLocaleString('fr-DZ')} DZD`
                       : 'Sur devis'}
                   </span>
                   <button

@@ -150,8 +150,8 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({ artisan, onRequestQuot
             </span>
             {artisan.services && artisan.services.length > 0 && (
               <span className="text-[11px] font-bold text-slate-900">
-                Dès {artisan.services[0].startingPrice || 'Sur devis'}{' '}
-                {artisan.services[0].startingPrice ? 'DZD' : ''}
+                Dès {artisan.services[0].priceStartingFrom || 'Sur devis'}{' '}
+                {artisan.services[0].priceStartingFrom ? 'DZD' : ''}
               </span>
             )}
           </div>

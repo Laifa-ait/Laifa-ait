@@ -126,11 +126,11 @@ export const ArtisanSettingsTab: React.FC<ArtisanSettingsTabProps> = ({
         <WilayaCommuneSelector
           selectedWilaya={wilaya}
           selectedCommune={commune}
-          onChange={(newWilaya, newCommune, code) => {
+          onWilayaChange={(newWilaya: string, code: string) => {
             setWilaya(newWilaya);
-            setCommune(newCommune);
             setWilayaCode(code);
           }}
+          onCommuneChange={(newCommune: string) => setCommune(newCommune)}
         />
       </div>
 

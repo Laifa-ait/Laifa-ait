@@ -16,7 +16,7 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startingPrice, setStartingPrice] = useState<number | ''>('');
-  const [priceUnit, setPriceUnit] = useState<ArtisanService['priceUnit']>('fixed');
+  const [priceUnit, setPriceUnit] = useState<ArtisanService['priceUnit']>('forfait');
   const [saving, setSaving] = useState(false);
 
   const handleAddService = async (e: React.FormEvent) => {
@@ -27,9 +27,10 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
     try {
       const newService: ArtisanService = {
         id: `srv_${Date.now()}`,
+        artisanId: profile.id,
         title: title.trim(),
         description: description.trim(),
-        startingPrice: startingPrice ? Number(startingPrice) : undefined,
+        priceStartingFrom: startingPrice ? Number(startingPrice) : undefined,
         priceUnit,
         isActive: true,
       };
@@ -90,15 +91,17 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-xs font-extrabold text-amber-600">
-                  {srv.startingPrice
-                    ? `À partir de ${srv.startingPrice.toLocaleString('fr-DZ')} DZD`
+                  {srv.priceStartingFrom
+                    ? `À partir de ${srv.priceStartingFrom.toLocaleString('fr-DZ')} DZD`
                     : 'Sur devis'}
                 </span>
                 <span className="text-[10px] uppercase font-bold text-slate-400">
-                  {srv.priceUnit === 'hourly'
+                  {srv.priceUnit === 'heure'
                     ? '/ Heure'
-                    : srv.priceUnit === 'sqm'
+                    : srv.priceUnit === 'm2'
                     ? '/ m²'
+                    : srv.priceUnit === 'jour'
+                    ? '/ Jour'
                     : 'Forfait'}
                 </span>
               </div>
@@ -162,10 +165,11 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
                     }
                     className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
                   >
-                    <option value="fixed">Forfait fixe</option>
-                    <option value="hourly">Par Heure</option>
-                    <option value="sqm">Par m²</option>
-                    <option value="quote_only">Sur devis uniquement</option>
+                    <option value="forfait">Forfait fixe</option>
+                    <option value="heure">Par Heure</option>
+                    <option value="jour">Par Jour</option>
+                    <option value="m2">Par m²</option>
+                    <option value="prestation">Par Prestation</option>
                   </select>
                 </div>
               </div>

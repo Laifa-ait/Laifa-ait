@@ -451,7 +451,9 @@ export function useWorkspaceActions() {
       ordersSnap.docs.forEach((docSnap: { id: string; data: () => Order }) => {
         const order = docSnap.data();
         const orderId = order.id || docSnap.id;
-        const formattedDate = normalizeTimestamp(order.createdAt || new Date());
+        const formattedDate = normalizeTimestamp(order.createdAt || new Date())
+          .toDate()
+          .toLocaleDateString("fr-DZ");
         const wilaya = order.shippingAddress?.wilaya || "";
         const postalCode = order.shippingAddress?.postalCode || "";
 

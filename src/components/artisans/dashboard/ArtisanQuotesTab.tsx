@@ -21,7 +21,7 @@ export const ArtisanQuotesTab: React.FC<ArtisanQuotesTabProps> = ({
 
   const handleUpdateStatus = async (
     quoteId: string,
-    status: 'accepted' | 'rejected' | 'completed'
+    status: 'accepted' | 'declined' | 'completed'
   ) => {
     setUpdating(true);
     try {
@@ -54,8 +54,6 @@ export const ArtisanQuotesTab: React.FC<ArtisanQuotesTabProps> = ({
                       className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                         q.urgency === 'urgent'
                           ? 'bg-red-100 text-red-800'
-                          : q.urgency === 'soon'
-                          ? 'bg-amber-100 text-amber-800'
                           : 'bg-slate-100 text-slate-700'
                       }`}
                     >
@@ -109,7 +107,7 @@ export const ArtisanQuotesTab: React.FC<ArtisanQuotesTabProps> = ({
               {q.status === 'pending' && (
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-100 justify-end">
                   <button
-                    onClick={() => handleUpdateStatus(q.id, 'rejected')}
+                    onClick={() => handleUpdateStatus(q.id, 'declined')}
                     disabled={updating}
                     className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 text-xs font-bold transition-colors cursor-pointer"
                   >

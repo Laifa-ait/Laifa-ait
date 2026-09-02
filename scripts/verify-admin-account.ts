@@ -71,7 +71,7 @@ async function verify() {
       email: userRecord.email,
       role: tokenRole
     }
-  } as unknown as Request;
+  } as unknown as AuthenticatedRequest;
 
   authorizeAdmin(reqInitial, mockRes as Response, mockNext as NextFunction);
   console.log(`   Résultat authorizeAdmin initial :`, nextCalled ? "✅ ACCÈS AUTORISÉ (next() appelé)" : `❌ ACCÈS REFUSÉ (Status ${statusReceived})`);
@@ -131,7 +131,7 @@ async function verify() {
   } as unknown as AuthenticatedRequest;
 
   authorizeAdmin(reqPromoted, mockResPromoted as Response, mockNextPromoted as NextFunction);
-  console.log(`1. AuthenticateToken : req.user.role = '${reqPromoted.user.role}'`);
+  console.log(`1. AuthenticateToken : req.user.role = '${reqPromoted.user?.role}'`);
   console.log(`2. AuthorizeAdmin : ${promotedNext ? "✅ Succès (200 / next())" : `❌ Refusé (${promotedStatus})`}`);
 
   // Étape 7 : Tester que l'ancien mécanisme email est réellement mort

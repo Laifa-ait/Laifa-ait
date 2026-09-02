@@ -32,7 +32,7 @@ export const ArtisansTradesGrid: React.FC<ArtisansTradesGridProps> = ({
             key={trade.id}
             trade={trade}
             isSelected={selectedTradeId === trade.id}
-            onClick={() => onSelectTrade(trade.id)}
+            onSelect={() => onSelectTrade(trade.id)}
           />
         ))}
       </div>

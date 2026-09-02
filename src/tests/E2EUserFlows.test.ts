@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import crypto from "crypto";
 
+function must<T>(value: T | null | undefined, label: string): T {
+  if (value === null || value === undefined) {
+    throw new Error(`Test setup failed: ${label} is missing`);
+  }
+  return value;
+}
+
 interface MockUserDoc {
   uid?: string;
   displayName?: string;
@@ -437,8 +444,7 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
       expect(res.body.success).toBe(true);
       expect(res.body.message).toContain("Onboarding completed successfully");
 
-      const savedUser = userStore.get("buyer_test_user_1");
-      expect(savedUser).toBeDefined();
+      const savedUser = must(userStore.get("buyer_test_user_1"), "savedUser");
       expect(savedUser.displayName).toBe("Mohamed Belkacem");
       expect(savedUser.role).toBe("buyer");
       expect(savedUser.onboardingCompleted).toBe(true);
@@ -465,10 +471,11 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
 
       expect(res.status).toBe(200); // Standard route succeeds but sanitizes roles!
       
-      const savedUser = userStore.get("buyer_test_user_1");
+      const savedUser = must(userStore.get("buyer_test_user_1"), "savedUser");
       expect(savedUser.role).toBe("buyer"); // Kept buyer
-      expect(savedUser.customClaims.role).toBe("buyer"); // Claims restricted to buyer
-      expect(savedUser.customClaims.isAdmin).toBe(false); // Restricts admin privileges
+      const customClaims = savedUser.customClaims as Record<string, unknown> | undefined;
+      expect(customClaims?.role).toBe("buyer"); // Claims restricted to buyer
+      expect(customClaims?.isAdmin).toBe(false); // Restricts admin privileges
     });
   });
 
@@ -583,13 +590,12 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
       expect(res.body.orderId).toBeDefined();
 
       // Confirm stock was decremented correctly from 5 to 3
-      const asusInDb = productStore.get("prod_asus");
+      const asusInDb = must(productStore.get("prod_asus"), "asusInDb");
       expect(asusInDb.stock).toBe(3);
 
       // Confirm order document was recorded with precise status and totals
-      const savedOrder = orderStore.get(res.body.orderId);
-      expect(savedOrder).toBeDefined();
-      expect(savedOrder.status.toUpperCase()).toBe("PENDING");
+      const savedOrder = must(orderStore.get(res.body.orderId), "savedOrder");
+      expect(savedOrder.status?.toUpperCase()).toBe("PENDING");
       expect(savedOrder.subtotal).toBe(300000);
       expect(savedOrder.shippingTotal).toBe(600); // exact from ALGERIA_SHIPPING_DATA for "16 Alger"
       expect(savedOrder.total).toBe(300600);
@@ -668,18 +674,16 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
       expect(res.body.success).toBe(true);
 
       // Verify Order updated state atomically
-      const updatedOrder = orderStore.get(orderIdForPayment);
+      const updatedOrder = must(orderStore.get(orderIdForPayment), "updatedOrder");
       expect(updatedOrder.status).toBe("PROCESSING");
       expect(updatedOrder.paymentStatus).toBe("PAID");
 
       // Verify Idempotency Log is recorded to prevent replay attack
-      const webhookLog = webhookLogStore.get("evt_chargily_valid_777");
-      expect(webhookLog).toBeDefined();
+      const webhookLog = must(webhookLogStore.get("evt_chargily_valid_777"), "webhookLog");
       expect(webhookLog.processed).toBe(true);
 
       // Verify Escrow Hold is created successfully
-      const escrowRecord = escrowStore.get(orderIdForPayment);
-      expect(escrowRecord).toBeDefined();
+      const escrowRecord = must(escrowStore.get(orderIdForPayment), "escrowRecord");
       expect(escrowRecord.status).toBe("HELD");
       expect(escrowRecord.totalAmountDZD).toBe(150500);
     });
@@ -715,11 +719,11 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
       expect(res.body.success).toBe(true);
 
       // Confirm escrow status transitions to RELEASED
-      const escrowObj = escrowStore.get(orderIdForPayment);
+      const escrowObj = must(escrowStore.get(orderIdForPayment), "escrowObj");
       expect(escrowObj.status).toBe("RELEASED");
 
       // Confirm seller's wallet is credited
-      const walletObj = walletStore.get("seller_test_1");
+      const walletObj = must(walletStore.get("seller_test_1"), "walletObj");
       expect(walletObj.availableBalanceDZD).toBeGreaterThan(1000);
     });
   });

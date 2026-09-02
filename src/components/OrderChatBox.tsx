@@ -19,6 +19,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { apiGet } from "../lib/api";
 import { useTranslation } from "react-i18next";
 import { maskSensitiveData, hasExternalChannel } from "../utils/masking";
 import { toast } from "react-hot-toast";

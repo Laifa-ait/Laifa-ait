@@ -63,8 +63,8 @@ export const ArtisanDashboardHeader: React.FC<ArtisanDashboardHeaderProps> = ({
               <h1 className="text-xl font-black text-slate-900 tracking-tight">
                 {profile.professionalName || profile.fullName}
               </h1>
-              {profile.isVerified && (
-                <ShieldCheck className="w-4 h-4 text-emerald-600" title="Artisan Vérifié" />
+              {!!profile.verifiedAt && (
+                <span title="Artisan Vérifié"><ShieldCheck className="w-4 h-4 text-emerald-600" /></span>
               )}
             </div>
             <p className="text-xs text-slate-500 font-semibold mt-0.5">

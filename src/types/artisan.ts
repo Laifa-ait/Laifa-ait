@@ -77,6 +77,8 @@ export interface ArtisanProfile {
   viewsCount: number;
   quoteRequestsCount: number;
   verifiedAt?: string;
+  completedJobsCount?: number;
+  rejectionReason?: string;
   documents?: ArtisanDocument[];
   createdAt: string;
   updatedAt: string;

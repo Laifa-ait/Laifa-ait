@@ -21,7 +21,7 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
 }) => {
   const { user, currentUser } = useAuth();
 
-  const [clientName, setClientName] = useState(user?.displayName || user?.name || '');
+  const [clientName, setClientName] = useState<string>(user?.displayName || '');
   const [clientPhone, setClientPhone] = useState(user?.phone || '');
   const [clientEmail, setClientEmail] = useState(currentUser?.email || '');
   const [title, setTitle] = useState(
@@ -195,10 +195,8 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
               <WilayaCommuneSelector
                 selectedWilaya={wilaya}
                 selectedCommune={commune}
-                onChange={(w, c) => {
-                  setWilaya(w);
-                  setCommune(c);
-                }}
+                onWilayaChange={(w: string) => setWilaya(w)}
+                onCommuneChange={(c: string) => setCommune(c)}
               />
             </div>
 

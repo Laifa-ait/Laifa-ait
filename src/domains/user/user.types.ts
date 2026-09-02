@@ -30,7 +30,7 @@ export type UserProfile = ZodUserProfile & {
     [key: string]: unknown;
   };
 } & Record<string, unknown>; // Temporarily allow extra fields to prevent build breaks
-export type UserRole = "buyer" | "seller" | "admin" | "superadmin" | "moderator" | "support" | "guest" | "customer";
+export type UserRole = "buyer" | "seller" | "admin" | "superadmin" | "moderator" | "support" | "guest" | "customer" | "artisan" | "property_owner";
 
 export interface GuestUser {
   uid: string;

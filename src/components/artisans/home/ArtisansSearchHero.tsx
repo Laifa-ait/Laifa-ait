@@ -58,7 +58,8 @@ export const ArtisansSearchHero: React.FC<ArtisansSearchHeroProps> = ({
             <WilayaCommuneSelector
               selectedWilaya={selectedWilaya}
               selectedCommune={selectedCommune}
-              onChange={(w, c) => onWilayaChange(w, c)}
+              onWilayaChange={(w: string) => onWilayaChange(w, selectedCommune)}
+              onCommuneChange={(c: string) => onWilayaChange(selectedWilaya, c)}
             />
           </div>
 

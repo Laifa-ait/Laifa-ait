@@ -400,8 +400,8 @@ export function useStoreProfile() {
     }
   };
 
-  const handleSaveAbout = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveAbout = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!sellerId) return;
 
     setSavingAbout(true);

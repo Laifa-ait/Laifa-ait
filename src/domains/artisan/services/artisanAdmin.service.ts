@@ -193,7 +193,7 @@ export class ArtisanAdminService {
         action: "delete_trade",
         targetId: tradeId,
         targetType: "trade",
-        targetName,
+        targetName: tradeName,
         details: `Catégorie de métier supprimée: ${tradeName}`,
         timestamp: new Date().toISOString(),
       });

@@ -17,7 +17,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
     maxWorkers: 1,
-    minWorkers: 1,
     fileParallelism: false,
     coverage: {
       provider: 'v8',

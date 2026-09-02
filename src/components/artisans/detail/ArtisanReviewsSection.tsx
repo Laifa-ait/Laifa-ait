@@ -124,7 +124,7 @@ export const ArtisanReviewsSection: React.FC<ArtisanReviewsSectionProps> = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-xs text-slate-900">{rev.userName}</span>
+                  <span className="font-extrabold text-xs text-slate-900">{rev.clientName}</span>
                   <div className="flex text-amber-500">
                     {Array.from({ length: rev.rating }).map((_, i) => (
                       <Star key={i} className="w-3 h-3 fill-amber-500" />

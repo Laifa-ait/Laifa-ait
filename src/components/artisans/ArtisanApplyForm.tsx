@@ -24,7 +24,7 @@ export const ArtisanApplyForm: React.FC<ArtisanApplyFormProps> = ({
   const [specialtiesList, setSpecialtiesList] = useState<string[]>([]);
   const [yearsOfExp, setYearsOfExp] = useState(3);
   const [wilaya, setWilaya] = useState('Alger');
-  const [wilayaCode, setWilayaCode] = useState(16);
+  const [wilayaCode, setWilayaCode] = useState<string>('16');
   const [commune, setCommune] = useState('Alger Centre');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -223,11 +223,11 @@ export const ArtisanApplyForm: React.FC<ArtisanApplyFormProps> = ({
         <WilayaCommuneSelector
           selectedWilaya={wilaya}
           selectedCommune={commune}
-          onChange={(newWilaya, newCommune, code) => {
+          onWilayaChange={(newWilaya: string, code: string) => {
             setWilaya(newWilaya);
-            setCommune(newCommune);
             setWilayaCode(code);
           }}
+          onCommuneChange={(newCommune: string) => setCommune(newCommune)}
         />
       </div>
 

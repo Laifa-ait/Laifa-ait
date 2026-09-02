@@ -38,8 +38,8 @@ export const StoreProfileHeader: React.FC<StoreProfileHeaderProps> = ({
       <div className="relative h-44 sm:h-64 lg:h-72 w-full bg-zinc-900 group overflow-hidden">
         {coverUrl ? (
           <OptimizedImage
-            src={getOptimizedImageUrl(coverUrl, { width: 1400, quality: 85 })}
-            alt={storeInfo.shopName || storeInfo.displayName}
+            src={getOptimizedImageUrl(coverUrl, 1400)}
+            alt={storeInfo.shopName || storeInfo.displayName || "Boutique Olmart"}
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             fallbackSrc="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200"
           />
@@ -75,8 +75,8 @@ export const StoreProfileHeader: React.FC<StoreProfileHeaderProps> = ({
               <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl sm:rounded-3xl bg-white p-1.5 sm:p-2 shadow-xl border border-zinc-200/80 overflow-hidden relative z-10">
                 {logoUrl ? (
                   <OptimizedImage
-                    src={getOptimizedImageUrl(logoUrl, { width: 300, quality: 90 })}
-                    alt={storeInfo.shopName || storeInfo.displayName}
+                    src={getOptimizedImageUrl(logoUrl, 300)}
+                    alt={storeInfo.shopName || storeInfo.displayName || "Boutique Olmart"}
                     className="w-full h-full object-cover rounded-xl sm:rounded-2xl"
                     fallbackSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"
                   />

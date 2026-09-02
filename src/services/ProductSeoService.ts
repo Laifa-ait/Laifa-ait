@@ -33,7 +33,7 @@ export class TrueLRUMap<K, V> extends Map<K, V> {
     super();
   }
 
-  get(key: K): V | undefined {
+  override get(key: K): V | undefined {
     if (!super.has(key)) return undefined;
     const value = super.get(key)!;
     // Re-insert to mark as recently used
@@ -42,7 +42,7 @@ export class TrueLRUMap<K, V> extends Map<K, V> {
     return value;
   }
 
-  set(key: K, value: V): this {
+  override set(key: K, value: V): this {
     if (super.has(key)) {
       super.delete(key);
     } else if (this.size >= this.maxKeys) {

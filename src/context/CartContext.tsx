@@ -307,11 +307,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               if (item.id === productId) {
                 return {
                   ...item,
-                  name: pData.name,
-                  price: pData.price,
-                  promoPrice: pData.promoPrice,
-                  image: pData.image || pData.images?.[0] || item.image,
-                  variants: pData.variants || item.variants,
+                  name: pData.product.name,
+                  price: pData.product.price,
+                  promoPrice: pData.product.promoPrice,
+                  image: pData.product.image || pData.product.images?.[0] || item.image,
+                  variants: pData.product.variants || item.variants,
                 };
               }
               return item;
