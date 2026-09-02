@@ -2,8 +2,8 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Upgrade OS packages & npm to eliminate base image vulnerabilities
-RUN apk upgrade --no-cache && npm install -g npm@latest
+# Upgrade OS packages
+RUN apk upgrade --no-cache
 
 # Client build arguments and environment defaults
 ARG VITE_FIREBASE_PROJECT_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
@@ -40,8 +40,8 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-# Upgrade OS packages & npm to eliminate base image vulnerabilities
-RUN apk upgrade --no-cache && npm install -g npm@latest
+# Upgrade OS packages to eliminate base image vulnerabilities
+RUN apk upgrade --no-cache
 
 ENV NODE_ENV=production
 ENV PORT=8080
@@ -50,7 +50,8 @@ ENV VITE_FIREBASE_DATABASE_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /root/.npm
 
 # Copy built assets and assets required at runtime from builder
 COPY --from=builder /app/dist ./dist
@@ -63,5 +64,5 @@ USER node
 # Expose port 8080 for Cloud Run
 EXPOSE 8080
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application directly with node (avoids PID 1 signal forwarding issues and npm overhead)
+CMD ["node", "dist/server.cjs"]

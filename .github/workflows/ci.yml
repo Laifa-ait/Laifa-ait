@@ -194,7 +194,7 @@ jobs:
     name: Deploy to Staging (Cloud Run)
     runs-on: ubuntu-latest
     needs: docker-build-scan
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.GCP_CREDENTIALS_STAGING != ''
     environment: staging
     steps:
       - name: Checkout Source Code
@@ -218,7 +218,7 @@ jobs:
     name: Deploy to Production (Cloud Run)
     runs-on: ubuntu-latest
     needs: deploy-staging
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && secrets.GCP_CREDENTIALS_PRODUCTION != ''
     environment: 
       name: production
       url: https://olmart.dz
