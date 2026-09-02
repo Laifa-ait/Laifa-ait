@@ -170,6 +170,27 @@ realEstateProAppRouter.post(
       const currentCapabilities: string[] = Array.isArray(userData.capabilities) ? userData.capabilities : [];
 
       if (!currentCapabilities.includes('property_owner')) {
+        const isServerAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+        if (!isServerAdmin) {
+          // Register a pending application for admin approval instead of direct self-promotion
+          const appRef = db.collection('real_estate_pro_applications').doc(uid);
+          await appRef.set({
+            userId: uid,
+            userEmail: req.user.email || '',
+            status: 'pending',
+            requestedCapability: 'property_owner',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true });
+
+          safeLogger.info('Property owner application submitted for admin approval', { uid });
+          return res.json({
+            success: true,
+            message: 'Demande d\'activation du rôle de propriétaire enregistrée. En attente de validation administrateur.',
+            pending: true,
+          });
+        }
+
         const updatedCapabilities = [...currentCapabilities, 'property_owner'];
         const updateData: Record<string, unknown> = {
           capabilities: updatedCapabilities,
@@ -181,7 +202,7 @@ realEstateProAppRouter.post(
         }
 
         await userRef.update(updateData);
-        safeLogger.info('Capability property_owner enabled', { uid });
+        safeLogger.info('Capability property_owner enabled by admin', { uid });
       } else {
         safeLogger.info('Capability property_owner already active', { uid });
       }

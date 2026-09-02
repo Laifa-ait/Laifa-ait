@@ -143,33 +143,11 @@ function isTrustedOrigin(originString: string): boolean {
   return false;
 }
 
-/**
- * Verifies that the webhook request contains a valid cryptographic signature header.
- * Webhooks bypass CSRF because they are authenticated via HMAC signatures.
- */
-function verifyWebhookSignatureHeader(req: Request): boolean {
-  const signatureHeaders = [
-    "x-olmart-signature",
-    "stripe-signature",
-    "x-signature",
-    "x-hub-signature-256",
-    "x-chargily-signature",
-    "x-baridimob-signature",
-    "signature"
-  ];
-
-  for (const headerName of signatureHeaders) {
-    const signature = req.headers[headerName];
-    if (typeof signature === "string" && signature.trim() !== "") {
-      const trimmed = signature.trim();
-      // Cryptographic signatures must be of non-trivial length
-      if (trimmed.length >= 32) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+// Liste EXACTE des routes webhook dont le handler vérifie lui-même la signature HMAC.
+const WEBHOOK_EXEMPT_PATHS = new Set([
+  "/api/v1/payment/webhook/chargily",
+  "/api/v1/payment/webhook/baridimob",
+]);
 
 /**
  * Express Middleware for CSRF Protection across state-changing API routes (POST, PUT, DELETE, PATCH)
@@ -206,6 +184,11 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
 
   // 3. Strict Exempt paths check using exact pathnames to prevent substring bypasses
   const pathname = req.path || (req.originalUrl ? req.originalUrl.split("?")[0] : "");
+
+  if (WEBHOOK_EXEMPT_PATHS.has(pathname)) {
+    // Le handler de cette route est responsable de vérifier la signature HMAC.
+    return next();
+  }
   
   const isStrictExempt =
     pathname === "/api/v1/csp-report" ||
@@ -216,23 +199,6 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
 
   if (isStrictExempt) {
     return next();
-  }
-
-  // Webhook exemption - Must strictly start with webhook prefix AND have a valid cryptographic signature
-  const isWebhookPath =
-    pathname.includes("/webhooks/") ||
-    pathname.includes("/payment/webhook/") ||
-    pathname.includes("/webhook/");
-  if (isWebhookPath) {
-    if (verifyWebhookSignatureHeader(req)) {
-      return next();
-    } else {
-      safeLogger.warn("[Olmart Security] ⚠️ CSRF Blocked Webhook: Missing or invalid signature header", { path: pathname });
-      return res.status(403).json({
-        success: false,
-        error: "Exemption CSRF refusée : signature HMAC de sécurité manquante ou invalide.",
-      });
-    }
   }
 
   // 4. Extract CSRF token from headers or body

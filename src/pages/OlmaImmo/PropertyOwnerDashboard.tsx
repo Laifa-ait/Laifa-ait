@@ -41,9 +41,9 @@ export const PropertyOwnerDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const [propsRes, visitsRes, bookingsRes] = await Promise.allSettled([
-        apiGet<{ success: boolean; data?: Property[] }>('/api/v1/real-estate/my-properties'),
-        apiGet<{ success: boolean; data?: VisitRequest[] }>('/api/v1/real-estate/my-visits?as=owner'),
-        apiGet<{ success: boolean; data?: Booking[] }>('/api/v1/real-estate/my-bookings?as=owner'),
+        apiGet<{ success: boolean; data?: Property[] }>('/api/v1/real-estate/owner/properties'),
+        apiGet<{ success: boolean; data?: VisitRequest[] }>('/api/v1/real-estate/owner/visits'),
+        apiGet<{ success: boolean; data?: Booking[] }>('/api/v1/real-estate/bookings?role=owner'),
       ]);
 
       if (propsRes.status === 'fulfilled' && propsRes.value?.success && propsRes.value.data) {

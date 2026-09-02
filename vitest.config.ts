@@ -23,13 +23,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      all: true,
       include: ['src/**'],
       thresholds: {
-        lines: 0.7,
-        functions: 0.2,
-        branches: 1.0,
-        statements: 0.6,
+        lines: 20,
+        functions: 20,
+        branches: 15,
+        statements: 20,
       },
       exclude: [
         'coverage/**',

@@ -6,6 +6,30 @@ import { DEFAULT_ARTISAN_TRADES } from "../../../data/artisanTrades";
 const ARTISANS_COLLECTION = "artisan_profiles";
 const ARTISAN_TRADES_COLLECTION = "artisan_trades";
 
+function sanitizePublicProfile(profile: ArtisanProfile): ArtisanProfile {
+  // Strip sensitive PII, internal verification info and KYC documents
+  const {
+    nationalIdCard: _a,
+    identityDocuments: _b,
+    documents: _c,
+    rejectionReason: _d,
+    email: _e,
+    phone: _f,
+    address: _g,
+    ...publicProfile
+  } = profile as ArtisanProfile & {
+    nationalIdCard?: unknown;
+    identityDocuments?: unknown;
+    documents?: unknown;
+    rejectionReason?: unknown;
+    email?: unknown;
+    phone?: unknown;
+    address?: unknown;
+  };
+  void _a; void _b; void _c; void _d; void _e; void _f; void _g;
+  return publicProfile as ArtisanProfile;
+}
+
 export class ArtisanPublicService {
   static async listApprovedArtisans(filters: {
     tradeId?: string;
@@ -61,7 +85,7 @@ export class ArtisanPublicService {
         );
       }
 
-      return results;
+      return results.map(sanitizePublicProfile);
     } catch (error) {
       safeLogger.error("[ArtisanPublicService] listApprovedArtisans error", {
         error: error instanceof Error ? error.message : String(error),
@@ -81,7 +105,11 @@ export class ArtisanPublicService {
 
       const profile = { id: doc.id, ...(doc.data() as Omit<ArtisanProfile, "id">) };
 
-      if (incrementView && profile.status === "approved") {
+      if (profile.status !== "approved") {
+        return null;
+      }
+
+      if (incrementView) {
         docRef.update({ viewsCount: (profile.viewsCount || 0) + 1 }).catch((err) => {
           safeLogger.warn("[ArtisanPublicService] Failed to increment viewsCount asynchronously", {
             artisanId: id,
@@ -90,7 +118,7 @@ export class ArtisanPublicService {
         });
       }
 
-      return profile;
+      return sanitizePublicProfile(profile);
     } catch (error) {
       safeLogger.error("[ArtisanPublicService] getArtisanById error", {
         error: error instanceof Error ? error.message : String(error),

@@ -33,7 +33,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       NODE_ENV: 'production',
-      CSRF_SECRET: 'olmart_production_test_csrf_secret_key_2026_secure_abcdef123456789',
+      CSRF_SECRET: process.env.CSRF_SECRET || 'olmart_e2e_test_csrf_secret_key_2026',
       VITE_FIREBASE_API_KEY: 'AIzaSyFakeKeyForCiTesting1234567890',
       VITE_FIREBASE_AUTH_DOMAIN: 'olmart-ci-demo.firebaseapp.com',
       VITE_FIREBASE_PROJECT_ID: 'olmart-ci-demo',

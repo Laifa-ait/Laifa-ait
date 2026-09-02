@@ -110,7 +110,7 @@ Toute tentative de commit déclenchera automatiquement `lint-staged` pour format
 
 ## ⚙️ Configuration & Variables d'Environnement
 
-Le serveur Express est strictement configuré pour écouter sur le port `3000` et l'adresse `0.0.0.0` (requis pour le routage Ingress sur les conteneurs Cloud Run).
+Le serveur Express écoute sur le port spécifié par la variable d'environnement `PORT` (injectée dynamiquement par Cloud Run, ex: `8080`) avec un fallback sur le port `3000` et l'adresse `0.0.0.0`.
 
 Créez un fichier `.env` à la racine à partir du modèle :
 ```bash

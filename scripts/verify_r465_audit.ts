@@ -148,7 +148,7 @@ async function runAudit() {
     path: string,
     token: string | null,
     body?: unknown
-  ): Promise<{ status: number; data: Record<string, unknown> }> {
+  ): Promise<{ status: number; data: Record<string, any> }> {
     const url = `${restBaseUrl}${path}`;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) {
@@ -159,7 +159,7 @@ async function runAudit() {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const data = (await res.json().catch(() => ({}))) as Record<string, any>;
     return { status: res.status, data };
   }
 

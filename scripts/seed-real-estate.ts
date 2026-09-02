@@ -1,5 +1,5 @@
 import { db } from "../src/config/firebase-admin";
-import { ensureInitialSeedProperties } from "../src/routes/realEstate";
+import { ensureInitialSeedProperties } from "../src/domains/realEstate/data/realEstateSeed";
 
 async function run() {
   console.log("[Seeder] Starting real estate initial seed process...");

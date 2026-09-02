@@ -63,7 +63,11 @@ export const ImageGalleryLightbox: React.FC<ImageGalleryLightboxProps> = ({
           <button
             onClick={() => {
               if (navigator.share) {
-                navigator.share({ title, url: window.location.href }).catch(() => {});
+                navigator.share({ title, url: window.location.href }).catch((err: unknown) => {
+                  if (err instanceof Error && err.name !== 'AbortError') {
+                    console.warn('[OlmaImmo Share] Share error:', err.message);
+                  }
+                });
               }
             }}
             className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"

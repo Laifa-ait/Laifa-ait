@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, CheckSquare, Square } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
+import { motion, AnimatePresence } from "motion/react";
+import { apiPost } from "../../lib/api";
+import { PRODUCT_HIERARCHY } from "../../constants";
 import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface CustomerPreferencesProps {
@@ -263,8 +268,8 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
   // Compile map of parent categories and their direct subcategories (no sub-sub-categories!)
   const categoryStructure = useMemo<Record<string, string[]>>(() => {
     const data: Record<string, string[]> = {};
-    Object.entries(PRODUCT_HIERARCHY).forEach(([parentCat, subObj]) => {
-      data[parentCat] = Object.keys(subObj);
+    Object.entries(PRODUCT_HIERARCHY as Record<string, Record<string, unknown>>).forEach(([parentCat, subObj]) => {
+      data[parentCat] = Object.keys(subObj || {});
     });
     return data;
   }, []);
@@ -563,7 +568,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                                 type="button"
                                 whileHover={{ scale: 1.025 }}
                                 whileTap={{ scale: 0.975 }}
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation(); // prevent collapsing or parent trigger
                                   handleToggleSubcategory(subName);
                                 }}

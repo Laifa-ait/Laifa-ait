@@ -151,7 +151,11 @@ export const PropertyDetail: React.FC = () => {
         title: property.title,
         text: `${property.title} - ${property.location.wilaya} sur Olma Immo`,
         url: window.location.href,
-      }).catch(() => {});
+      }).catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.warn('[OlmaImmo Share] Share error:', err.message);
+        }
+      });
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success("Lien de l'annonce copié !");

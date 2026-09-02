@@ -451,7 +451,7 @@ export function useWorkspaceActions() {
       ordersSnap.docs.forEach((docSnap: { id: string; data: () => Order }) => {
         const order = docSnap.data();
         const orderId = order.id || docSnap.id;
-        const formattedDate = normalizeTimestamp(order.createdAt);
+        const formattedDate = normalizeTimestamp(order.createdAt || new Date());
         const wilaya = order.shippingAddress?.wilaya || "";
         const postalCode = order.shippingAddress?.postalCode || "";
 
@@ -611,11 +611,8 @@ export function useWorkspaceActions() {
       const jsonString = JSON.stringify(dumpObj, null, 2);
       const fileName = `BACKUP_CATALOGUE_OLMART_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
 
-      const data = await uploadToDrive({
-        fileName,
-        content: jsonString,
-        mimeType: "application/json",
-      }) as WorkspaceDriveResponse;
+      const file = new File([jsonString], fileName, { type: "application/json" });
+      const data = await uploadToDrive(file) as WorkspaceDriveResponse;
 
       const link = data?.file?.webViewLink || data?.file?.webContentLink;
 
@@ -674,13 +671,13 @@ export function useWorkspaceActions() {
       const startTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const endTime = new Date(Date.now() + 24 * 60 * 60 * 1000 + 45 * 60 * 1000).toISOString();
 
-      const result = await scheduleVerificationMeet({
-        summary: summaryText,
-        description: descText,
-        attendeeEmails: recipients,
+      const result = await scheduleVerificationMeet(
+        recipients,
         startTime,
         endTime,
-      });
+        summaryText,
+        descText
+      );
 
       const meetLink = result?.hangoutLink || result?.meetLink || result?.htmlLink;
 

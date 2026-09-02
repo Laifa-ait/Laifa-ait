@@ -32,10 +32,14 @@ export interface RecentActivity {
 
 export interface GlobalOrder {
   id: string;
+  customerName?: string;
+  city?: string;
+  totalAmount?: number;
+  status?: string;
+  date?: string;
   shippingAddress?: { name?: string };
   userId?: string;
   sellerIds?: string[];
-  status?: string;
   trackingId?: string;
   labelUrl?: string;
   createdAt?: unknown;

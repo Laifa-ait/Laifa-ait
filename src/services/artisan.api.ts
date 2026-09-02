@@ -269,10 +269,14 @@ export async function adminFetchAllArtisans(filters?: {
     if (filters?.limit) params.append('limit', String(filters.limit));
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const res = await apiGet<{ success: boolean; data: ArtisanProfile[]; total: number }>(
+    const res = await apiGet<{ success: boolean; data: { artisans: ArtisanProfile[]; total: number } }>(
       `/api/v1/artisans/admin/all${queryString}`
     );
-    return { artisans: res?.data || [], total: res?.total || 0 };
+    if (res?.data && Array.isArray(res.data.artisans)) {
+      return { artisans: res.data.artisans, total: res.data.total || res.data.artisans.length };
+    }
+    const legacyRes = res as unknown as { data: ArtisanProfile[]; total: number };
+    return { artisans: Array.isArray(legacyRes?.data) ? legacyRes.data : [], total: legacyRes?.total || 0 };
   } catch {
     return { artisans: [], total: 0 };
   }
@@ -314,9 +318,9 @@ export async function adminUpdateArtisanStatus(
   status: ArtisanStatus,
   reason?: string
 ): Promise<{ success: boolean; error?: string }> {
-  return await apiPost<{ success: boolean; error?: string }>(
-    '/api/v1/artisans/admin/status',
-    { artisanId, status, reason }
+  return await apiPut<{ success: boolean; error?: string }>(
+    `/api/v1/artisans/admin/${artisanId}/status`,
+    { status, reason }
   );
 }
 

@@ -44,41 +44,41 @@ artisanAdminRouter.get("/artisans/admin/all", async (req: AuthenticatedRequest, 
 });
 
 /**
- * PUT /api/v1/artisans/admin/:id/status
+ * PUT /api/v1/artisans/admin/:id/status & POST /api/v1/artisans/admin/status
  */
-artisanAdminRouter.put(
-  "/artisans/admin/:id/status",
-  async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { status, reason } = req.body;
-      const adminUid = req.user?.uid || "admin";
-      const adminEmail = req.user?.email || "admin@olmart.dz";
+const handleUpdateStatus = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const id = req.params.id || req.body.artisanId;
+    const { status, reason } = req.body;
+    const adminUid = req.user?.uid || "admin";
+    const adminEmail = req.user?.email || "admin@olmart.dz";
 
-      if (!status) {
-        return res.status(400).json({ error: "Le paramètre status est obligatoire" });
-      }
-
-      await ArtisanServiceLayer.updateArtisanStatus(
-        id,
-        status as ArtisanStatus,
-        adminUid,
-        adminEmail,
-        reason
-      );
-
-      return res.json({
-        success: true,
-        message: `Statut de l'artisan mis à jour vers '${status}' avec succès.`,
-      });
-    } catch (error) {
-      safeLogger.error("[artisanAdminRouter] PUT /artisans/admin/:id/status failed", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return res.status(500).json({ error: "Erreur lors du changement de statut" });
+    if (!id || !status) {
+      return res.status(400).json({ error: "Les paramètres id et status sont obligatoires" });
     }
+
+    await ArtisanServiceLayer.updateArtisanStatus(
+      id,
+      status as ArtisanStatus,
+      adminUid,
+      adminEmail,
+      reason
+    );
+
+    return res.json({
+      success: true,
+      message: `Statut de l'artisan mis à jour vers '${status}' avec succès.`,
+    });
+  } catch (error) {
+    safeLogger.error("[artisanAdminRouter] Update artisan status failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({ error: "Erreur lors du changement de statut" });
   }
-);
+};
+
+artisanAdminRouter.put("/artisans/admin/:id/status", handleUpdateStatus);
+artisanAdminRouter.post("/artisans/admin/status", handleUpdateStatus);
 
 /**
  * GET /api/v1/artisans/admin/stats

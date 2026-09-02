@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { MapPin, Plus, Trash2, Compass } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
+import { apiPost } from "../../lib/api";
+import { ALGERIA_REGIONS } from "../../data/algeriaRegions";
+import { ALGERIA_WILAYAS, WilayaOption } from "../../constants/wilayas";
 import { UserProfile, UserAddress, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface AddressManagerProps {
@@ -250,11 +255,14 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                 onChange={(e) => handleWilayaChange(e.target.value)}
                 className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal outline-none focus:ring-4 focus:ring-slate-100 cursor-pointer"
               >
-                {ALGERIA_WILAYAS.map((w) => (
-                  <option key={w} value={w}>
-                    {w}
-                  </option>
-                ))}
+                {ALGERIA_WILAYAS.map((w: WilayaOption) => {
+                  const val = `${w.code} ${w.name}`;
+                  return (
+                    <option key={w.code} value={val}>
+                      {val}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -335,7 +343,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                   onChange={(e) => setFormData({ ...formData, commune: e.target.value })}
                   className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:ring-4 focus:ring-slate-100 cursor-pointer"
                 >
-                  {currentCommunes.map((c) => (
+                  {currentCommunes.map((c: string) => (
                     <option key={c} value={c}>
                       {c}
                     </option>

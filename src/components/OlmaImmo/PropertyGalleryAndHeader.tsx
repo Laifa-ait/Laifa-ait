@@ -29,7 +29,11 @@ export const PropertyGalleryAndHeader: React.FC<PropertyGalleryAndHeaderProps> =
         title: property.title,
         text: `Découvrez cette annonce sur Olma Immo : ${property.title}`,
         url: window.location.href,
-      }).catch(() => {});
+      }).catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.warn('[OlmaImmo Share] Share error:', err.message);
+        }
+      });
     } else {
       navigator.clipboard.writeText(window.location.href);
       alert('Lien de l\'annonce copié dans le presse-papiers.');

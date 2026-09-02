@@ -10,6 +10,7 @@ export interface Address {
   street: string;
   isDefault: boolean;
   address?: string;
+  postalCode?: string;
 }
 
 export type OrderStatus =

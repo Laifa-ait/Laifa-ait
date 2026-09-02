@@ -1,6 +1,6 @@
 import { admin, db } from "../src/config/firebase-admin";
-import { authorizeAdmin } from "../src/middlewares/auth";
-import type { Request, Response, NextFunction } from "express";
+import { authorizeAdmin, AuthenticatedRequest } from "../src/middlewares/auth";
+import type { Response, NextFunction } from "express";
 
 async function verify() {
   console.log("================================================================================");
@@ -128,7 +128,7 @@ async function verify() {
       email: refreshedUser.email,
       role: refreshedUser.customClaims?.role
     }
-  } as unknown as Request;
+  } as unknown as AuthenticatedRequest;
 
   authorizeAdmin(reqPromoted, mockResPromoted as Response, mockNextPromoted as NextFunction);
   console.log(`1. AuthenticateToken : req.user.role = '${reqPromoted.user.role}'`);
@@ -156,7 +156,7 @@ async function verify() {
       email: targetEmail, // L'adresse email est présente
       role: "buyer"       // Mais le rôle n'est PAS admin
     }
-  } as unknown as Request;
+  } as unknown as AuthenticatedRequest;
 
   authorizeAdmin(reqDemoted, mockResDemoted as Response, mockNextDemoted as NextFunction);
 

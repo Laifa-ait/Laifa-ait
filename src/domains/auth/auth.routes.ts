@@ -377,8 +377,19 @@ router.get("/notifications", authenticateToken, async (req: AuthenticatedRequest
 
 router.post("/notifications/:id/read", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
+  const uid = req.user?.uid;
+  if (!uid) {
+    return res.status(401).json({ error: "Authentification requise" });
+  }
+
   try {
-    await db.collection("user_notifications").doc(id).update({ read: true });
+    const notifRef = db.collection("user_notifications").doc(id);
+    const notifSnap = await notifRef.get();
+    if (!notifSnap.exists || notifSnap.data()?.recipientId !== uid) {
+      return res.status(404).json({ error: "Notification introuvable" });
+    }
+
+    await notifRef.update({ read: true });
     return res.json({ success: true });
   } catch (error: unknown) {
     safeLogger.error("Mark notification read error", { err: error instanceof Error ? error.message : String(error) });

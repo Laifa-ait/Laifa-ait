@@ -31,7 +31,7 @@ jobs:
 
       - name: Execute Security Audit (Production Dependencies - High+)
         timeout-minutes: 3
-        run: npm ci && npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Execute Full Dependency Audit
         timeout-minutes: 3

@@ -402,7 +402,9 @@ realEstatePropertyRouter.get(
               .update({
                 viewsCount: admin.firestore.FieldValue.increment(1),
               })
-              .catch(() => {});
+              .catch((err: unknown) => {
+                console.warn('[OlmaImmo Views] Failed to increment view count:', err);
+              });
             property.viewsCount = (property.viewsCount || 0) + 1;
           }
         }
@@ -712,6 +714,61 @@ realEstatePropertyRouter.put(
       const errorMsg = error instanceof Error ? error.message : String(error);
       safeLogger.error('Error updating real estate property', { propertyId: id, err: errorMsg });
       return res.status(500).json({ success: false, error: 'Erreur lors de la modification de l\'annonce.' });
+    }
+  }
+);
+
+// PUT /properties/:id/status (Update property status)
+realEstatePropertyRouter.put(
+  '/properties/:id/status',
+  strictLimiter,
+  authenticateToken,
+  authorizePropertyOwner,
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Authentification requise.' });
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+    const callerUid = req.user.uid;
+    const isServerAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+
+    if (!id || !status) {
+      return res.status(400).json({ success: false, error: 'Identifiant et statut requis.' });
+    }
+
+    try {
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Service de base de données indisponible.' });
+      }
+
+      const docRef = db.collection('real_estate_properties').doc(id);
+      const snap = await docRef.get();
+
+      if (!snap.exists) {
+        return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
+      }
+
+      const existingProperty = snap.data() as Property;
+
+      if (existingProperty.ownerId !== callerUid && !isServerAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: 'Accès refusé. Vous n\'êtes pas le propriétaire de cette annonce.',
+        });
+      }
+
+      await docRef.update({
+        status,
+        updatedAt: new Date().toISOString(),
+      });
+
+      return res.json({ success: true, message: 'Statut mis à jour avec succès.' });
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      safeLogger.error('Error updating property status', { propertyId: id, err: errorMsg });
+      return res.status(500).json({ success: false, error: 'Erreur lors de la mise à jour du statut.' });
     }
   }
 );

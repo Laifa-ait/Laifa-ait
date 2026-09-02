@@ -26,10 +26,11 @@ export const IpLogsModal: React.FC<IpLogsModalProps> = ({ user, onClose }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) return;
+    const userId = user?.id;
+    if (!userId) return;
     const fetchLogs = async () => {
        try {
-          const records = await fetchUserLoginHistory(user.id, 50);
+          const records = await fetchUserLoginHistory(userId, 50);
           setLogs(records as LoginHistoryRecord[]);
        } catch (err) {
           console.error("Error fetching IP logs", err);

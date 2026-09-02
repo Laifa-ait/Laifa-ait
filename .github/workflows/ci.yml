@@ -169,19 +169,19 @@ jobs:
         with:
           context: .
           push: false
-          tags: olmart-app:local
+          tags: europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/olmart/app:${{ github.sha }}
           load: true
           
       - name: Generate SBOM (Anchore Syft)
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26
         with:
-          image: olmart-app:local
+          image: europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/olmart/app:${{ github.sha }}
           artifact-name: sbom.spdx.json
           
       - name: Run Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297
         with:
-          image-ref: 'olmart-app:local'
+          image-ref: 'europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/olmart/app:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true

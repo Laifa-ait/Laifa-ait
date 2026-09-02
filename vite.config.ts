@@ -182,8 +182,7 @@ export default defineConfig(({mode}) => {
                 id.includes('node_modules/react-dom/') || 
                 id.includes('node_modules/react-router/') || 
                 id.includes('node_modules/react-router-dom/') || 
-                id.includes('node_modules/scheduler/') ||
-                id.includes('node_modules/react-is/');
+                id.includes('node_modules/scheduler/');
               if (isCoreReact) {
                 return 'vendor-react';
               }

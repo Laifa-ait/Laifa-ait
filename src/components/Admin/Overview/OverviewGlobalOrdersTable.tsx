@@ -29,8 +29,8 @@ export const OverviewGlobalOrdersTable: React.FC<OverviewGlobalOrdersTableProps>
       header: t("Client"),
       accessor: (order: GlobalOrder) => (
         <div>
-          <p className="text-sm font-sans font-bold text-zinc-950">{order.customerName}</p>
-          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{order.city}</p>
+          <p className="text-sm font-sans font-bold text-zinc-950">{order.customerName || "—"}</p>
+          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{order.city || "—"}</p>
         </div>
       ),
     },
@@ -38,19 +38,19 @@ export const OverviewGlobalOrdersTable: React.FC<OverviewGlobalOrdersTableProps>
       header: t("Montant"),
       accessor: (order: GlobalOrder) => (
         <span className="text-sm font-sans font-bold text-zinc-950">
-          {order.totalAmount.toLocaleString()} DZD
+          {(order.totalAmount ?? 0).toLocaleString()} DZD
         </span>
       ),
     },
     {
       header: t("Statut"),
-      accessor: (order: GlobalOrder) => <StatusBadge status={order.status} />,
+      accessor: (order: GlobalOrder) => <StatusBadge status={order.status || "pending"} />,
     },
     {
       header: t("Date"),
       accessor: (order: GlobalOrder) => (
         <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-          {order.date}
+          {order.date || "—"}
         </span>
       ),
     },

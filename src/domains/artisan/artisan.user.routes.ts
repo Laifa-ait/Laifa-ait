@@ -105,37 +105,36 @@ artisanUserRouter.get(
 );
 
 /**
- * PUT /api/v1/artisans/profile
+ * PUT /api/v1/artisans/me & PUT /api/v1/artisans/profile
  */
-artisanUserRouter.put(
-  "/artisans/profile",
-  authenticateToken,
-  async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const uid = req.user?.uid;
-      if (!uid) return res.status(401).json({ error: "Utilisateur non authentifié" });
+const handleUpdateProfile = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) return res.status(401).json({ error: "Utilisateur non authentifié" });
 
-      const profile = await ArtisanServiceLayer.getArtisanByUserId(uid);
-      if (!profile) {
-        return res.status(404).json({ error: "Aucun profil artisan associé à ce compte." });
-      }
-
-      await ArtisanServiceLayer.updateArtisanProfile(profile.id, uid, req.body);
-      const updated = await ArtisanServiceLayer.getArtisanById(profile.id);
-
-      return res.json({
-        success: true,
-        data: updated,
-        message: "Profil mis à jour avec succès",
-      });
-    } catch (error) {
-      safeLogger.error("[artisanUserRouter] PUT /artisans/profile failed", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return res.status(500).json({ error: "Erreur lors de la mise à jour du profil" });
+    const profile = await ArtisanServiceLayer.getArtisanByUserId(uid);
+    if (!profile) {
+      return res.status(404).json({ error: "Aucun profil artisan associé à ce compte." });
     }
+
+    await ArtisanServiceLayer.updateArtisanProfile(profile.id, uid, req.body);
+    const updated = await ArtisanServiceLayer.getArtisanById(profile.id);
+
+    return res.json({
+      success: true,
+      data: updated,
+      message: "Profil mis à jour avec succès",
+    });
+  } catch (error) {
+    safeLogger.error("[artisanUserRouter] PUT /artisans/me failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({ error: "Erreur lors de la mise à jour du profil" });
   }
-);
+};
+
+artisanUserRouter.put("/artisans/me", authenticateToken, handleUpdateProfile);
+artisanUserRouter.put("/artisans/profile", authenticateToken, handleUpdateProfile);
 
 /**
  * POST /api/v1/artisans/quote-request & /api/v1/artisans/requests (Client submits quote request)

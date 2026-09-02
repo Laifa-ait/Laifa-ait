@@ -15,13 +15,13 @@ export class ErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
+  override componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, info);
     logReactErrorBoundary(error, { componentStack: info.componentStack });
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-stone-900 p-6 font-sans">
@@ -81,13 +81,13 @@ export class SectionErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
+  override componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("SectionErrorBoundary caught an error:", error, info);
     logReactErrorBoundary(error, { componentStack: info.componentStack });
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
