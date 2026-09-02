@@ -1,11 +1,11 @@
 import { User as FirebaseUser } from "firebase/auth";
-import { UserProfile } from "../domains/user/user.types";
+import { UserProfile, UserRole } from "../domains/user/user.types";
 import { apiPost } from "../lib/api";
 import { safeLogger } from "../utils/logger";
 
 export const createBaselineProfile = (
   user: FirebaseUser,
-  role: "buyer" | "seller" | "admin" | "artisan" | "property_owner" = "buyer"
+  role: UserRole = "buyer"
 ): UserProfile => ({
   uid: user.uid,
   displayName: user.displayName || user.email?.split("@")[0] || "Utilisateur",
@@ -15,7 +15,7 @@ export const createBaselineProfile = (
   status: "active",
   onboardingCompleted: true,
   createdAt: new Date().toISOString(),
-});
+} as UserProfile);
 
 export const syncUserProfileWithBackend = async (
   user: FirebaseUser,

@@ -1,6 +1,22 @@
 import { admin } from "../src/config/firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 
+interface FirestoreRestData {
+  fields?: Record<string, {
+    stringValue?: string;
+    integerValue?: number;
+    doubleValue?: number;
+    booleanValue?: boolean;
+    arrayValue?: unknown;
+  }>;
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+  };
+  [key: string]: unknown;
+}
+
 async function runAudit() {
   console.log("================================================================================");
   console.log("             🟢 R4.6.5 MARKETPLACE FIRESTORE SECURITY AUDIT SUITE               ");
@@ -148,7 +164,7 @@ async function runAudit() {
     path: string,
     token: string | null,
     body?: unknown
-  ): Promise<{ status: number; data: Record<string, unknown> }> {
+  ): Promise<{ status: number; data: FirestoreRestData }> {
     const url = `${restBaseUrl}${path}`;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) {
@@ -159,7 +175,7 @@ async function runAudit() {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const data = (await res.json().catch(() => ({}))) as FirestoreRestData;
     return { status: res.status, data };
   }
 
@@ -352,11 +368,11 @@ async function runAudit() {
   const s06a = await restCall("PATCH", `/sellers/${sellerAUid}?updateMask.fieldPaths=shopName`, buyer1Token, {
     fields: { shopName: { stringValue: "Buyer Defaced" } }
   });
-  logResult("TEST-S06a", "Client -> modification d'un profil vendeur (/sellers)", "PATCH", "Buyer1", `/sellers/${sellerAUid}`, s06a.status, "DENY", String((s06a.data?.error as Record<string, unknown>)?.message || "Denied"));
+  logResult("TEST-S06a", "Client -> modification d'un profil vendeur (/sellers)", "PATCH", "Buyer1", `/sellers/${sellerAUid}`, s06a.status, "DENY", s06a.data?.error?.message || "Denied");
   const s06b = await restCall("PATCH", `/users/${sellerAUid}?updateMask.fieldPaths=shopName`, buyer1Token, {
     fields: { shopName: { stringValue: "Buyer Defaced" } }
   });
-  logResult("TEST-S06b", "Client -> modification d'un profil vendeur (/users)", "PATCH", "Buyer1", `/users/${sellerAUid}`, s06b.status, "DENY", String((s06b.data?.error as Record<string, unknown>)?.message || "Denied"));
+  logResult("TEST-S06b", "Client -> modification d'un profil vendeur (/users)", "PATCH", "Buyer1", `/users/${sellerAUid}`, s06b.status, "DENY", s06b.data?.error?.message || "Denied");
 
 
   console.log("\n=================== SECTION 5: AUDIT USERS ===================");
@@ -371,7 +387,7 @@ async function runAudit() {
   const u02 = await restCall("PATCH", `/users/${buyer1Uid}?updateMask.fieldPaths=commissionRate`, buyer1Token, {
     fields: { commissionRate: { integerValue: 0 } }
   });
-  logResult("TEST-U02", "Utilisateur -> modification directe du commissionRate", "PATCH", "Buyer1", `/users/${buyer1Uid}`, u02.status, "DENY", String((u02.data?.error as Record<string, unknown>)?.message || "Denied"));
+  logResult("TEST-U02", "Utilisateur -> modification directe du commissionRate", "PATCH", "Buyer1", `/users/${buyer1Uid}`, u02.status, "DENY", u02.data?.error?.message || "Denied");
 
   // TEST-U03: Utilisateur -> modification de isVerified / trustScore
   const u03 = await restCall("PATCH", `/users/${buyer1Uid}?updateMask.fieldPaths=trustScore`, buyer1Token, {

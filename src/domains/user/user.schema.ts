@@ -42,10 +42,20 @@ export const adminProfileSchema = baseProfileSchema.extend({
   role: z.literal("admin").or(z.literal("superadmin")).or(z.literal("moderator")).or(z.literal("support")),
 });
 
+export const artisanProfileSchema = baseProfileSchema.extend({
+  role: z.literal("artisan"),
+});
+
+export const propertyOwnerProfileSchema = baseProfileSchema.extend({
+  role: z.literal("property_owner"),
+});
+
 export const userProfileSchema = z.discriminatedUnion("role", [
   buyerProfileSchema,
   vendorProfileSchema,
   adminProfileSchema,
+  artisanProfileSchema,
+  propertyOwnerProfileSchema,
 ]);
 
 export type BuyerProfile = z.infer<typeof buyerProfileSchema>;
