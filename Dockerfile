@@ -1,6 +1,9 @@
 # Stage 1: Build stage
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
+
+# Upgrade OS packages & npm to eliminate base image vulnerabilities
+RUN apk upgrade --no-cache && npm install -g npm@latest
 
 # Client build arguments and environment defaults
 ARG VITE_FIREBASE_PROJECT_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
@@ -34,8 +37,11 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production stage
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
+
+# Upgrade OS packages & npm to eliminate base image vulnerabilities
+RUN apk upgrade --no-cache && npm install -g npm@latest
 
 ENV NODE_ENV=production
 ENV PORT=8080
