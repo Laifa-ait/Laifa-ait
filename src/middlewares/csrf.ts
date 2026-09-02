@@ -146,7 +146,9 @@ function isTrustedOrigin(originString: string): boolean {
 // Liste EXACTE des routes webhook dont le handler vérifie lui-même la signature HMAC.
 const WEBHOOK_EXEMPT_PATHS = new Set([
   "/api/v1/payment/webhook/chargily",
+  "/v1/payment/webhook/chargily",
   "/api/v1/payment/webhook/baridimob",
+  "/v1/payment/webhook/baridimob",
 ]);
 
 /**
@@ -183,19 +185,25 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
   }
 
   // 3. Strict Exempt paths check using exact pathnames to prevent substring bypasses
-  const pathname = req.path || (req.originalUrl ? req.originalUrl.split("?")[0] : "");
+  const fullPath = (req.baseUrl || "") + (req.path || "");
+  const rawPath = req.path || "";
+  const originalPath = req.originalUrl ? req.originalUrl.split("?")[0] : "";
 
-  if (WEBHOOK_EXEMPT_PATHS.has(pathname)) {
+  if (
+    WEBHOOK_EXEMPT_PATHS.has(fullPath) ||
+    WEBHOOK_EXEMPT_PATHS.has(rawPath) ||
+    WEBHOOK_EXEMPT_PATHS.has(originalPath)
+  ) {
     // Le handler de cette route est responsable de vérifier la signature HMAC.
     return next();
   }
   
   const isStrictExempt =
-    pathname === "/api/v1/csp-report" ||
-    pathname === "/api/v1/cron/sync-tracking" ||
-    pathname === "/api/v1/logs/error" ||
-    pathname === "/api/v1/analytics/track" ||
-    pathname === "/api/v1/sponsorship/analytics/track";
+    fullPath === "/api/v1/csp-report" || rawPath === "/v1/csp-report" || originalPath === "/api/v1/csp-report" ||
+    fullPath === "/api/v1/cron/sync-tracking" || rawPath === "/v1/cron/sync-tracking" || originalPath === "/api/v1/cron/sync-tracking" ||
+    fullPath === "/api/v1/logs/error" || rawPath === "/v1/logs/error" || originalPath === "/api/v1/logs/error" ||
+    fullPath === "/api/v1/analytics/track" || rawPath === "/v1/analytics/track" || originalPath === "/api/v1/analytics/track" ||
+    fullPath === "/api/v1/sponsorship/analytics/track" || rawPath === "/v1/sponsorship/analytics/track" || originalPath === "/api/v1/sponsorship/analytics/track";
 
   if (isStrictExempt) {
     return next();
@@ -215,7 +223,8 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
   }
 
   // 6. Block untrusted request
-  safeLogger.warn("[Olmart Security] ⚠️ CSRF attack prevented", { method: req.method, path: pathname });
+  const reportedPath = fullPath || originalPath || rawPath;
+  safeLogger.warn("[Olmart Security] ⚠️ CSRF attack prevented", { method: req.method, path: reportedPath });
   return res.status(403).json({
     success: false,
     error: "Jeton CSRF invalide ou manquant. Veuillez rafraîchir la page et réessayer.",
