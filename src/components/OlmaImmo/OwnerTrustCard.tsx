@@ -47,7 +47,7 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
     <div className="flex items-center gap-4 py-2">
       <div className="relative">
         {owner.photoURL ? (
-          <img src={owner.photoURL} alt={displayName} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
+          <img loading="lazy" decoding="async" src={owner.photoURL} alt={displayName} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
         ) : (
           <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100">
             <User className="w-6 h-6 text-emerald-600" />

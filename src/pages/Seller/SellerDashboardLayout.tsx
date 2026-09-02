@@ -8,17 +8,25 @@ import { SellerDashboardAlerts } from "./components/layout/SellerDashboardAlerts
 import { SellerMobileBottomNav } from "./components/layout/SellerMobileBottomNav";
 import { SellerMobileDrawer } from "./components/layout/SellerMobileDrawer";
 import { SellerDesktopSidebar } from "./components/layout/SellerDesktopSidebar";
+import { SellerOnboardingTour } from "./components/SellerOnboardingTour";
 
 export const SellerDashboardLayout: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, userProfile } = useAuth();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [forceTour, setForceTour] = useState(false);
 
   const navItems = getSellerNavItems(t);
 
   return (
     <div className="flex h-screen bg-[#fafafa] overflow-hidden" id="seller-dashboard-root">
+      {/* Interactive Seller Tour */}
+      <SellerOnboardingTour
+        forceRun={forceTour}
+        onTourEnd={() => setForceTour(false)}
+      />
+
       {/* Mobile Top Header */}
       <div
         className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-200/80 px-4 py-3 flex items-center justify-between"
@@ -72,7 +80,11 @@ export const SellerDashboardLayout: React.FC = () => {
       />
 
       {/* Desktop Persistent Sidebar */}
-      <SellerDesktopSidebar navItems={navItems} currentUser={currentUser} />
+      <SellerDesktopSidebar
+        navItems={navItems}
+        currentUser={currentUser}
+        onStartTour={() => setForceTour(true)}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-transparent pt-14 lg:pt-0" id="seller-main-content">

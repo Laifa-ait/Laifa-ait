@@ -198,7 +198,7 @@ export const CataloguesMarketplace: React.FC<CataloguesMarketplaceProps> = ({
                   >
                     <div className="w-8 h-8 rounded-lg bg-slate-100 shrink-0 overflow-hidden relative">
                       {p.images && p.images[0] ? (
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[8px] text-slate-400">
                           Img

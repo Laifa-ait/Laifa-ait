@@ -82,9 +82,10 @@ export const corsOptions: cors.CorsOptions = {
     const allowedOrigins = getParsedAllowedOrigins();
     const isAllowedExact = allowedOrigins.includes(origin);
     const isAllowedPreview = isAllowedPreviewOrigin(origin);
-    const isCloudRunOrigin = origin.endsWith(".run.app") || origin.endsWith(".googleusercontent.com");
+    const isNonProd = process.env.NODE_ENV !== "production";
+    const isCloudRunDevOrigin = isNonProd && (origin.endsWith(".run.app") || origin.endsWith(".googleusercontent.com"));
 
-    if (isAllowedExact || isAllowedPreview || isCloudRunOrigin) {
+    if (isAllowedExact || isAllowedPreview || isCloudRunDevOrigin) {
       return callback(null, true);
     }
 
@@ -177,16 +178,21 @@ export function injectNonceToHtml(html: string, nonce: string): string {
 // DUAL CONTENT SECURITY POLICY DEFINITIONS
 // -----------------------------------------------------------------------------
 
-const frameAncestorsProd = [
-  "'self'",
-  "https://olmart.dz",
-  "https://www.olmart.dz",
-  "https://aistudio.google.com",
-  "https://ai.studio",
-  "https://*.aistudio.google.com",
-  "https://*.ai.studio",
-  "https://*.run.app",
-];
+function getFrameAncestorsProd(): string[] {
+  const exactOrigins = getParsedAllowedOrigins();
+  return Array.from(
+    new Set([
+      "'self'",
+      "https://olmart.dz",
+      "https://www.olmart.dz",
+      "https://aistudio.google.com",
+      "https://ai.studio",
+      "https://*.aistudio.google.com",
+      "https://*.ai.studio",
+      ...exactOrigins,
+    ])
+  );
+}
 
 const scriptSrcProd: (string | ((req: Request, res: Response) => string))[] = [
   "'self'",
@@ -249,14 +255,14 @@ const helmetProd = helmet({
         "https://apis.google.com",
         "https://*.googleusercontent.com",
       ],
-      frameAncestors: frameAncestorsProd,
+      frameAncestors: getFrameAncestorsProd(),
       objectSrc: ["'none'"],
       reportUri: "/api/v1/csp-report",
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   xFrameOptions: false,
   noSniff: true,
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
@@ -329,8 +335,8 @@ const helmetDev = helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   xFrameOptions: false,
   noSniff: true,
 });

@@ -42,7 +42,7 @@ export default defineConfig(({mode}) => {
           ]
         },
         workbox: {
-          maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
           globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,woff2}'],
           globIgnores: [
             '**/vendor-pdf-*.js',
@@ -117,8 +117,8 @@ export default defineConfig(({mode}) => {
       target: 'es2022',
       outDir: 'dist',
       emptyOutDir: true,
-      sourcemap: false,
-      chunkSizeWarningLimit: 1000,
+      sourcemap: 'hidden',
+      chunkSizeWarningLimit: 600,
       rollupOptions: {
         external: ['firebase-admin', 'firebase-admin/firestore'],
         output: {

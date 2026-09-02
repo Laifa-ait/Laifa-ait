@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { storage } from "../lib/firebase";
-import { apiGet } from "../lib/api";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadChatAttachment } from "../services/chatRepository";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Send, 
@@ -160,9 +158,7 @@ export const OrderChatBox: React.FC<{ orderId: string; buyerId: string }> = ({ o
       setError("");
       toast.loading(t("Téléchargement de l'image..."), { id: "chat-upload" });
 
-      const fileRef = ref(storage, `chat_images/${orderId}/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(fileRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
+      const downloadUrl = await uploadChatAttachment(orderId, file);
 
       // Send message with the image
       const idToken = await currentUser?.getIdToken();
@@ -432,8 +428,7 @@ export const OrderChatBox: React.FC<{ orderId: string; buyerId: string }> = ({ o
                         
                         {item.imageUrl && (
                           <div className="mt-2 rounded-xl sm:rounded-2xl overflow-hidden border border-black/10 max-w-[170px] xs:max-w-[200px] sm:max-w-[240px]">
-                            <img
-                              src={item.imageUrl}
+                            <img loading="lazy" decoding="async" src={item.imageUrl}
                               alt="Attached"
                               className="w-full h-auto cursor-pointer hover:opacity-90 max-h-[130px] sm:max-h-[180px] object-cover"
                               referrerPolicy="no-referrer"

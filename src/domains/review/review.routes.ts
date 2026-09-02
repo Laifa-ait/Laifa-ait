@@ -1,5 +1,5 @@
-import { Router, Request, Response } from "express";
-import { authenticateToken, authorizeAdmin, authorizeSeller } from "../../middlewares/auth";
+import { Router, Response } from "express";
+import { authenticateToken, authorizeAdmin, authorizeSeller, AuthenticatedRequest } from "../../middlewares/auth";
 import { FirebaseReviewRepository } from "./review.repository";
 import { ReviewService } from "./review.service";
 import { enqueueSellerVelocityCheck } from "../../utils/velocity";
@@ -7,10 +7,6 @@ import { enqueueSellerVelocityCheck } from "../../utils/velocity";
 const router = Router();
 const reviewRepo = new FirebaseReviewRepository();
 const reviewService = new ReviewService(reviewRepo);
-
-export interface AuthenticatedRequest extends Request {
-  user?: { uid: string; email?: string; role?: string; name?: string; [key: string]: unknown };
-}
 
 router.post("/", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {

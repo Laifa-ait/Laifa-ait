@@ -1,18 +1,5 @@
-import { Request, Response } from "express";
-
-export interface AuthenticatedUser {
-  uid: string;
-  email?: string;
-  role?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: AuthenticatedUser;
-  file?: unknown;
-  files?: unknown;
-}
+import { Response } from "express";
+import { AuthenticatedRequest } from "../../../middlewares/auth";
 
 interface OrderDoc {
   userId?: string;

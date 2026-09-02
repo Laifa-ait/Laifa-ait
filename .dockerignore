@@ -1,4 +1,13 @@
 node_modules
 .git
-.env
-dist-ssr
+.github
+.env*
+src/tests
+tests
+docs
+coverage
+playwright-report
+test-results
+dist
+.husky
+*.md

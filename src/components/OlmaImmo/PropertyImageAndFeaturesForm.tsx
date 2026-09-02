@@ -161,7 +161,7 @@ export const PropertyImageAndFeaturesForm: React.FC<PropertyImageAndFeaturesForm
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             {formData.images.map((img: string, index: number) => (
               <div key={index} className="relative aspect-video rounded-xl overflow-hidden group border border-slate-200">
-                <img src={img} alt={`Aperçu ${index + 1}`} className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={img} alt={`Aperçu ${index + 1}`} className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => handleRemoveImage(index)}

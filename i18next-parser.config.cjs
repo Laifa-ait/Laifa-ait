@@ -1,5 +1,5 @@
 module.exports = {
-  locales: ['fr'],
+  locales: ['fr', 'en', 'ar'],
   output: 'public/locales/$LOCALE.json',
   input: ['src/**/*.{js,jsx,ts,tsx}'],
   createOldCatalogs: false,

@@ -8,6 +8,7 @@ import {
 } from "../../../types/messaging";
 import { MessageModerationService } from "./MessageModerationService";
 import { PushNotificationService } from "../../notifications/services/PushNotificationService";
+import { safeLogger } from "../../../utils/logger";
 
 export interface PaginationOptions {
   limit?: number;
@@ -318,7 +319,12 @@ export class MessagingService {
       messageId: initialMsgData.id,
       text: moderation.cleanText,
       violationDetected: moderation.violationDetected
-    }).catch(() => {});
+    }).catch((err) => {
+      safeLogger.warn("[MessagingService] sendMessagingPush initial failed asynchronously", {
+        conversationId,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    });
 
     return {
       conversation: conversationDoc,
@@ -454,7 +460,12 @@ export class MessagingService {
       messageId: messageDoc.id,
       text: moderation.cleanText,
       violationDetected: moderation.violationDetected
-    }).catch(() => {});
+    }).catch((err) => {
+      safeLogger.warn("[MessagingService] sendMessagingPush subsequent failed asynchronously", {
+        conversationId,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    });
 
     return messageDoc;
   }

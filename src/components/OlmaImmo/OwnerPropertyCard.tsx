@@ -41,7 +41,7 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row">
       {/* Thumbnail */}
       <div className="sm:w-56 h-48 sm:h-auto relative shrink-0 bg-slate-100">
-        <img src={imageSrc} alt={property.title} className="w-full h-full object-cover" />
+        <img loading="lazy" decoding="async" src={imageSrc} alt={property.title} className="w-full h-full object-cover" />
         <div className="absolute top-2 left-2">{getStatusBadge(property.status)}</div>
       </div>
 

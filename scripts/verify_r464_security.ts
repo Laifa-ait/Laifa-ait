@@ -36,7 +36,7 @@ async function run() {
   console.log('🚀 Starting R4.6.4 Firestore Security & Backend Verification Suite...');
 
   const databaseId = process.env.VITE_FIREBASE_DATABASE_ID || process.env.FIREBASE_DATABASE_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915';
-  const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'original-micron-7sjh2';
+  const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915';
 
   const firestoreRestBaseUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents`;
   const expressBaseUrl = 'http://localhost:3000/api/v1';
@@ -70,7 +70,7 @@ async function run() {
   results.push({
     testId: 'TEST-01',
     name: 'Vérification de la règle déployée pour bricolage_quote_requests',
-    method: 'Inspection du fichier firestore.rules déployé sur original-micron-7sjh2',
+    method: 'Inspection du fichier firestore.rules déployé sur la cible Firebase',
     result: 'Rules: allow get if isAdmin() || (isSignedIn() && resource.data.customerId == request.auth.uid); allow create, update, delete if isAdmin();',
     proof: 'Extrait de firestore.rules lignes 590-595: match /bricolage_quote_requests/{requestId} { allow get: if isAdmin() || (isSignedIn() && resource.data.customerId == request.auth.uid); allow create, update, delete: if isAdmin(); }',
     status: 'PASS'

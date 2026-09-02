@@ -307,7 +307,11 @@ export class ProductSearchService {
         userAgent: req.headers["user-agent"] || "unknown",
         filters: { minPrice, maxPrice, wilaya: wilayaFilter, category: categoryFilter }
       };
-      admin.firestore().collection("search_logs").add(logData).catch(() => {});
+      admin.firestore().collection("search_logs").add(logData).catch((err) => {
+        safeLogger.warn("[ProductSearchService] Failed to record search log asynchronously", {
+          error: err instanceof Error ? err.message : String(err)
+        });
+      });
     } catch (logErr: unknown) {
       safeLogger.error("[ProductSearchService] Failed to log search", { err: logErr instanceof Error ? logErr.message : String(logErr) });
     }

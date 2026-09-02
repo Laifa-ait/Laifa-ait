@@ -156,7 +156,7 @@ export const ComparatorTable: React.FC<ComparatorTableProps> = ({
                     onClick={() => navigate(`/product/${p.id}`)}
                     className="relative w-full h-28 sm:h-40 bg-slate-50 rounded-xl sm:rounded-2xl overflow-hidden mb-2 sm:mb-4 border border-slate-100 flex items-center justify-center cursor-pointer group"
                   >
-                    <img src={p.image} alt={p.name} className="h-full object-contain p-1.5 sm:p-2 group-hover:scale-105 transition-transform duration-300" />
+                    <img loading="lazy" decoding="async" src={p.image} alt={p.name} className="h-full object-contain p-1.5 sm:p-2 group-hover:scale-105 transition-transform duration-300" />
                     {isWinner && (
                       <span className="absolute top-1.5 right-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-md flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Best Choice
@@ -299,8 +299,7 @@ export const ComparatorTable: React.FC<ComparatorTableProps> = ({
                       className="flex flex-col items-center text-center cursor-pointer group"
                     >
                       <div className="relative w-14 h-14 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden mb-1.5 sm:mb-2 border border-slate-200/80 bg-slate-50 group flex items-center justify-center">
-                        <img
-                          src={p.image}
+                        <img loading="lazy" decoding="async" src={p.image}
                           alt={p.name}
                           className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                         />

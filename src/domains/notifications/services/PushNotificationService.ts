@@ -153,7 +153,13 @@ export class PushNotificationService {
                 ) {
                   const invalidDocId = tokenDocIds[idx];
                   if (invalidDocId) {
-                    db.collection("users").doc(recipientId).collection("pushTokens").doc(invalidDocId).delete().catch(() => {});
+                    db.collection("users").doc(recipientId).collection("pushTokens").doc(invalidDocId).delete().catch((err) => {
+                      safeLogger.warn("[PushNotificationService] Failed to delete invalid push token", {
+                        recipientId,
+                        invalidDocId,
+                        error: err instanceof Error ? err.message : String(err)
+                      });
+                    });
                   }
                 }
               }
@@ -294,7 +300,13 @@ export class PushNotificationService {
                 ) {
                   const invalidDocId = tokenDocIds[idx];
                   if (invalidDocId) {
-                    db.collection("users").doc(recipientId).collection("pushTokens").doc(invalidDocId).delete().catch(() => {});
+                    db.collection("users").doc(recipientId).collection("pushTokens").doc(invalidDocId).delete().catch((err) => {
+                      safeLogger.warn("[PushNotificationService] Failed to delete invalid push token", {
+                        recipientId,
+                        invalidDocId,
+                        error: err instanceof Error ? err.message : String(err)
+                      });
+                    });
                   }
                 }
               }

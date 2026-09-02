@@ -265,28 +265,28 @@ describe.skipIf(!hasEmulator)('Firebase Storage Security Rules - Real Emulator S
 
   describe('SCENARIO F: Administrateur légitime (EXPECTED: ALLOW)', () => {
     it('allows Admin to read and write in any support ticket', async () => {
-      const adminStorage = testEnv.authenticatedContext('admin_user').storage();
+      const adminStorage = testEnv.authenticatedContext('admin_user', { admin: true, role: 'admin' }).storage();
       const ref = adminStorage.ref('support/ticket_B/admin_reply.jpg');
       await assertSucceeds(upload(ref.put(dummyImageBytes, imageMetadata)));
       await assertSucceeds(ref.getDownloadURL());
     });
 
     it('allows Admin to read and write in any dispute', async () => {
-      const adminStorage = testEnv.authenticatedContext('admin_user').storage();
+      const adminStorage = testEnv.authenticatedContext('admin_user', { admin: true, role: 'admin' }).storage();
       const ref = adminStorage.ref('disputes/dispute_B/admin_verdict.jpg');
       await assertSucceeds(upload(ref.put(dummyImageBytes, imageMetadata)));
       await assertSucceeds(ref.getDownloadURL());
     });
 
     it('allows Admin to read and write in any return request', async () => {
-      const adminStorage = testEnv.authenticatedContext('admin_user').storage();
+      const adminStorage = testEnv.authenticatedContext('admin_user', { admin: true, role: 'admin' }).storage();
       const ref = adminStorage.ref('returns/order_B/admin_decision.jpg');
       await assertSucceeds(upload(ref.put(dummyImageBytes, imageMetadata)));
       await assertSucceeds(ref.getDownloadURL());
     });
 
     it('allows Admin to read and write in any chat_images/', async () => {
-      const adminStorage = testEnv.authenticatedContext('admin_user').storage();
+      const adminStorage = testEnv.authenticatedContext('admin_user', { admin: true, role: 'admin' }).storage();
       const ref = adminStorage.ref('chat_images/order_B/admin_moderation.jpg');
       await assertSucceeds(upload(ref.put(dummyImageBytes, imageMetadata)));
       await assertSucceeds(ref.getDownloadURL());

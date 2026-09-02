@@ -40,8 +40,7 @@ export const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       <div>
         {/* Banner */}
         <div className="relative h-28 sm:h-32 bg-slate-800 overflow-hidden">
-          <img
-            src={bannerUrl}
+          <img loading="lazy" decoding="async" src={bannerUrl}
             alt={shop.shopName}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
             onError={(e) => {
@@ -70,8 +69,7 @@ export const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           <div className="flex items-end justify-between -mt-8 sm:-mt-10 mb-3">
             <div className="relative">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-4 border-white bg-white shadow-md overflow-hidden flex items-center justify-center">
-                <img
-                  src={logoUrl}
+                <img loading="lazy" decoding="async" src={logoUrl}
                   alt={shop.shopName}
                   className="w-full h-full object-cover"
                   onError={(e) => {

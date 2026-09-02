@@ -193,7 +193,7 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
             {/* Property Summary Header */}
             <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3.5 flex items-center gap-3">
               {propertyImage ? (
-                <img src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-xl object-cover border border-[#e8e2d4] shrink-0" />
+                <img loading="lazy" decoding="async" src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-xl object-cover border border-[#e8e2d4] shrink-0" />
               ) : (
                 <div className="w-14 h-14 rounded-xl bg-[#ebdcb8]/40 border border-[#b8a679]/30 flex items-center justify-center text-[#1e3835] shrink-0">
                   <Building2 className="w-6 h-6" />

@@ -18,8 +18,7 @@ export const LightboxModal: React.FC<LightboxModalProps> = ({ imageUrl, onClose 
       >
         <X className="w-6 h-6" />
       </button>
-      <img 
-        src={imageUrl} 
+      <img loading="lazy" decoding="async" src={imageUrl} 
         alt="Lightbox Zoom" 
         referrerPolicy="no-referrer"
         className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 

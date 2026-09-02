@@ -1,23 +1,9 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import { admin, db } from "../../../config/firebase-admin";
-import { authenticateToken } from "../../../middlewares/auth";
+import { authenticateToken, AuthenticatedRequest } from "../../../middlewares/auth";
 import { Order } from "../order.types";
 import { calculateOrderCommission } from "../../../utils/orderCalculations";
 import { safeLogger } from "../../../utils/logger";
-
-export interface AuthenticatedUser {
-  uid: string;
-  email?: string;
-  role?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: AuthenticatedUser;
-  file?: unknown;
-  files?: unknown;
-}
 
 interface OrderItemDoc {
   id?: string;

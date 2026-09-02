@@ -88,8 +88,7 @@ export const PropertyGalleryAndHeader: React.FC<PropertyGalleryAndHeaderProps> =
       {/* Main Image & Thumbnails */}
       <div className="space-y-2">
         <div className="relative aspect-16/9 sm:aspect-21/9 rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-xs">
-          <img
-            src={images[activeImageIndex] || images[0]}
+          <img loading="lazy" decoding="async" src={images[activeImageIndex] || images[0]}
             alt={property.title}
             className="w-full h-full object-cover"
           />
@@ -112,7 +111,7 @@ export const PropertyGalleryAndHeader: React.FC<PropertyGalleryAndHeaderProps> =
                   activeImageIndex === idx ? 'border-emerald-600 ring-2 ring-emerald-200' : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
               >
-                <img src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

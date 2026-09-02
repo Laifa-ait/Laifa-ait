@@ -22,8 +22,7 @@ export const ArtisanDetailHero: React.FC<ArtisanDetailHeroProps> = ({
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-5">
-          <img
-            src={
+          <img loading="lazy" decoding="async" src={
               artisan.avatarUrl ||
               'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=180&auto=format&fit=crop&q=80'
             }

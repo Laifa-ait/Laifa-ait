@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { User, Phone, Check, RefreshCw, Sparkles } from "lucide-react";
-import { User as FirebaseUser, updateProfile } from "firebase/auth";
+import { updateUserProfile, getCurrentAuthUser } from "../../services/auth.service";
 import { toast } from "react-hot-toast";
 import { RETRO_AVATARS, getRetroAvatar } from "../../utils/avatar";
 import { useTranslation } from "react-i18next";
 import { apiPost } from "../../lib/api";
 import { OptimizedImage } from "../ui/OptimizedImage";
-import { UserProfile } from "../../domains/user/user.types";
+import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface ProfileSettingsProps {
   currentUser: FirebaseUser | null;
@@ -24,12 +24,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Le nom d'utilisateur est obligatoire.");
-    if (!currentUser) return toast.error("Utilisateur non connecté.");
+    const fbUser = getCurrentAuthUser();
+    if (!fbUser) return toast.error("Utilisateur non connecté.");
 
     setSaving(true);
     try {
       // 1. Update main Firebase auth Profile
-      await updateProfile(currentUser, {
+      await updateUserProfile(fbUser, {
         displayName: name,
         photoURL: photoURL,
       });

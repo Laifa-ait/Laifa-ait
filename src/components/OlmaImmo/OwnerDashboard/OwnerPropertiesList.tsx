@@ -106,8 +106,7 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
               className="bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] overflow-hidden hover:shadow-md transition flex flex-col group relative"
             >
               <div className="relative aspect-16/10 bg-slate-900 overflow-hidden">
-                <img
-                  src={property.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
+                <img loading="lazy" decoding="async" src={property.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
                   alt={property.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />

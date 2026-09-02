@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2 } from 'lucide-react';
-import { storage } from '../../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadFile } from '../../services/storage.service';
 import { InitiateConversationDTO } from '../../types/messaging';
 import { messagingApi } from '../../services/messagingApi';
 import { useMessaging } from '../../hooks/useMessaging';
@@ -73,9 +72,7 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
     setUploadingAttachment(true);
     try {
       const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const fileRef = ref(storage, `chat_attachments/${selectedConversation.id}/${Date.now()}_${cleanName}`);
-      await uploadBytes(fileRef, file, { contentType: file.type });
-      const downloadUrl = await getDownloadURL(fileRef);
+      const downloadUrl = await uploadFile(`chat_attachments/${selectedConversation.id}/${Date.now()}_${cleanName}`, file);
       const res = await messagingApi.sendMessage(selectedConversation.id, {
         text: isPdf ? `[Document PDF : ${file.name}]` : 'Photo partagée',
         attachments: [{ type: isPdf ? 'pdf' : 'image', url: downloadUrl, fileName: file.name, fileSizeBytes: file.size }]

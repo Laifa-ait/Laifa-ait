@@ -1,8 +1,177 @@
 import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
-import { admin, db } from "../config/firebase-admin";
 import { Readable } from "stream";
+
+// In-Memory Firebase Store and Storage
+const { memoryStore, savedFiles, mockAuth } = vi.hoisted(() => {
+  const memStore = new Map<string, Record<string, unknown>>();
+  const files: Record<string, { buffer: Buffer; options: Record<string, unknown> }> = {};
+  const verifyFn = vi.fn();
+  const authObj = {
+    verifyIdToken: verifyFn,
+  };
+  return {
+    memoryStore: memStore,
+    savedFiles: files,
+    mockAuth: authObj,
+  };
+});
+
+let autoDocCounter = 1000;
+
+vi.mock("../config/firebase-admin", () => {
+  const mockDb = {
+    collection: (colName: string) => {
+      let filterFn: ((item: { id: string; data: Record<string, unknown> }) => boolean) | null = null;
+      let orderField: string | null = null;
+      let orderDir: "asc" | "desc" = "asc";
+
+      const getColDocs = () => {
+        const results: Array<{ id: string; data: Record<string, unknown> }> = [];
+        for (const [k, v] of memoryStore.entries()) {
+          if (k.startsWith(`${colName}/`)) {
+            const id = k.slice(colName.length + 1);
+            results.push({ id, data: v });
+          }
+        }
+        return results;
+      };
+
+      const chain = {
+        doc: (docId?: string) => {
+          const actualDocId = docId || `mock_doc_${++autoDocCounter}`;
+          const key = `${colName}/${actualDocId}`;
+          const docRef = {
+            id: actualDocId,
+            parent: { id: colName },
+            get: vi.fn(async () => {
+              const data = memoryStore.get(key);
+              return {
+                id: actualDocId,
+                exists: !!data,
+                data: () => data,
+                ref: docRef,
+              };
+            }),
+            set: vi.fn(async (data: Record<string, unknown>) => {
+              memoryStore.set(key, { ...data });
+            }),
+            update: vi.fn(async (updates: Record<string, unknown>) => {
+              const existing = memoryStore.get(key) || {};
+              memoryStore.set(key, { ...existing, ...updates });
+            }),
+            delete: vi.fn(async () => {
+              memoryStore.delete(key);
+            }),
+          };
+          return docRef;
+        },
+        add: vi.fn(async (data: Record<string, unknown>) => {
+          const actualDocId = `mock_doc_${++autoDocCounter}`;
+          const key = `${colName}/${actualDocId}`;
+          memoryStore.set(key, { ...data });
+          return { id: actualDocId };
+        }),
+        where: vi.fn((field: string, op: string, val: unknown) => {
+          const prevFilter = filterFn;
+          filterFn = (item) => {
+            if (prevFilter && !prevFilter(item)) return false;
+            const fieldVal = item.data[field];
+            if (op === "==") return fieldVal === val;
+            if (op === "in" && Array.isArray(val)) return val.includes(fieldVal);
+            if (op === "array-contains") return Array.isArray(fieldVal) && fieldVal.includes(val);
+            return true;
+          };
+          return chain;
+        }),
+        orderBy: vi.fn((field: string, dir: "asc" | "desc" = "asc") => {
+          orderField = field;
+          orderDir = dir;
+          return chain;
+        }),
+        limit: vi.fn(() => chain),
+        get: vi.fn(async () => {
+          let docs = getColDocs();
+          if (filterFn) {
+            docs = docs.filter(filterFn);
+          }
+          if (orderField) {
+            docs.sort((a, b) => {
+              const valA = String(a.data[orderField!] ?? "");
+              const valB = String(b.data[orderField!] ?? "");
+              const cmp = valA.localeCompare(valB);
+              return orderDir === "desc" ? -cmp : cmp;
+            });
+          }
+          return {
+            empty: docs.length === 0,
+            size: docs.length,
+            docs: docs.map((d) => ({
+              id: d.id,
+              data: () => d.data,
+              ref: {
+                delete: vi.fn(async () => {
+                  memoryStore.delete(`${colName}/${d.id}`);
+                }),
+              },
+            })),
+          };
+        }),
+      };
+      return chain;
+    },
+    runTransaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb({
+      get: vi.fn(async (ref: { get: () => Promise<unknown> }) => ref.get()),
+      set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data as Record<string, unknown>)),
+      create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data as Record<string, unknown>)),
+      update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data as Record<string, unknown>)),
+      delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+    })),
+  };
+
+  const storageMock = {
+    bucket: vi.fn().mockReturnValue({
+      name: "test-bucket",
+      file: vi.fn().mockImplementation((filePath: string) => ({
+        name: filePath,
+        save: vi.fn().mockImplementation(async (buf: Buffer, opts: Record<string, unknown>) => {
+          savedFiles[filePath] = { buffer: buf, options: opts };
+        }),
+        exists: vi.fn().mockImplementation(async () => [!!savedFiles[filePath]]),
+        delete: vi.fn().mockImplementation(async () => {
+          delete savedFiles[filePath];
+        }),
+        createReadStream: vi.fn().mockImplementation(() => {
+          const stream = new Readable();
+          stream.push(savedFiles[filePath]?.buffer || Buffer.from("mock data"));
+          stream.push(null);
+          return stream;
+        }),
+      })),
+    }),
+  };
+
+  return {
+    admin: {
+      auth: () => mockAuth,
+      storage: () => storageMock,
+      firestore: {
+        FieldValue: {
+          serverTimestamp: vi.fn(() => new Date().toISOString()),
+          increment: vi.fn((n: number) => n),
+        },
+        Timestamp: {
+          now: vi.fn(() => ({ toMillis: () => Date.now(), toDate: () => new Date() })),
+        },
+      },
+    },
+    db: mockDb,
+    auth: mockAuth,
+  };
+});
+
+import { admin, db } from "../config/firebase-admin";
 import router from "../domains/support/support.routes";
 
 const app = express();
@@ -78,39 +247,7 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
 
     // Spy on token decoding
     verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
-
-    // Initialize mock Storage
-    savedFiles = {};
-    storageMock = {
-      bucket: vi.fn().mockReturnValue({
-        name: "test-bucket",
-        file: vi.fn().mockImplementation((path: string) => {
-          return {
-            name: path,
-            save: vi.fn().mockImplementation(async (buf: Buffer, opts: Record<string, unknown>) => {
-              savedFiles[path] = { buffer: buf, options: opts };
-            }),
-            exists: vi.fn().mockImplementation(async () => {
-              return [!!savedFiles[path]];
-            }),
-            delete: vi.fn().mockImplementation(async () => {
-              delete savedFiles[path];
-            }),
-            createReadStream: vi.fn().mockImplementation(() => {
-              const stream = new Readable();
-              stream.push(savedFiles[path]?.buffer || Buffer.from("mock data"));
-              stream.push(null);
-              return stream;
-            })
-          };
-        })
-      })
-    };
-    vi.spyOn(admin, "storage").mockReturnValue(storageMock as unknown as admin.storage.Storage);
   });
-
-  let storageMock: unknown;
-  let savedFiles: Record<string, { buffer: Buffer; options: Record<string, unknown> }> = {};
 
   afterAll(async () => {
     // Clean up
@@ -1567,26 +1704,22 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
           options: {}
         };
 
-        const originalRunTransaction = db.runTransaction.bind(db);
         const transactionSpy = vi.spyOn(db, "runTransaction").mockImplementation(async <T>(
           updateFunction: (transaction: admin.firestore.Transaction) => Promise<T>
         ): Promise<T> => {
-          return originalRunTransaction(async (transaction: admin.firestore.Transaction) => {
-            const proxyTx = new Proxy(transaction, {
-              get(target, prop, receiver) {
-                if (prop === "get") {
-                  return async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
-                    if ("id" in ref && ref.id === tempAttachId) {
-                      return createMockDocSnapshot(tempAttachId, ref, false);
-                    }
-                    return target.get(ref);
-                  };
-                }
-                return Reflect.get(target, prop, receiver);
+          const tx = {
+            get: vi.fn(async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
+              if ("id" in ref && ref.id === tempAttachId) {
+                return createMockDocSnapshot(tempAttachId, ref, false);
               }
-            });
-            return updateFunction(proxyTx);
-          });
+              return ref.get();
+            }),
+            set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data)),
+            delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+          };
+          return updateFunction(tx as unknown as admin.firestore.Transaction);
         });
 
         verifyTokenSpy.mockResolvedValue({
@@ -1631,32 +1764,28 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
           options: {}
         };
 
-        const originalRunTransaction = db.runTransaction.bind(db);
         const transactionSpy = vi.spyOn(db, "runTransaction").mockImplementation(async <T>(
           updateFunction: (transaction: admin.firestore.Transaction) => Promise<T>
         ): Promise<T> => {
-          return originalRunTransaction(async (transaction: admin.firestore.Transaction) => {
-            const proxyTx = new Proxy(transaction, {
-              get(target, prop, receiver) {
-                if (prop === "get") {
-                  return async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
-                    if ("id" in ref && ref.id === tempAttachId) {
-                      return createMockDocSnapshot(tempAttachId, ref, true, {
-                        ticketId: "some_other_hacked_ticket",
-                        filePath: `support/${attachTicketAId}/${tempAttachId}/receipt.png`,
-                        fileName: "receipt.png",
-                        fileType: "image/png",
-                        userId: userAUid,
-                      });
-                    }
-                    return target.get(ref);
-                  };
-                }
-                return Reflect.get(target, prop, receiver);
+          const tx = {
+            get: vi.fn(async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
+              if ("id" in ref && ref.id === tempAttachId) {
+                return createMockDocSnapshot(tempAttachId, ref, true, {
+                  ticketId: "some_other_hacked_ticket",
+                  filePath: `support/${attachTicketAId}/${tempAttachId}/receipt.png`,
+                  fileName: "receipt.png",
+                  fileType: "image/png",
+                  userId: userAUid,
+                });
               }
-            });
-            return updateFunction(proxyTx);
-          });
+              return ref.get();
+            }),
+            set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data)),
+            delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+          };
+          return updateFunction(tx as unknown as admin.firestore.Transaction);
         });
 
         verifyTokenSpy.mockResolvedValue({
@@ -1788,27 +1917,23 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
 
         const callOrder: string[] = [];
 
-        const originalRunTransaction = db.runTransaction.bind(db);
         const transactionSpy = vi.spyOn(db, "runTransaction").mockImplementation(async <T>(
           updateFunction: (transaction: admin.firestore.Transaction) => Promise<T>
         ): Promise<T> => {
           callOrder.push("runTransaction_start");
-          const result = await originalRunTransaction(async (transaction: admin.firestore.Transaction) => {
-            const proxyTx = new Proxy(transaction, {
-              get(target, prop, receiver) {
-                if (prop === "get") {
-                  return async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
-                    if ("parent" in ref && ref.parent?.id) {
-                      callOrder.push(`transaction_get_${ref.parent.id}`);
-                    }
-                    return target.get(ref);
-                  };
-                }
-                return Reflect.get(target, prop, receiver);
+          const tx = {
+            get: vi.fn(async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
+              if ("parent" in ref && ref.parent?.id) {
+                callOrder.push(`transaction_get_${ref.parent.id}`);
               }
-            });
-            return updateFunction(proxyTx);
-          });
+              return ref.get();
+            }),
+            set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data)),
+            delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+          };
+          const result = await updateFunction(tx as unknown as admin.firestore.Transaction);
           callOrder.push("runTransaction_end");
           return result;
         });
@@ -1828,6 +1953,7 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
           });
 
         expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
 
         // Verify that transaction executed read operations
         expect(callOrder).toContain("runTransaction_start");
@@ -1835,7 +1961,9 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
         expect(callOrder).toContain("transaction_get_supportAttachments");
 
         transactionSpy.mockRestore();
-        await db.collection("supportMessages").doc(res.body.message.id).delete();
+        if (res.body.message?.id) {
+          await db.collection("supportMessages").doc(res.body.message.id).delete();
+        }
         await db.collection("supportAttachments").doc(validAttachId).delete();
         delete savedFiles[validFilePath];
       });
@@ -2283,35 +2411,31 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
         savedFiles[mutatedFilePath] = { buffer: Buffer.from("mutated png"), options: {} };
 
         // Intercept runTransaction to simulate Firestore document mutation before transaction reads it
-        const originalRunTransaction = db.runTransaction.bind(db);
         const mutateSpy = vi.spyOn(db, "runTransaction").mockImplementation(async <T>(
           updateFunction: (transaction: admin.firestore.Transaction) => Promise<T>
         ): Promise<T> => {
-          return originalRunTransaction(async (transaction: admin.firestore.Transaction) => {
-            const proxyTx = new Proxy(transaction, {
-              get(target, prop, receiver) {
-                if (prop === "get") {
-                  return async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
-                    const snap = await target.get(ref);
-                    if (ref.id === toctouAttachId) {
-                      return {
-                        ...snap,
-                        exists: true,
-                        data: () => ({
-                          ...snap.data(),
-                          fileName: "mutated.png",
-                          filePath: mutatedFilePath
-                        })
-                      } as unknown as admin.firestore.DocumentSnapshot<admin.firestore.DocumentData>;
-                    }
-                    return snap;
-                  };
-                }
-                return Reflect.get(target, prop, receiver);
+          const tx = {
+            get: vi.fn(async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
+              const snap = await ref.get();
+              if (ref.id === toctouAttachId) {
+                return {
+                  ...snap,
+                  exists: true,
+                  data: () => ({
+                    ...snap.data(),
+                    fileName: "mutated.png",
+                    filePath: mutatedFilePath
+                  })
+                } as unknown as admin.firestore.DocumentSnapshot<admin.firestore.DocumentData>;
               }
-            });
-            return updateFunction(proxyTx);
-          });
+              return snap;
+            }),
+            set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data)),
+            delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+          };
+          return updateFunction(tx as unknown as admin.firestore.Transaction);
         });
 
         verifyTokenSpy.mockResolvedValue({
@@ -2541,35 +2665,31 @@ describe("Support Ticket IDOR Hardening Integration Suite", () => {
         savedFiles[p1ToctouPath] = { buffer: Buffer.from("orig"), options: {} };
         savedFiles[p1MutatedPath] = { buffer: Buffer.from("mut"), options: {} };
 
-        const originalRunTransaction = db.runTransaction.bind(db);
         const txSpy = vi.spyOn(db, "runTransaction").mockImplementation(async <T>(
           updateFunction: (transaction: admin.firestore.Transaction) => Promise<T>
         ): Promise<T> => {
-          return originalRunTransaction(async (transaction: admin.firestore.Transaction) => {
-            const proxyTx = new Proxy(transaction, {
-              get(target, prop, receiver) {
-                if (prop === "get") {
-                  return async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
-                    const snap = await target.get(ref);
-                    if (ref.id === p1ToctouAttach) {
-                      return {
-                        ...snap,
-                        exists: true,
-                        data: () => ({
-                          ...snap.data(),
-                          fileName: "mut.png",
-                          filePath: p1MutatedPath
-                        })
-                      } as unknown as admin.firestore.DocumentSnapshot<admin.firestore.DocumentData>;
-                    }
-                    return snap;
-                  };
-                }
-                return Reflect.get(target, prop, receiver);
+          const tx = {
+            get: vi.fn(async (ref: admin.firestore.DocumentReference<admin.firestore.DocumentData>) => {
+              const snap = await ref.get();
+              if (ref.id === p1ToctouAttach) {
+                return {
+                  ...snap,
+                  exists: true,
+                  data: () => ({
+                    ...snap.data(),
+                    fileName: "mut.png",
+                    filePath: p1MutatedPath
+                  })
+                } as unknown as admin.firestore.DocumentSnapshot<admin.firestore.DocumentData>;
               }
-            });
-            return updateFunction(proxyTx);
-          });
+              return snap;
+            }),
+            set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            create: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+            update: vi.fn(async (ref: { update: (d: unknown) => Promise<unknown> }, data: unknown) => ref.update(data)),
+            delete: vi.fn(async (ref: { delete: () => Promise<unknown> }) => ref.delete()),
+          };
+          return updateFunction(tx as unknown as admin.firestore.Transaction);
         });
 
         verifyTokenSpy.mockResolvedValue({

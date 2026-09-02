@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Star, MessageSquareDashed } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User as FirebaseUser } from "firebase/auth";
 import { ReviewDocument } from "../../domains/review/review.types";
-import { UserProfile } from "../../domains/user/user.types";
+import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface PendingReviewItem {
   id: string;

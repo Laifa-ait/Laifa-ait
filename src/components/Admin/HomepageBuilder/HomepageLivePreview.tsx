@@ -191,7 +191,7 @@ export const HomepageLivePreview: React.FC<HomepageLivePreviewProps> = ({
                           <div key={p.id} className="bg-slate-50 rounded-xl p-2.5 border border-slate-200/60 flex flex-col justify-between space-y-2">
                             <div className="aspect-square bg-slate-200 rounded-lg overflow-hidden relative">
                               {p.images && p.images[0] ? (
-                                <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                                <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">Img</div>
                               )}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { User as FirebaseUser } from "firebase/auth";
 import { Product, CartItem } from "../domains/product/product.types";
 import { useAuth } from "./AuthContext";
@@ -6,6 +7,8 @@ import { analyticsEngine } from "../utils/analyticsEngine";
 import { apiGet, apiPost } from "../lib/api";
 import toast from "react-hot-toast";
 import { safeLogger } from "../utils/logger";
+import { queryKeys } from "../lib/queryKeys";
+import { productsApi } from "../services/api/products.api";
 
 interface CartContextType {
   cart: CartItem[];
@@ -29,6 +32,7 @@ const getCartKey = (uid?: string | null) => (uid ? `olma_cart_${uid}` : "olma_ca
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const auth = useAuth();
+  const queryClient = useQueryClient();
   const prevUserRef = useRef<FirebaseUser | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -36,26 +40,27 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Refs to prevent background fetch race conditions (Deduplication + Cache maps)
-  const productDetailsCache = useRef<Record<string, Product>>({});
-  const activeProductFetches = useRef<Record<string, Promise<Product | null>>>({});
-
   // Hydrate cart from backend (prices/names) to avoid stale data
-  const hydrateCart = async (cartItems: CartItem[]): Promise<CartItem[]> => {
+  const hydrateCart = React.useCallback(async (cartItems: CartItem[]): Promise<CartItem[]> => {
     if (!cartItems || cartItems.length === 0) return [];
 
     const uniqueIds = Array.from(new Set(cartItems.map((item) => item.id)));
     const productDataMap = new Map<string, Product>();
 
     try {
-      const res = await apiPost<{ products: Product[] }>("/api/v1/products/batch", { ids: uniqueIds });
-      if (res && Array.isArray(res.products)) {
-        res.products.forEach((p: Product) => {
-          productDataMap.set(p.id, p);
-        });
-      }
+      const products = await queryClient.fetchQuery({
+        queryKey: queryKeys.products.list({ ids: uniqueIds.sort() }),
+        queryFn: async () => {
+          const res = await apiPost<{ products: Product[] }>("/api/v1/products/batch", { ids: uniqueIds });
+          return res?.products || [];
+        },
+        staleTime: 5 * 60 * 1000,
+      });
+      products.forEach((p: Product) => {
+        productDataMap.set(p.id, p);
+      });
     } catch (e) {
-      safeLogger.error("Hydration batch API error", { err: e instanceof Error ? e.message : String(e) });
+      safeLogger.error("Hydration batch API error in CartContext via queryClient", { err: e instanceof Error ? e.message : String(e) });
     }
 
     const hydrated = cartItems.map((item) => {
@@ -74,7 +79,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return item; // fallback
     });
     return hydrated;
-  };
+  }, [queryClient]);
 
   // Sync cart and merge from guest to user
   useEffect(() => {
@@ -184,7 +189,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     handleAuthChange();
-  }, [auth.currentUser]);
+  }, [auth.currentUser, hydrateCart]);
 
   // Sync to Cloud and LocalStorage whenever cart/wishlist change
   useEffect(() => {
@@ -197,19 +202,27 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem(userWishlistKey, JSON.stringify(wishlist));
 
     if (auth.currentUser) {
-      // Persist to Cloud via secure REST endpoints
-      const cartPointers = cart.map((item) => ({
-        id: item.id,
-        sellerId: item.sellerId,
-        quantity: item.quantity,
-        selectedVariant: item.selectedVariant || null,
-        addedAt: item.addedAt || Date.now(),
-      }));
+      // Debounce cloud sync to coalesce rapid successive cart/wishlist modifications
+      const syncTimeout = setTimeout(() => {
+        const cartPointers = cart.map((item) => ({
+          id: item.id,
+          sellerId: item.sellerId,
+          quantity: item.quantity,
+          selectedVariant: item.selectedVariant || null,
+          addedAt: item.addedAt || Date.now(),
+        }));
 
-      Promise.all([
-        apiPost("/api/v1/auth/cart", { items: cartPointers }),
-        apiPost("/api/v1/auth/wishlist", { items: wishlist }),
-      ]).catch((err) => safeLogger.error("Error syncing cart/wishlist to cloud", { err: err instanceof Error ? err.message : String(err) }));
+        Promise.all([
+          apiPost("/api/v1/auth/cart", { items: cartPointers }),
+          apiPost("/api/v1/auth/wishlist", { items: wishlist }),
+        ]).catch((err) =>
+          safeLogger.warn("CartContext: Cloud cart/wishlist sync warning", {
+            err: err instanceof Error ? err.message : String(err),
+          })
+        );
+      }, 300);
+
+      return () => clearTimeout(syncTimeout);
     }
   }, [cart, wishlist, isInitialized, auth.currentUser]);
 
@@ -281,69 +294,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
 
     const fetchLatestDetails = async () => {
-      if (productDetailsCache.current[productId]) {
-        const pData = productDetailsCache.current[productId];
-        setCart((prev) =>
-          prev.map((item) => {
-            if (item.id === productId) {
-              return {
-                ...item,
-                name: pData.name,
-                price: pData.price,
-                promoPrice: pData.promoPrice,
-                image: pData.image || pData.images?.[0] || item.image,
-                variants: pData.variants || item.variants,
-              };
-            }
-            return item;
-          })
-        );
-        return;
-      }
-
-      if (activeProductFetches.current[productId] !== undefined) {
-        try {
-          const pData = await activeProductFetches.current[productId];
-          if (pData) {
-            setCart((prev) =>
-              prev.map((item) => {
-                if (item.id === productId) {
-                  return {
-                    ...item,
-                    name: pData.name,
-                    price: pData.price,
-                    promoPrice: pData.promoPrice,
-                    image: pData.image || pData.images?.[0] || item.image,
-                    variants: pData.variants || item.variants,
-                  };
-                }
-                return item;
-              })
-            );
-          }
-        } catch (e) {
-          safeLogger.warn("Deduplicated background fetch catch", { err: e instanceof Error ? e.message : String(e) });
-        }
-        return;
-      }
-
-      const fetchPromise = (async () => {
-        try {
-          const data = await apiGet<Product>(`/api/v1/products/${productId}`);
-          if (data) {
-            productDetailsCache.current[productId] = data;
-            return data;
-          }
-        } catch (err) {
-          safeLogger.error("Error fetching single product details", { err: err instanceof Error ? err.message : String(err) });
-        }
-        return null;
-      })();
-
-      activeProductFetches.current[productId] = fetchPromise;
-
       try {
-        const pData = await fetchPromise;
+        const pData = await queryClient.fetchQuery({
+          queryKey: queryKeys.products.detail(productId),
+          queryFn: () => productsApi.getProductById(productId),
+          staleTime: 5 * 60 * 1000,
+        });
+
         if (pData) {
           setCart((prev) => {
             return prev.map((item) => {
@@ -362,9 +319,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
         }
       } catch (err) {
-        safeLogger.warn("Background fetch of product details skipped", { err: err instanceof Error ? err.message : String(err) });
-      } finally {
-        delete activeProductFetches.current[productId];
+        safeLogger.error("Background fetch of product details skipped via queryClient", { err: err instanceof Error ? err.message : String(err) });
       }
     };
     fetchLatestDetails();

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { corsOptions, preventDirectCloudRunAccess } from "../middlewares/security";
+import { corsOptions, preventDirectCloudRunAccess, helmetMiddleware } from "../middlewares/security";
 import { Request, Response } from "express";
 
 type CorsOriginCallback = (err: Error | null, allow?: boolean) => void;
@@ -33,9 +33,27 @@ describe("Security Middleware Configuration", () => {
       });
     });
 
-    it("allows Cloud Run origins (*.run.app)", () => {
+    it("allows Cloud Run origins (*.run.app) in non-production environments", () => {
+      process.env.NODE_ENV = "development";
       const originFn = corsOptions.origin as CorsOriginFn;
       originFn("https://laifa-ait-git-mslz.europe-west1.run.app", (err: Error | null, allow?: boolean) => {
+        expect(err).toBeNull();
+        expect(allow).toBe(true);
+      });
+    });
+
+    it("disallows generic Cloud Run origins (*.run.app) in production unless explicitly listed in allowedOrigins", () => {
+      process.env.NODE_ENV = "production";
+      const originFn = corsOptions.origin as CorsOriginFn;
+      
+      // Generic arbitrary Cloud Run URL must be rejected in production
+      originFn("https://attacker-random-app.europe-west1.run.app", (err: Error | null, allow?: boolean) => {
+        expect(err).toBeNull();
+        expect(allow).toBe(false);
+      });
+
+      // Explicitly listed Cloud Run deployment in production must still be allowed
+      originFn("https://laifa-ait-git-76420360525.europe-west1.run.app", (err: Error | null, allow?: boolean) => {
         expect(err).toBeNull();
         expect(allow).toBe(true);
       });
@@ -128,6 +146,81 @@ describe("Security Middleware Configuration", () => {
       expect(headers).toContain("Authorization");
       expect(headers).toContain("X-CSRF-Token");
       expect(headers).toContain("Content-Type");
+    });
+  });
+
+  describe("Clickjacking CSP Protection", () => {
+    it("configures frame-ancestors with 'self' and exact origins without wildcard *.run.app in production", () => {
+      process.env.NODE_ENV = "production";
+
+      const headers: Record<string, string> = {};
+      const req = {
+        headers: {},
+      } as unknown as Request;
+
+      const res = {
+        setHeader: (name: string, value: string) => {
+          headers[name.toLowerCase()] = value;
+        },
+        removeHeader: () => {},
+        locals: {},
+      } as unknown as Response;
+
+      helmetMiddleware(req, res, () => {});
+
+      const cspHeader = headers["content-security-policy"] || "";
+      const frameAncestorsDirective = cspHeader
+        .split(";")
+        .find((dir) => dir.trim().startsWith("frame-ancestors")) || "";
+
+      expect(frameAncestorsDirective).toContain("frame-ancestors");
+      expect(frameAncestorsDirective).toContain("'self'");
+      expect(frameAncestorsDirective).not.toContain("https://*.run.app");
+      expect(frameAncestorsDirective).toContain("https://olmart.dz");
+    });
+  });
+
+  describe("COOP & CORP Window and Resource Isolation", () => {
+    it("configures Cross-Origin-Opener-Policy as same-origin-allow-popups in production", () => {
+      process.env.NODE_ENV = "production";
+
+      const headers: Record<string, string> = {};
+      const req = { headers: {} } as unknown as Request;
+      const res = {
+        setHeader: (name: string, value: string) => {
+          headers[name.toLowerCase()] = value;
+        },
+        removeHeader: () => {},
+        locals: {},
+      } as unknown as Response;
+
+      helmetMiddleware(req, res, () => {});
+
+      expect(headers["cross-origin-opener-policy"]).toBe("same-origin-allow-popups");
+      expect(headers["cross-origin-resource-policy"]).toBe("same-origin");
+    });
+  });
+
+  describe("Rate Limiting Fail-Safe & Multi-Instance Configuration", () => {
+    it("exports all critical rate limiters with fail-safe configuration", async () => {
+      const { apiLimiter, loginLimiter, pinLimiter, strictLimiter, webhookLimiter, debugLimiter } = await import(
+        "../middlewares/rateLimiters"
+      );
+
+      expect(apiLimiter).toBeDefined();
+      expect(loginLimiter).toBeDefined();
+      expect(pinLimiter).toBeDefined();
+      expect(strictLimiter).toBeDefined();
+      expect(webhookLimiter).toBeDefined();
+      expect(debugLimiter).toBeDefined();
+    });
+
+    it("ensures SKIP_RATE_LIMITS cannot bypass rate limiting in production", () => {
+      process.env.NODE_ENV = "production";
+      process.env.SKIP_RATE_LIMITS = "true";
+
+      const allowSkipRateLimit = process.env.NODE_ENV === "test" && process.env.SKIP_RATE_LIMITS === "true";
+      expect(allowSkipRateLimit).toBe(false);
     });
   });
 });

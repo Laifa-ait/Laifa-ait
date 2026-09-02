@@ -100,7 +100,7 @@ export const EditorStepMedia: React.FC<EditorStepMediaProps> = ({ images, setIma
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {images.map((img, idx) => (
             <div key={idx} className="relative aspect-4/3 rounded-xl overflow-hidden group border border-[#e8e2d4]">
-              <img src={img} alt={`Aperçu ${idx + 1}`} className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={img} alt={`Aperçu ${idx + 1}`} className="w-full h-full object-cover" />
               {idx === 0 && (
                 <span className="absolute top-2 left-2 bg-[#1a3831] text-[#ebdcb8] text-[10px] font-black px-2 py-0.5 rounded-md">
                   Photo principale

@@ -282,6 +282,35 @@ router.put("/admin/users/:id/client-type", authenticateToken, authorizeAdmin, as
   }
 });
 
+router.put("/admin/users/:id/capabilities", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const { capabilities } = req.body;
+
+    if (!Array.isArray(capabilities) || !capabilities.every((c) => typeof c === "string")) {
+      return res.status(400).json({ error: "Les fonctionnalités (capabilities) doivent être un tableau de chaînes." });
+    }
+
+    await db.collection("users").doc(userId).update({
+      capabilities,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await db.collection("audit_logs").add({
+      type: "USER_MANAGEMENT",
+      action: "UPDATE_CAPABILITIES",
+      targetUserId: userId,
+      adminId: req.user?.uid || "admin",
+      details: { capabilities },
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, capabilities });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
+  }
+});
+
 router.post("/admin/users/bulk-status", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { userIds, status, reason } = req.body;

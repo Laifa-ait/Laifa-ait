@@ -2,8 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "motion/react";
 import { Camera, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { storage } from "../../lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadFile } from "../../services/storage.service";
 import { useTranslation } from "react-i18next";
 
 interface ReturnRequestProps {
@@ -57,9 +56,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
       setPhotos((prev) => [...prev, newPhotoObj]);
 
       try {
-        const storageRef = ref(storage, `returns/${orderId}/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
+        const url = await uploadFile(`returns/${orderId}/${Date.now()}_${file.name}`, file);
 
         setPhotos((prev) => {
           const newPhotos = [...prev];

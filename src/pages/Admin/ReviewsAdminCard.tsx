@@ -76,8 +76,7 @@ export const ReviewsAdminCard: React.FC<ReviewsAdminCardProps> = ({
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
             {review.productImage ? (
-              <img
-                src={review.productImage}
+              <img loading="lazy" decoding="async" src={review.productImage}
                 alt={review.productName || "Produit"}
                 className="w-full h-full object-cover"
               />
@@ -178,8 +177,7 @@ export const ReviewsAdminCard: React.FC<ReviewsAdminCardProps> = ({
               rel="noopener noreferrer"
               className="w-16 h-16 rounded-lg overflow-hidden border border-zinc-200 flex-shrink-0 hover:opacity-90 transition-opacity"
             >
-              <img
-                src={img}
+              <img loading="lazy" decoding="async" src={img}
                 alt={`Photo ${idx + 1}`}
                 className="w-full h-full object-cover"
               />

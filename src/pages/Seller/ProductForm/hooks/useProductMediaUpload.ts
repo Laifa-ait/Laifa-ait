@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { ref, uploadBytesResumable, getDownloadURL, UploadTaskSnapshot } from "firebase/storage";
-import { User } from "firebase/auth";
-import { storage } from "../../../../lib/firebase";
-import imageCompression from "browser-image-compression";
+import { AuthUser as User } from "../../../../domains/user/user.types";
+import { uploadFileWithProgress } from "../../../../services/storage.service";
 import toast from "react-hot-toast";
 import { ProductFormData } from "../../../../types/seller";
+import { compressClientImage } from "../../../../utils/imageUtils";
 
 const MAX_IMAGES = 8;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // Permet jusqu'à 15MB grâce à la compression client
 
 export function useProductMediaUpload(
   formData: ProductFormData,
@@ -98,83 +97,28 @@ export function useProductMediaUpload(
     setUploading((prev) => ({ ...prev, [uploadKey]: true }));
 
     try {
-      const fileExt = file.name.split(".").pop() || "jpg";
-      const fileName = `${currentUser.uid}_${Date.now()}_${Math.random().toString(36).substring(7)}.${type === "image" ? "webp" : fileExt}`;
-      const storageRef = ref(storage, `products/${type}s/${fileName}`);
-
       let uploadFile: File | Blob = file;
       if (type === "image") {
-        if (index === 0) {
-          toast("Traitement IA : Détourage et normalisation du fond (#FAF8F5)...", { icon: "✨", duration: 4000 });
-        }
-
-        const applyWatermark = async (imageFile: File | Blob): Promise<Blob> => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              canvas.width = img.width;
-              canvas.height = img.height;
-              const ctx = canvas.getContext("2d");
-              if (!ctx) return resolve(imageFile);
-
-              ctx.drawImage(img, 0, 0);
-              ctx.globalAlpha = 0.5;
-              ctx.font = `bold ${Math.floor(img.width * 0.05)}px sans-serif`;
-              ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-              ctx.textAlign = "right";
-              ctx.textBaseline = "bottom";
-              ctx.shadowColor = "rgba(0,0,0,0.3)";
-              ctx.shadowBlur = 4;
-              ctx.fillText("OLMART", img.width - 20, img.height - 20);
-
-              canvas.toBlob(
-                (blob) => {
-                  resolve(blob || imageFile);
-                },
-                "image/webp",
-                0.9
-              );
-            };
-            img.src = URL.createObjectURL(imageFile);
-          });
-        };
-
-        const options = {
-          maxSizeMB: 0.08,
-          maxWidthOrHeight: 800,
-          useWebWorker: true,
-          fileType: "image/webp",
-          initialQuality: 0.8,
-        };
-        try {
-          const compressed = await imageCompression(file, options);
-          uploadFile = await applyWatermark(compressed);
-        } catch (err) {
-          console.error("Compression/Watermark failed:", err);
-        }
+        uploadFile = await compressClientImage(file);
       }
-
-      const metadata = {
-        contentType: type === "image" ? "image/webp" : file.type || "video/mp4",
-      };
-
-      const uploadPromise = new Promise<UploadTaskSnapshot>((resolve, reject) => {
-        const uploadTask = uploadBytesResumable(storageRef, uploadFile as Blob, metadata);
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      const fileExt = file.name.split(".").pop() || "jpg";
+      const fileName = `${currentUser.uid}_${Date.now()}_${Math.random().toString(36).substring(7)}.${type === "image" ? "webp" : fileExt}`;
+      const storagePath = `products/${type}s/${fileName}`;
+      const downloadURL = await new Promise<string>((resolve, reject) => {
+        const cancel = uploadFileWithProgress(
+          storagePath,
+          uploadFile as Blob,
+          (progress) => {
             setUploadProgress((prev) => ({ ...prev, [uploadKey]: Math.round(progress) }));
           },
-          (error) => reject(error),
-          () => resolve(uploadTask.snapshot)
+          (err) => reject(err),
+          (url) => resolve(url)
         );
+        setTimeout(() => {
+          cancel();
+          reject(new Error("TIMEOUT_STORAGE"));
+        }, 60000);
       });
-      const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("TIMEOUT_STORAGE")), 60000));
-
-      const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
-      const downloadURL = await getDownloadURL(snapshot.ref);
 
       if (type === "image" && index !== undefined) {
         const newImages = [...formData.images];

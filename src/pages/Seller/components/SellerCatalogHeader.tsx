@@ -31,8 +31,7 @@ export const SellerCatalogHeader: React.FC<SellerCatalogHeaderProps> = ({
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#FDF6EC] border-2 border-[#C75C1A] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
             {userProfile?.shopLogo ? (
-              <img
-                src={userProfile.shopLogo}
+              <img loading="lazy" decoding="async" src={userProfile.shopLogo}
                 alt={userProfile?.shopName || "Boutique"}
                 className="w-full h-full object-cover"
               />

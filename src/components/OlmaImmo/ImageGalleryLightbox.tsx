@@ -93,8 +93,7 @@ export const ImageGalleryLightbox: React.FC<ImageGalleryLightboxProps> = ({
           </button>
         )}
 
-        <img
-          src={images[currentIndex]}
+        <img loading="lazy" decoding="async" src={images[currentIndex]}
           alt={`${title} - Photo ${currentIndex + 1}`}
           className="max-h-[75vh] max-w-full object-contain rounded-2xl shadow-2xl transition-all duration-300"
         />
@@ -123,7 +122,7 @@ export const ImageGalleryLightbox: React.FC<ImageGalleryLightboxProps> = ({
                   : 'border-transparent opacity-50 hover:opacity-100'
               }`}
             >
-              <img src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>

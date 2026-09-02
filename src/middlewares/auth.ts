@@ -13,6 +13,8 @@ export interface AuthenticatedRequest extends Request {
     customClaims?: Record<string, unknown>;
     [key: string]: unknown;
   };
+  file?: unknown;
+  files?: unknown;
 }
 
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

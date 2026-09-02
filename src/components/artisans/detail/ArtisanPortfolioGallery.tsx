@@ -25,8 +25,7 @@ export const ArtisanPortfolioGallery: React.FC<ArtisanPortfolioGalleryProps> = (
             className="group rounded-2xl bg-slate-50 border border-slate-200/80 overflow-hidden"
           >
             <div className="h-44 overflow-hidden">
-              <img
-                src={item.imageUrl}
+              <img loading="lazy" decoding="async" src={item.imageUrl}
                 alt={item.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

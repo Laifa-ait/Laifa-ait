@@ -4,6 +4,7 @@ export class BusinessError extends Error {
   constructor(public statusCode: number, message: string) {
     super(message);
     this.name = "BusinessError";
+    Object.setPrototypeOf(this, BusinessError.prototype);
   }
 }
 

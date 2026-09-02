@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, query, getDocs, doc, updateDoc, limit, getDoc } from 'firebase/firestore';
-import { db, auth } from '../../../../lib/firebase';
+import {
+  fetchCollectionSample,
+  fetchAdminDoc,
+  updateAdminDoc,
+  addAdminDoc
+} from '../../../../services/adminRepository';
+import { getCurrentAuthUser } from '../../../../services/auth.service';
 import toast from 'react-hot-toast';
 
 export interface AuditState {
@@ -105,8 +110,7 @@ export const useTranslationAdmin = () => {
       let prodArMissing = 0;
       let prodEnMissing = 0;
       try {
-        const prodSnap = await getDocs(query(collection(db, 'products'), limit(300)));
-        const products = prodSnap.docs.map((d) => d.data());
+        const products = await fetchCollectionSample('products', 300);
         prodTotal = products.length;
         prodArMissing = products.filter((p) => !p.translations || !p.translations?.ar?.name).length;
         prodEnMissing = products.filter((p) => !p.translations || !p.translations?.en?.name).length;
@@ -123,8 +127,8 @@ export const useTranslationAdmin = () => {
       setDictAr(ar);
       setDictEn(en);
 
-      const monthlySnap = await getDocs(query(collection(db, 'site_content_monthly'), limit(20)));
-      setMonthlyContent(monthlySnap.docs.map((d) => ({ id: d.id, ...d.data() } as MonthlyItem)));
+      const monthlyItems = await fetchCollectionSample('site_content_monthly', 20);
+      setMonthlyContent(monthlyItems as MonthlyItem[]);
     } catch (error) {
       console.error('Audit fail:', error);
     } finally {
@@ -136,7 +140,7 @@ export const useTranslationAdmin = () => {
     setIsCleaningFictive(true);
     const tId = toast.loading('Arrosage automatique IA de toutes les traductions fictives...');
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const response = await fetch('/api/v1/admin/translate-fictive', {
@@ -180,7 +184,7 @@ export const useTranslationAdmin = () => {
     setIsTranslatingSingle(true);
     const tId = toast.loading('Mabrouk active ses algorithmes de traduction...');
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const response = await fetch('/api/v1/admin/translate-single-key', {
@@ -218,7 +222,7 @@ export const useTranslationAdmin = () => {
     setIsSavingKey(key);
     const tId = toast.loading('Mise à jour de la traduction en cours...');
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const finalFr = customFr !== undefined ? customFr : editForm.fr;
@@ -274,7 +278,7 @@ export const useTranslationAdmin = () => {
     }
 
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const response = await fetch('/api/v1/admin/save-translation', {
@@ -311,7 +315,7 @@ export const useTranslationAdmin = () => {
     setIsTranslating(true);
     const toastId = toast.loading('Récolte des catégories et bannières, puis envoi de la traduction IA...');
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const clientKeys = new Set<string>();
@@ -345,9 +349,9 @@ export const useTranslationAdmin = () => {
       }
 
       try {
-        const catDoc = await getDoc(doc(db, 'settings', 'categories'));
-        if (catDoc.exists()) {
-          const hierarchy = catDoc.data()?.hierarchy;
+        const catData = await fetchAdminDoc('settings', 'categories');
+        if (catData) {
+          const hierarchy = catData?.hierarchy;
           if (hierarchy && typeof hierarchy === 'object') {
             Object.keys(hierarchy).forEach((cat) => {
               if (cat) clientKeys.add(cat.trim());
@@ -373,9 +377,8 @@ export const useTranslationAdmin = () => {
       }
 
       try {
-        const hpCats = await getDocs(query(collection(db, 'homepage_categories_v2'), limit(100)));
-        hpCats.forEach((docSnap) => {
-          const data = docSnap.data();
+        const hpCats = await fetchCollectionSample('homepage_categories_v2', 100);
+        hpCats.forEach((data) => {
           if (data.title && typeof data.title === 'string') clientKeys.add(data.title.trim());
           if (data.subtitle && typeof data.subtitle === 'string') clientKeys.add(data.subtitle.trim());
         });
@@ -384,9 +387,8 @@ export const useTranslationAdmin = () => {
       }
 
       try {
-        const hpSections = await getDocs(query(collection(db, 'homepage_sections'), limit(50)));
-        hpSections.forEach((docSnap) => {
-          const data = docSnap.data();
+        const hpSections = await fetchCollectionSample('homepage_sections', 50);
+        hpSections.forEach((data) => {
           if (data.title && typeof data.title === 'string') clientKeys.add(data.title.trim());
         });
       } catch (err) {
@@ -394,9 +396,8 @@ export const useTranslationAdmin = () => {
       }
 
       try {
-        const banners = await getDocs(query(collection(db, 'banners'), limit(50)));
-        banners.forEach((docSnap) => {
-          const data = docSnap.data();
+        const banners = await fetchCollectionSample('banners', 50);
+        banners.forEach((data) => {
           if (data.title && typeof data.title === 'string') clientKeys.add(data.title.trim());
           if (data.subtitle && typeof data.subtitle === 'string') clientKeys.add(data.subtitle.trim());
           if (data.badgeText && typeof data.badgeText === 'string') clientKeys.add(data.badgeText.trim());
@@ -406,9 +407,8 @@ export const useTranslationAdmin = () => {
       }
 
       try {
-        const tags = await getDocs(query(collection(db, 'tags'), limit(200)));
-        tags.forEach((docSnap) => {
-          const data = docSnap.data();
+        const tags = await fetchCollectionSample('tags', 200);
+        tags.forEach((data) => {
           if (data.name && typeof data.name === 'string') clientKeys.add(data.name.trim());
         });
       } catch (err) {
@@ -464,15 +464,14 @@ export const useTranslationAdmin = () => {
     setIsTranslating(true);
     const toastId = toast.loading('Traduction automatique des produits en cours (Batch de 50)...');
     try {
-      const prodSnapForScan = await getDocs(query(collection(db, 'products'), limit(300)));
-      const untranslatedDocs = prodSnapForScan.docs
-        .filter((docSnap) => {
-          const data = docSnap.data();
+      const prodDocs = await fetchCollectionSample('products', 300);
+      const untranslatedDocs = prodDocs
+        .filter((data) => {
           return !data.translations || !data.translations?.ar?.name || !data.translations?.en?.name;
         })
         .slice(0, 50);
 
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       interface TranslationResponse {
@@ -485,8 +484,7 @@ export const useTranslationAdmin = () => {
       }
 
       let count = 0;
-      for (const docSnap of untranslatedDocs) {
-        const data = docSnap.data();
+      for (const data of untranslatedDocs) {
         if (!data.translations?.ar?.name || !data.translations?.en?.name) {
           let translations: TranslationResponse | null = null;
 
@@ -553,7 +551,7 @@ export const useTranslationAdmin = () => {
             };
           }
 
-          await updateDoc(doc(db, 'products', docSnap.id), {
+          await updateAdminDoc('products', data.id, {
             translations: {
               ar: {
                 name: translations.name?.ar || translations.name_ar,
@@ -583,7 +581,7 @@ export const useTranslationAdmin = () => {
     if (!newMonthlyText.trim()) return;
     const toastId = toast.loading('Enregistrement et traduction...');
     try {
-      const user = auth.currentUser;
+      const user = getCurrentAuthUser();
       const idToken = await user?.getIdToken();
 
       const response = await fetch('/api/v1/admin/translate-text', {
@@ -601,7 +599,7 @@ export const useTranslationAdmin = () => {
 
       const month = new Date().toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
 
-      await updateDoc(doc(db, 'site_content_monthly', month), {
+      await updateAdminDoc('site_content_monthly', month, {
         text_fr: translations.fr || newMonthlyText,
         text_ar: translations.ar,
         text_en: translations.en,
@@ -615,7 +613,7 @@ export const useTranslationAdmin = () => {
     } catch {
       try {
         const month = new Date().toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-        const user = auth.currentUser;
+        const user = getCurrentAuthUser();
         const idToken = await user?.getIdToken();
         const response = await fetch('/api/v1/admin/translate-text', {
           method: 'POST',
@@ -627,8 +625,7 @@ export const useTranslationAdmin = () => {
         });
         const translations = await response.json();
 
-        const { collection, addDoc } = await import('firebase/firestore');
-        await addDoc(collection(db, 'site_content_monthly'), {
+        await addAdminDoc('site_content_monthly', {
           text_fr: translations.fr || newMonthlyText,
           text_ar: translations.ar,
           text_en: translations.en,

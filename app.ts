@@ -9,6 +9,7 @@ import { apiLimiter, debugLimiter, webhookLimiter, strictLimiter } from "./src/m
 import { helmetMiddleware, corsMiddleware, preventDirectCloudRunAccess, nonceMiddleware } from "./src/middlewares/security";
 import { handleCspReport } from "./src/middlewares/cspReporter";
 import { csrfProtection, getCsrfTokenHandler } from "./src/middlewares/csrf";
+import { optionalAuthenticateToken } from "./src/middlewares/auth";
 import { deprecationMiddleware } from "./src/middlewares/deprecation";
 import { generateOpenApiSpec } from "./src/swagger/openapi";
 import { safeLogger } from "./src/utils/logger";
@@ -52,13 +53,16 @@ export const app = express();
 // 3. Ensure rate-limiting middleware operates on real client IPs rather than proxy IPs.
 app.set("trust proxy", 1);
 
-// Security & Parsing Middlewares
+// Security & Rate Limiting Middlewares (Active by default across all environments)
+// SKIP_RATE_LIMITS is strictly ignored in production and development to ensure fail-safe operation.
 app.use(preventDirectCloudRunAccess);
 app.use("/api/v1/webhooks", webhookLimiter);
 app.use("/webhooks", webhookLimiter);
 app.use("/api/v1/admin", strictLimiter);
 app.use("/admin", strictLimiter);
-if (process.env.NODE_ENV !== "development" && process.env.SKIP_RATE_LIMITS !== "true") {
+
+const isRateLimitBypassedInTest = process.env.NODE_ENV === "test" && process.env.SKIP_RATE_LIMITS === "true";
+if (!isRateLimitBypassedInTest) {
   app.use("/api/v1", apiLimiter);
 }
 app.use(nonceMiddleware);
@@ -77,6 +81,7 @@ app.use(express.urlencoded({ limit: "2mb", extended: true }));
 
 // CSRF & Versioning Deprecation Tracking
 app.use(deprecationMiddleware);
+app.use(optionalAuthenticateToken);
 app.get("/api/v1/csrf-token", getCsrfTokenHandler);
 app.use("/api", csrfProtection);
 

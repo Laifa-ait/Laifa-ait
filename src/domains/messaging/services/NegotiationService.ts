@@ -5,6 +5,7 @@ import {
   ResolveNegotiationDTO
 } from "../../../types/messaging";
 import { PushNotificationService } from "../../notifications/services/PushNotificationService";
+import { safeLogger } from "../../../utils/logger";
 
 export interface CreateNegotiationParams {
   callerUid: string;
@@ -124,7 +125,12 @@ export class NegotiationService {
       offerId: result.offerId,
       amountDZD: result.amountDZD,
       action: "NEW_OFFER"
-    }).catch(() => {});
+    }).catch((err) => {
+      safeLogger.warn("[NegotiationService] sendNegotiationPush NEW_OFFER failed asynchronously", {
+        conversationId,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    });
 
     return result;
   }
@@ -288,7 +294,13 @@ export class NegotiationService {
       offerId: result.offerId,
       amountDZD: result.amountDZD,
       action: actionMap[payload.action] || "NEW_OFFER"
-    }).catch(() => {});
+    }).catch((err) => {
+      safeLogger.warn("[NegotiationService] sendNegotiationPush RESOLVE_OFFER failed asynchronously", {
+        conversationId,
+        action: payload.action,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    });
 
     return result;
   }
@@ -369,7 +381,12 @@ export class NegotiationService {
       offerId: result.offerId,
       amountDZD: result.amountDZD,
       action: "CANCELLED"
-    }).catch(() => {});
+    }).catch((err) => {
+      safeLogger.warn("[NegotiationService] sendNegotiationPush CANCELLED failed asynchronously", {
+        conversationId,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    });
 
     return result;
   }

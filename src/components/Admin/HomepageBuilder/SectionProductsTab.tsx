@@ -147,8 +147,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
                 className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs text-xs font-medium text-slate-800 group"
               >
                 {p.images && p.images[0] && (
-                  <img
-                    src={p.images[0]}
+                  <img loading="lazy" decoding="async" src={p.images[0]}
                     alt={p.name}
                     className="w-5 h-5 object-cover rounded-md"
                   />
@@ -208,7 +207,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
               >
                 <div className="w-9 h-9 rounded-lg bg-slate-100 shrink-0 overflow-hidden relative">
                   {p.images && p.images[0] ? (
-                    <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[9px] text-slate-400">
                       Img

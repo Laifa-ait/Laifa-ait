@@ -56,13 +56,13 @@ export const FeaturedShops: React.FC<FeaturedShopsProps> = ({ shops }) => {
             >
               {/* Decorative background image blur */}
               <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
-                <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={bannerUrl} alt="" className="w-full h-full object-cover" />
               </div>
 
               <div className="relative z-10 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-14 h-14 rounded-xl border-2 border-amber-400/80 bg-white p-0.5 shadow-md overflow-hidden shrink-0">
-                    <img src={logoUrl} alt={shop.shopName} className="w-full h-full object-cover rounded-lg" />
+                    <img loading="lazy" decoding="async" src={logoUrl} alt={shop.shopName} className="w-full h-full object-cover rounded-lg" />
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-amber-400/20 backdrop-blur-md border border-amber-400/40 text-amber-300 text-[11px] font-bold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />

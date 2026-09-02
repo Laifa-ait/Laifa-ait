@@ -1,14 +1,13 @@
 # Stage 1: Build stage
-FROM node:22-alpine AS builder
-
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS builder
 WORKDIR /app
 
 # Client build arguments and environment defaults
-ARG VITE_FIREBASE_PROJECT_ID=original-micron-7sjh2
-ARG VITE_FIREBASE_AUTH_DOMAIN=original-micron-7sjh2.firebaseapp.com
+ARG VITE_FIREBASE_PROJECT_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
+ARG VITE_FIREBASE_AUTH_DOMAIN=ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebaseapp.com
 ARG VITE_FIREBASE_API_KEY=AIzaSyCsGYo1B0vavSQbKdFvu0-7jfzILFHvejA
 ARG VITE_FIREBASE_APP_ID=1:76420360525:web:d6781ea77ef0c2257aef04
-ARG VITE_FIREBASE_STORAGE_BUCKET=original-micron-7sjh2.firebasestorage.app
+ARG VITE_FIREBASE_STORAGE_BUCKET=ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebasestorage.app
 ARG VITE_FIREBASE_MESSAGING_SENDER_ID=76420360525
 ARG VITE_FIREBASE_MEASUREMENT_ID=G-XQW5YY2C36
 ARG VITE_FIREBASE_DATABASE_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
@@ -35,13 +34,11 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production stage
-FROM node:22-alpine AS runner
-
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
-ENV CSRF_SECRET=olmart_prod_csrf_secret_key_fallback_32bytes_min_2026
 ENV FIREBASE_DATABASE_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
 ENV VITE_FIREBASE_DATABASE_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
 
@@ -53,6 +50,9 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/server.ts ./server.ts
+
+# Set non-root user
+USER node
 
 # Expose port 8080 for Cloud Run
 EXPOSE 8080

@@ -86,8 +86,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       )}
 
       {hasError ? (
-        <img
-          src={defaultFallback}
+        <img loading="lazy" decoding="async" src={defaultFallback}
           alt={alt}
           width={width}
           height={height}

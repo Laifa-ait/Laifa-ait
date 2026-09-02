@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Store, Home } from "lucide-react";
+import { Store, Home, Compass } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SellerNavItem } from "./SellerNavConfig";
 import { User } from "firebase/auth";
@@ -8,11 +8,13 @@ import { User } from "firebase/auth";
 interface SellerDesktopSidebarProps {
   navItems: SellerNavItem[];
   currentUser: User | null;
+  onStartTour?: () => void;
 }
 
 export const SellerDesktopSidebar: React.FC<SellerDesktopSidebarProps> = ({
   navItems,
   currentUser,
+  onStartTour,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ export const SellerDesktopSidebar: React.FC<SellerDesktopSidebarProps> = ({
         {navItems.map((item) => (
           <NavLink
             key={item.to}
+            id={item.id}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
@@ -65,6 +68,18 @@ export const SellerDesktopSidebar: React.FC<SellerDesktopSidebarProps> = ({
           <Store className="w-5 h-5" />
           {t("Voir ma vitrine")}
         </button>
+
+        {onStartTour && (
+          <button
+            type="button"
+            id="seller-desktop-tour-btn"
+            onClick={onStartTour}
+            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-sans font-bold text-orange-700 hover:bg-orange-50/80 transition-all bg-transparent border-none cursor-pointer text-start focus:outline-none"
+          >
+            <Compass className="w-5 h-5 text-orange-500" />
+            {t("seller.tour.launch_btn", "Visite guidée")}
+          </button>
+        )}
 
         <button
           type="button"

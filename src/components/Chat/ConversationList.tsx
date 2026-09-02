@@ -100,8 +100,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             <div className="relative shrink-0 mt-0.5">
               <div className="w-11 h-11 rounded-2xl bg-[#f4ecd8] border border-[#e8e2d4] flex items-center justify-center overflow-hidden">
                 {conv.context.referenceImageUrl ? (
-                  <img
-                    src={conv.context.referenceImageUrl}
+                  <img loading="lazy" decoding="async" src={conv.context.referenceImageUrl}
                     alt={conv.context.referenceTitle}
                     className="w-full h-full object-cover"
                   />

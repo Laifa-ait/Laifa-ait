@@ -27,9 +27,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && (
-        (request.auth.token != null && ('role' in request.auth.token && request.auth.token.role == 'admin' || 'admin' in request.auth.token && request.auth.token.admin == true)) ||
-        (getUserData() != null && 'role' in getUserData() && getUserData().role == 'admin')
+      return isSignedIn() && request.auth.token != null && (
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        ('role' in request.auth.token && request.auth.token.role == 'admin')
       );
     }
 
@@ -59,14 +59,43 @@ service cloud.firestore {
     // 3. COLLECTION USERS (Profils, Paniers, Favoris)
     // =========================================================================
     match /users/{userId} {
-      // Lecture : autorisée à tout utilisateur authentifié (ou admin)
-      allow read: if isSignedIn();
+      // Lecture : strictement réservée au propriétaire du profil ou à un administrateur
+      allow read: if isOwner(userId) || isAdmin();
 
-      // Création : autorisée pour l'utilisateur sur son propre document (ex: premier login Google/Email)
-      allow create: if isOwner(userId);
+      // Création : autorisée pour l'utilisateur sur son propre document (sans élévation de rôle/privilèges/MFA)
+      allow create: if isOwner(userId) && (
+        !('role' in incoming()) || incoming().role in ['buyer', 'client', 'seller', 'artisan']
+      ) && (
+        !('status' in incoming()) || incoming().status in ['active', 'pending']
+      ) && (
+        !('capabilities' in incoming())
+      ) && (
+        !('verification' in incoming())
+      ) && (
+        !('is2FAEnabled' in incoming())
+      ) && (
+        !('twoFactorSecret' in incoming())
+      ) && (
+        !('mfa' in incoming())
+      ) && (
+        !('soldes' in incoming())
+      );
 
-      // Mise à jour : autorisée pour l'utilisateur sur son propre profil ou pour un administrateur
-      allow update: if isOwner(userId) || isAdmin();
+      // Mise à jour : autorisée pour l'utilisateur sur son propre profil (champs sûrs uniquement) ou pour un administrateur
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['role', 'status', 'capabilities', 'verification', 'is2FAEnabled', 'twoFactorSecret', 'mfa', 'soldes', 'balance', 'customClaims', 'permissions', 'commissionRate', 'isVerified', 'verified', 'kycStatus']) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'name', 'firstName', 'lastName', 'email', 'photoURL', 'avatar',
+          'phone', 'phoneNumber', 'address', 'wilaya', 'commune', 'city', 'postalCode',
+          'bio', 'description', 'updatedAt', 'lastLogin', 'lastLoginAt', 'theme', 'language',
+          'preferences', 'shopName', 'shopDescription', 'shopLogo', 'shopBanner', 'shopAddress',
+          'shopPhone', 'shopWilaya', 'shopCommune', 'documents', 'fcmToken', 'fcmTokens',
+          'notificationsEnabled', 'socialLinks', 'website', 'commercialRegister', 'nif', 'nis',
+          'rib', 'artisanCardNumber', 'specialties', 'experienceYears', 'portfolio', 'workingHours',
+          'services', 'categories', 'avatarUrl', 'coverUrl', 'metadata', 'cart', 'wishlist', 'searchHistory'
+        ])
+      );
 
       // Suppression : strictement réservée aux administrateurs
       allow delete: if isAdmin();
@@ -83,6 +112,15 @@ service cloud.firestore {
       match /following/{id} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
+    }
+
+    // Collections privées d'authentification et secrets OTP (strictement inaccessibles via SDK client)
+    match /user_secrets/{userId} {
+      allow read, write: if false;
+    }
+
+    match /private_auth/{userId} {
+      allow read, write: if false;
     }
 
     // Profils publics (Vendeurs / Artisans)
@@ -104,18 +142,46 @@ service cloud.firestore {
     // 4. COLLECTION PRODUCTS (Marketplace)
     // =========================================================================
     match /products/{productId} {
-      // Lecture publique
-      allow read: if true;
+      // Lecture publique conditionnée à status == "active" (brouillons, rejetés, archivés réservés au propriétaire et à l'admin)
+      allow read: if resource.data.status == "active" || !('status' in resource.data) || isAdmin() || (isSignedIn() && (
+        resource.data.sellerId == request.auth.uid ||
+        resource.data.artisanId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      ));
 
-      // Écriture : réservée aux vendeurs, artisans ou administrateurs
-      allow create: if isSeller() || isArtisan() || isAdmin();
-      allow update: if (isSeller() && (existing().sellerId == request.auth.uid || !('sellerId' in existing()))) || isArtisan() || isAdmin();
-      allow delete: if (isSeller() && existing().sellerId == request.auth.uid) || isAdmin();
+      // Écriture : réservée aux vendeurs, artisans ou administrateurs avec liaison obligatoire à l'UID de l'auteur
+      allow create: if (isSeller() || isArtisan() || isAdmin()) && (
+        isAdmin() ||
+        ('sellerId' in incoming() && incoming().sellerId == request.auth.uid) ||
+        ('artisanId' in incoming() && incoming().artisanId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+      
+      // Modification : réservée à l'administrateur ou au vendeur/artisan propriétaire du produit (interdiction de modifier le sellerId/artisanId/userId)
+      allow update: if isAdmin() || (
+        (
+          (isSeller() && (existing().sellerId == request.auth.uid || existing().userId == request.auth.uid)) ||
+          (isArtisan() && (existing().artisanId == request.auth.uid || existing().sellerId == request.auth.uid || existing().userId == request.auth.uid))
+        ) &&
+        (!('sellerId' in incoming()) || !('sellerId' in existing()) || incoming().sellerId == existing().sellerId) &&
+        (!('artisanId' in incoming()) || !('artisanId' in existing()) || incoming().artisanId == existing().artisanId) &&
+        (!('userId' in incoming()) || !('userId' in existing()) || incoming().userId == existing().userId)
+      );
+
+      // Suppression : réservée à l'administrateur ou au vendeur/artisan propriétaire
+      allow delete: if isAdmin() || (
+        (isSeller() && (existing().sellerId == request.auth.uid || existing().userId == request.auth.uid)) ||
+        (isArtisan() && (existing().artisanId == request.auth.uid || existing().sellerId == request.auth.uid || existing().userId == request.auth.uid))
+      );
     }
 
     match /product_history/{id} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.sellerId == request.auth.uid);
-      allow create: if isSeller() || isAdmin();
+      allow create: if (isSeller() || isArtisan() || isAdmin()) && (
+        isAdmin() ||
+        ('sellerId' in incoming() && incoming().sellerId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
       allow update, delete: if isAdmin();
     }
 
@@ -123,14 +189,17 @@ service cloud.firestore {
     // 5. COLLECTION ORDERS & SOUS-COLLECTIONS (Commandes)
     // =========================================================================
     match /order_masters/{masterId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.buyerId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && (incoming().userId == request.auth.uid || incoming().buyerId == request.auth.uid);
       allow update, delete: if isAdmin();
     }
 
     match /orders/{orderId} {
-      // Création : autorisée pour tout utilisateur connecté
-      allow create: if isSignedIn();
+      // Création : autorisée pour l'acheteur authentifié lié à son propre identifiant
+      allow create: if isSignedIn() && (
+        incoming().buyerId == request.auth.uid ||
+        incoming().userId == request.auth.uid
+      );
 
       // Lecture : autorisée pour l'acheteur, les vendeurs de la commande ou l'administrateur
       allow read: if isSignedIn() && (
@@ -141,13 +210,23 @@ service cloud.firestore {
         (isSeller() && ('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
       );
 
-      // Mise à jour : autorisée pour le client (gestion des litiges / retours), le vendeur ou l'admin
+      // Mise à jour : autorisée pour l'acheteur ou le vendeur avec immuabilité stricte des prix, montants, articles, acheteur et données de paiement
+      // Les mutations financières et changements de paiement sont réservés à l'Admin SDK transactionnel côté serveur
       allow update: if isSignedIn() && (
-        isAdmin() ||
-        resource.data.buyerId == request.auth.uid ||
-        resource.data.userId == request.auth.uid ||
-        (isSeller() && ('sellerIds' in resource.data) && request.auth.uid in resource.data.sellerIds) ||
-        (isSeller() && ('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
+        isAdmin() || (
+          (
+            existing().buyerId == request.auth.uid ||
+            existing().userId == request.auth.uid ||
+            (isSeller() && ('sellerIds' in existing()) && request.auth.uid in existing().sellerIds) ||
+            (isSeller() && ('sellerId' in existing()) && existing().sellerId == request.auth.uid)
+          ) &&
+          !incoming().diff(existing()).affectedKeys().hasAny([
+            'buyerId', 'userId', 'sellerId', 'sellerIds', 'totalAmount', 'subtotal', 'total',
+            'items', 'price', 'paymentStatus', 'paymentMethod', 'paidAt', 'commission', 'createdAt'
+          ]) &&
+          (!('buyerId' in incoming()) || incoming().buyerId == existing().buyerId) &&
+          (!('userId' in incoming()) || incoming().userId == existing().userId)
+        )
       );
 
       allow delete: if isAdmin();
@@ -160,7 +239,13 @@ service cloud.firestore {
           isAdmin() ||
           (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
         );
-        allow write: if isAdmin() || isSignedIn();
+        allow write: if isAdmin() || (
+          isSignedIn() && (
+            get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
+            get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid ||
+            (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
+          )
+        );
       }
 
       match /messages/{messageId} {
@@ -170,7 +255,10 @@ service cloud.firestore {
           isAdmin() ||
           (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
         );
-        allow create: if isSignedIn();
+        allow create: if isSignedIn() && (
+          isAdmin() ||
+          ('senderId' in incoming() ? incoming().senderId == request.auth.uid : true)
+        );
         allow update, delete: if isAdmin();
       }
     }
@@ -217,13 +305,11 @@ service cloud.firestore {
     }
 
     match /settings/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     match /global_settings/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     match /public_configs/{document=**} {
@@ -242,7 +328,12 @@ service cloud.firestore {
     }
 
     match /coupons/{id} {
-      allow read: if true;
+      // Les coupons et historiques d'utilisation sont validés côté serveur uniquement (ou par l'admin / vendeur créateur)
+      allow read: if isAdmin() || (isSignedIn() && (
+        ('sellerId' in resource.data && resource.data.sellerId == request.auth.uid) ||
+        ('createdBy' in resource.data && resource.data.createdBy == request.auth.uid) ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid)
+      ));
       allow write: if isAdmin();
     }
 
@@ -253,13 +344,11 @@ service cloud.firestore {
     }
 
     match /site_content_monthly/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     match /platform_stats/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     match /seasonal_themes/{id} {
@@ -389,51 +478,111 @@ service cloud.firestore {
 
     match /bricolage_artisans/{artisanId} {
       allow read: if true;
-      allow create, update: if isOwner(artisanId) || isArtisan() || isAdmin();
+      allow create: if (isOwner(artisanId) || isArtisan() || isAdmin()) && (
+        artisanId == request.auth.uid ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid) ||
+        ('id' in incoming() && incoming().id == request.auth.uid)
+      );
+      allow update: if isAdmin() || (
+        (isOwner(artisanId) || (isArtisan() && (artisanId == request.auth.uid || existing().userId == request.auth.uid))) &&
+        (!('userId' in incoming()) || !('userId' in existing()) || incoming().userId == existing().userId)
+      );
       allow delete: if isAdmin();
     }
 
     match /bricolage_quote_requests/{requestId} {
-      allow read: if isAdmin() || (isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.artisanId == request.auth.uid));
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.customerId == request.auth.uid);
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.artisanId == request.auth.uid || ('userId' in resource.data && resource.data.userId == request.auth.uid)));
+      allow create: if isSignedIn() && (
+        ('customerId' in incoming() && incoming().customerId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        (existing().customerId == request.auth.uid || existing().artisanId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)) &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['customerId', 'userId', 'artisanId', 'budget', 'price', 'amount'])
+      );
+      allow delete: if isAdmin();
     }
 
     match /bricolage_reviews/{reviewId} {
       allow read: if true;
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && (
+        ('reviewerId' in incoming() && incoming().reviewerId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid) ||
+        ('customerId' in incoming() && incoming().customerId == request.auth.uid) ||
+        ('buyerId' in incoming() && incoming().buyerId == request.auth.uid)
+      );
       allow update, delete: if isAdmin();
     }
 
     match /real_estate_properties/{propertyId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow read: if resource.data.status == "active" || resource.data.status == "published" || resource.data.status == "available" || !('status' in resource.data) || isAdmin() || (isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      ));
+      allow create: if isSignedIn() && (
+        ('ownerId' in incoming() && incoming().ownerId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        (existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)) &&
+        (!('ownerId' in incoming()) || !('ownerId' in existing()) || incoming().ownerId == existing().ownerId) &&
+        (!('userId' in incoming()) || !('userId' in existing()) || incoming().userId == existing().userId)
+      );
+      allow delete: if isAdmin() || (isSignedIn() && (existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)));
     }
 
     match /real_estate_bookings/{bookingId} {
-      allow read: if isAdmin() || (isSignedIn() && (resource.data.tenantId == request.auth.uid || resource.data.ownerId == request.auth.uid));
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || (isSignedIn() && (resource.data.tenantId == request.auth.uid || resource.data.ownerId == request.auth.uid));
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.tenantId == request.auth.uid || resource.data.ownerId == request.auth.uid || ('userId' in resource.data && resource.data.userId == request.auth.uid)));
+      allow create: if isSignedIn() && (
+        ('tenantId' in incoming() && incoming().tenantId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        (existing().tenantId == request.auth.uid || existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)) &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['tenantId', 'userId', 'ownerId', 'price', 'totalPrice', 'amount', 'paymentStatus'])
+      );
+      allow delete: if isAdmin() || (isSignedIn() && (existing().tenantId == request.auth.uid || existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)));
     }
 
     match /real_estate_visits/{visitId} {
-      allow read: if isAdmin() || (isSignedIn() && (resource.data.visitorId == request.auth.uid || resource.data.ownerId == request.auth.uid));
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || (isSignedIn() && (resource.data.visitorId == request.auth.uid || resource.data.ownerId == request.auth.uid));
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.visitorId == request.auth.uid || resource.data.ownerId == request.auth.uid || ('userId' in resource.data && resource.data.userId == request.auth.uid)));
+      allow create: if isSignedIn() && (
+        ('visitorId' in incoming() && incoming().visitorId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        (existing().visitorId == request.auth.uid || existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)) &&
+        (!('visitorId' in incoming()) || !('visitorId' in existing()) || incoming().visitorId == existing().visitorId) &&
+        (!('ownerId' in incoming()) || !('ownerId' in existing()) || incoming().ownerId == existing().ownerId)
+      );
+      allow delete: if isAdmin() || (isSignedIn() && (existing().visitorId == request.auth.uid || existing().ownerId == request.auth.uid || ('userId' in existing() && existing().userId == request.auth.uid)));
     }
 
     match /conversations/{conversationId} {
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
-      allow create: if isSignedIn();
-      allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      allow create: if isSignedIn() && ('participants' in incoming()) && (request.auth.uid in incoming().participants);
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        request.auth.uid in existing().participants &&
+        (!('participants' in incoming()) || request.auth.uid in incoming().participants)
+      );
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
-        allow read, create: if isAdmin() || (
+        allow read: if isAdmin() || (
           isSignedIn() &&
           exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        );
+        allow create: if isAdmin() || (
+          isSignedIn() &&
+          exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
+          ('senderId' in incoming() ? incoming().senderId == request.auth.uid : true)
         );
         allow update, delete: if isAdmin();
       }

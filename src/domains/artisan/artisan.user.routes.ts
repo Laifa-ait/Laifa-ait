@@ -59,7 +59,7 @@ artisanUserRouter.post(
         specialties: Array.isArray(specialties) ? specialties : [],
         yearsOfExperience: parseInt(String(yearsOfExperience || 1), 10),
         wilaya,
-        wilayaCode: parseInt(String(wilayaCode || 16), 10),
+        wilayaCode: String(wilayaCode || "16"),
         commune,
         serviceArea: Array.isArray(serviceArea) ? serviceArea : [commune],
         address: address || "",

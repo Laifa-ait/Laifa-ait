@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, CheckSquare, Square } from "lucide-react";
-import { User as FirebaseUser } from "firebase/auth";
-import { apiPost } from "../../lib/api";
-import { toast } from "react-hot-toast";
-import { useTranslation } from "react-i18next";
-import { PRODUCT_HIERARCHY } from "../../constants";
-import { motion, AnimatePresence } from "motion/react";
-import { UserProfile } from "../../domains/user/user.types";
+import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface CustomerPreferencesProps {
   currentUser: FirebaseUser | { uid: string } | null;

@@ -1,33 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Product } from "../domains/product/product.types";
 import { PRODUCT_HIERARCHY } from "../constants";
 import { apiGet, apiPost } from "../lib/api";
 import { safeLogger } from "../utils/logger";
-
-class LocalMemoryCache<T = unknown> {
-  private cache: Record<string, { data: T; expiry: number }> = {};
-  set(key: string, data: T, durationMs = 300000) {
-    this.cache[key] = { data, expiry: Date.now() + durationMs };
-  }
-  get(key: string): T | null {
-    const item = this.cache[key];
-    if (item && Date.now() < item.expiry) {
-      return item.data;
-    }
-    if (item) delete this.cache[key];
-    return null;
-  }
-  clear() {
-    this.cache = {};
-  }
-}
-const cacheEngine = new LocalMemoryCache<Product[]>();
-
-function handleDevQuotaLogger(context: string, isFromCache: boolean) {
-  if (import.meta.env.DEV) {
-    safeLogger.info(`[Olma Dev-Safe Layer] ${context} ${isFromCache ? "⚡ SWR CACHED" : "📦 LIVE (REST)"}`);
-  }
-}
+import { queryKeys } from "../lib/queryKeys";
+import { productsApi } from "../services/api/products.api";
 
 interface ShopContextType {
   fetchFeaturedProducts: (nbLimit?: number) => Promise<Product[]>;
@@ -56,6 +34,7 @@ interface ShopContextType {
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const queryClient = useQueryClient();
   const [activeCategory, setActiveCategory] = useState("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSaleFilterActive, setIsSaleFilterActive] = useState(false);
@@ -98,20 +77,12 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const fetchFeaturedProducts = async (nbLimit = 20): Promise<Product[]> => {
-    const cacheKey = `featured_products_${nbLimit}`;
-    const cached = cacheEngine.get(cacheKey);
-    if (cached) {
-      handleDevQuotaLogger("fetchFeaturedProducts (CACHE)", true);
-      return cached;
-    }
-
     try {
-      const data = await apiGet<{ products: Product[] }>(`/api/v1/products?featured=true&limit=${nbLimit}`);
-      if (data && Array.isArray(data.products)) {
-        cacheEngine.set(cacheKey, data.products);
-        return data.products;
-      }
-      return [];
+      return await queryClient.fetchQuery({
+        queryKey: queryKeys.products.featured(nbLimit, 0),
+        queryFn: () => productsApi.getFeaturedProducts(nbLimit, 0),
+        staleTime: 5 * 60 * 1000,
+      });
     } catch (err) {
       safeLogger.error("fetchFeaturedProducts failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
@@ -119,23 +90,12 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const fetchProductsByCategory = async (category: string, nbLimit = 20): Promise<Product[]> => {
-    const cacheKey = `products_category_${category}_${nbLimit}`;
-    const cached = cacheEngine.get(cacheKey);
-    if (cached) {
-      handleDevQuotaLogger(`fetchProductsByCategory [${category}] (CACHE)`, true);
-      return cached;
-    }
-
     try {
-      const url = category === "Tous" 
-        ? `/api/v1/products?limit=${nbLimit}`
-        : `/api/v1/products?category=${encodeURIComponent(category)}&limit=${nbLimit}`;
-      const data = await apiGet<{ products: Product[] }>(url);
-      if (data && Array.isArray(data.products)) {
-        cacheEngine.set(cacheKey, data.products);
-        return data.products;
-      }
-      return [];
+      return await queryClient.fetchQuery({
+        queryKey: queryKeys.products.category(category || "", nbLimit),
+        queryFn: () => productsApi.getProducts({ category, limit: nbLimit }),
+        staleTime: 5 * 60 * 1000,
+      });
     } catch (err) {
       safeLogger.error("fetchProductsByCategory failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
@@ -144,21 +104,15 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchProductsByIds = async (ids: string[]): Promise<Product[]> => {
     if (!ids || ids.length === 0) return [];
-
-    const cacheKey = `products_ids_${ids.sort().join("_")}`;
-    const cached = cacheEngine.get(cacheKey);
-    if (cached) {
-      handleDevQuotaLogger("fetchProductsByIds (CACHE)", true);
-      return cached;
-    }
-
     try {
-      const res = await apiPost<{ products: Product[] }>("/api/v1/products/batch", { ids });
-      if (res && Array.isArray(res.products)) {
-        cacheEngine.set(cacheKey, res.products);
-        return res.products;
-      }
-      return [];
+      return await queryClient.fetchQuery({
+        queryKey: queryKeys.products.list({ ids: ids.sort() }),
+        queryFn: async () => {
+          const res = await apiPost<{ products: Product[] }>("/api/v1/products/batch", { ids });
+          return res?.products || [];
+        },
+        staleTime: 5 * 60 * 1000,
+      });
     } catch (err) {
       safeLogger.error("fetchProductsByIds failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
@@ -175,44 +129,43 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     else if (catLower.includes("pc") || catLower.includes("ordinateur")) targetCategory = "Périphériques";
 
     try {
-      const data = await apiGet<{ products: Product[] }>(`/api/v1/products/cross-sell?sellerId=${encodeURIComponent(currentProduct.sellerId)}&category=${encodeURIComponent(targetCategory)}&currentProductId=${encodeURIComponent(currentProduct.id)}&limit=${nbLimit}`);
-      if (data && Array.isArray(data.products)) {
-        return data.products;
-      }
-      return [];
+      return await queryClient.fetchQuery({
+        queryKey: ["products", "cross-sell", currentProduct.id, targetCategory, nbLimit],
+        queryFn: async () => {
+          const data = await apiGet<{ products: Product[] }>(`/api/v1/products/cross-sell?sellerId=${encodeURIComponent(currentProduct.sellerId)}&category=${encodeURIComponent(targetCategory)}&currentProductId=${encodeURIComponent(currentProduct.id)}&limit=${nbLimit}`);
+          return data?.products || [];
+        },
+        staleTime: 5 * 60 * 1000,
+      });
     } catch (err) {
       safeLogger.error("fetchCrossSellProducts failed", { err: err instanceof Error ? err.message : String(err) });
       return [];
     }
-  }, []);
+  }, [queryClient]);
 
   const fetchRecommendedProducts = async (nbLimit = 8): Promise<Product[]> => {
-    const cacheKey = `recommended_products_${nbLimit}`;
-    const cached = cacheEngine.get(cacheKey);
-    if (cached) {
-      handleDevQuotaLogger("fetchRecommendedProducts (CACHE)", true);
-      return cached;
-    }
-
     try {
-      const data = await apiGet<{ productIds: string[] }>("/api/v1/metadata/recommendations");
-      let recommendedIds: string[] = [];
-      if (data && Array.isArray(data.productIds)) {
-        recommendedIds = data.productIds;
-      }
+      return await queryClient.fetchQuery({
+        queryKey: ["products", "recommended", nbLimit],
+        queryFn: async () => {
+          const data = await apiGet<{ productIds: string[] }>("/api/v1/metadata/recommendations");
+          let recommendedIds: string[] = [];
+          if (data && Array.isArray(data.productIds)) {
+            recommendedIds = data.productIds;
+          }
 
-      if (recommendedIds.length > 0) {
-        const slicedIds = recommendedIds.slice(0, nbLimit);
-        const resolved = await fetchProductsByIds(slicedIds);
-        if (resolved.length > 0) {
-          cacheEngine.set(cacheKey, resolved);
-          return resolved;
-        }
-      }
+          if (recommendedIds.length > 0) {
+            const slicedIds = recommendedIds.slice(0, nbLimit);
+            const resolved = await fetchProductsByIds(slicedIds);
+            if (resolved.length > 0) {
+              return resolved;
+            }
+          }
 
-      const fallback = await fetchFeaturedProducts(nbLimit);
-      cacheEngine.set(cacheKey, fallback);
-      return fallback;
+          return fetchFeaturedProducts(nbLimit);
+        },
+        staleTime: 5 * 60 * 1000,
+      });
     } catch (err) {
       safeLogger.error("Error fetching recommended products", { err: err instanceof Error ? err.message : String(err) });
       return fetchFeaturedProducts(nbLimit);

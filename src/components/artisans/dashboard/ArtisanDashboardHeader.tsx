@@ -50,8 +50,7 @@ export const ArtisanDashboardHeader: React.FC<ArtisanDashboardHeaderProps> = ({
       {/* Main Profile Header Box */}
       <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <img
-            src={
+          <img loading="lazy" decoding="async" src={
               profile.avatarUrl ||
               'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=160&auto=format&fit=crop&q=80'
             }

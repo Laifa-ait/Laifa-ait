@@ -1,6 +1,61 @@
 import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
+
+// In-Memory Firebase Store
+const { memoryStore, mockAuth } = vi.hoisted(() => {
+  const memStore = new Map<string, Record<string, unknown>>();
+  const verifyFn = vi.fn();
+  const authObj = {
+    verifyIdToken: verifyFn,
+  };
+  return { memoryStore: memStore, mockAuth: authObj };
+});
+
+vi.mock("../config/firebase-admin", () => {
+  const mockDb = {
+    collection: (colName: string) => {
+      const chain = {
+        doc: (docId: string) => {
+          const key = `${colName}/${docId}`;
+          return {
+            id: docId,
+            get: vi.fn(async () => {
+              const data = memoryStore.get(key);
+              return {
+                id: docId,
+                exists: !!data,
+                data: () => data,
+              };
+            }),
+            set: vi.fn(async (data: Record<string, unknown>) => {
+              memoryStore.set(key, data);
+            }),
+            delete: vi.fn(async () => {
+              memoryStore.delete(key);
+            }),
+          };
+        },
+      };
+      return chain;
+    },
+  };
+
+  return {
+    admin: {
+      auth: () => mockAuth,
+      firestore: {
+        FieldValue: {
+          serverTimestamp: vi.fn(() => new Date().toISOString()),
+          increment: vi.fn((n: number) => n),
+        },
+      },
+    },
+    db: mockDb,
+    auth: mockAuth,
+  };
+});
+
 import { admin, db } from "../config/firebase-admin";
 import workspaceRouter from "../domains/workspace/workspace.routes";
 

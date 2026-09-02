@@ -87,8 +87,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
           <div className="bg-[#f9f7f2] border border-[#e8e2d4] rounded-2xl p-2.5 flex items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3 min-w-0">
               {propertyImage ? (
-                <img
-                  src={propertyImage}
+                <img loading="lazy" decoding="async" src={propertyImage}
                   alt={propertyTitle}
                   className="w-11 h-11 rounded-xl object-cover border border-[#e8e2d4] shrink-0"
                 />

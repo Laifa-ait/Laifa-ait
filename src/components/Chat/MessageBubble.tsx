@@ -45,8 +45,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
                     rel="noopener noreferrer"
                     className="block rounded-xl overflow-hidden border border-[#e8e2d4] hover:opacity-90 transition cursor-pointer"
                   >
-                    <img
-                      src={att.url}
+                    <img loading="lazy" decoding="async" src={att.url}
                       alt={att.fileName}
                       className="max-h-48 w-auto object-cover"
                     />

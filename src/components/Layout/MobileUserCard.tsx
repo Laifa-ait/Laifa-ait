@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { User as FirebaseUser } from "firebase/auth";
-import { UserProfile } from "../../domains/user/user.types";
+import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 import { OptimizedImage } from "../ui/OptimizedImage";
 import { getRetroAvatar } from "../../utils/avatar";
 

@@ -127,8 +127,7 @@ export const ComparatorAddModal: React.FC<ComparatorAddModalProps> = ({
                   }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <img
-                      src={product.image}
+                    <img loading="lazy" decoding="async" src={product.image}
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded-xl border border-slate-100 bg-slate-50 shrink-0"
                     />

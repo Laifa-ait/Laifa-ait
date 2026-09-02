@@ -17,9 +17,12 @@ import {
   Flag,
   AlertCircle
 } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, doc, getDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../lib/firebase";
+import {
+  subscribeOrderDoc,
+  subscribeOrderMessages,
+  subscribeOrderLogs,
+  uploadChatAttachment
+} from "../../services/chatRepository";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation as useI18nTranslation } from "react-i18next";
 import { maskSensitiveData, hasExternalChannel } from "../../utils/masking";
@@ -97,16 +100,11 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
     };
     markAsRead();
 
-    const orderDocRef = doc(db, "orders", orderId);
-    const unsubOrder = onSnapshot(orderDocRef, async (orderSnap) => {
-      if (orderSnap.exists()) {
-        const orderData = orderSnap.data();
+    const unsubOrder = subscribeOrderDoc(orderId, (orderData) => {
+      if (orderData) {
         const sid = orderData.sellerId || (orderData.sellerIds && orderData.sellerIds[0]);
-        if (sid) {
-          const shopSnap = await getDoc(doc(db, "publicProfiles", sid));
-          if (shopSnap.exists()) {
-            setShopName(shopSnap.data().shopName || "Boutique Olmart");
-          }
+        if (sid && orderData.shopName) {
+          setShopName(orderData.shopName);
         }
       }
     });
@@ -117,17 +115,10 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
   useEffect(() => {
     if (!isOpen || !orderId || !currentUser) return;
 
-    const messagesRef = collection(db, "orders", orderId, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const msgs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Message[];
-        setMessages(msgs);
+    const unsubscribe = subscribeOrderMessages(
+      orderId,
+      (rawMsgs) => {
+        setMessages(rawMsgs as Message[]);
         setLoading(false);
 
         // Auto-scroll to bottom
@@ -150,15 +141,11 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
   useEffect(() => {
     if (!isOpen || !orderId || !currentUser) return;
 
-    const logsRef = collection(db, "orders", orderId, "order_logs");
-    const q = query(logsRef, orderBy("date", "asc"));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const lgs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+    const unsubscribe = subscribeOrderLogs(
+      orderId,
+      (rawLogs) => {
+        const lgs = rawLogs.map((log) => ({
+          ...log,
           isLog: true,
         })) as OrderLog[];
         setLogs(lgs);
@@ -235,9 +222,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
       setError("");
       toast.loading(t("Téléchargement de l'image..."), { id: "chat-upload-drawer" });
 
-      const fileRef = ref(storage, `chat_images/${orderId}/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(fileRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
+      const downloadUrl = await uploadChatAttachment(orderId, file);
 
       // Send message with the image
       const idToken = await currentUser?.getIdToken();
@@ -502,8 +487,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
 
                             {item.imageUrl && (
                               <div className="mt-2 rounded-2xl overflow-hidden border border-black/10 max-w-[240px]">
-                                <img
-                                  src={item.imageUrl}
+                                <img loading="lazy" decoding="async" src={item.imageUrl}
                                   alt="Attached"
                                   className="w-full h-auto cursor-pointer hover:opacity-90 max-h-[180px] object-cover"
                                   referrerPolicy="no-referrer"

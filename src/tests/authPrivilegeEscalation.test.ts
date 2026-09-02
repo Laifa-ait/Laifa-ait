@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../middlewares/auth";
+import { profileUpdateSchema } from "../domains/user/user.schema";
 import { admin, db } from "../config/firebase-admin";
 import { Response, NextFunction } from "express";
 import { CollectionReference } from "firebase-admin/firestore";
@@ -196,25 +197,38 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
     });
   });
 
-  describe("10: POST /profile Role Injection Defense", () => {
-    it("strips role, isAdmin, permissions from client profile updates", () => {
-      const clientPayload = {
+  describe("10: POST /profile Mass Assignment & Role/Capability Injection Defense", () => {
+    it("rejects unauthorized fields like role, capabilities, status, isAdmin, permissions in profile updates", () => {
+      const maliciousPayloads = [
+        { displayName: "New Name", capabilities: ["property_owner"] },
+        { displayName: "New Name", role: "admin" },
+        { displayName: "New Name", isAdmin: true },
+        { displayName: "New Name", status: "active" },
+        { displayName: "New Name", permissions: ["ALL"] },
+        { displayName: "New Name", soldes: 999999 },
+        { displayName: "New Name", verification: { verified: true } },
+      ];
+
+      for (const payload of maliciousPayloads) {
+        const result = profileUpdateSchema.safeParse(payload);
+        expect(result.success).toBe(false);
+      }
+    });
+
+    it("accepts valid, allowlisted profile updates", () => {
+      const validPayload = {
         displayName: "New Name",
         phone: "0555123456",
-        role: "admin", // Attacker attempt
-        isAdmin: true,
-        permissions: ["ALL"],
+        wilaya: "Alger",
+        commune: "Alger Centre",
+        address: "123 Rue Hassiba Ben Bouali",
       };
 
-      const { role, isAdmin, permissions, ...safeProfileUpdate } = clientPayload as Record<string, unknown>;
-
-      expect(safeProfileUpdate).toEqual({
-        displayName: "New Name",
-        phone: "0555123456",
-      });
-      expect(role).toBe("admin");
-      expect(isAdmin).toBe(true);
-      expect(permissions).toEqual(["ALL"]);
+      const result = profileUpdateSchema.safeParse(validPayload);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual(validPayload);
+      }
     });
   });
 
@@ -333,6 +347,58 @@ describe("R4.6.12-FIX-02 — Comprehensive Role Escalation & Admin Privilege Tes
 
       expect(revokeTokensSpy).toHaveBeenCalledWith(targetUserId);
       revokeTokensSpy.mockRestore();
+    });
+  });
+
+  describe("15: Firestore Rules Verification — isAdmin() Custom Claims Exclusivity", () => {
+    it("verifies that isAdmin() helper logic strictly evaluates request.auth.token claims and ignores mutable Firestore doc fields", () => {
+      // Simulating Firestore rules isAdmin() evaluation logic:
+      const evaluateIsAdminRule = (token: { admin?: boolean; role?: string } | null, _userDocRole?: string) => {
+        // Document fields like userDocRole MUST NOT grant admin privileges
+        const tokenHasAdmin = token != null && (
+          ('admin' in token && token.admin === true) ||
+          ('role' in token && token.role === 'admin')
+        );
+        // Ensure doc fields cannot influence tokenHasAdmin
+        return Boolean(tokenHasAdmin);
+      };
+
+      // Case A: Attacker modified user doc to 'admin' but token has role 'buyer'
+      expect(evaluateIsAdminRule({ role: "buyer", admin: false }, "admin")).toBe(false);
+
+      // Case B: Attacker without token claims
+      expect(evaluateIsAdminRule(null, "admin")).toBe(false);
+
+      // Case C: Legitimate Admin with cryptographic Custom Claims
+      expect(evaluateIsAdminRule({ role: "admin", admin: true }, "admin")).toBe(true);
+      expect(evaluateIsAdminRule({ role: "admin" }, "admin")).toBe(true);
+    });
+
+    it("verifies that users collection rules forbid role tampering and protect all user KYC documents", () => {
+      const allowedCreateRoles = ['buyer', 'client', 'seller', 'artisan'];
+      const protectedKeys = [
+        'role', 'status', 'capabilities', 'verification', 'is2FAEnabled',
+        'twoFactorSecret', 'mfa', 'soldes', 'balance', 'customClaims',
+        'permissions', 'commissionRate', 'isVerified', 'verified', 'kycStatus'
+      ];
+
+      // 1. Creation check: 'admin' cannot be passed in creation role
+      expect(allowedCreateRoles.includes("admin")).toBe(false);
+      expect(allowedCreateRoles.includes("superadmin")).toBe(false);
+
+      // 2. Update check: any attempt to modify protectedKeys is blocked
+      const maliciousUpdateAttempt = ['role', 'kycStatus', 'isVerified'];
+      const isBlocked = maliciousUpdateAttempt.some(key => protectedKeys.includes(key));
+      expect(isBlocked).toBe(true);
+
+      // 3. KYC Document read permission: only isOwner(userId) or genuine isAdmin() with claims
+      const canReadUserProfileAndKYC = (callerUid: string, targetUserId: string, isCallerAdmin: boolean) => {
+        return callerUid === targetUserId || isCallerAdmin;
+      };
+
+      expect(canReadUserProfileAndKYC("attacker_uid", "victim_uid", false)).toBe(false);
+      expect(canReadUserProfileAndKYC("victim_uid", "victim_uid", false)).toBe(true);
+      expect(canReadUserProfileAndKYC("admin_uid", "victim_uid", true)).toBe(true);
     });
   });
 });

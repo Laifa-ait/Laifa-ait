@@ -194,6 +194,121 @@
         "userId": { "type": "string" }
       },
       "required": ["id", "fullName", "phone", "wilaya", "commune", "address", "deliveryMethod", "items", "total", "createdAt", "userId"]
+    },
+    "Withdrawal": {
+      "title": "Withdrawal Request",
+      "description": "Seller funds withdrawal request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "shopName": { "type": "string" },
+        "amount": { "type": "number" },
+        "method": { "type": "string", "enum": ["VIREMENT_BANCAIRE", "CCP_BARIDIMOB"] },
+        "accountDetails": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "PROCESSED", "PAID", "CANCELED"] },
+        "receiptUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "processedAt": { "type": "string", "format": "date-time" },
+        "paidAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sellerId", "amount", "method", "accountDetails", "status"]
+    },
+    "Ticket": {
+      "title": "Support Ticket",
+      "description": "Customer support and inquiry ticket",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "status": { "type": "string", "enum": ["open", "closed", "pending"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "priority", "status", "createdAt"]
+    },
+    "Message": {
+      "title": "Support or Chat Message",
+      "description": "Individual message entry for tickets or conversations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketId": { "type": "string" },
+        "conversationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "sender": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "fileUrl": { "type": "string" }
+      },
+      "required": ["text", "createdAt"]
+    },
+    "RealEstateBooking": {
+      "title": "Real Estate Booking",
+      "description": "Property rental or purchase transaction booking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "completed"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "totalPrice": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["propertyId", "tenantId", "ownerId", "status", "createdAt"]
+    },
+    "RealEstateVisit": {
+      "title": "Real Estate Visit",
+      "description": "On-site property visit schedule",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "visitorId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["requested", "accepted", "declined", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["propertyId", "visitorId", "ownerId", "scheduledAt", "status", "createdAt"]
+    },
+    "Conversation": {
+      "title": "Conversation Channel",
+      "description": "Direct chat channel between marketplace users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array" },
+        "type": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["participants", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Security and administrative audit event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "adminId": { "type": "string" },
+        "adminEmail": { "type": "string" },
+        "targetId": { "type": "string" },
+        "resourceType": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "adminId", "timestamp"]
     }
   },
   "firestore": {
@@ -229,9 +344,25 @@
       "schema": "Product",
       "description": "Product directory"
     },
-    "/properties/{propertyId}": {
+    "/real_estate_properties/{propertyId}": {
       "schema": "Property",
       "description": "Real estate listings directory"
+    },
+    "/real_estate_bookings/{bookingId}": {
+      "schema": "RealEstateBooking",
+      "description": "Property rental and purchase bookings"
+    },
+    "/real_estate_visits/{visitId}": {
+      "schema": "RealEstateVisit",
+      "description": "Property physical visit schedules"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Marketplace direct messaging threads"
+    },
+    "/conversations/{conversationId}/messages/{msgId}": {
+      "schema": "Message",
+      "description": "Conversation thread message entries"
     },
     "/orders/{orderId}": {
       "schema": "Order",
@@ -242,16 +373,20 @@
       "description": "Admin alerts"
     },
     "/withdrawals/{withdrawalId}": {
-      "schema": { "$ref": "Withdrawal" },
+      "schema": "Withdrawal",
       "description": "Paiement requests"
     },
     "/supportTickets/{ticketId}": {
-      "schema": { "$ref": "Ticket" },
+      "schema": "Ticket",
       "description": "Customer support tickets"
     },
     "/supportMessages/{msgId}": {
-      "schema": { "$ref": "Message" },
+      "schema": "Message",
       "description": "Ticket conversation logs"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Administrative system and security audit entries"
     }
   }
 }

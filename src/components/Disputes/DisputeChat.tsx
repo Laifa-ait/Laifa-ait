@@ -166,7 +166,7 @@ export const DisputeChat: React.FC<{ disputeId: string, onClose?: () => void }> 
                     <div className="mt-2.5 border-t border-slate-100/50 pt-2 space-y-2">
                       {msg.fileType?.startsWith('image/') ? (
                         <div onClick={() => setLightboxImg(msg.fileUrl || null)} className="max-w-[180px] rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-90 transition-opacity bg-slate-50">
-                          <img src={msg.fileUrl} alt={msg.fileName || 'Attachment'} referrerPolicy="no-referrer" className="max-h-24 object-contain w-full" />
+                          <img loading="lazy" decoding="async" src={msg.fileUrl} alt={msg.fileName || 'Attachment'} referrerPolicy="no-referrer" className="max-h-24 object-contain w-full" />
                         </div>
                       ) : (
                         <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border ${isMe ? 'bg-orange-700 border-orange-550 text-white hover:bg-orange-800' : 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200'} transition-all`}>

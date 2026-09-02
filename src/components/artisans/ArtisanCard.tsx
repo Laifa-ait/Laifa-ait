@@ -61,8 +61,7 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({ artisan, onRequestQuot
         <div className="space-y-3.5 pr-6">
           <div className="flex items-start gap-3.5">
             <div className="relative shrink-0">
-              <img
-                src={displayAvatar}
+              <img loading="lazy" decoding="async" src={displayAvatar}
                 alt={artisan.fullName}
                 referrerPolicy="no-referrer"
                 className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500/20 shadow-xs group-hover:scale-105 transition-transform"

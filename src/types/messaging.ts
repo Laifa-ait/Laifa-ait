@@ -1,3 +1,13 @@
+import { z } from "zod";
+import {
+  AttachmentSchema,
+  InitiateConversationSchema,
+  SendMessageSchema,
+  CreateNegotiationSchema,
+  ResolveNegotiationSchema,
+  ReportMessageSchema
+} from "../schemas/messaging";
+
 export type ConversationType =
   | 'ORDER_SUPPORT'
   | 'REAL_ESTATE_INQUIRY'
@@ -28,12 +38,7 @@ export interface ConversationParticipant {
   unreadCount: number;
 }
 
-export interface AttachmentPayload {
-  type: 'image' | 'pdf';
-  url: string;
-  fileName: string;
-  fileSizeBytes: number;
-}
+export type AttachmentPayload = z.infer<typeof AttachmentSchema>;
 
 export interface NegotiationOfferPayload {
   offerId: string;
@@ -96,35 +101,12 @@ export interface ChatMessageDocument {
 }
 
 // API DTO & Response interfaces
-export interface InitiateConversationDTO {
-  type: ConversationType;
-  recipientId: string;
-  context: ConversationContext;
-  initialMessage: string;
-}
-
-export interface SendMessageDTO {
-  text: string;
-  attachments?: AttachmentPayload[];
-}
-
-export interface CreateNegotiationDTO {
-  amountDZD: number;
-  terms?: string;
-}
-
-export interface ResolveNegotiationDTO {
-  offerId: string;
-  action: 'ACCEPT' | 'REJECT' | 'COUNTER';
-  counterAmountDZD?: number;
-}
-
+export type InitiateConversationDTO = z.infer<typeof InitiateConversationSchema>;
+export type SendMessageDTO = z.infer<typeof SendMessageSchema>;
+export type CreateNegotiationDTO = z.infer<typeof CreateNegotiationSchema>;
+export type ResolveNegotiationDTO = z.infer<typeof ResolveNegotiationSchema>;
 export type ResolveNegotiationPayload = ResolveNegotiationDTO;
-
-export interface ReportMessageDTO {
-  reason: string;
-  description?: string;
-}
+export type ReportMessageDTO = z.infer<typeof ReportMessageSchema>;
 
 export interface MessagingApiResponse<T> {
   success: boolean;

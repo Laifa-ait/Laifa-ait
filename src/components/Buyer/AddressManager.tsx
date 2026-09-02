@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { MapPin, Plus, Trash2, Compass } from "lucide-react";
-import { User as FirebaseUser } from "firebase/auth";
-import { apiPost } from "../../lib/api";
-import { ALGERIA_WILAYAS } from "../../constants";
-import { ALGERIA_REGIONS } from "../../data/algeriaRegions";
-import { toast } from "react-hot-toast";
-import { useTranslation } from "react-i18next";
-import { UserProfile, UserAddress } from "../../domains/user/user.types";
+import { UserProfile, UserAddress, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 
 interface AddressManagerProps {
   currentUser: FirebaseUser | null;

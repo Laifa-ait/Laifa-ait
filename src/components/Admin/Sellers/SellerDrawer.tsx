@@ -1,6 +1,5 @@
 import { Shop } from "../../../domains/seller/shop.types";
-import { UserProfile } from "../../../domains/user/user.types";
-import { User as FirebaseUser } from "firebase/auth";
+import { UserProfile, AuthUser as FirebaseUser } from "../../../domains/user/user.types";
 import React from "react";
 import { motion } from "motion/react";
 import {

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Mail, Key, Eye, EyeOff } from "lucide-react";
 import {
-  User,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword as firebaseUpdatePassword,
-  verifyBeforeUpdateEmail,
-} from "firebase/auth";
+  reauthenticateUser,
+  updateUserPassword,
+  verifyAndUpdateUserEmail,
+  getCurrentAuthUser,
+} from "../../services/auth.service";
+import { AuthUser as User } from "../../domains/user/user.types";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { apiPost } from "../../lib/api";
@@ -54,7 +54,8 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
   };
 
   const executeReauthenticatedAction = async () => {
-    if (!currentUser || !currentUser.email) {
+    const fbUser = getCurrentAuthUser();
+    if (!fbUser || !fbUser.email) {
       return toast.error("Utilisateur non connecté.");
     }
     if (!currentPassword.trim()) {
@@ -63,16 +64,13 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
 
     setLoading(true);
     try {
-      // 1. Establish Credentials
-      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-
-      // 2. Perform Re-authentication
-      await reauthenticateWithCredential(currentUser, credential);
+      // 1 & 2. Perform Re-authentication
+      await reauthenticateUser(fbUser, currentPassword);
 
       // 3. Execute main mutation based on selected flow
       if (reauthAction === "email") {
         // Safe update with state-of-the-art verification flow
-        await verifyBeforeUpdateEmail(currentUser, email);
+        await verifyAndUpdateUserEmail(fbUser, email);
 
         // Update user Firestore document too
         await apiPost("/api/v1/auth/profile", {
@@ -82,7 +80,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
         toast.success("E-mail de vérification envoyé à la nouvelle adresse ! Veuillez vérifier votre boîte mail.");
         setShowReauthModal(false);
       } else if (reauthAction === "password") {
-        await firebaseUpdatePassword(currentUser, newPassword);
+        await updateUserPassword(fbUser, newPassword);
         toast.success("Mot de passe mis à jour avec succès !");
         setNewPassword("");
         setConfirmPassword("");

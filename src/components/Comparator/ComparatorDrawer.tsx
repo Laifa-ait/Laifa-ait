@@ -81,7 +81,7 @@ export const ComparatorDrawer: React.FC = () => {
                         <X className="w-3 h-3" />
                       </button>
                       <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-white border border-slate-200/60 shrink-0 p-0.5">
-                        <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
+                        <img loading="lazy" decoding="async" src={p.image} alt={p.name} className="w-full h-full object-contain" />
                       </div>
                       <div className="min-w-0 max-w-[85px] sm:max-w-[110px]">
                         <p className="text-[11px] font-semibold text-slate-900 truncate">{p.name}</p>

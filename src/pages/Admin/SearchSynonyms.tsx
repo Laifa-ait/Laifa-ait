@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Edit2, Check, X, RefreshCw, ArrowRight, HelpCircle } from "lucide-react";
-import { db } from "../../lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { fetchAdminSettingsDoc, saveAdminSettingsDoc } from "../../services/adminRepository";
 import toast from "react-hot-toast";
 
 export interface SynonymRule {
@@ -40,10 +39,9 @@ export const SearchSynonyms: React.FC<SearchSynonymsProps> = ({ algoliaCredentia
   useEffect(() => {
     const loadSynonyms = async () => {
       try {
-        const docRef = doc(db, "settings", "search_synonyms");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().rules) {
-          setSynonyms(docSnap.data().rules);
+        const data = await fetchAdminSettingsDoc("search_synonyms");
+        if (data && data.rules) {
+          setSynonyms(data.rules);
         } else {
           // Default baseline synonyms for Algerian Marketplace
           const defaultRules: SynonymRule[] = [
@@ -66,8 +64,7 @@ export const SearchSynonyms: React.FC<SearchSynonymsProps> = ({ algoliaCredentia
   const saveToFirestore = async (newRules: SynonymRule[]) => {
     setIsSaving(true);
     try {
-      const docRef = doc(db, "settings", "search_synonyms");
-      await setDoc(docRef, {
+      await saveAdminSettingsDoc("search_synonyms", {
         rules: newRules,
         updatedAt: new Date().toISOString(),
       });

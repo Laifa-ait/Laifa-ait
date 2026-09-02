@@ -66,49 +66,40 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
     expect(nextCalled).toBe(true);
   });
 
-  it("allows requests with valid Authorization Bearer header", () => {
+  it("rejects requests relying solely on Authorization Bearer header or X-Requested-With without CSRF token", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "test_prod_key";
+    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
 
     let nextCalled = false;
+    let statusCode = 0;
     const req = {
       method: "POST",
       headers: {
         authorization: "Bearer firebase_id_token_xyz",
+        "x-requested-with": "XMLHttpRequest",
       },
       originalUrl: "/api/v1/orders/create",
     } as unknown as Request;
 
-    const res = {} as Response;
-    csrfProtection(req, res, () => {
-      nextCalled = true;
-    });
-
-    expect(nextCalled).toBe(true);
-  });
-
-  it("allows requests with custom X-Requested-With header", () => {
-    process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "test_prod_key";
-
-    let nextCalled = false;
-    const req = {
-      method: "POST",
-      headers: {
-        "x-requested-with": "XMLHttpRequest",
+    const res = {
+      status(code: number) {
+        statusCode = code;
+        return this;
       },
-      originalUrl: "/api/v1/user/profile",
-    } as unknown as Request;
+      json() {
+        return this;
+      },
+    } as unknown as Response;
 
-    const res = {} as Response;
     csrfProtection(req, res, () => {
       nextCalled = true;
     });
 
-    expect(nextCalled).toBe(true);
+    expect(nextCalled).toBe(false);
+    expect(statusCode).toBe(403);
   });
 
-  it("allows requests with valid X-CSRF-Token header", () => {
+  it("allows requests with valid X-CSRF-Token header bound to authenticated user", () => {
     process.env.NODE_ENV = "production";
     process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
 
@@ -133,7 +124,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("blocks untrusted POST requests without token or credentials", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "test_prod_key";
+    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
 
     let nextCalled = false;
     let statusCode = 0;

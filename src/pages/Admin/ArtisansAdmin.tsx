@@ -13,10 +13,10 @@ import {
   ArtisanTrade,
   ArtisanAdminAuditLog,
 } from '../../types/artisan';
-import { AdminArtisansTable } from '../../components/admin/artisans/AdminArtisansTable';
-import { AdminTradesManager } from '../../components/admin/artisans/AdminTradesManager';
-import { AdminAuditLogsList } from '../../components/admin/artisans/AdminAuditLogsList';
-import { AdminStatusModal } from '../../components/admin/artisans/AdminStatusModal';
+import { AdminArtisansTable } from '../../components/Admin/artisans/AdminArtisansTable';
+import { AdminTradesManager } from '../../components/Admin/artisans/AdminTradesManager';
+import { AdminAuditLogsList } from '../../components/Admin/artisans/AdminAuditLogsList';
+import { AdminStatusModal } from '../../components/Admin/artisans/AdminStatusModal';
 
 export const ArtisansAdmin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'artisans' | 'trades' | 'audit'>('artisans');

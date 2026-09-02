@@ -19,7 +19,11 @@ export const InitiateConversationSchema = z.object({
     propertyId: z.string().max(128).optional(),
     orderId: z.string().max(128).optional(),
     productId: z.string().max(128).optional(),
-    quoteRequestId: z.string().max(128).optional()
+    quoteRequestId: z.string().max(128).optional(),
+    referenceTitle: z.string().max(200).optional(),
+    referenceImageUrl: z.string().optional(),
+    referenceImage: z.string().optional(),
+    referencePriceDZD: z.number().optional(),
   }),
   initialMessage: z.string().min(1, "Le message initial ne peut pas être vide").max(3000, "Message trop long (max 3000 caractères)")
 });

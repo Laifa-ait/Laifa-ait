@@ -51,8 +51,7 @@ export const DisputeDetailsPanel: React.FC<DisputeDetailsPanelProps> = ({
                     onClick={() => onPhotoClick(photo)}
                     className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 cursor-pointer hover:border-orange-500 hover:scale-105 transition-all relative shrink-0 bg-white"
                   >
-                    <img 
-                      src={photo} 
+                    <img loading="lazy" decoding="async" src={photo} 
                       alt={`Evidence ${i}`} 
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover" 

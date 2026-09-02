@@ -72,8 +72,7 @@ export const ArtisanPortfolioTab: React.FC<ArtisanPortfolioTabProps> = ({
               className="group rounded-2xl bg-white border border-slate-200 shadow-xs overflow-hidden flex flex-col"
             >
               <div className="relative h-44 bg-slate-100 overflow-hidden">
-                <img
-                  src={item.imageUrl}
+                <img loading="lazy" decoding="async" src={item.imageUrl}
                   alt={item.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

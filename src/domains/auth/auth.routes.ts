@@ -6,6 +6,7 @@ import { admin, db } from "../../config/firebase-admin";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../constants";
 import { CouponService } from "../marketing/coupon.service";
 import { safeLogger } from "../../utils/logger";
+import { profileUpdateSchema } from "../user/user.schema";
 import auth2faRouter from "./auth2fa.routes";
 
 const router = Router();
@@ -87,7 +88,7 @@ router.post("/onboard", loginLimiter, authenticateToken, async (req: Authenticat
   }
 });
 
-router.post("/seller-onboard", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/seller-onboard", loginLimiter, authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const uid = req.user?.uid || "";
   try {
     const { storeName, storeDescription, documentId, rib } = req.body;
@@ -166,7 +167,7 @@ router.post("/seller-onboard", authenticateToken, async (req: AuthenticatedReque
   }
 });
 
-router.post("/sync-user-claims", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/sync-user-claims", loginLimiter, authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const uid = req.user?.uid || "";
   try {
     const userDoc = await db.collection('users').doc(uid).get();
@@ -476,12 +477,20 @@ router.delete("/following/:shopId", authenticateToken, async (req: Authenticated
 router.post("/profile", authenticateToken, require2FA, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const uid = req.user?.uid || "";
-    const safeProfileUpdate = { ...req.body };
-    delete safeProfileUpdate.role;
-    delete safeProfileUpdate.isAdmin;
-    delete safeProfileUpdate.customClaims;
-    delete safeProfileUpdate.permissions;
-    delete safeProfileUpdate.status;
+    const parseResult = profileUpdateSchema.safeParse(req.body);
+
+    if (!parseResult.success) {
+      return res.status(400).json({
+        error: "Données de profil invalides ou champ d'autorisation non autorisé.",
+        details: parseResult.error.format(),
+      });
+    }
+
+    const safeProfileUpdate = {
+      ...parseResult.data,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
     await db.collection("users").doc(uid).set(safeProfileUpdate, { merge: true });
     return res.json({ success: true });
   } catch (error: unknown) {
@@ -490,7 +499,7 @@ router.post("/profile", authenticateToken, require2FA, async (req: Authenticated
 });
 
 // POST convert guest to registered user
-router.post("/convert-guest", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/convert-guest", loginLimiter, authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const uid = req.user?.uid || "";
     const { email, fullName, phone, wilaya, commune, address, guestUserId } = req.body;

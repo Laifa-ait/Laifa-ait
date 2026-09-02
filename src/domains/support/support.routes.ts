@@ -17,6 +17,20 @@ import { validateSecureFilePath } from "./utils/supportValidation";
 
 const router = Router();
 
+function sendErrorResponse(res: Response, error: unknown, defaultMessage = "Erreur serveur") {
+  if (
+    error instanceof BusinessError ||
+    (typeof error === "object" &&
+      error !== null &&
+      "statusCode" in error &&
+      typeof (error as { statusCode: unknown }).statusCode === "number")
+  ) {
+    const errObj = error as { statusCode: number; message: string };
+    return res.status(errObj.statusCode).json({ error: errObj.message });
+  }
+  return res.status(500).json({ error: error instanceof Error ? error.message : defaultMessage });
+}
+
 export {
   SUPPORT_TICKETS_COLLECTION,
   BusinessError,
@@ -39,8 +53,7 @@ router.post("/api/v1/support-tickets", authenticateToken, async (req: Authentica
     const id = await SupportService.createLegacyTicket(req.user.uid, req.body);
     return res.json({ id });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -50,8 +63,7 @@ router.get("/api/v1/support/tickets", authenticateToken, async (req: Authenticat
     const tickets = await SupportService.getUserTickets(req.user.uid);
     return res.json({ tickets });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -61,8 +73,7 @@ router.post("/api/v1/support/tickets", authenticateToken, async (req: Authentica
     const result = await SupportService.createTicket(req.user.uid, req.body);
     return res.json(result);
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -72,8 +83,7 @@ router.get("/api/v1/support/tickets/:ticketId/messages", authenticateToken, asyn
     const messages = await SupportService.getTicketMessages(req.params.ticketId, req.user.uid, req.user.role);
     return res.json({ messages });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -83,8 +93,7 @@ router.post("/api/v1/support/tickets/:ticketId/messages", authenticateToken, asy
     const result = await SupportService.postClientMessage(req.params.ticketId, req.user.uid, req.user.role, req.body);
     return res.json({ success: true, message: result });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -94,8 +103,7 @@ router.post("/api/v1/support/tickets/:ticketId/reopen", authenticateToken, async
     await SupportService.reopenTicket(req.params.ticketId, req.user.uid, req.user.role);
     return res.json({ success: true });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -106,7 +114,9 @@ router.post("/api/v1/support/tickets/:ticketId/upload", authenticateToken, async
     const result = await SupportService.uploadAttachment(req.params.ticketId, req.user.uid, req.user.role, req.user.email || "inconnu", req.body);
     return res.json({ success: true, ...result });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
+    if (error instanceof BusinessError || (typeof error === "object" && error !== null && "statusCode" in error)) {
+      return sendErrorResponse(res, error);
+    }
     safeLogger.error("Support upload error", { ticketId: req.params.ticketId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Erreur serveur lors de l'upload de la pièce jointe." });
   }
@@ -124,7 +134,9 @@ router.get("/api/v1/support/tickets/:ticketId/attachments/:attachmentId", authen
       if (!res.headersSent) res.status(500).json({ error: "Erreur de lecture du fichier" });
     }).pipe(res);
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
+    if (error instanceof BusinessError || (typeof error === "object" && error !== null && "statusCode" in error)) {
+      return sendErrorResponse(res, error);
+    }
     safeLogger.error("Attachment retrieval error", { ticketId, attachmentId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
@@ -137,7 +149,7 @@ router.get("/api/v1/admin/support/tickets", authenticateToken, authorizeAdmin, a
     return res.json({ success: true, tickets });
   } catch (error: unknown) {
     safeLogger.error("Error fetching admin support tickets", { err: error instanceof Error ? error.message : String(error) });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -147,7 +159,7 @@ router.get("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToken
     return res.json({ success: true, messages });
   } catch (error: unknown) {
     safeLogger.error("Error fetching admin support messages", { ticketId: req.params.ticketId, err: error instanceof Error ? error.message : String(error) });
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
+    return sendErrorResponse(res, error);
   }
 });
 
@@ -157,7 +169,9 @@ router.post("/api/v1/admin/support/tickets/:ticketId/messages", authenticateToke
     const result = await SupportService.postAdminTicketMessage(req.params.ticketId, req.user.uid, req.user.email || "inconnu", req.body);
     return res.json({ success: true, message: result });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
+    if (error instanceof BusinessError || (typeof error === "object" && error !== null && "statusCode" in error)) {
+      return sendErrorResponse(res, error);
+    }
     safeLogger.error("Error adding admin support message", { ticketId: req.params.ticketId, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
@@ -169,7 +183,9 @@ router.put("/api/v1/admin/support/tickets/:ticketId/status", authenticateToken, 
     await SupportService.updateTicketStatus(req.params.ticketId, req.user.uid, req.user.email || "inconnu", req.body.status);
     return res.json({ success: true });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
+    if (error instanceof BusinessError || (typeof error === "object" && error !== null && "statusCode" in error)) {
+      return sendErrorResponse(res, error);
+    }
     safeLogger.error("Error updating support status", { ticketId: req.params.ticketId, newStatus: req.body.status, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }
@@ -181,7 +197,9 @@ router.put("/api/v1/admin/support/tickets/:ticketId/priority", authenticateToken
     await SupportService.updateTicketPriority(req.params.ticketId, req.user.uid, req.user.email || "inconnu", req.body.priority);
     return res.json({ success: true });
   } catch (error: unknown) {
-    if (error instanceof BusinessError) return res.status(error.statusCode).json({ error: error.message });
+    if (error instanceof BusinessError || (typeof error === "object" && error !== null && "statusCode" in error)) {
+      return sendErrorResponse(res, error);
+    }
     safeLogger.error("Error updating support priority", { ticketId: req.params.ticketId, newPriority: req.body.priority, err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur serveur" });
   }

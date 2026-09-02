@@ -22,6 +22,8 @@ const setNestedKey = (obj: Record<string, unknown>, keyPath: string, value: unkn
     return;
   }
 
+  const isIncrement = value && typeof value === "object" && (value as Record<string, unknown>).__isIncrement;
+
   if (keyPath.includes(".")) {
     const parts = keyPath.split(".");
     let curr: Record<string, unknown> = obj;
@@ -31,9 +33,20 @@ const setNestedKey = (obj: Record<string, unknown>, keyPath: string, value: unkn
       }
       curr = curr[parts[i]] as Record<string, unknown>;
     }
-    curr[parts[parts.length - 1]] = value;
+    const lastKey = parts[parts.length - 1];
+    if (isIncrement) {
+      const incVal = Number((value as Record<string, unknown>).value || 0);
+      curr[lastKey] = (Number(curr[lastKey]) || 0) + incVal;
+    } else {
+      curr[lastKey] = value;
+    }
   } else {
-    obj[keyPath] = value;
+    if (isIncrement) {
+      const incVal = Number((value as Record<string, unknown>).value || 0);
+      obj[keyPath] = (Number(obj[keyPath]) || 0) + incVal;
+    } else {
+      obj[keyPath] = value;
+    }
   }
 };
 
@@ -71,36 +84,41 @@ vi.mock("../config/firebase-admin", () => {
       },
       FieldValue: {
         delete: () => deleteValueMarker,
+        increment: (val: number) => ({ __isIncrement: true, value: val }),
       },
     },
   };
 
   const mockDb = {
-    collection: (_colName: string) => ({
-      doc: (docId: string) => ({
-        id: docId,
-        get: vi.fn(async () => {
-          const data = usersStore.get(docId);
-          return {
-            exists: !!data,
-            data: () => (data ? (cloneData(data) as Record<string, unknown>) : undefined),
-          };
-        }),
-        set: vi.fn(async (data: Record<string, unknown>) => {
-          usersStore.set(docId, cloneData(data) as Record<string, unknown>);
-        }),
-        update: vi.fn(async (data: Record<string, unknown>) => {
-          let existing = (usersStore.get(docId) || {}) as Record<string, unknown>;
-          existing = cloneData(existing) as Record<string, unknown>;
-          for (const [key, value] of Object.entries(data)) {
-            setNestedKey(existing, key, value);
-          }
-          usersStore.set(docId, existing);
-        }),
-        delete: vi.fn(async () => {
-          usersStore.delete(docId);
-        }),
-      }),
+    collection: (colName: string) => ({
+      doc: (docId: string) => {
+        const fullKey = `${colName}/${docId}`;
+        return {
+          id: docId,
+          get: vi.fn(async () => {
+            const data = usersStore.get(fullKey) ?? usersStore.get(docId);
+            return {
+              exists: !!data,
+              data: () => (data ? (cloneData(data) as Record<string, unknown>) : undefined),
+            };
+          }),
+          set: vi.fn(async (data: Record<string, unknown>) => {
+            usersStore.set(fullKey, cloneData(data) as Record<string, unknown>);
+          }),
+          update: vi.fn(async (data: Record<string, unknown>) => {
+            let existing = (usersStore.get(fullKey) ?? usersStore.get(docId) ?? {}) as Record<string, unknown>;
+            existing = cloneData(existing) as Record<string, unknown>;
+            for (const [key, value] of Object.entries(data)) {
+              setNestedKey(existing, key, value);
+            }
+            usersStore.set(fullKey, existing);
+          }),
+          delete: vi.fn(async () => {
+            usersStore.delete(fullKey);
+            usersStore.delete(docId);
+          }),
+        };
+      },
     }),
   };
 
@@ -164,15 +182,21 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
     expect(res.body.success).toBe(true);
     expect(res.body.method).toBe("email");
 
-    // Verify stored data in Firestore database
+    // Verify stored data in private user_secrets collection
+    const secretSnap = await db.collection("user_secrets").doc(testUserUid).get();
+    const secretData = secretSnap.data();
+
+    expect(secretData).toBeDefined();
+    expect(secretData?.otpHash).toBeDefined();
+    expect(typeof secretData?.otpHash).toBe("string");
+    expect(secretData?.otpHash).toHaveLength(64); // SHA-256 hex string length
+    expect(secretData?.attempts).toBe(0);
+    expect(secretData?.expiresAt).toBeDefined();
+
+    // Verify public/user document does NOT contain plaintext code
     const userSnap = await db.collection("users").doc(testUserUid).get();
     const userData = userSnap.data();
-
-    expect(userData?.verification).toBeDefined();
-    expect(userData?.verification?.code).toBeDefined();
-    expect(typeof userData?.verification?.code).toBe("string");
-    expect(userData?.verification?.code).toMatch(/^\d{6}$/); // Exactly 6 digits
-    expect(userData?.verification?.expiresAt).toBeDefined();
+    expect(userData?.verification?.code).toBeUndefined();
   });
 
   // TEST 3: Verify 2FA code - Unauthenticated -> 401
@@ -219,7 +243,8 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
       role: "buyer"
     } as unknown as admin.auth.DecodedIdToken);
 
-    // Explicitly delete verification structure from Firestore first
+    // Explicitly delete secrets and verification structure from Firestore first
+    await db.collection("user_secrets").doc(testUserUid).delete();
     await db.collection("users").doc(testUserUid).update({
       verification: admin.firestore.FieldValue.delete()
     });
@@ -240,10 +265,13 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
       role: "buyer"
     } as unknown as admin.auth.DecodedIdToken);
 
-    // Explicitly set code in DB
-    await db.collection("users").doc(testUserUid).update({
-      "verification.code": "888888",
-      "verification.expiresAt": admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
+    const crypto = await import("crypto");
+    const otpHash = crypto.createHash("sha256").update(`${testUserUid}:888888`).digest("hex");
+
+    await db.collection("user_secrets").doc(testUserUid).set({
+      otpHash,
+      attempts: 0,
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
     });
 
     const res = await request(app)
@@ -262,10 +290,13 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
       role: "buyer"
     } as unknown as admin.auth.DecodedIdToken);
 
-    // Set code in DB that expired 5 minutes ago
-    await db.collection("users").doc(testUserUid).update({
-      "verification.code": "777777",
-      "verification.expiresAt": admin.firestore.Timestamp.fromMillis(Date.now() - 5 * 60 * 1000)
+    const crypto = await import("crypto");
+    const otpHash = crypto.createHash("sha256").update(`${testUserUid}:777777`).digest("hex");
+
+    await db.collection("user_secrets").doc(testUserUid).set({
+      otpHash,
+      attempts: 0,
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() - 5 * 60 * 1000)
     });
 
     const res = await request(app)
@@ -284,10 +315,13 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
       role: "buyer"
     } as unknown as admin.auth.DecodedIdToken);
 
-    // Set genuine code as "999888"
-    await db.collection("users").doc(testUserUid).update({
-      "verification.code": "999888",
-      "verification.expiresAt": admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
+    const crypto = await import("crypto");
+    const otpHash = crypto.createHash("sha256").update(`${testUserUid}:999888`).digest("hex");
+
+    await db.collection("user_secrets").doc(testUserUid).set({
+      otpHash,
+      attempts: 0,
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
     });
 
     const res = await request(app)
@@ -306,11 +340,14 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
       role: "buyer"
     } as unknown as admin.auth.DecodedIdToken);
 
-    // Set active valid code
     const correctCode = "555555";
-    await db.collection("users").doc(testUserUid).update({
-      "verification.code": correctCode,
-      "verification.expiresAt": admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
+    const crypto = await import("crypto");
+    const otpHash = crypto.createHash("sha256").update(`${testUserUid}:${correctCode}`).digest("hex");
+
+    await db.collection("user_secrets").doc(testUserUid).set({
+      otpHash,
+      attempts: 0,
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
     });
 
     const res = await request(app)
@@ -329,6 +366,33 @@ describe("OLMART — Two-Factor Authentication Route Integration & Security Suit
     expect(userData?.verification?.verified).toBe(true);
     expect(userData?.verification?.verifiedAt).toBeDefined();
     // Critical: The secret code must have been deleted to avoid reuse replay attacks
+    const secretSnap = await db.collection("user_secrets").doc(testUserUid).get();
+    expect(secretSnap.exists).toBe(false);
     expect(userData?.verification?.code).toBeUndefined();
+  });
+
+  // TEST 10: Rate limiting after 5 failed attempts -> 429
+  it("TEST 10: blocks verification with 429 if trial count exceeds maximum allowed attempts (5/5)", async () => {
+    verifyTokenSpy.mockResolvedValue({
+      uid: testUserUid,
+      role: "buyer"
+    } as unknown as admin.auth.DecodedIdToken);
+
+    const crypto = await import("crypto");
+    const otpHash = crypto.createHash("sha256").update(`${testUserUid}:111222`).digest("hex");
+
+    await db.collection("user_secrets").doc(testUserUid).set({
+      otpHash,
+      attempts: 5, // Already reached maximum attempts
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000)
+    });
+
+    const res = await request(app)
+      .post("/api/v1/auth/2fa/verify")
+      .set("Authorization", "Bearer token-valid-2fa")
+      .send({ code: "111222" });
+
+    expect(res.status).toBe(429);
+    expect(res.body.error).toContain("Trop de tentatives");
   });
 });

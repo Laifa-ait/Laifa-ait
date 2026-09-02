@@ -31,9 +31,9 @@ const apiKey = (isStringAndValid(rawApiKey) && rawApiKey.trim().startsWith("AIza
   ? rawApiKey.trim()
   : "AIzaSyCsGYo1B0vavSQbKdFvu0-7jfzILFHvejA";
 
-const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "original-micron-7sjh2.firebaseapp.com";
-const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "original-micron-7sjh2";
-const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "original-micron-7sjh2.firebasestorage.app";
+const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebaseapp.com";
+const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
+const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebasestorage.app";
 const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : "76420360525";
 const appId = (isStringAndValid(rawAppId) && rawAppId.includes(":")) ? rawAppId.trim() : "1:76420360525:web:d6781ea77ef0c2257aef04";
 

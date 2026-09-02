@@ -38,4 +38,15 @@ export interface GuestUser {
   role: "guest";
 }
 
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+  phoneNumber?: string | null;
+  isAnonymous?: boolean;
+  tenantId?: string | null;
+}
+
 export type User = UserProfile;

@@ -156,4 +156,44 @@ export const getFallbackSubImage = (name: string): string => {
   return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600";
 };
 
+/**
+ * Compresse une image côté client (navigateur) avant l'upload vers Firebase Storage.
+ * Réduit le poids à < 1Mo et optimise la résolution pour le web tout en préservant la netteté.
+ */
+export async function compressClientImage(
+  file: File,
+  options?: {
+    maxSizeMB?: number;
+    maxWidthOrHeight?: number;
+    useWebWorker?: boolean;
+    initialQuality?: number;
+  }
+): Promise<File> {
+  // Si ce n'est pas une image compressible (ex: GIF animé), retourner le fichier original
+  if (file.type === "image/gif" || !file.type.startsWith("image/")) {
+    return file;
+  }
+
+  try {
+    const imageCompression = (await import("browser-image-compression")).default;
+    const compressionOptions = {
+      maxSizeMB: options?.maxSizeMB ?? 0.8, // Max 800 Ko
+      maxWidthOrHeight: options?.maxWidthOrHeight ?? 1920,
+      useWebWorker: options?.useWebWorker ?? true,
+      initialQuality: options?.initialQuality ?? 0.85,
+      fileType: file.type === "image/png" ? "image/png" : "image/jpeg",
+    };
+
+    const compressedBlob = await imageCompression(file, compressionOptions);
+    return new File([compressedBlob], file.name, {
+      type: compressedBlob.type || file.type,
+      lastModified: Date.now(),
+    });
+  } catch (error) {
+    // En cas d'erreur de compression, fallback gracieux sur le fichier d'origine
+    console.warn("[ImageCompression] Fallback sur fichier d'origine:", error);
+    return file;
+  }
+}
+
 

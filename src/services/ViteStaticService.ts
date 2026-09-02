@@ -1,7 +1,6 @@
 import express, { Express, Response } from "express";
 import path from "path";
 import { promises as fsPromises, existsSync } from "fs";
-import { createServer as createViteServer } from "vite";
 import { getProductSeoData, injectProductSeo } from "./ProductSeoService";
 import { injectNonceToHtml } from "../middlewares/security";
 import { safeLogger } from "../utils/logger";
@@ -54,6 +53,7 @@ export function validateProductionHtmlTemplate(content: string, distPath: string
 export async function setupViteAndStaticServing(app: Express): Promise<void> {
   if (process.env.NODE_ENV !== "production") {
     try {
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true, hmr: false, ws: false },
         appType: "spa",
@@ -89,17 +89,20 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
   const distPath = path.join(process.cwd(), "dist");
   const indexHtmlPath = path.join(distPath, "index.html");
 
-  app.use("/locales", express.static(path.join(distPath, "locales"), { maxAge: "1y", immutable: true }));
+  app.use("/locales", express.static(path.join(distPath, "locales"), { maxAge: "1h", immutable: false, setHeaders: (res) => { res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate"); } }));
   app.use(
     express.static(distPath, {
       index: false,
-      maxAge: "1y",
-      immutable: true,
+      maxAge: 0,
       setHeaders: (res, filePath) => {
         if (filePath.endsWith(".html")) {
           res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         } else if (filePath.includes("/assets/")) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else if (filePath.includes("/locales/")) {
+          res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+        } else {
+          res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
         }
       },
     })

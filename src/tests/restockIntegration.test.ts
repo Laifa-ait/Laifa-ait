@@ -23,28 +23,42 @@ describe("OrderStatusController Restock Real Integration Suite", () => {
   let verifyTokenSpy: MockInstance;
 
   beforeAll(async () => {
-    // 1. Seed base commission settings to prevent warnings
-    await db.collection("settings").doc("commission").set({
-      globalRate: 15,
-    });
+    // Si nous ne sommes pas dans un environnement d'intégration avec émulateur Firestore, sauter l'accès réseau
+    if (!process.env.FIRESTORE_EMULATOR_HOST && !process.env.INTEGRATION_TESTS) {
+      verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
+      return;
+    }
 
-    // 2. Seed mock users
-    await db.collection("users").doc(sellerUid).set({
-      role: "seller",
-      email: "seller@olmart.dz",
-      commissionRate: 10,
-    });
+    try {
+      // 1. Seed base commission settings to prevent warnings
+      await db.collection("settings").doc("commission").set({
+        globalRate: 15,
+      });
 
-    await db.collection("users").doc(buyerUid).set({
-      role: "buyer",
-      email: "buyer@olmart.dz",
-    });
+      // 2. Seed mock users
+      await db.collection("users").doc(sellerUid).set({
+        role: "seller",
+        email: "seller@olmart.dz",
+        commissionRate: 10,
+      });
 
-    // 3. Spy on decode token middleware
-    verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
+      await db.collection("users").doc(buyerUid).set({
+        role: "buyer",
+        email: "buyer@olmart.dz",
+      });
+
+      // 3. Spy on decode token middleware
+      verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
+    } catch (err) {
+      console.warn("Skipping restock integration Firestore seeding:", err);
+    }
   });
 
   afterAll(async () => {
+    if (!process.env.FIRESTORE_EMULATOR_HOST && !process.env.INTEGRATION_TESTS) {
+      return;
+    }
+
     // Clean up all seeded test documents to leave Firestore pristine
     const documentsToClean = [
       `users/${sellerUid}`,

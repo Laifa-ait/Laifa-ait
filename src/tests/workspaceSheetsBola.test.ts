@@ -1,6 +1,103 @@
 import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
+
+// In-Memory Firebase Store
+const { memoryStore, mockAuth } = vi.hoisted(() => {
+  const memStore = new Map<string, Record<string, unknown>>();
+  const verifyFn = vi.fn();
+  const authObj = {
+    verifyIdToken: verifyFn,
+  };
+  return { memoryStore: memStore, mockAuth: authObj };
+});
+
+vi.mock("../config/firebase-admin", () => {
+  const mockDb = {
+    collection: (colName: string) => {
+      let filteredDocs: Array<{ id: string; data: Record<string, unknown> }> = [];
+      const getColDocs = () => {
+        const results: Array<{ id: string; data: Record<string, unknown> }> = [];
+        for (const [k, v] of memoryStore.entries()) {
+          if (k.startsWith(`${colName}/`)) {
+            const id = k.slice(colName.length + 1);
+            results.push({ id, data: v });
+          }
+        }
+        return results;
+      };
+
+      const chain = {
+        doc: (docId: string) => {
+          const key = `${colName}/${docId}`;
+          return {
+            id: docId,
+            get: vi.fn(async () => {
+              const data = memoryStore.get(key);
+              return {
+                id: docId,
+                exists: !!data,
+                data: () => data,
+              };
+            }),
+            set: vi.fn(async (data: Record<string, unknown>) => {
+              memoryStore.set(key, data);
+            }),
+            delete: vi.fn(async () => {
+              memoryStore.delete(key);
+            }),
+          };
+        },
+        where: vi.fn((field: string, op: string, val: unknown) => {
+          const docs = getColDocs();
+          filteredDocs = docs.filter((d) => {
+            const fieldVal = d.data[field];
+            if (op === "==") return fieldVal === val;
+            if (op === "array-contains") return Array.isArray(fieldVal) && fieldVal.includes(val);
+            if (op === "array-contains-any") return Array.isArray(fieldVal) && Array.isArray(val) && val.some((x) => fieldVal.includes(x));
+            return true;
+          });
+          return chain;
+        }),
+        orderBy: vi.fn(() => chain),
+        limit: vi.fn(() => chain),
+        get: vi.fn(async () => {
+          const docs = filteredDocs.length > 0 ? filteredDocs : getColDocs();
+          return {
+            empty: docs.length === 0,
+            size: docs.length,
+            docs: docs.map((d) => ({
+              id: d.id,
+              data: () => d.data,
+            })),
+          };
+        }),
+      };
+      return chain;
+    },
+    runTransaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb({
+      get: vi.fn(async (ref: { get: () => Promise<unknown> }) => ref.get()),
+      set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
+      update: vi.fn(),
+      delete: vi.fn(),
+    })),
+  };
+
+  return {
+    admin: {
+      auth: () => mockAuth,
+      firestore: {
+        FieldValue: {
+          serverTimestamp: vi.fn(() => new Date().toISOString()),
+          increment: vi.fn((n: number) => n),
+        },
+      },
+    },
+    db: mockDb,
+    auth: mockAuth,
+  };
+});
+
 import { admin, db } from "../config/firebase-admin";
 import workspaceRouter from "../domains/workspace/workspace.routes";
 import adminWorkspaceRouter from "../domains/workspace/controllers/adminWorkspace.controller";

@@ -56,18 +56,32 @@ function getFilesRecursively(dir: string): string[] {
 function extractKeysFromContent(content: string): string[] {
   const keys: Set<string> = new Set();
 
-  // Pattern 1: t("key") or t('key') or t(`key`)
-  const regexT = /\bt\(\s*["'`]([^"'`]+)["'`]/g;
+  // Pattern 1: Double-quoted strings -> t("...") or getNavLabel("...")
+  const doubleQuoteRegex = /\b(?:t|getNavLabel)\(\s*"((?:[^"\\]|\\.)*)"/g;
   let match: RegExpExecArray | null;
-  while ((match = regexT.exec(content)) !== null) {
-    if (match[1] && !match[1].includes("${")) {
-      keys.add(match[1].trim());
+  while ((match = doubleQuoteRegex.exec(content)) !== null) {
+    if (match[1]) {
+      const decoded = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      if (!decoded.includes("${")) {
+        keys.add(decoded.trim());
+      }
     }
   }
 
-  // Pattern 2: getNavLabel("key", ...)
-  const regexNav = /\bgetNavLabel\(\s*["'`]([^"'`]+)["'`]/g;
-  while ((match = regexNav.exec(content)) !== null) {
+  // Pattern 2: Single-quoted strings -> t('...') or getNavLabel('...')
+  const singleQuoteRegex = /\b(?:t|getNavLabel)\(\s*'((?:[^'\\]|\\.)*)'/g;
+  while ((match = singleQuoteRegex.exec(content)) !== null) {
+    if (match[1]) {
+      const decoded = match[1].replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+      if (!decoded.includes("${")) {
+        keys.add(decoded.trim());
+      }
+    }
+  }
+
+  // Pattern 3: Backtick strings (without template expressions) -> t(`...`) or getNavLabel(`...`)
+  const backtickRegex = /\b(?:t|getNavLabel)\(\s*`([^`\\$]*)`/g;
+  while ((match = backtickRegex.exec(content)) !== null) {
     if (match[1] && !match[1].includes("${")) {
       keys.add(match[1].trim());
     }
@@ -153,9 +167,11 @@ function runDiagnostic() {
     report.missingInEn.length > 0;
 
   if (hasMissing) {
-    console.log(`\n⚠️ [Olmart Translation Diagnostic] Status: Incomplete translations detected.`);
+    console.error(`\n❌ [Olmart Translation Diagnostic] Status: Incomplete translations detected. Failing CI check.`);
+    process.exit(1);
   } else {
     console.log(`\n🟢 [Olmart Translation Diagnostic] Status: 100% Coverage across FR, AR, EN for Seller Dashboard!`);
+    process.exit(0);
   }
 }
 

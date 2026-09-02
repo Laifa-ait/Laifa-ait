@@ -5,31 +5,34 @@ import { safeLogger } from "../utils/logger";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-let fallbackRuntimeSecret: string | null = null;
-
 /**
  * Safely retrieve the CSRF secret key.
- * Uses CSRF_SECRET when provided (>= 32 chars), or generates an ephemeral 256-bit cryptographic key.
+ * Requires CSRF_SECRET in production (>= 32 chars, provided via Secret Manager).
+ * Fails fast at startup in production if missing or weak.
  */
 function getCsrfSecret(): string {
+  const isProd = process.env.NODE_ENV === "production";
   const secret = process.env.CSRF_SECRET;
-  if (secret && secret.trim().length >= 32) {
-    const weakSecrets = ["changeit", "password", "secret", "1234567890", "olmart_dev_csrf_secret_key_2026"];
-    if (!weakSecrets.includes(secret.trim().toLowerCase())) {
-      return secret.trim();
-    }
-  }
+  const weakSecrets = [
+    "changeit",
+    "password",
+    "secret",
+    "1234567890",
+    "olmart_dev_csrf_secret_key_2026",
+    "olmart_prod_csrf_secret_key_fallback_32bytes_min_2026",
+  ];
 
-  if (process.env.NODE_ENV === "production") {
-    if (!fallbackRuntimeSecret) {
-      fallbackRuntimeSecret = crypto.randomBytes(32).toString("hex");
-      safeLogger.warn(
-        "[Olmart Security] ⚠️ CSRF_SECRET is not configured in environment. Generated ephemeral 256-bit runtime CSRF secret key."
+  if (isProd) {
+    if (!secret || secret.trim().length < 32 || weakSecrets.includes(secret.trim().toLowerCase())) {
+      throw new Error(
+        "[Olmart Security] ❌ Fatal: CSRF_SECRET environment variable must be explicitly defined with at least 32 characters in production (via Secret Manager)."
       );
     }
-    return fallbackRuntimeSecret;
+    return secret.trim();
   }
-  return secret?.trim() || "olmart_dev_csrf_secret_key_2026";
+
+  // Safe fallback in test and development modes
+  return secret?.trim() || "olmart_dev_csrf_secret_key_2026_test_fallback";
 }
 
 /**
@@ -245,16 +248,7 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
-  // 6. Fallback for SPA API requests: Custom header check + Bearer Auth Token
-  // Cross-site HTML forms / simple cross-origin requests cannot set custom headers like X-Requested-With
-  const customHeader = req.headers["x-requested-with"];
-  const authHeader = req.headers["authorization"];
-
-  if (customHeader === "XMLHttpRequest" || (authHeader && authHeader.startsWith("Bearer "))) {
-    return next();
-  }
-
-  // 7. Block untrusted request
+  // 6. Block untrusted request
   safeLogger.warn("[Olmart Security] ⚠️ CSRF attack prevented", { method: req.method, path: pathname });
   return res.status(403).json({
     success: false,

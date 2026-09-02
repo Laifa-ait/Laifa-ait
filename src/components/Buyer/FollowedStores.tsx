@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { Shop } from "../../domains/seller/shop.types";
 import { Product } from "../../domains/product/product.types";
-import { User } from "firebase/auth";
+import { AuthUser as User } from "../../domains/user/user.types";
 
 export interface FollowedStore {
   sellerId?: string;

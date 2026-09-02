@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, MapPin, Monitor, Clock, Loader2 } from 'lucide-react';
-import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { fetchUserLoginHistory } from '../../services/adminRepository';
 import { useTranslation } from 'react-i18next';
 
 interface LoginHistoryRecord {
@@ -30,9 +29,8 @@ export const IpLogsModal: React.FC<IpLogsModalProps> = ({ user, onClose }) => {
     if (!user?.id) return;
     const fetchLogs = async () => {
        try {
-          const q = query(collection(db, "login_history"), where("userId", "==", user.id), orderBy("timestamp", "desc"), limit(50));
-          const snap = await getDocs(q);
-          setLogs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          const records = await fetchUserLoginHistory(user.id, 50);
+          setLogs(records as LoginHistoryRecord[]);
        } catch (err) {
           console.error("Error fetching IP logs", err);
        } finally {

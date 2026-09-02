@@ -61,6 +61,53 @@ L'application est structurée selon une approche modulaire guidée par le domain
 
 ---
 
+## 🛡️ Charte Stricte : Sécurité & Configuration de l'Environnement Local
+
+À la suite des derniers audits de sécurité et du durcissement de notre infrastructure (Shift-Left Security), de nouvelles barrières restrictives ont été mises en place pour protéger l'application dès la phase de développement.
+**Chaque contributeur DOIT respecter impérativement cette procédure d'initialisation.**
+
+### 1. Prérequis d'Environnement Stricts
+L'infrastructure CI et les environnements de production exigent des versions exactes pour prévenir les dérives (lockfile drift) :
+* **Node.js** : `v22.23.2` obligatoire.
+* **npm** : `10.9.4` obligatoire.
+* N'utilisez **JAMAIS** `npm install` lors du premier setup ou sur le serveur CI. Utilisez toujours :
+  ```bash
+  npm ci
+  ```
+
+### 2. Le Secret CSRF (Blocage Explicite - Pas de solution de repli)
+Le mécanisme de protection CSRF ne tolère **plus aucun mot de passe de repli codé en dur** (ex: `olmart_dev_csrf_...`). Si le secret est manquant ou faible (< 32 caractères, ou contenu dans une blacklist de mots courants), **le serveur crashera (Exit 1) immédiatement au démarrage, même en développement local.**
+
+**Action requise :** Générez une clé robuste à 64 caractères et ajoutez-la à votre fichier `.env.local` ou `.env` :
+```bash
+# Génération d'une clé hexadécimale sécurisée sous Linux/Mac :
+openssl rand -hex 32
+
+# Ajoutez la valeur générée dans votre .env :
+CSRF_SECRET=votre_clef_generee_ici_...
+```
+
+### 3. Git Hooks & Validation Continue (Husky)
+Les hooks locaux ont été réactivés et verrouillés (`.husky/pre-commit`). 
+Toute tentative de commit déclenchera automatiquement `lint-staged` pour formater (Prettier) et vérifier (ESLint) vos fichiers modifiés.
+* **Ne forcez jamais un commit avec `--no-verify`.**
+* Si les hooks ne s'installent pas automatiquement après le `npm ci`, forcez l'installation locale :
+  ```bash
+  npm run prepare
+  chmod +x .husky/pre-commit
+  ```
+
+### 4. Environnement Conteneurisé & Pipeline CI/CD
+* **Image Docker (Production) :** L'image Docker finale s'exécute désormais sous un utilisateur non-root (`USER node`) et exclut toutes les dépendances de compilation (Vite, TypeScript, ESBuild). Assurez-vous de n'ajouter que des librairies de runtime dans la section `"dependencies"` du `package.json`.
+* **CI GitHub Actions :** Toute Pull Request fera l'objet d'un pipeline restrictif :
+  * Audit de sécurité `npm audit --audit-level=high`
+  * Typecheck strict & Linting
+  * Tests E2E complets
+  * Génération de **SBOM** et analyse de vulnérabilités **Trivy** (OS & Librairies).
+  * Les tags d'actions sont épinglés par leurs empreintes SHA-1 immuables.
+
+---
+
 ## ⚙️ Configuration & Variables d'Environnement
 
 Le serveur Express est strictement configuré pour écouter sur le port `3000` et l'adresse `0.0.0.0` (requis pour le routage Ingress sur les conteneurs Cloud Run).

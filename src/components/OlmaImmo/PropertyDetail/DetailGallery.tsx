@@ -32,8 +32,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
           }}
           className="col-span-2 relative h-full bg-slate-900 group cursor-pointer overflow-hidden"
         >
-          <img
-            src={safeImages[0]}
+          <img loading="lazy" decoding="async" src={safeImages[0]}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -56,8 +55,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
                 }}
                 className="relative h-full bg-slate-900 group cursor-pointer overflow-hidden rounded-xl"
               >
-                <img
-                  src={img}
+                <img loading="lazy" decoding="async" src={img}
                   alt={`${title} photo ${idx + 1}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -80,8 +78,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
 
       {/* Mobile Image Carousel */}
       <div className="md:hidden relative aspect-[16/10] bg-slate-900 rounded-3xl overflow-hidden shadow-xs border border-[#e8e2d4]">
-        <img
-          src={safeImages[selectedImageIndex] || safeImages[0]}
+        <img loading="lazy" decoding="async" src={safeImages[selectedImageIndex] || safeImages[0]}
           alt={title}
           onClick={onOpenLightbox}
           className="w-full h-full object-cover cursor-pointer"
@@ -114,7 +111,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
                   : 'border-transparent opacity-60'
               }`}
             >
-              <img src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>

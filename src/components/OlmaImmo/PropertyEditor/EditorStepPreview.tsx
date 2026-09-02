@@ -48,8 +48,7 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
       <div className="bg-[#faf8f5] rounded-3xl border border-[#e8e2d4] overflow-hidden">
         {/* Photo Header */}
         <div className="relative aspect-16/9 sm:aspect-21/9 bg-slate-900 overflow-hidden">
-          <img
-            src={images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80'}
+          <img loading="lazy" decoding="async" src={images[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80'}
             alt="Aperçu annonce"
             className="w-full h-full object-cover"
           />

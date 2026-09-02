@@ -1,14 +1,17 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Request, Response } from 'express';
 import {
   getFavoritePropertyIds,
   isFavoritePropertyId,
   toggleFavoritePropertyId,
 } from '../utils/realEstateFavorites';
+import { authorizePropertyOwner } from '../middlewares/auth';
 
 describe('Olma Immo Frontend & Utilities Suite', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   describe('Real Estate Favorites Manager', () => {
@@ -28,6 +31,7 @@ describe('Olma Immo Frontend & Utilities Suite', () => {
       const removed = toggleFavoritePropertyId(propId);
       expect(removed).toBe(false);
       expect(isFavoritePropertyId(propId)).toBe(false);
+      expect(getFavoritePropertyIds()).not.toContain(propId);
     });
 
     it('handles multiple favorites without duplicates', () => {
@@ -40,70 +44,65 @@ describe('Olma Immo Frontend & Utilities Suite', () => {
     });
   });
 
-  describe('Geospatial DTO & Security Validation', () => {
-    it('formats map property DTOs without leaking sensitive owner fields', () => {
-      const mockBackendPropertyMapResult = {
-        id: 'prop_algiers_01',
-        title: 'Villa Moderne Hydra',
-        lat: 36.7538,
-        lng: 3.0588,
-        price: 25000000,
-        pricePeriod: 'total',
-        listingType: 'sale',
-        propertyType: 'villa',
-        commune: 'Hydra',
-        wilaya: 'Alger',
-      };
+  describe('Property Owner Capabilities & Security Middleware Integration', () => {
+    // Tests the ACTUAL authorizePropertyOwner production middleware from middlewares/auth.ts
+    it('blocks access if user is not authenticated', () => {
+      const req = { user: undefined } as unknown as Request;
+      const resJson = vi.fn();
+      const resStatus = vi.fn(() => ({ json: resJson }));
+      const res = { status: resStatus } as unknown as Response;
+      const next = vi.fn();
 
-      expect(mockBackendPropertyMapResult).not.toHaveProperty('ownerId');
-      expect(mockBackendPropertyMapResult.price).toBeGreaterThan(0);
-      expect(mockBackendPropertyMapResult.lat).toBeCloseTo(36.7538);
+      authorizePropertyOwner(req, res, next);
+
+      expect(resStatus).toHaveBeenCalledWith(403);
+      expect(resJson).toHaveBeenCalledWith({
+        error: "Accès refusé. Privilèges Propriétaire Immobilier, Vendeur ou Administrateur requis.",
+      });
+      expect(next).not.toHaveBeenCalled();
     });
 
-    it('validates property publish request payload does not contain client-side ownerId override', () => {
-      const publishPayload = {
-        title: 'Superbe Appartement F3',
-        description: 'Appartement spacieux avec vue dégagée à Bab Ezzouar',
-        propertyType: 'apartment',
-        listingType: 'sale',
-        price: 15000000,
-        areaSquareMeters: 90,
-        rooms: 3,
-        bathrooms: 1,
-        location: {
-          wilaya: 'Alger',
-          commune: 'Bab Ezzouar',
-          address: 'Cité 1000 Logements',
-          lat: 36.721,
-          lng: 3.183,
-        },
-        status: 'active',
-      };
+    it('blocks standard buyer without property_owner capability', () => {
+      const req = {
+        user: { uid: 'buyer-1', role: 'buyer', capabilities: [] },
+      } as unknown as Request;
+      const resJson = vi.fn();
+      const resStatus = vi.fn(() => ({ json: resJson }));
+      const res = { status: resStatus } as unknown as Response;
+      const next = vi.fn();
 
-      // Ensure client payload adheres strictly to security rules by omitting ownerId
-      expect(publishPayload).not.toHaveProperty('ownerId');
-      expect(publishPayload.title.length).toBeGreaterThanOrEqual(5);
-      expect(publishPayload.price).toBeGreaterThan(0);
+      authorizePropertyOwner(req, res, next);
+
+      expect(resStatus).toHaveBeenCalledWith(403);
+      expect(next).not.toHaveBeenCalled();
     });
-  });
 
-  describe('Property Owner Capabilities & Authorization Rules', () => {
-    it('verifies property owner role check allows property_owner capability, seller, and admin', () => {
-      const isAuthorizedOwner = (userRole: string, capabilities: string[] = []) => {
-        return (
-          userRole === 'admin' ||
-          userRole === 'superadmin' ||
-          userRole === 'seller' ||
-          userRole === 'property_owner' ||
-          capabilities.includes('property_owner')
-        );
-      };
+    it('allows buyer with explicit property_owner capability', () => {
+      const req = {
+        user: { uid: 'buyer-1', role: 'buyer', capabilities: ['property_owner'] },
+      } as unknown as Request;
+      const res = {} as unknown as Response;
+      const next = vi.fn();
 
-      expect(isAuthorizedOwner('buyer', [])).toBe(false);
-      expect(isAuthorizedOwner('buyer', ['property_owner'])).toBe(true);
-      expect(isAuthorizedOwner('seller', [])).toBe(true);
-      expect(isAuthorizedOwner('property_owner', [])).toBe(true);
-      expect(isAuthorizedOwner('admin', [])).toBe(true);
+      authorizePropertyOwner(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('allows seller, property_owner, or admin roles by default', () => {
+      const roles = ['seller', 'property_owner', 'admin', 'superadmin'];
+
+      roles.forEach((role) => {
+        const req = {
+          user: { uid: 'user-1', role, capabilities: [] },
+        } as unknown as Request;
+        const res = {} as unknown as Response;
+        const next = vi.fn();
+
+        authorizePropertyOwner(req, res, next);
+
+        expect(next).toHaveBeenCalled();
+      });
     });
   });
 

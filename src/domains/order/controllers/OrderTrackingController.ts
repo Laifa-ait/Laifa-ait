@@ -1,21 +1,7 @@
 import { Router, Request, Response } from "express";
 import { admin, db } from "../../../config/firebase-admin";
-import { authenticateToken, authorizeSeller } from "../../../middlewares/auth";
+import { authenticateToken, authorizeSeller, AuthenticatedRequest } from "../../../middlewares/auth";
 import { safeLogger } from "../../../utils/logger";
-
-export interface AuthenticatedUser {
-  uid: string;
-  email?: string;
-  role?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: AuthenticatedUser;
-  file?: unknown;
-  files?: unknown;
-}
 
 const router = Router();
 

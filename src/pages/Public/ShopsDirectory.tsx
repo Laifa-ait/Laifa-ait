@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { apiGet } from "../../lib/api";
-import { collection, query, getDocs, limit } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { fetchPublicShops } from "../../services/storeRepository";
 import { ShopDirectoryItem, ShopsFilterState } from "../../types/shopsDirectory";
 import { ShopsHeader } from "../../components/ShopsDirectory/ShopsHeader";
 import { ShopsStats } from "../../components/ShopsDirectory/ShopsStats";
@@ -28,28 +27,24 @@ export const ShopsDirectory: React.FC = () => {
           setShops(res.shops);
         } else {
           // Fallback to client-side publicProfiles collection query
-          const q = query(collection(db, "publicProfiles"), limit(50));
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            const fetched = snap.docs.map((d) => {
-              const data = d.data();
-              return {
-                id: d.id,
-                sellerId: d.id,
-                shopName: data.shopName || data.displayName || "Boutique Vendeur",
-                slogan: data.slogan || "",
-                description: data.description || data.shopDescription || "",
-                logoUrl: data.logoUrl || data.photoURL || "",
-                bannerUrl: data.bannerUrl || data.coverUrl || "",
-                wilaya: data.wilaya || "16 - Alger",
-                category: data.category || "Général",
-                rating: data.rating !== undefined ? data.rating : null,
-                reviewsCount: data.reviewsCount !== undefined ? data.reviewsCount : 0,
-                sellerTrustScore: data.sellerTrustScore !== undefined ? data.sellerTrustScore : 90,
-                productsCount: data.productsCount !== undefined ? data.productsCount : 0,
-                isVerified: data.isVerified !== undefined ? data.isVerified : true,
-              } as ShopDirectoryItem;
-            });
+          const rawShops = await fetchPublicShops(50);
+          if (rawShops.length > 0) {
+            const fetched = rawShops.map((data) => ({
+              id: data.id,
+              sellerId: data.id,
+              shopName: data.shopName || data.displayName || "Boutique Vendeur",
+              slogan: data.slogan || "",
+              description: data.description || data.shopDescription || "",
+              logoUrl: data.logoUrl || data.photoURL || "",
+              bannerUrl: data.bannerUrl || data.coverUrl || "",
+              wilaya: data.wilaya || "16 - Alger",
+              category: data.category || "Général",
+              rating: data.rating !== undefined ? data.rating : null,
+              reviewsCount: data.reviewsCount !== undefined ? data.reviewsCount : 0,
+              sellerTrustScore: data.sellerTrustScore !== undefined ? data.sellerTrustScore : 90,
+              productsCount: data.productsCount !== undefined ? data.productsCount : 0,
+              isVerified: data.isVerified !== undefined ? data.isVerified : true,
+            } as ShopDirectoryItem));
             setShops(fetched);
           } else {
             setShops([]);

@@ -23,37 +23,97 @@ interface Authenticated2FARequest extends Express.Request {
 export class TwoFactorService {
   static async sendCode(userId: string): Promise<void> {
     const code = crypto.randomInt(100000, 999999).toString();
+    const otpHash = crypto.createHash("sha256").update(`${userId}:${code}`).digest("hex");
+    const expiresAt = admin.firestore.Timestamp.fromMillis(Date.now() + 10 * 60 * 1000);
+
+    // Save hashed OTP, trial counter and expiration in private server-only collection user_secrets
+    await db
+      .collection("user_secrets")
+      .doc(userId)
+      .set({
+        otpHash,
+        expiresAt,
+        attempts: 0,
+        createdAt: admin.firestore.Timestamp.fromMillis(Date.now()),
+      });
+
+    // Update public/user document without exposing plaintext code
     await db
       .collection("users")
       .doc(userId)
       .update({
-        "verification.code": code,
-        "verification.expiresAt": admin.firestore.Timestamp.fromMillis(
-          Date.now() + 10 * 60 * 1000,
-        ),
-      });
+        "verification.expiresAt": expiresAt,
+        "verification.code": admin.firestore.FieldValue.delete(),
+      })
+      .catch(() => null);
   }
 
   static async verifyCode(userId: string, code: string): Promise<{ success: boolean; error?: string; status?: number }> {
-    const userRef = db.collection("users").doc(userId);
-    const userDoc = await userRef.get();
-    const userData = userDoc.data();
+    const secretRef = db.collection("user_secrets").doc(userId);
+    const secretSnap = await secretRef.get();
 
-    const verification = userData?.verification;
-    const dbCode = verification?.code;
-    const dbExpiresAt = verification?.expiresAt;
+    // Check private user_secrets first
+    let secretData = secretSnap.exists ? secretSnap.data() : null;
 
-    if (!verification || !dbCode || !dbExpiresAt) {
+    // Fallback for legacy / mock user document verification.code if user_secrets doc does not exist
+    if (!secretData) {
+      const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
+      const userData = userDoc.data();
+      const legacyCode = userData?.verification?.code;
+      const legacyExpiresAt = userData?.verification?.expiresAt;
+
+      if (!userData?.verification || !legacyCode || !legacyExpiresAt) {
+        return { success: false, status: 403, error: "Aucun code de vérification actif pour cet utilisateur." };
+      }
+
+      const legacyHash = crypto.createHash("sha256").update(`${userId}:${legacyCode}`).digest("hex");
+      secretData = {
+        otpHash: legacyHash,
+        expiresAt: legacyExpiresAt,
+        attempts: 0,
+      };
+    }
+
+    const attempts = Number(secretData?.attempts || 0);
+    if (attempts >= 5) {
+      await secretRef.delete().catch(() => null);
+      return { success: false, status: 429, error: "Nombre maximal de tentatives dépassé (5/5). Veuillez demander un nouveau code." };
+    }
+
+    if (secretSnap.exists) {
+      await secretRef.update({
+        attempts: admin.firestore.FieldValue.increment(1),
+      }).catch(() => null);
+    }
+
+    const otpHash = secretData?.otpHash;
+    const expiresAt = secretData?.expiresAt;
+
+    if (!otpHash || !expiresAt) {
       return { success: false, status: 403, error: "Aucun code de vérification actif pour cet utilisateur." };
     }
 
-    if (
-      dbCode !== code ||
-      dbExpiresAt.toMillis() < Date.now()
-    ) {
+    const expiresAtMillis = typeof expiresAt.toMillis === "function" ? expiresAt.toMillis() : new Date(expiresAt).getTime();
+    if (expiresAtMillis < Date.now()) {
+      await secretRef.delete().catch(() => null);
       return { success: false, status: 403, error: "Code invalide ou expiré" };
     }
 
+    const incomingHash = crypto.createHash("sha256").update(`${userId}:${code}`).digest("hex");
+    const isMatch = crypto.timingSafeEqual(
+      Buffer.from(incomingHash, "utf8"),
+      Buffer.from(otpHash, "utf8")
+    );
+
+    if (!isMatch) {
+      return { success: false, status: 403, error: "Code invalide ou expiré" };
+    }
+
+    // Clear secrets and record successful verification session timestamp
+    await secretRef.delete().catch(() => null);
+
+    const userRef = db.collection("users").doc(userId);
     await userRef.update({
       "verification.verified": true,
       "verification.verifiedAt": admin.firestore.Timestamp.fromMillis(Date.now()),

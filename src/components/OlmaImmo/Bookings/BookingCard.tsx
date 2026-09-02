@@ -69,8 +69,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
     <div className="bg-white rounded-3xl border border-[#e8e2d4] overflow-hidden shadow-xs hover:shadow-md transition flex flex-col md:flex-row group">
       {/* Property Photo */}
       <div className="md:w-72 h-52 md:h-auto relative bg-slate-900 overflow-hidden shrink-0">
-        <img
-          src={booking.propertyImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
+        <img loading="lazy" decoding="async" src={booking.propertyImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
           alt={booking.propertyTitle || 'Hébergement'}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

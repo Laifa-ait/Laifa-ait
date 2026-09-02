@@ -11,8 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { db } from "../../lib/firebase";
-import { collection, getDocs, query, orderBy, limit, Timestamp } from "firebase/firestore";
+import { fetchSearchAnalyticsLogs } from "../../services/adminRepository";
 
 interface SearchLog {
   id: string;
@@ -33,21 +32,16 @@ export const SearchAnalytics: React.FC = () => {
     let isCancelled = false;
     const fetchLogs = async () => {
       try {
-        const q = query(collection(db, "search_logs"), orderBy("timestamp", "desc"), limit(100));
-        const snap = await getDocs(q);
-        const fetched: SearchLog[] = [];
-        snap.forEach((doc) => {
-          const data = doc.data();
-          fetched.push({
-            id: doc.id,
-            query: data.query,
-            timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate().toISOString() : data.timestamp,
-            resultsCount: data.resultsCount,
-            clickedProduct: data.clickedProduct,
-            userId: data.userId,
-            durationMs: data.durationMs || 45,
-          });
-        });
+        const docs = await fetchSearchAnalyticsLogs(100);
+        const fetched: SearchLog[] = docs.map((data) => ({
+          id: data.id,
+          query: data.query,
+          timestamp: typeof data.timestamp?.toDate === "function" ? data.timestamp.toDate().toISOString() : data.timestamp,
+          resultsCount: data.resultsCount,
+          clickedProduct: data.clickedProduct,
+          userId: data.userId,
+          durationMs: data.durationMs || 45,
+        }));
 
         if (!isCancelled) {
           setLogs(fetched);

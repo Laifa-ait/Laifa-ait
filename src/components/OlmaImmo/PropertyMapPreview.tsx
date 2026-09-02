@@ -65,8 +65,7 @@ export const PropertyMapPreview: React.FC<PropertyMapPreviewProps> = ({
     >
       {/* Thumbnail Container */}
       <div className="relative w-full sm:w-36 sm:min-w-[144px] h-32 sm:h-auto shrink-0 bg-slate-100 overflow-hidden">
-        <img
-          src={imageUrl}
+        <img loading="lazy" decoding="async" src={imageUrl}
           alt={property.title}
           className="w-full h-full object-cover"
           onError={(e) => {
