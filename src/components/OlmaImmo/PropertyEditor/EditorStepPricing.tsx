@@ -1,6 +1,7 @@
 import React from 'react';
 import { DollarSign, Phone, FileText } from 'lucide-react';
-import { ListingType } from '../../../types/realEstate';
+import { ListingType, UtilityCharges } from '../../../types/realEstate';
+import { EditorStepFinancialsDZ } from './EditorStepFinancialsDZ';
 
 interface EditorStepPricingProps {
   listingType: ListingType;
@@ -8,6 +9,14 @@ interface EditorStepPricingProps {
   setPrice: (val: number) => void;
   pricePeriod: 'night' | 'month' | 'total';
   setPricePeriod: (val: 'night' | 'month' | 'total') => void;
+  paymentAdvanceMonths?: 1 | 3 | 6 | 12;
+  setPaymentAdvanceMonths?: (months: 1 | 3 | 6 | 12) => void;
+  securityDepositMonths?: number;
+  setSecurityDepositMonths?: (months: number) => void;
+  isPriceNegotiable?: boolean;
+  setIsPriceNegotiable?: (negotiable: boolean) => void;
+  utilityCharges?: UtilityCharges;
+  setUtilityCharges?: (charges: UtilityCharges) => void;
   cleaningFee: number;
   setCleaningFee: (val: number) => void;
   serviceFee: number;
@@ -26,6 +35,14 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
   setPrice,
   pricePeriod,
   setPricePeriod,
+  paymentAdvanceMonths = 6,
+  setPaymentAdvanceMonths,
+  securityDepositMonths = 1,
+  setSecurityDepositMonths,
+  isPriceNegotiable = false,
+  setIsPriceNegotiable,
+  utilityCharges = { water: false, electricityGas: false, condoFees: false },
+  setUtilityCharges,
   cleaningFee,
   setCleaningFee,
   serviceFee,
@@ -54,7 +71,7 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
             <label className="text-xs font-bold text-[#1a3831]">
-              Montant {listingType === 'sale' ? 'global' : listingType === 'rent_long' ? 'du loyer' : 'de la nuitée'} (DA)
+              Montant {listingType === 'sale' ? 'global' : listingType === 'rent_long' ? 'du loyer mensuel' : 'de la nuitée'} (DA)
             </label>
             <input
               type="number"
@@ -108,6 +125,22 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
           </div>
         )}
       </div>
+
+      {/* Spécifications Financières & Commerciales Algériennes */}
+      {setPaymentAdvanceMonths && setSecurityDepositMonths && setIsPriceNegotiable && setUtilityCharges && (
+        <EditorStepFinancialsDZ
+          listingType={listingType}
+          price={price}
+          paymentAdvanceMonths={paymentAdvanceMonths}
+          setPaymentAdvanceMonths={setPaymentAdvanceMonths}
+          securityDepositMonths={securityDepositMonths}
+          setSecurityDepositMonths={setSecurityDepositMonths}
+          isPriceNegotiable={isPriceNegotiable}
+          setIsPriceNegotiable={setIsPriceNegotiable}
+          utilityCharges={utilityCharges}
+          setUtilityCharges={setUtilityCharges}
+        />
+      )}
 
       {/* Title & Description */}
       <div className="space-y-4 pt-6 border-t border-[#f0eae0]">

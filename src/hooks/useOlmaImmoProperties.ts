@@ -20,7 +20,7 @@ export function useOlmaImmoProperties() {
   const [mapResults, setMapResults] = useState<PropertyMapResult[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'split' | 'list'>('split');
+  const [viewMode, setViewMode] = useState<'split' | 'grid' | 'list' | 'map'>('split');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(favsParam);
   const [favoritesList, setFavoritesList] = useState<string[]>(getFavoritePropertyIds());
   const [mapBounds, setMapBounds] = useState<string | null>(null);
@@ -47,6 +47,9 @@ export function useOlmaImmoProperties() {
       const queryParams = new URLSearchParams();
       if (filters.listingType) queryParams.set('listingType', filters.listingType);
       if (filters.propertyType) queryParams.set('propertyType', filters.propertyType);
+      if (filters.legalPaperType) queryParams.set('legalPaperType', filters.legalPaperType);
+      if (filters.hasActeNotarie) queryParams.set('hasActeNotarie', 'true');
+      if (filters.hasLivretFoncier) queryParams.set('hasLivretFoncier', 'true');
       if (filters.wilaya) queryParams.set('wilaya', filters.wilaya);
       if (filters.commune) queryParams.set('commune', filters.commune);
       if (filters.minPrice !== undefined) queryParams.set('minPrice', String(filters.minPrice));

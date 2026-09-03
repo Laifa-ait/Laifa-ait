@@ -47,7 +47,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshHierarchy = async () => {
     try {
       const data = await apiGet<{ hierarchy?: Record<string, Record<string, string[]>>; sortOrder?: string[] }>("/api/v1/settings/categories");
-      if (data && data.hierarchy) {
+      if (data && data.hierarchy && Object.keys(data.hierarchy).length > 0) {
         const rawHierarchy = data.hierarchy;
         const sortOrder = data.sortOrder || [];
         
@@ -68,7 +68,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCategoryHierarchy(sortedHierarchy);
       }
     } catch (err) {
-      safeLogger.error("Error refreshing hierarchy", { err: err instanceof Error ? err.message : String(err) });
+      safeLogger.warn("Hierarchy refresh fallback active", { err: err instanceof Error ? err.message : String(err) });
     }
   };
 

@@ -1,12 +1,14 @@
 import React from 'react';
-import { Eye, MapPin, Phone } from 'lucide-react';
-import { PropertyType, ListingType, GeoPointLocation } from '../../../types/realEstate';
+import { Eye, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { PropertyType, ListingType, GeoPointLocation, LegalPaperType } from '../../../types/realEstate';
+import { getLegalPaperInfo } from '../../../constants/legalPapers';
 
 interface EditorStepPreviewProps {
   title: string;
   description: string;
   listingType: ListingType;
   propertyType: PropertyType;
+  legalPaperType?: LegalPaperType;
   location: GeoPointLocation;
   price: number;
   pricePeriod: 'night' | 'month' | 'total';
@@ -23,6 +25,7 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
   description,
   listingType,
   propertyType,
+  legalPaperType,
   location,
   price,
   pricePeriod,
@@ -33,6 +36,8 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
   features,
   contactPhone,
 }) => {
+  const legalPaperInfo = getLegalPaperInfo(legalPaperType);
+
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
       <div>
@@ -52,13 +57,19 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
             alt="Aperçu annonce"
             className="w-full h-full object-cover"
           />
-          <div className="absolute top-4 left-4 flex gap-2">
+          <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
             <span className="px-3 py-1 bg-[#1a3831] text-[#ebdcb8] text-xs font-black rounded-full uppercase tracking-wider">
               {listingType === 'sale' ? 'Vente' : listingType === 'rent_long' ? 'Location' : 'Séjour'}
             </span>
             <span className="px-3 py-1 bg-[#f4ecd8] text-[#1a3831] text-xs font-bold rounded-full capitalize">
               {propertyType}
             </span>
+            {legalPaperInfo && (
+              <span className={`px-3 py-1 text-xs font-bold rounded-full flex items-center gap-1 shadow-xs border ${legalPaperInfo.badgeBg} ${legalPaperInfo.badgeText} ${legalPaperInfo.badgeBorder}`}>
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>{legalPaperInfo.shortLabel}</span>
+              </span>
+            )}
           </div>
 
           <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-xs text-[#1a3831] px-4 py-2 rounded-2xl shadow-md">

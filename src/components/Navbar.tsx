@@ -11,6 +11,7 @@ import {
   Scale,
   Truck,
   Headphones,
+  LayoutGrid,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -22,6 +23,7 @@ import { Language } from "../domains/home/homepage.types";
 import { MegaMenu } from "./MegaMenu";
 import { AdvancedSearchbar as Searchbar } from "./Search/AdvancedSearchbar";
 import { NotificationCenter } from "./NotificationCenter";
+import { SuperAppSwitcherModal } from "./common/SuperAppSwitcherModal";
 
 export interface OlmaLogoProps {
   className?: string;
@@ -65,6 +67,7 @@ export const Navbar: React.FC = () => {
 
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const lang = i18n.language as Language;
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -139,6 +142,16 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center mx-auto w-full max-w-[90rem] justify-between relative z-10">
           {/* Universes Navigation Hub */}
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIsSwitcherOpen(true)}
+              className="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 cursor-pointer group shadow-xs mr-1"
+              title="Ouvrir le commutateur d'univers Olmart Super-App"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <span>Univers</span>
+            </button>
+
             <Link
               to="/shop"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
@@ -488,6 +501,12 @@ export const Navbar: React.FC = () => {
 
         {location.pathname === "/" && <MegaMenu isVisible={showCategories} />}
       </nav>
+
+      {/* Super-App Switcher Modal */}
+      <SuperAppSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
+      />
     </>
   );
 };

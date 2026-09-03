@@ -2,7 +2,6 @@ import { Router, Response } from 'express';
 import { db } from '../../../config/firebase-admin';
 import {
   authenticateToken,
-  authorizePropertyOwner,
   authorizeAdmin,
   AuthenticatedRequest,
 } from '../../../middlewares/auth';
@@ -17,7 +16,6 @@ export const realEstateProAppRouter = Router();
 realEstateProAppRouter.get(
   '/owner/properties',
   authenticateToken,
-  authorizePropertyOwner,
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Authentification requise.' });
@@ -58,7 +56,6 @@ realEstateProAppRouter.get(
 realEstateProAppRouter.get(
   '/owner/visits',
   authenticateToken,
-  authorizePropertyOwner,
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Authentification requise.' });
@@ -99,7 +96,6 @@ realEstateProAppRouter.get(
 realEstateProAppRouter.post(
   '/upload-image',
   authenticateToken,
-  authorizePropertyOwner,
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Authentification requise.' });

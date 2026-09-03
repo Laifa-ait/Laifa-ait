@@ -3,7 +3,6 @@ import { admin, db } from '../../../config/firebase-admin';
 import {
   authenticateToken,
   optionalAuthenticateToken,
-  authorizePropertyOwner,
   AuthenticatedRequest,
 } from '../../../middlewares/auth';
 import { strictLimiter } from '../../../middlewares/rateLimiters';
@@ -17,6 +16,7 @@ import {
 import {
   Property,
   PropertyMapResult,
+  LegalPaperType,
 } from '../../../types/realEstate';
 import {
   encodeGeohash,
@@ -42,6 +42,11 @@ realEstatePropertyRouter.get(
       const {
         propertyType,
         listingType,
+        legalPaperType,
+        legalPapers,
+        hasActeNotarie,
+        hasLivretFoncier,
+        isLegalVerified,
         wilaya,
         commune,
         minPrice,
@@ -162,6 +167,52 @@ realEstatePropertyRouter.get(
       if (minArea !== undefined && !isNaN(Number(minArea))) {
         results = results.filter((p) => (p.areaSquareMeters || 0) >= Number(minArea));
       }
+      if (legalPaperType && (legalPaperType as string) !== 'all') {
+        results = results.filter((p) => {
+          const inArray = Array.isArray(p.legalPapers) && p.legalPapers.includes(legalPaperType as LegalPaperType);
+          const matchesSingle = p.legalPaperType === legalPaperType;
+          return inArray || matchesSingle;
+        });
+      }
+      if (legalPapers) {
+        const requiredPapers = Array.isArray(legalPapers) ? legalPapers : [legalPapers];
+        results = results.filter((p) => {
+          return requiredPapers.some((paper) => {
+            const inArray = Array.isArray(p.legalPapers) && p.legalPapers.includes(paper as LegalPaperType);
+            const matchesSingle = p.legalPaperType === paper;
+            return inArray || matchesSingle;
+          });
+        });
+      }
+      if (hasActeNotarie) {
+        results = results.filter((p) => {
+          const docs: LegalPaperType[] = Array.isArray(p.legalPapers) && p.legalPapers.length > 0
+            ? p.legalPapers
+            : (p.legalPaperType ? [p.legalPaperType] : []);
+          return docs.some((doc) => doc === 'acte_notarie_individuel' || doc === 'acte_dans_indivision' || doc === 'acte_notarie');
+        });
+      }
+      if (hasLivretFoncier) {
+        results = results.filter((p) => {
+          const docs: LegalPaperType[] = Array.isArray(p.legalPapers) && p.legalPapers.length > 0
+            ? p.legalPapers
+            : (p.legalPaperType ? [p.legalPaperType] : []);
+          return docs.some((doc) => doc === 'livret_foncier');
+        });
+      }
+      if (isLegalVerified !== undefined) {
+        results = results.filter((p) => Boolean(p.isLegalVerified) === Boolean(isLegalVerified));
+      }
+      if (req.query.isPriceNegotiable !== undefined) {
+        const isNeg = req.query.isPriceNegotiable === 'true' || req.query.isPriceNegotiable === true;
+        results = results.filter((p) => Boolean(p.isPriceNegotiable) === isNeg);
+      }
+      if (req.query.paymentAdvanceMonths !== undefined) {
+        const maxAdvance = Number(req.query.paymentAdvanceMonths);
+        if (!isNaN(maxAdvance)) {
+          results = results.filter((p) => p.paymentAdvanceMonths !== undefined && p.paymentAdvanceMonths <= maxAdvance);
+        }
+      }
 
       if (lat !== undefined && lng !== undefined) {
         const centerLat = Number(lat);
@@ -243,6 +294,11 @@ realEstatePropertyRouter.get(
       const {
         propertyType,
         listingType,
+        legalPaperType,
+        legalPapers,
+        hasActeNotarie,
+        hasLivretFoncier,
+        isLegalVerified,
         wilaya,
         commune,
         minPrice,
@@ -341,6 +397,52 @@ realEstatePropertyRouter.get(
       if (maxPrice !== undefined && !isNaN(Number(maxPrice))) results = results.filter((p) => p.price <= Number(maxPrice));
       if (minRooms !== undefined && !isNaN(Number(minRooms))) results = results.filter((p) => (p.rooms || 0) >= Number(minRooms));
       if (minArea !== undefined && !isNaN(Number(minArea))) results = results.filter((p) => (p.areaSquareMeters || 0) >= Number(minArea));
+      if (legalPaperType && (legalPaperType as string) !== 'all') {
+        results = results.filter((p) => {
+          const inArray = Array.isArray(p.legalPapers) && p.legalPapers.includes(legalPaperType as LegalPaperType);
+          const matchesSingle = p.legalPaperType === legalPaperType;
+          return inArray || matchesSingle;
+        });
+      }
+      if (legalPapers) {
+        const requiredPapers = Array.isArray(legalPapers) ? legalPapers : [legalPapers];
+        results = results.filter((p) => {
+          return requiredPapers.some((paper) => {
+            const inArray = Array.isArray(p.legalPapers) && p.legalPapers.includes(paper as LegalPaperType);
+            const matchesSingle = p.legalPaperType === paper;
+            return inArray || matchesSingle;
+          });
+        });
+      }
+      if (hasActeNotarie) {
+        results = results.filter((p) => {
+          const docs: LegalPaperType[] = Array.isArray(p.legalPapers) && p.legalPapers.length > 0
+            ? p.legalPapers
+            : (p.legalPaperType ? [p.legalPaperType] : []);
+          return docs.some((doc) => doc === 'acte_notarie_individuel' || doc === 'acte_dans_indivision' || doc === 'acte_notarie');
+        });
+      }
+      if (hasLivretFoncier) {
+        results = results.filter((p) => {
+          const docs: LegalPaperType[] = Array.isArray(p.legalPapers) && p.legalPapers.length > 0
+            ? p.legalPapers
+            : (p.legalPaperType ? [p.legalPaperType] : []);
+          return docs.some((doc) => doc === 'livret_foncier');
+        });
+      }
+      if (isLegalVerified !== undefined) {
+        results = results.filter((p) => Boolean(p.isLegalVerified) === Boolean(isLegalVerified));
+      }
+      if (req.query.isPriceNegotiable !== undefined) {
+        const isNeg = req.query.isPriceNegotiable === 'true' || req.query.isPriceNegotiable === true;
+        results = results.filter((p) => Boolean(p.isPriceNegotiable) === isNeg);
+      }
+      if (req.query.paymentAdvanceMonths !== undefined) {
+        const maxAdvance = Number(req.query.paymentAdvanceMonths);
+        if (!isNaN(maxAdvance)) {
+          results = results.filter((p) => p.paymentAdvanceMonths !== undefined && p.paymentAdvanceMonths <= maxAdvance);
+        }
+      }
 
       if (lat !== undefined && lng !== undefined) {
         const centerLat = Number(lat);
@@ -574,7 +676,6 @@ realEstatePropertyRouter.post(
   '/properties',
   strictLimiter,
   authenticateToken,
-  authorizePropertyOwner,
   validateRequest(PropertyCreateSchema),
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
@@ -588,8 +689,17 @@ realEstatePropertyRouter.post(
     const propertyId = `PROP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     const now = new Date().toISOString();
 
+    const legalPapersList: LegalPaperType[] = Array.isArray(cleanBody.legalPapers) && cleanBody.legalPapers.length > 0
+      ? cleanBody.legalPapers
+      : (cleanBody.legalPaperType ? [cleanBody.legalPaperType as LegalPaperType] : []);
+
+    const primaryLegalPaper: LegalPaperType | undefined = cleanBody.legalPaperType || (legalPapersList.length > 0 ? legalPapersList[0] : undefined);
+
     const newProperty: Property = {
       ...cleanBody,
+      legalPapers: legalPapersList,
+      legalPaperType: primaryLegalPaper,
+      isLegalVerified: cleanBody.isLegalVerified ?? false,
       id: propertyId,
       ownerId,
       viewsCount: 0,
@@ -612,6 +722,9 @@ realEstatePropertyRouter.post(
     try {
       if (db) {
         await db.collection('real_estate_properties').doc(propertyId).set(newProperty);
+        await db.collection('users').doc(ownerId).set({
+          capabilities: admin.firestore.FieldValue.arrayUnion('property_owner'),
+        }, { merge: true }).catch(() => {});
       }
 
       safeLogger.info('RealEstate Property created', { propertyId, ownerId });
@@ -633,7 +746,6 @@ realEstatePropertyRouter.put(
   '/properties/:id',
   strictLimiter,
   authenticateToken,
-  authorizePropertyOwner,
   validateRequest(PropertyUpdateSchema),
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
@@ -682,9 +794,17 @@ realEstatePropertyRouter.put(
       void _discardViews;
       void _discardCreatedAt;
 
+      const incomingPapers: LegalPaperType[] = Array.isArray(updatePayload.legalPapers)
+        ? updatePayload.legalPapers
+        : (updatePayload.legalPaperType ? [updatePayload.legalPaperType as LegalPaperType] : existingProperty.legalPapers || []);
+
+      const incomingPaperType: LegalPaperType | undefined = updatePayload.legalPaperType || (incomingPapers.length > 0 ? incomingPapers[0] : existingProperty.legalPaperType);
+
       const updatedProperty: Property = {
         ...existingProperty,
         ...updatePayload,
+        legalPapers: incomingPapers,
+        legalPaperType: incomingPaperType,
         id,
         ownerId: existingProperty.ownerId,
         updatedAt: new Date().toISOString(),
@@ -723,7 +843,6 @@ realEstatePropertyRouter.put(
   '/properties/:id/status',
   strictLimiter,
   authenticateToken,
-  authorizePropertyOwner,
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Authentification requise.' });
@@ -778,7 +897,6 @@ realEstatePropertyRouter.delete(
   '/properties/:id',
   strictLimiter,
   authenticateToken,
-  authorizePropertyOwner,
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, error: 'Authentification requise.' });

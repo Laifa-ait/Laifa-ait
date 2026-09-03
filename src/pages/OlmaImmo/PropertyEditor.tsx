@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
-import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
+import { useAuth } from '../../context/AuthContext';
 import {
   Property,
   PropertyType,
   ListingType,
+  LegalPaperType,
   GeoPointLocation,
   PropertyStatus,
+  UtilityCharges,
 } from '../../types/realEstate';
 import { apiGet, apiPost, apiPut } from '../../lib/api';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check } from 'lucide-react';
@@ -40,6 +42,11 @@ export const PropertyEditor: React.FC = () => {
   // Form State
   const [listingType, setListingType] = useState<ListingType>('sale');
   const [propertyType, setPropertyType] = useState<PropertyType>('apartment');
+  const [legalPapers, setLegalPapers] = useState<LegalPaperType[]>([
+    'acte_notarie_individuel',
+    'livret_foncier',
+  ]);
+  const [legalPaperType, setLegalPaperType] = useState<LegalPaperType>('acte_notarie_individuel');
   const [location, setLocation] = useState<GeoPointLocation>({
     wilaya: 'Alger',
     commune: 'Bab Ezzouar',
@@ -60,12 +67,21 @@ export const PropertyEditor: React.FC = () => {
 
   const [price, setPrice] = useState<number>(18500000);
   const [pricePeriod, setPricePeriod] = useState<'night' | 'month' | 'total'>('total');
+  const [paymentAdvanceMonths, setPaymentAdvanceMonths] = useState<1 | 3 | 6 | 12>(6);
+  const [securityDepositMonths, setSecurityDepositMonths] = useState<number>(1);
+  const [isPriceNegotiable, setIsPriceNegotiable] = useState<boolean>(false);
+  const [utilityCharges, setUtilityCharges] = useState<UtilityCharges>({
+    water: false,
+    electricityGas: false,
+    condoFees: false,
+  });
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [contactPhone, setContactPhone] = useState('0550123456');
   const [status, setStatus] = useState<PropertyStatus>('active');
 
+  const { currentUser, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,11 +93,20 @@ export const PropertyEditor: React.FC = () => {
           if (res.success && res.data) {
             const p = res.data;
             setTitle(p.title);
-            setDescription(p.description);
+            setDescription(p.description || '');
             setPropertyType(p.propertyType);
             setListingType(p.listingType);
+            const loadedPapers: LegalPaperType[] = Array.isArray(p.legalPapers) && p.legalPapers.length > 0
+              ? p.legalPapers
+              : (p.legalPaperType ? [p.legalPaperType] : ['acte_notarie_individuel']);
+            setLegalPapers(loadedPapers);
+            setLegalPaperType(loadedPapers[0] || 'acte_notarie_individuel');
             setPrice(p.price);
             setPricePeriod(p.pricePeriod || 'total');
+            setPaymentAdvanceMonths(p.paymentAdvanceMonths || 6);
+            setSecurityDepositMonths(p.securityDepositMonths ?? 1);
+            setIsPriceNegotiable(Boolean(p.isPriceNegotiable));
+            setUtilityCharges(p.utilityCharges || { water: false, electricityGas: false, condoFees: false });
             setAreaSquareMeters(p.areaSquareMeters);
             setRooms(p.rooms);
             setBathrooms(p.bathrooms || 1);
@@ -100,6 +125,12 @@ export const PropertyEditor: React.FC = () => {
   }, [isEditMode, id]);
 
   const handleSubmit = async () => {
+    if (!currentUser && !authLoading) {
+      toast.error('Veuillez vous connecter pour publier une annonce');
+      navigate('/auth?redirect=/immo/publish');
+      return;
+    }
+
     if (!title.trim()) {
       toast.error("Veuillez saisir un titre pour l'annonce");
       setCurrentStep(5);
@@ -112,41 +143,55 @@ export const PropertyEditor: React.FC = () => {
     }
 
     setIsSubmitting(true);
+    const cleanTitle = title.trim();
+    const cleanDescription = description.trim() || cleanTitle;
+
     const payload = {
-      title,
-      description,
+      title: cleanTitle,
+      description: cleanDescription,
       propertyType,
       listingType,
-      price,
-      pricePeriod,
-      areaSquareMeters,
-      rooms,
-      bathrooms,
+      legalPapers,
+      legalPaperType: legalPapers[0] || legalPaperType,
+      price: Number(price),
+      pricePeriod: pricePeriod || 'total',
+      paymentAdvanceMonths: listingType === 'rent_long' ? paymentAdvanceMonths : undefined,
+      securityDepositMonths: listingType === 'rent_long' || listingType === 'rent_short' ? securityDepositMonths : undefined,
+      isPriceNegotiable,
+      utilityCharges,
+      areaSquareMeters: Number(areaSquareMeters),
+      rooms: Number(rooms),
+      bathrooms: Number(bathrooms),
       features,
       images,
       location,
-      contactPhone,
-      cleaningFee: listingType === 'rent_short' ? cleaningFee : undefined,
-      serviceFee: listingType === 'rent_short' ? serviceFee : undefined,
+      contactPhone: contactPhone || '',
+      cleaningFee: listingType === 'rent_short' ? Number(cleaningFee) : undefined,
+      serviceFee: listingType === 'rent_short' ? Number(serviceFee) : undefined,
       status: isEditMode ? status : 'active',
     };
 
     try {
       if (isEditMode && id) {
-        const res = await apiPut<{ success: boolean }>(`/api/v1/real-estate/properties/${id}`, payload);
+        const res = await apiPut<{ success: boolean; error?: string }>(`/api/v1/real-estate/properties/${id}`, payload);
         if (res.success) {
           toast.success('Annonce mise à jour avec succès');
           navigate('/immo/owner');
+        } else {
+          toast.error(res.error || 'Erreur lors de la mise à jour');
         }
       } else {
-        const res = await apiPost<{ success: boolean; data?: Property }>('/api/v1/real-estate/properties', payload);
+        const res = await apiPost<{ success: boolean; data?: Property; error?: string }>('/api/v1/real-estate/properties', payload);
         if (res.success) {
           toast.success('Votre annonce a été publiée avec succès !');
           navigate('/immo/owner');
+        } else {
+          toast.error(res.error || 'Erreur lors de la publication');
         }
       }
-    } catch {
-      toast.error("Erreur lors de l'enregistrement de l'annonce");
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Erreur lors de l'enregistrement de l'annonce";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -192,6 +237,10 @@ export const PropertyEditor: React.FC = () => {
             setListingType={setListingType}
             propertyType={propertyType}
             setPropertyType={setPropertyType}
+            legalPaperType={legalPaperType}
+            setLegalPaperType={setLegalPaperType}
+            legalPapers={legalPapers}
+            setLegalPapers={setLegalPapers}
           />
         )}
 
@@ -223,6 +272,14 @@ export const PropertyEditor: React.FC = () => {
             setPrice={setPrice}
             pricePeriod={pricePeriod}
             setPricePeriod={setPricePeriod}
+            paymentAdvanceMonths={paymentAdvanceMonths}
+            setPaymentAdvanceMonths={setPaymentAdvanceMonths}
+            securityDepositMonths={securityDepositMonths}
+            setSecurityDepositMonths={setSecurityDepositMonths}
+            isPriceNegotiable={isPriceNegotiable}
+            setIsPriceNegotiable={setIsPriceNegotiable}
+            utilityCharges={utilityCharges}
+            setUtilityCharges={setUtilityCharges}
             cleaningFee={cleaningFee}
             setCleaningFee={setCleaningFee}
             serviceFee={serviceFee}
@@ -242,6 +299,7 @@ export const PropertyEditor: React.FC = () => {
             description={description}
             listingType={listingType}
             propertyType={propertyType}
+            legalPaperType={legalPaperType}
             location={location}
             price={price}
             pricePeriod={pricePeriod}
@@ -288,8 +346,6 @@ export const PropertyEditor: React.FC = () => {
           )}
         </div>
       </main>
-
-      <OlmaImmoBottomNav />
     </div>
   );
 };

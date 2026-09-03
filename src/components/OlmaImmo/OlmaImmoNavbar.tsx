@@ -1,32 +1,27 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, User, Sparkles, Building2 } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Heart, MessageSquare, Sparkles, Building2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UnifiedMessagingDrawer } from '../Chat/UnifiedMessagingDrawer';
+import { SuperAppSwitcherModal } from '../common/SuperAppSwitcherModal';
+import { NotificationCenter } from '../NotificationCenter';
+import { OlmaImmoTopUtilityBar } from './OlmaImmoTopUtilityBar';
+import { OlmaImmoUserMenu } from './OlmaImmoUserMenu';
 
-export const OlmaImmoNavbar: React.FC = () => {
+export const OlmaImmoNavbar: React.FC = React.memo(() => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { currentUser, openAuthModal } = useAuth();
   const [isMessagingOpen, setIsMessagingOpen] = useState(false);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
-  const handleOpenMessaging = () => {
+  const handleOpenMessaging = useCallback(() => {
     if (!currentUser) {
       if (openAuthModal) openAuthModal();
       else window.dispatchEvent(new CustomEvent('auth:openModal', { detail: { mode: 'login' } }));
       return;
     }
     setIsMessagingOpen(true);
-  };
-
-  const handleProfileClick = () => {
-    if (!currentUser) {
-      if (openAuthModal) openAuthModal();
-      else window.dispatchEvent(new CustomEvent('auth:openModal', { detail: { mode: 'login' } }));
-      return;
-    }
-    navigate('/immo/profile');
-  };
+  }, [currentUser, openAuthModal]);
 
   const isExplore = location.pathname === '/immo' && !location.search;
   const isBuy = location.search.includes('type=sale');
@@ -34,32 +29,35 @@ export const OlmaImmoNavbar: React.FC = () => {
   const isVacation = location.search.includes('type=rent_short');
 
   return (
-    <header className="hidden md:block sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-xl border-b border-stone-200/80 shadow-[0_4px_20px_-4px_rgba(28,25,23,0.03)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Left: Brand Identity with Travel & Luxury Touch */}
-          <Link to="/immo" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white flex items-center justify-center shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-300">
-              <Building2 className="w-5 h-5" />
+    <header className="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-xl border-b border-stone-200/80 shadow-[0_4px_20px_-4px_rgba(28,25,23,0.03)]">
+      {/* 1-Click Cross-Vertical Super-App Bar (Desktop + Mobile) */}
+      <OlmaImmoTopUtilityBar onOpenSwitcher={() => setIsSwitcherOpen(true)} />
+
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
+          {/* Left: Brand Identity with Algerian Architectural Heritage */}
+          <Link to="/immo" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#0D281E] text-[#EBDCB8] flex items-center justify-center shadow-md border border-[#EBDCB8]/30 group-hover:scale-105 transition-transform duration-300">
+              <Building2 className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <span className="text-xl font-extrabold tracking-tight text-stone-900 font-['Poppins',sans-serif] block leading-none">
-                OLMA <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">IMMO</span>
+              <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#0D281E] font-['Playfair_Display',serif] block leading-none">
+                OLMA <span className="text-amber-700">IMMO</span>
               </span>
-              <span className="text-[10px] font-bold text-stone-400 tracking-wider uppercase mt-1 block">
-                Séjours & Immobilier
+              <span className="text-[9px] sm:text-[10px] font-bold text-stone-500 tracking-wider uppercase mt-0.5 sm:mt-1 block">
+                Algérie · Immobilier & Séjours
               </span>
             </div>
           </Link>
 
-          {/* Center: Travel Pill Navigation */}
-          <nav className="hidden md:flex items-center p-1.5 bg-stone-200/60 rounded-full border border-stone-200/80 shadow-inner">
+          {/* Center: Travel Pill Navigation (Desktop & Tablet) */}
+          <nav className="hidden lg:flex items-center p-1.5 bg-stone-100/90 rounded-full border border-stone-200/80 shadow-2xs">
             <Link
               to="/immo"
-              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 ${
                 isExplore
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
+                  ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/80'
               }`}
             >
               Explorer
@@ -67,22 +65,22 @@ export const OlmaImmoNavbar: React.FC = () => {
 
             <Link
               to="/immo?type=rent_short"
-              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 flex items-center gap-1.5 ${
                 isVacation
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
+                  ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/80'
               }`}
             >
-              <Sparkles className={`w-3.5 h-3.5 ${isVacation ? 'text-white' : 'text-amber-500'}`} />
+              <Sparkles className={`w-3.5 h-3.5 ${isVacation ? 'text-amber-400' : 'text-amber-600'}`} />
               <span>Séjours & Vacances</span>
             </Link>
 
             <Link
               to="/immo?type=sale"
-              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 ${
                 isBuy
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
+                  ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/80'
               }`}
             >
               Acheter
@@ -90,51 +88,57 @@ export const OlmaImmoNavbar: React.FC = () => {
 
             <Link
               to="/immo?type=rent_long"
-              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 ${
                 isRent
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/60'
+                  ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-white/80'
               }`}
             >
               Louer
             </Link>
           </nav>
 
-          {/* Right: Quick actions and Profile */}
-          <div className="flex items-center gap-4">
+          {/* Right: Quick actions, Synchronized Session, Notifications and Profile */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             <Link
               to="/immo/owner"
-              className="text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200/80 px-3.5 py-2 rounded-full transition-colors hidden lg:inline-flex items-center gap-1.5 border border-stone-200/60"
+              id="olma-immo-nav-owner-link"
+              className="text-xs font-bold text-[#EBDCB8] bg-[#0D281E] hover:bg-[#153e31] px-4 py-2.5 rounded-full transition-all duration-200 hidden xl:inline-flex items-center gap-2 border border-[#EBDCB8]/30 shadow-sm active:scale-95 cursor-pointer"
             >
-              Espace Propriétaire
+              <span>+ Publier une annonce</span>
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Favoris */}
               <Link
                 to="/immo?favorites=true"
-                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-rose-500 transition-colors shadow-2xs"
+                id="olma-immo-desktop-favorites-link"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-rose-500 transition-colors shadow-2xs"
                 title="Favoris"
+                aria-label="Favoris"
               >
                 <Heart className="w-4 h-4" />
               </Link>
 
+              {/* Real-Time Synced Notifications Center */}
+              <div id="olma-immo-notification-wrapper" className="flex items-center">
+                <NotificationCenter />
+              </div>
+
+              {/* Messages Drawer Trigger */}
               <button
                 type="button"
+                id="olma-immo-desktop-messages-btn"
                 onClick={handleOpenMessaging}
-                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors shadow-2xs cursor-pointer"
-                title="Messages"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors shadow-2xs cursor-pointer"
+                title="Messagerie en temps réel"
+                aria-label="Messagerie"
               >
                 <MessageSquare className="w-4 h-4" />
               </button>
 
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="w-10 h-10 rounded-full border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-600 hover:text-stone-900 transition-colors shadow-2xs cursor-pointer"
-                title="Profil"
-              >
-                <User className="w-4 h-4" />
-              </button>
+              {/* Synchronized User Session Menu & Avatar */}
+              <OlmaImmoUserMenu />
             </div>
           </div>
         </div>
@@ -147,6 +151,14 @@ export const OlmaImmoNavbar: React.FC = () => {
           onClose={() => setIsMessagingOpen(false)}
         />
       )}
+
+      {/* Super-App Switcher Modal */}
+      <SuperAppSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
+      />
     </header>
   );
-};
+});
+
+OlmaImmoNavbar.displayName = 'OlmaImmoNavbar';

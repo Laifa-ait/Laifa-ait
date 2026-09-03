@@ -1,12 +1,17 @@
 import React from 'react';
-import { ListingType, PropertyType } from '../../../types/realEstate';
+import { ListingType, PropertyType, LegalPaperType } from '../../../types/realEstate';
 import { Building2, Home, Layers, Compass, Grid } from 'lucide-react';
+import { EditorStepLegalPapers } from './EditorStepLegalPapers';
 
 interface EditorStepTransactionProps {
   listingType: ListingType;
   setListingType: (type: ListingType) => void;
   propertyType: PropertyType;
   setPropertyType: (type: PropertyType) => void;
+  legalPaperType?: LegalPaperType;
+  setLegalPaperType?: (paperType: LegalPaperType) => void;
+  legalPapers?: LegalPaperType[];
+  setLegalPapers?: (papers: LegalPaperType[]) => void;
 }
 
 const PROPERTY_TYPES: { type: PropertyType; title: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -25,7 +30,34 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
   setListingType,
   propertyType,
   setPropertyType,
+  legalPaperType = 'acte_notarie_individuel',
+  setLegalPaperType,
+  legalPapers,
+  setLegalPapers,
 }) => {
+  const activePapers: LegalPaperType[] = legalPapers && legalPapers.length > 0
+    ? legalPapers
+    : (legalPaperType ? [legalPaperType] : ['acte_notarie_individuel']);
+
+  const handleTogglePaper = (paperType: LegalPaperType) => {
+    if (setLegalPapers) {
+      const exists = activePapers.includes(paperType);
+      let updated: LegalPaperType[];
+      if (exists) {
+        updated = activePapers.filter((p) => p !== paperType);
+        if (updated.length === 0) updated = [paperType];
+      } else {
+        updated = [...activePapers, paperType];
+      }
+      setLegalPapers(updated);
+      if (setLegalPaperType && updated.length > 0) {
+        setLegalPaperType(updated[0]);
+      }
+    } else if (setLegalPaperType) {
+      setLegalPaperType(paperType);
+    }
+  };
+
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-8">
       {/* Transaction Type */}
@@ -63,6 +95,12 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Situation Juridique & Documents du Bien (Le Pilier "Papiers Fonciers DZ") */}
+      <EditorStepLegalPapers
+        activePapers={activePapers}
+        onTogglePaper={handleTogglePaper}
+      />
 
       {/* Property Category */}
       <div className="space-y-4 pt-6 border-t border-[#f0eae0]">

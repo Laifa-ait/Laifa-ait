@@ -16,6 +16,7 @@ export const OlmaImmoHome: React.FC = () => {
     selectedPropertyId,
     isLoading,
     viewMode,
+    setViewMode,
     cardRefs,
     fetchProperties,
     handleSelectProperty,
@@ -54,6 +55,7 @@ export const OlmaImmoHome: React.FC = () => {
           selectedPropertyId={selectedPropertyId}
           onSelectProperty={handleSelectProperty}
           viewMode={viewMode}
+          onViewModeChange={setViewMode}
           isLoading={isLoading}
           cardRefs={cardRefs}
           onBoundsChange={(bbox) => setMapBounds(bbox)}

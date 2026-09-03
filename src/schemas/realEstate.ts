@@ -2,6 +2,21 @@ import { z } from 'zod';
 
 export const PropertyTypeEnum = z.enum(['apartment', 'villa', 'house', 'studio', 'commercial', 'land', 'office', 'room', 'building']);
 export const ListingTypeEnum = z.enum(['sale', 'rent_long', 'rent_short']);
+export const LegalPaperTypeEnum = z.enum([
+  'acte_notarie_individuel',
+  'acte_dans_indivision',
+  'livret_foncier',
+  'permis_construire',
+  'certificat_conformite',
+  'decision_attribution',
+  'promesse_vente',
+  'papier_timbre',
+  // Backward compatibility aliases
+  'acte_notarie',
+  'decision',
+  'agricole',
+  'sans_papiers',
+]);
 export const PropertyStatusEnum = z.enum(['draft', 'pending', 'active', 'paused', 'rented', 'sold', 'archived', 'rejected']);
 export const PricePeriodEnum = z.enum(['night', 'month', 'total']);
 export const VisitStatusEnum = z.enum(['pending', 'accepted', 'declined', 'completed']);
@@ -11,26 +26,40 @@ export const GeoPointLocationSchema = z.object({
   lat: z.number().min(-90, "Latitude invalide").max(90, "Latitude invalide"),
   lng: z.number().min(-180, "Longitude invalide").max(180, "Longitude invalide"),
   geohash: z.string().optional().default(''),
-  address: z.string().min(3, "L'adresse doit contenir au moins 3 caractères").max(200, "Adresse trop longue"),
-  commune: z.string().min(2, "La commune est requise").max(100),
-  wilaya: z.string().min(2, "La wilaya est requise").max(100),
+  address: z.string().max(200, "Adresse trop longue").optional().default(''),
+  commune: z.string().min(1, "La commune est requise").max(100),
+  wilaya: z.string().min(1, "La wilaya est requise").max(100),
 });
 
+export const UtilityChargesSchema = z.object({
+  water: z.boolean().optional().default(false),
+  electricityGas: z.boolean().optional().default(false),
+  condoFees: z.boolean().optional().default(false),
+}).optional();
+
 export const PropertyCreateSchema = z.object({
-  title: z.string().min(5, "Le titre doit contenir au moins 5 caractères").max(150, "Titre trop long").transform(s => s.trim()),
-  description: z.string().min(10, "La description doit contenir au moins 10 caractères").max(3000, "Description trop longue").transform(s => s.trim()),
+  title: z.string().min(2, "Le titre doit contenir au moins 2 caractères").max(150, "Titre trop long").transform(s => s.trim()),
+  description: z.string().max(4000, "Description trop longue").optional().default('').transform(s => (s ? s.trim() : '')),
   propertyType: PropertyTypeEnum,
   listingType: ListingTypeEnum,
+  legalPapers: z.array(LegalPaperTypeEnum).optional().default([]),
+  isLegalVerified: z.boolean().optional().default(false),
+  legalPaperType: LegalPaperTypeEnum.optional(),
   price: z.number().positive("Le prix doit être un nombre positif (DZD)"),
   pricePeriod: PricePeriodEnum.optional(),
+  paymentAdvanceMonths: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]).optional(),
+  securityDepositMonths: z.number().min(0, "Le dépôt ne peut pas être négatif").max(24).optional().default(0),
+  isPriceNegotiable: z.boolean().optional().default(false),
+  utilityCharges: UtilityChargesSchema,
   cleaningFee: z.number().min(0, "Les frais de ménage ne peuvent pas être négatifs").optional().default(0),
   serviceFee: z.number().min(0, "Les frais de service ne peuvent pas être négatifs").optional().default(0),
   areaSquareMeters: z.number().positive("La superficie doit être supérieure à 0 m²"),
   rooms: z.number().int().min(0, "Le nombre de pièces ne peut être négatif").max(100),
   bathrooms: z.number().int().min(0, "Le nombre de salles de bain ne peut être négatif").max(50),
   features: z.array(z.string().min(1)).max(50).optional().default([]),
-  images: z.array(z.string().url("URL d'image invalide")).min(1, "Au moins une image est requise").max(30),
+  images: z.array(z.string().min(1, "Image requise")).min(1, "Au moins une image est requise").max(50),
   location: GeoPointLocationSchema,
+  contactPhone: z.string().max(30).optional().default(''),
   status: PropertyStatusEnum.optional().default('active'),
 });
 
@@ -51,6 +80,11 @@ export const PropertySortOptionEnum = z.enum([
 export const PropertySearchQuerySchema = z.object({
   propertyType: PropertyTypeEnum.optional(),
   listingType: ListingTypeEnum.optional(),
+  legalPaperType: LegalPaperTypeEnum.optional(),
+  legalPapers: z.union([z.array(LegalPaperTypeEnum), LegalPaperTypeEnum, z.string()]).optional(),
+  hasActeNotarie: z.coerce.boolean().optional(),
+  hasLivretFoncier: z.coerce.boolean().optional(),
+  isLegalVerified: z.coerce.boolean().optional(),
   wilaya: z.string().optional(),
   commune: z.string().optional(),
   minPrice: z.coerce.number().min(0, 'Le prix minimum ne peut être négatif').optional(),

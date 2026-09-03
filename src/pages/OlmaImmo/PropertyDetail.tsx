@@ -15,6 +15,8 @@ import { Building2, ArrowLeft } from 'lucide-react';
 import { DetailHeader } from '../../components/OlmaImmo/PropertyDetail/DetailHeader';
 import { DetailGallery } from '../../components/OlmaImmo/PropertyDetail/DetailGallery';
 import { DetailSpecs } from '../../components/OlmaImmo/PropertyDetail/DetailSpecs';
+import { DetailLegalStatus } from '../../components/OlmaImmo/PropertyDetail/DetailLegalStatus';
+import { DetailFinancialTerms } from '../../components/OlmaImmo/PropertyDetail/DetailFinancialTerms';
 import { DetailDescription } from '../../components/OlmaImmo/PropertyDetail/DetailDescription';
 import { DetailLocation } from '../../components/OlmaImmo/PropertyDetail/DetailLocation';
 import { DetailSidebar } from '../../components/OlmaImmo/PropertyDetail/DetailSidebar';
@@ -26,31 +28,19 @@ export const PropertyDetail: React.FC = () => {
   const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
-
-  // Owner State
   const [ownerProfile, setOwnerProfile] = useState<PublicOwnerProfile | null>(null);
   const [isOwnerLoading, setIsOwnerLoading] = useState(false);
   const [ownerError, setOwnerError] = useState(false);
-
-  // Gallery state
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-
-  // Modal states
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDirectChatOpen, setIsDirectChatOpen] = useState(false);
 
   // Short-Term Booking selection
   const [bookingSummary, setBookingSummary] = useState({
-    startDate: '',
-    endDate: '',
-    totalNights: 0,
-    guests: { adults: 2, children: 1 },
-    subtotal: 0,
-    cleaningFee: 10000,
-    serviceFee: 5000,
-    totalPriceDZD: 0,
+    startDate: '', endDate: '', totalNights: 0, guests: { adults: 2, children: 1 },
+    subtotal: 0, cleaningFee: 10000, serviceFee: 5000, totalPriceDZD: 0,
   });
 
   useEffect(() => {
@@ -108,10 +98,6 @@ export const PropertyDetail: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-12 flex-1 w-full animate-pulse space-y-6">
           <div className="h-10 bg-slate-200/80 rounded-2xl w-1/4" />
           <div className="h-96 bg-slate-200/80 rounded-3xl" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-64 bg-slate-200/80 rounded-3xl" />
-            <div className="h-64 bg-slate-200/80 rounded-3xl" />
-          </div>
         </div>
       </div>
     );
@@ -126,11 +112,8 @@ export const PropertyDetail: React.FC = () => {
             <Building2 className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">Annonce introuvable</h2>
-          <p className="text-sm text-slate-600">Cette annonce n'existe plus ou a été retirée par son annonceur.</p>
-          <Link
-            to="/immo"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider"
-          >
+          <p className="text-sm text-slate-600">Cette annonce n'existe plus ou a été retirée.</p>
+          <Link to="/immo" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider">
             <ArrowLeft className="w-4 h-4" />
             <span>Explorer les annonces</span>
           </Link>
@@ -147,18 +130,10 @@ export const PropertyDetail: React.FC = () => {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: property.title,
-        text: `${property.title} - ${property.location.wilaya} sur Olma Immo`,
-        url: window.location.href,
-      }).catch((err: unknown) => {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.warn('[OlmaImmo Share] Share error:', err.message);
-        }
-      });
+      navigator.share({ title: property.title, url: window.location.href }).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success("Lien de l'annonce copié !");
+      toast.success("Lien copié !");
     }
   };
 
@@ -185,11 +160,15 @@ export const PropertyDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-6">
             <DetailSpecs property={property} />
+            <DetailLegalStatus property={property} />
+            <DetailFinancialTerms property={property} />
             <DetailDescription property={property} />
             <DetailLocation
               location={property.location}
               title={property.title}
               price={property.price}
+              currentPropertyId={property.id}
+              similarProperties={similarProperties}
             />
           </div>
 

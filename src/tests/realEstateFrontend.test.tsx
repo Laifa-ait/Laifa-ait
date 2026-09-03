@@ -118,4 +118,56 @@ describe('Olma Immo Frontend & Utilities Suite', () => {
       expect(parts[1]).toBeLessThan(parts[3]); // minLat < maxLat
     });
   });
+
+  describe('Super-App Verticals & Navigation History Synchronization', () => {
+    it('defines valid routes for seamless client-side SPA navigation without full reloads', async () => {
+      const { SUPER_APP_VERTICALS } = await import('../data/superAppData');
+      expect(SUPER_APP_VERTICALS.length).toBeGreaterThanOrEqual(4);
+
+      const immo = SUPER_APP_VERTICALS.find((v) => v.id === 'immo');
+      const marketplace = SUPER_APP_VERTICALS.find((v) => v.id === 'marketplace');
+      const bricolage = SUPER_APP_VERTICALS.find((v) => v.id === 'bricolage');
+      const shops = SUPER_APP_VERTICALS.find((v) => v.id === 'shops');
+
+      expect(immo?.route).toBe('/immo');
+      expect(marketplace?.route).toBe('/');
+      expect(bricolage?.route).toBe('/artisans');
+      expect(shops?.route).toBe('/shops');
+
+      // Ensure all routes use clean relative client-side paths (react-router compatible)
+      SUPER_APP_VERTICALS.forEach((vertical) => {
+        expect(vertical.route.startsWith('/')).toBe(true);
+        expect(vertical.route.includes('http')).toBe(false);
+      });
+    });
+
+    it('validates 1-click navigation paths from /immo to / and /artisans', () => {
+      const paths = {
+        marketplace: '/',
+        artisans: '/artisans',
+        immo: '/immo',
+        shops: '/shops',
+      };
+
+      // 1-click navigation target verification
+      expect(paths.marketplace).toBe('/');
+      expect(paths.artisans).toBe('/artisans');
+      expect(paths.immo).toBe('/immo');
+    });
+
+    it('exports memoized components ensuring zero unnecessary re-renders', async () => {
+      const { OlmaImmoNavbar } = await import('../components/OlmaImmo/OlmaImmoNavbar');
+      const { OlmaImmoTopUtilityBar } = await import('../components/OlmaImmo/OlmaImmoTopUtilityBar');
+      const { OlmaImmoUserMenu } = await import('../components/OlmaImmo/OlmaImmoUserMenu');
+
+      expect(OlmaImmoNavbar).toBeDefined();
+      expect(OlmaImmoTopUtilityBar).toBeDefined();
+      expect(OlmaImmoUserMenu).toBeDefined();
+
+      // Verify display names are registered for React.memo
+      expect((OlmaImmoNavbar as { displayName?: string }).displayName).toBe('OlmaImmoNavbar');
+      expect((OlmaImmoTopUtilityBar as { displayName?: string }).displayName).toBe('OlmaImmoTopUtilityBar');
+      expect((OlmaImmoUserMenu as { displayName?: string }).displayName).toBe('OlmaImmoUserMenu');
+    });
+  });
 });

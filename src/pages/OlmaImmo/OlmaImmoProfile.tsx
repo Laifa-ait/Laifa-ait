@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -8,57 +8,18 @@ import {
   Heart,
   Building2,
   User,
-  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
-import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { ProApplicationSection } from '../../components/OlmaImmo/ProApplicationSection';
 import { ProfileFavoritesSection } from '../../components/OlmaImmo/ProfileFavoritesSection';
-import { apiPost } from '../../lib/api';
-import toast from 'react-hot-toast';
-import { safeLogger } from '../../utils/logger';
+import { ProfileSettingsSection } from '../../components/OlmaImmo/ProfileSettingsSection';
+import { ProfileStaysSection } from '../../components/OlmaImmo/ProfileStaysSection';
 
 export const OlmaImmoProfile: React.FC = () => {
   const { currentUser, userProfile, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'favorites' | 'stays' | 'pro' | 'settings'>('favorites');
-  const [isSaving, setIsSaving] = useState(false);
-
-  const [formData, setFormData] = useState({
-    displayName: '',
-    phone: '',
-    wilaya: '',
-    address: '',
-  });
-
-  useEffect(() => {
-    if (userProfile) {
-      setFormData({
-        displayName: userProfile.displayName || '',
-        phone: userProfile.phone || '',
-        wilaya: userProfile.wilaya || '',
-        address: userProfile.address || '',
-      });
-    }
-  }, [userProfile]);
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      const res = await apiPost<{ success: boolean; error?: string }>('/api/v1/auth/profile', formData);
-      if (res?.success) {
-        toast.success('Profil mis à jour avec succès');
-      } else {
-        toast.error(res?.error || 'Erreur lors de la mise à jour');
-      }
-    } catch (err) {
-      safeLogger.error('Failed to update user profile', { err: err instanceof Error ? err.message : String(err) });
-      toast.error('Erreur lors de la sauvegarde');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -71,20 +32,19 @@ export const OlmaImmoProfile: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] font-sans pb-24 md:pb-12 text-[#1c211e]">
+      <div className="min-h-screen bg-[#faf8f5] font-sans pb-12 text-[#1c211e]">
         <OlmaImmoNavbar />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="w-10 h-10 border-4 border-[#1a3831] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-xs font-bold text-slate-600">Chargement de votre profil...</p>
         </main>
-        <OlmaImmoBottomNav activeTab="profile" />
       </div>
     );
   }
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] font-sans pb-24 md:pb-12 text-[#1c211e]">
+      <div className="min-h-screen bg-[#faf8f5] font-sans pb-12 text-[#1c211e]">
         <OlmaImmoNavbar />
         <main className="max-w-xl mx-auto px-4 sm:px-6 py-16 text-center">
           <div className="bg-white rounded-3xl p-8 border border-[#e8e2d4] shadow-xs space-y-6">
@@ -117,20 +77,31 @@ export const OlmaImmoProfile: React.FC = () => {
             </div>
           </div>
         </main>
-        <OlmaImmoBottomNav activeTab="profile" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] font-sans pb-24 md:pb-12 text-[#1c211e]">
+    <div className="min-h-screen bg-[#faf8f5] font-sans pb-16 text-[#1c211e]">
       <OlmaImmoNavbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6">
+        {/* Navigation fil d'ariane & retour */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate('/immo')}
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#1a3831] hover:text-[#122b24] px-3.5 py-2 rounded-xl bg-white border border-[#e8e2d4] hover:bg-[#f4ecd8]/40 transition cursor-pointer shadow-2xs"
+          >
+            <ArrowLeft className="w-4 h-4 text-emerald-800" />
+            <span>Retour à Olma Immo</span>
+          </button>
+        </div>
+
         {/* Top Header Card */}
         <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-[#f4ecd8] text-[#1a3831] border border-[#ebdcb8] rounded-2xl flex items-center justify-center font-bold text-2xl uppercase">
+            <div className="w-16 h-16 bg-[#f4ecd8] text-[#1a3831] border border-[#ebdcb8] rounded-2xl flex items-center justify-center font-bold text-2xl uppercase shrink-0">
               {userProfile?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
             </div>
             <div>
@@ -208,145 +179,12 @@ export const OlmaImmoProfile: React.FC = () => {
           {/* Right Main Content Panel */}
           <div className="col-span-1 md:col-span-2">
             {activeTab === 'favorites' && <ProfileFavoritesSection />}
-
-            {activeTab === 'stays' && (
-              <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-5 text-center sm:text-left">
-                <div className="flex items-center gap-3 pb-4 border-b border-[#f0eae0]">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center border border-[#ebdcb8]">
-                    <Calendar className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#1a3831]">Espace Voyageur</span>
-                    <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
-                      Mes Séjours & Demandes de Visites
-                    </h3>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-600">
-                  Consultez l'historique complet de vos réservations de vacances, confirmations d'hôtes et plannings de visites de biens.
-                </p>
-
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/immo/my-bookings')}
-                    className="py-3 px-5 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-xs transition"
-                  >
-                    <span>Gérer mes séjours</span>
-                    <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/immo?type=rent_short')}
-                    className="py-3 px-5 bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1a3831] rounded-xl text-xs font-bold uppercase tracking-wider border border-[#e8e2d4] cursor-pointer transition"
-                  >
-                    Explorer les séjours vacances
-                  </button>
-                </div>
-              </div>
-            )}
-
+            {activeTab === 'stays' && <ProfileStaysSection />}
             {activeTab === 'pro' && <ProApplicationSection />}
-
-            {activeTab === 'settings' && (
-              <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-[#f0eae0]">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center border border-[#ebdcb8]">
-                    <Settings className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#1a3831]">Compte</span>
-                    <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
-                      Paramètres & Coordonnées du Profil
-                    </h3>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Nom complet</label>
-                      <input
-                        type="text"
-                        value={formData.displayName}
-                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                        required
-                        placeholder="Votre nom et prénom"
-                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Adresse e-mail</label>
-                      <input
-                        type="email"
-                        disabled
-                        value={currentUser?.email || ''}
-                        className="w-full bg-[#f4efe4]/60 border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-500 font-medium cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Numéro de téléphone</label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="Ex: 0550 12 34 56"
-                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Wilaya de résidence</label>
-                      <input
-                        type="text"
-                        value={formData.wilaya}
-                        onChange={(e) => setFormData({ ...formData, wilaya: e.target.value })}
-                        placeholder="Ex: 16 - Alger, 31 - Oran"
-                        className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Adresse postale / Commune</label>
-                    <input
-                      type="text"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Ex: Bab Ezzouar, Alger"
-                      className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-[#1a3831]/20 focus:border-[#1a3831] transition"
-                    />
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-end">
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="py-3 px-6 bg-[#1a3831] hover:bg-[#122b24] disabled:opacity-50 text-[#ebdcb8] rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md flex items-center gap-2"
-                    >
-                      {isSaving ? (
-                        <>
-                          <div className="w-3.5 h-3.5 border-2 border-[#ebdcb8] border-t-transparent rounded-full animate-spin" />
-                          <span>Enregistrement...</span>
-                        </>
-                      ) : (
-                        <span>Enregistrer les modifications</span>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
+            {activeTab === 'settings' && <ProfileSettingsSection />}
           </div>
         </div>
       </main>
-
-      <OlmaImmoBottomNav activeTab="profile" />
     </div>
   );
 };

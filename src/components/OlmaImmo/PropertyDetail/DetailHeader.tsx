@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Share2, Heart, MapPin, ShieldCheck, Eye } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, MapPin, ShieldCheck, Eye, CheckCircle2 } from 'lucide-react';
 import { Property } from '../../../types/realEstate';
+import { getLegalPaperInfo } from '../../../constants/legalPapers';
 
 interface DetailHeaderProps {
   property: Property;
@@ -32,6 +33,10 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
       default: return type;
     }
   };
+
+  const legalPapersList = Array.isArray(property.legalPapers) && property.legalPapers.length > 0
+    ? property.legalPapers
+    : (property.legalPaperType ? [property.legalPaperType] : []);
 
   return (
     <div className="space-y-4">
@@ -82,10 +87,28 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
               {property.propertyType === 'apartment' ? 'Appartement' : property.propertyType === 'villa' ? 'Villa' : property.propertyType === 'studio' ? 'Studio' : property.propertyType === 'commercial' ? 'Local Commercial' : property.propertyType}
             </span>
 
-            <span className="px-3 py-1 bg-emerald-50 text-emerald-800 font-bold text-xs rounded-full flex items-center gap-1.5 border border-emerald-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              Bien Vérifié OLMA
-            </span>
+            {/* Papiers Fonciers DZ Official Badges */}
+            {legalPapersList.map((paperType) => {
+              const info = getLegalPaperInfo(paperType);
+              if (!info) return null;
+              return (
+                <span
+                  key={paperType}
+                  className={`px-3 py-1 font-bold text-xs rounded-full flex items-center gap-1.5 border shadow-2xs ${info.badgeBg} ${info.badgeText} ${info.badgeBorder}`}
+                  title={info.description}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>{info.label}</span>
+                </span>
+              );
+            })}
+
+            {property.isLegalVerified && (
+              <span className="px-3 py-1 font-bold text-xs rounded-full flex items-center gap-1.5 border shadow-2xs bg-emerald-100 text-emerald-800 border-emerald-300">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Dossier Vérifié Olmart</span>
+              </span>
+            )}
 
             <span className="px-3 py-1 bg-slate-50 text-slate-500 text-xs rounded-full flex items-center gap-1.5 border border-slate-200">
               <Eye className="w-3.5 h-3.5 text-slate-400" />

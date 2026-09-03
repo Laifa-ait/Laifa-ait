@@ -18,6 +18,10 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+interface Window {
+  gm_authFailure?: () => void;
+}
+
 
 declare module 'cors' {
   import { RequestHandler } from 'express';

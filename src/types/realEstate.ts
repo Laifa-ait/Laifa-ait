@@ -1,5 +1,14 @@
 export type PropertyType = 'apartment' | 'villa' | 'house' | 'studio' | 'commercial' | 'land' | 'office' | 'room' | 'building';
 export type ListingType = 'sale' | 'rent_long' | 'rent_short';
+export type LegalPaperType =
+  | 'acte_notarie_individuel'   // Acte notarié dans l'individuel
+  | 'acte_dans_indivision'      // Acte notarié dans l'indivision (chiyou3)
+  | 'livret_foncier'            // Livret foncier individuel
+  | 'permis_construire'         // Permis de construire
+  | 'certificat_conformite'     // Certificat de conformité
+  | 'decision_attribution'      // Décision d'attribution (ex: AADL, LSP, LPP)
+  | 'promesse_vente'            // Promesse de vente notariée
+  | 'papier_timbre';            // Papier timbré / Coutumier (orfi)
 export type PropertyStatus = 'draft' | 'pending' | 'active' | 'paused' | 'rented' | 'sold' | 'archived' | 'rejected';
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'completed';
 
@@ -49,6 +58,12 @@ export interface GeoPointLocation {
   wilaya: string;
 }
 
+export interface UtilityCharges {
+  water?: boolean; // Eau (Algérienne Des Eaux - ADE)
+  electricityGas?: boolean; // Électricité/Gaz (Sonelgaz)
+  condoFees?: boolean; // Charges de copropriété / Syndic
+}
+
 export interface Property {
   id: string;
   ownerId: string;
@@ -56,8 +71,15 @@ export interface Property {
   description: string;
   propertyType: PropertyType;
   listingType: ListingType;
+  legalPapers: LegalPaperType[];
+  isLegalVerified?: boolean;
+  legalPaperType?: LegalPaperType;
   price: number; // DZD
   pricePeriod?: 'night' | 'month' | 'total';
+  paymentAdvanceMonths?: 1 | 3 | 6 | 12; // Norme algérienne locative: 6 ou 12 mois
+  securityDepositMonths?: number; // Caution de garantie en mois de loyer
+  isPriceNegotiable?: boolean; // Prix Fixe vs Négociable / Khasem
+  utilityCharges?: UtilityCharges; // Eau (ADE), Électricité/Gaz (Sonelgaz), Copropriété
   cleaningFee?: number;
   serviceFee?: number;
   deposit?: number;
@@ -82,8 +104,15 @@ export interface PropertyFormData {
   description: string;
   propertyType: PropertyType;
   listingType: ListingType;
+  legalPapers?: LegalPaperType[];
+  isLegalVerified?: boolean;
+  legalPaperType?: LegalPaperType;
   price: number;
   pricePeriod: 'night' | 'month' | 'total';
+  paymentAdvanceMonths?: 1 | 3 | 6 | 12;
+  securityDepositMonths?: number;
+  isPriceNegotiable?: boolean;
+  utilityCharges?: UtilityCharges;
   cleaningFee?: number;
   serviceFee?: number;
   deposit?: number;
@@ -122,6 +151,9 @@ export interface PropertyMapResult {
   title: string;
   propertyType: PropertyType;
   listingType: ListingType;
+  legalPapers?: LegalPaperType[];
+  isLegalVerified?: boolean;
+  legalPaperType?: LegalPaperType;
   price: number;
   pricePeriod?: 'night' | 'month' | 'total';
   lat: number;

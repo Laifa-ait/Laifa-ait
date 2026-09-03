@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { Image as ImageIcon, Trash2, Upload, AlertCircle } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  X,
+  Info,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PhotoCardItem } from './PhotoCardItem';
+import { PhotoDropzone } from './PhotoDropzone';
+import { batchOptimizePropertyImages } from './imageOptimizer';
 
 interface EditorStepMediaProps {
   images: string[];
@@ -8,114 +18,178 @@ interface EditorStepMediaProps {
 }
 
 export const EditorStepMedia: React.FC<EditorStepMediaProps> = ({ images, setImages }) => {
-  const [urlInput, setUrlInput] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const handleAddUrl = () => {
-    if (!urlInput.trim()) return;
-    if (!urlInput.startsWith('http://') && !urlInput.startsWith('https://') && !urlInput.startsWith('data:image/')) {
-      toast.error('Veuillez saisir une URL d\'image valide');
-      return;
+  const processFiles = async (files: FileList | File[] | null) => {
+    if (!files || files.length === 0) return;
+    setIsProcessing(true);
+    const toastId = toast.loading('Optimisation des photos en haute définition...');
+
+    try {
+      const optimizedImages = await batchOptimizePropertyImages(files);
+      if (optimizedImages.length > 0) {
+        setImages((prev) => [...prev, ...optimizedImages]);
+        toast.success(`${optimizedImages.length} photo(s) ajoutée(s) avec succès`, { id: toastId });
+      } else {
+        toast.error('Aucune photo valide détectée', { id: toastId });
+      }
+    } catch {
+      toast.error('Erreur lors du traitement des photos', { id: toastId });
+    } finally {
+      setIsProcessing(false);
     }
-    setImages((prev) => [...prev, urlInput.trim()]);
-    setUrlInput('');
-    toast.success('Photo ajoutée');
   };
 
   const handleRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+    toast.success('Photo retirée');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          setImages((prev) => [...prev, reader.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
+  const handleSetMain = (index: number) => {
+    if (index === 0) return;
+    setImages((prev) => {
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [target, ...rest];
     });
-    toast.success(`${files.length} photo(s) importée(s)`);
+    toast.success('Photo de couverture mise à jour');
+  };
+
+  const handleMoveLeft = (index: number) => {
+    if (index === 0) return;
+    setImages((prev) => {
+      const next = [...prev];
+      const temp = next[index - 1];
+      next[index - 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
+  };
+
+  const handleMoveRight = (index: number) => {
+    setImages((prev) => {
+      if (index >= prev.length - 1) return prev;
+      const next = [...prev];
+      const temp = next[index + 1];
+      next[index + 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
   };
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
-      <div>
-        <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 text-[#1a3831]" />
-          <span>Photos du bien ({images.length})</span>
-        </h3>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Ajoutez des photos lumineuses et de haute qualité pour maximiser l'intérêt des acquéreurs.
-        </p>
-      </div>
+      {/* Header & Quality Meter */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+        <div>
+          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-[#1a3831]" />
+            <span>Photos du bien ({images.length})</span>
+          </h3>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Ajoutez de vraies photos nettes et lumineuses de votre bien immobilier.
+          </p>
+        </div>
 
-      {/* Upload Box & URL Input */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="border-2 border-dashed border-[#e8e2d4] hover:border-[#1a3831] rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-[#faf8f5] hover:bg-[#f4ecd8]/40 transition">
-          <Upload className="w-8 h-8 text-[#1a3831] mb-2" />
-          <span className="text-xs font-bold text-[#1a3831]">Importer des photos depuis l'appareil</span>
-          <span className="text-[11px] text-slate-500 mt-1">PNG, JPG, WebP jusqu'à 10MB</span>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </label>
-
-        <div className="border border-[#e8e2d4] rounded-2xl p-6 flex flex-col justify-between space-y-3 bg-[#faf8f5]">
-          <span className="text-xs font-bold text-[#1a3831]">Ou ajouter via lien URL</span>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              placeholder="https://..."
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              className="flex-1 px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-xs focus:outline-none focus:border-[#1a3831]"
-            />
-            <button
-              type="button"
-              onClick={handleAddUrl}
-              className="px-4 py-2.5 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] text-xs font-bold rounded-xl transition cursor-pointer"
-            >
-              Ajouter
-            </button>
-          </div>
-          <span className="text-[11px] text-slate-400">Ex: Unsplash, Cloudinary, ImgBB</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#faf8f5] border border-[#e8e2d4]">
+          {images.length === 0 ? (
+            <span className="text-amber-700 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4" /> 1 photo minimum requise
+            </span>
+          ) : images.length < 3 ? (
+            <span className="text-emerald-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4" /> Bon début (3+ conseillées)
+            </span>
+          ) : (
+            <span className="text-emerald-800 flex items-center gap-1.5 font-bold">
+              <Sparkles className="w-4 h-4 text-amber-500" /> Visibilité Maximale (+300%)
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Photos Grid Preview */}
+      {/* Main Upload Dropzone */}
+      <PhotoDropzone
+        isProcessing={isProcessing}
+        isDragging={isDragging}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (e.dataTransfer.files) processFiles(e.dataTransfer.files);
+        }}
+        onFilesSelected={(files) => processFiles(files)}
+      />
+
+      {/* Photography Pro Tips Box */}
+      <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex items-start gap-3">
+        <Info className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
+        <div className="text-xs text-amber-900 space-y-1">
+          <span className="font-bold">Conseils pour louer ou vendre rapidement :</span>
+          <p className="text-[11px] leading-relaxed text-amber-800/90">
+            La 1ère photo sera votre couverture. Prenez des photos horizontales à la lumière du jour
+            (salon, chambres, cuisine, vue extérieure/façade). Vous pouvez réorganiser l'ordre des
+            photos ci-dessous.
+          </p>
+        </div>
+      </div>
+
+      {/* Photos Grid Gallery */}
       {images.length === 0 ? (
-        <div className="p-8 text-center bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] text-xs text-slate-500 flex items-center justify-center gap-2">
+        <div className="p-8 text-center bg-stone-50 rounded-2xl border border-stone-200 text-xs text-stone-500 flex items-center justify-center gap-2">
           <AlertCircle className="w-4 h-4 text-amber-600" />
-          <span>Veuillez ajouter au moins une photo principale pour publier votre annonce.</span>
+          <span>Aucune photo ajoutée pour l'instant. Importez au moins la photo principale.</span>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-          {images.map((img, idx) => (
-            <div key={idx} className="relative aspect-4/3 rounded-xl overflow-hidden group border border-[#e8e2d4]">
-              <img loading="lazy" decoding="async" src={img} alt={`Aperçu ${idx + 1}`} className="w-full h-full object-cover" />
-              {idx === 0 && (
-                <span className="absolute top-2 left-2 bg-[#1a3831] text-[#ebdcb8] text-[10px] font-black px-2 py-0.5 rounded-md">
-                  Photo principale
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(idx)}
-                className="absolute top-2 right-2 p-1.5 bg-rose-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition cursor-pointer hover:bg-rose-700"
-                title="Supprimer la photo"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-stone-600 font-medium">
+            <span>Ordre d'affichage dans l'annonce</span>
+            <span className="text-stone-400">Survolez une photo pour la réorganiser ou l'agrandir</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {images.map((img, idx) => (
+              <PhotoCardItem
+                key={`${idx}-${img.slice(0, 30)}`}
+                img={img}
+                index={idx}
+                total={images.length}
+                isMain={idx === 0}
+                onSetMain={handleSetMain}
+                onMoveLeft={handleMoveLeft}
+                onMoveRight={handleMoveRight}
+                onRemove={handleRemoveImage}
+                onPreview={(src) => setPreviewImage(src)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Preview Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+          <button
+            type="button"
+            onClick={() => setPreviewImage(null)}
+            className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={previewImage}
+            alt="Aperçu plein écran"
+            className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl shadow-2xl border border-white/10"
+          />
         </div>
       )}
     </div>

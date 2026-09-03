@@ -11,7 +11,7 @@ export class SettingsService {
   static async getCachedOrFetch<T>(
     key: string,
     fetcher: () => Promise<T>,
-    ttlMs = 120000 // 2 minute cache
+    ttlMs = 300000 // 5 minute cache
   ): Promise<T | null> {
     const cached = settingsCache.get(key);
     if (cached && Date.now() < cached.expiry) {
@@ -27,23 +27,32 @@ export class SettingsService {
         return data;
       } catch (err: unknown) {
         const errorObj = err as { message?: string; code?: string };
-        if (
-          attempt < 2 &&
-          (errorObj?.message?.includes("Rate exceeded") ||
-            errorObj?.message?.includes("RESOURCE_EXHAUSTED") ||
-            errorObj?.code === "resource-exhausted")
-        ) {
-          await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+        const isRateLimit =
+          errorObj?.message?.includes("Rate exceeded") ||
+          errorObj?.message?.includes("RESOURCE_EXHAUSTED") ||
+          errorObj?.message?.includes("rate limit") ||
+          errorObj?.code === "resource-exhausted" ||
+          errorObj?.code === "unavailable";
+
+        if (attempt < 2 && isRateLimit) {
+          const delay = 350 * Math.pow(2, attempt) + Math.floor(Math.random() * 150);
+          await new Promise((r) => setTimeout(r, delay));
           continue;
         }
-        if (cached) {
+
+        // Return stale cache if available when backend/Firestore is rate limited
+        if (cached?.data) {
           return cached.data as T;
         }
-        safeLogger.warn("[Olmart Gateway] Settings fetch error", { settingKey: key, err: errorObj?.message || String(err) });
+
+        safeLogger.warn("[Olmart Gateway] Settings fetch error", {
+          settingKey: key,
+          err: errorObj?.message || String(err),
+        });
         return null;
       }
     }
-    return cached ? (cached.data as T) : null;
+    return cached?.data ? (cached.data as T) : null;
   }
 
   static async getHomepageCategories(): Promise<Record<string, unknown>[]> {
