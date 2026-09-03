@@ -17,7 +17,7 @@ export const WorkspaceConfirmAdminModal: React.FC<WorkspaceConfirmAdminModalProp
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-zinc-100 shadow-2xl space-y-6 text-start relative">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full border border-zinc-100 shadow-2xl space-y-6 text-start relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
@@ -48,14 +48,14 @@ export const WorkspaceConfirmAdminModal: React.FC<WorkspaceConfirmAdminModalProp
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-2xl text-xs font-bold transition-all cursor-pointer"
           >
             {t("Annuler")}
           </button>
           <button
             onClick={onConfirmAdminExport}
             disabled={loadingSheetAdmin}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
             {loadingSheetAdmin ? (
               <Loader2 className="w-4 h-4 animate-spin" />

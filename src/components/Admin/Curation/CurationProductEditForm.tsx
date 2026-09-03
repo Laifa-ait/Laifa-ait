@@ -31,7 +31,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             {t("Éditeur de Fiche Produit")}
           </h3>
         </div>
-        <span className="text-[10px] text-amber-600 font-sans font-bold uppercase bg-amber-50 px-2 py-0.5 rounded-md">
+        <span className="text-[10px] text-amber-600 font-sans font-bold uppercase bg-amber-50 px-2 py-0.5 rounded-lg">
           {t("Modifications en direct")}
         </span>
       </div>
@@ -45,7 +45,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="text"
             value={editForm.name || ""}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           />
         </div>
 
@@ -57,7 +57,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="number"
             value={editForm.price ?? 0}
             onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           />
         </div>
 
@@ -69,7 +69,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="number"
             value={editForm.promoPrice ?? ""}
             onChange={(e) => setEditForm({ ...editForm, promoPrice: e.target.value ? Number(e.target.value) : "" })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           />
         </div>
 
@@ -81,7 +81,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="number"
             value={editForm.stock ?? 0}
             onChange={(e) => setEditForm({ ...editForm, stock: Number(e.target.value) })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           />
         </div>
 
@@ -93,7 +93,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="text"
             value={editForm.wilaya || ""}
             onChange={(e) => setEditForm({ ...editForm, wilaya: e.target.value })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
             placeholder="Alger, Oran..."
           />
         </div>
@@ -113,7 +113,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
                 subcategory: subcatList[0] || "",
               });
             }}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           >
             {Object.keys(hierarchy).map((catName) => (
               <option key={catName} value={catName}>
@@ -130,7 +130,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
           <select
             value={editForm.subcategory || ""}
             onChange={(e) => setEditForm({ ...editForm, subcategory: e.target.value })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
           >
             <option value="">-- {t("Aucune")} --</option>
             {Object.keys(editForm.category ? hierarchy[editForm.category] || {} : {}).map((subName) => (
@@ -149,7 +149,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             rows={4}
             value={editForm.description || ""}
             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-            className="w-full text-xs p-4 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-medium resize-none"
+            className="w-full text-xs p-4 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-medium resize-none"
           />
         </div>
 
@@ -161,7 +161,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
             type="text"
             value={editForm.image || ""}
             onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
             placeholder="https://images.unsplash.com/..."
           />
         </div>
@@ -180,7 +180,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
                 .filter((u) => u !== "");
               setEditForm({ ...editForm, images: urls });
             }}
-            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-[#ea580c] font-bold"
+            className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-[#ea580c] font-bold"
             placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
           />
         </div>
@@ -203,7 +203,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 text-xs font-bold text-zinc-600 bg-zinc-100 rounded-xl hover:bg-zinc-200 cursor-pointer"
+          className="px-4 py-2.5 text-xs font-bold text-zinc-600 bg-zinc-100 rounded-2xl hover:bg-zinc-200 cursor-pointer"
         >
           {t("Annuler")}
         </button>
@@ -211,7 +211,7 @@ export const CurationProductEditForm: React.FC<CurationProductEditFormProps> = (
           type="button"
           onClick={onSave}
           disabled={isSaving}
-          className="px-5 py-2.5 bg-zinc-900 hover:bg-black text-white rounded-xl text-xs font-sans font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5"
+          className="px-5 py-2.5 bg-zinc-900 hover:bg-black text-white rounded-2xl text-xs font-sans font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5"
         >
           {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
           {t("Enregistrer")}

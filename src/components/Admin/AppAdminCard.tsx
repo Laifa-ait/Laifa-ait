@@ -31,7 +31,7 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+      className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
     >
       <div>
         {/* Top bar with visual Icon Preview and Action buttons */}
@@ -47,7 +47,7 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
               </div>
               {app.badge?.fr && (
                 <span
-                  className={`absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold shadow-sm uppercase ${
+                  className={`absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full text-xs font-extrabold shadow-sm uppercase ${
                     app.badgeColor || 'bg-red-500 text-white'
                   }`}
                 >
@@ -58,14 +58,14 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
 
             <div className="overflow-hidden">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-lg">
                   #{app.order} • {app.category}
                 </span>
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base truncate mt-0.5">
+              <h3 className="font-bold text-zinc-900 dark:text-white text-base truncate mt-0.5">
                 {app.title.fr}
               </h3>
-              <p className="text-[11px] text-slate-400 font-mono truncate">{app.id}</p>
+              <p className="text-xs text-zinc-400 font-mono truncate">{app.id}</p>
             </div>
           </div>
 
@@ -74,7 +74,7 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
               type="button"
               onClick={() => onQuickIconPicker(app)}
               title="Changer icône & style"
-              className="p-2 rounded-xl text-slate-500 hover:text-orange-600 hover:bg-orange-500/10 transition-colors"
+              className="p-2 rounded-2xl text-zinc-500 hover:text-orange-600 hover:bg-orange-500/10 transition-colors"
             >
               <Palette className="w-4 h-4" />
             </button>
@@ -82,7 +82,7 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
               type="button"
               onClick={() => onEdit(app)}
               title="Modifier l'application"
-              className="p-2 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+              className="p-2 rounded-2xl text-zinc-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
             </button>
@@ -90,7 +90,7 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
               type="button"
               onClick={() => onDelete(app)}
               title="Supprimer"
-              className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+              className="p-2 rounded-2xl text-zinc-400 hover:text-red-600 hover:bg-red-500/10 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -98,26 +98,26 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
         </div>
 
         {/* Description & Route Info */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-3">
           {app.description.fr || 'Aucune description fournie.'}
         </p>
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 space-y-1 mb-3 text-[11px]">
-          <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-            <span className="font-medium text-slate-400">Cible :</span>
+        <div className="bg-zinc-50 dark:bg-zinc-800/60 rounded-2xl p-2.5 space-y-1 mb-3 text-xs">
+          <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-300">
+            <span className="font-medium text-zinc-400">Cible :</span>
             <span className="font-mono font-semibold truncate max-w-[170px]">
               {app.targetRoute || 'N/A'}
             </span>
           </div>
-          <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-            <span className="font-medium text-slate-400">Affichage Accueil :</span>
+          <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-300">
+            <span className="font-medium text-zinc-400">Affichage Accueil :</span>
             <button
               type="button"
               onClick={() => onToggleHomeVisibility(app)}
               className={`flex items-center gap-1 font-bold ${
                 app.showInHomeShortcuts !== false
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-slate-400'
+                  : 'text-zinc-400'
               }`}
             >
               {app.showInHomeShortcuts !== false ? (
@@ -135,20 +135,20 @@ export const AppAdminCard: React.FC<AppAdminCardProps> = ({
       </div>
 
       {/* Status Selector */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-        <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
+      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 block mb-1">
           Statut de déploiement :
         </label>
         <select
           value={app.status}
           disabled={isSaving}
           onChange={(e) => onStatusChange(app, e.target.value as OlmaAppStatus)}
-          className={`w-full px-3 py-1.5 rounded-xl border text-xs font-bold transition-colors ${
+          className={`w-full px-3 py-1.5 rounded-2xl border text-xs font-bold transition-colors ${
             app.status === 'active'
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400'
               : app.status === 'beta'
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400'
-              : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+              : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
           }`}
         >
           <option value="active">Actif & Déployé (Disponible)</option>

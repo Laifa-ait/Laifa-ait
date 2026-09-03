@@ -53,52 +53,52 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
       case "rejected":
         return { label: t("Demande Rejetée"), bg: "bg-rose-50 text-rose-700 border-rose-200/60" };
       default:
-        return { label: status || "", bg: "bg-transparent text-slate-600 border-slate-200/60" };
+        return { label: status || "", bg: "bg-transparent text-zinc-600 border-zinc-200/60" };
     }
   };
 
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="text-2xl font-sans font-bold text-slate-900 mb-1">{t("Mes Retours & Annulations")}</h2>
-        <p className="text-slate-500 font-medium text-sm">
+        <h2 className="text-2xl font-sans font-bold text-zinc-900 mb-1">{t("Mes Retours & Annulations")}</h2>
+        <p className="text-zinc-500 font-medium text-sm">
           {t("Gérez vos demandes de retours, remboursements et refus de colis.")}
         </p>
       </header>
 
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-8 space-y-4">
             <div className="flex gap-4 animate-pulse">
-              <div className="w-16 h-16 bg-slate-200 rounded-2xl" />
+              <div className="w-16 h-16 bg-zinc-200 rounded-2xl" />
               <div className="space-y-2 flex-grow">
-                <div className="w-1/2 h-4 bg-slate-200 rounded" />
-                <div className="w-1/3 h-3 bg-slate-100 rounded" />
+                <div className="w-1/2 h-4 bg-zinc-200 rounded" />
+                <div className="w-1/3 h-3 bg-zinc-100 rounded" />
               </div>
             </div>
           </div>
         ) : returns.length === 0 ? (
-          <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center bg-transparent m-2 border border-slate-100 rounded-3xl border-dashed">
-            <div className="w-20 h-20 bg-white border border-slate-200 rounded-full flex items-center justify-center mb-6 shadow-sm shadow-slate-200/50">
-              <PackageX className="w-10 h-10 text-slate-300" />
+          <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center bg-transparent m-2 border border-zinc-100 rounded-2xl border-dashed">
+            <div className="w-20 h-20 bg-white border border-zinc-200 rounded-full flex items-center justify-center mb-6 shadow-sm shadow-zinc-200/50">
+              <PackageX className="w-10 h-10 text-zinc-300" />
             </div>
-            <h3 className="text-xl font-sans font-bold text-slate-900 mb-2 tracking-tight rtl:tracking-normal">
+            <h3 className="text-xl font-sans font-bold text-zinc-900 mb-2 tracking-tight rtl:tracking-normal">
               {t("Aucun retour en cours")}
             </h3>
-            <p className="text-slate-500 font-medium max-w-sm mb-6 leading-relaxed">
+            <p className="text-zinc-500 font-medium max-w-sm mb-6 leading-relaxed">
               {t(
                 "Vous n'avez effectué aucune demande de retour. Si vous rencontrez un problème avec une commande (taille, défaut...), vous pouvez initier un retour depuis le détail de la commande."
               )}
             </p>
             <button
               onClick={() => navigate("/dashboard/buyer?tab=orders")}
-              className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest rtl:tracking-normal text-[10px] rtl:text-[12px] hover:bg-slate-800 transition-colors"
+              className="px-6 py-3 bg-zinc-900 text-white rounded-2xl font-bold uppercase tracking-widest rtl:tracking-normal text-[10px] rtl:text-[12px] hover:bg-zinc-800 transition-colors"
             >
               {t("Voir mes commandes")}
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-zinc-100">
             {returns.map((req) => {
               const badge = getStatusBadge(req.returnRequest?.status);
               return (
@@ -108,7 +108,7 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
                 >
                   <div className="space-y-2 flex-grow">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="font-extrabold text-slate-900 text-base">
+                      <span className="font-extrabold text-zinc-900 text-base">
                         {t("Commande #")}
                         {req.id.substring(0, 8)}
                       </span>
@@ -117,9 +117,9 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs font-semibold text-slate-500">
+                    <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs font-semibold text-zinc-500">
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                         <span>
                           {req.returnRequest?.createdAt
                             ? normalizeTimestamp(req.returnRequest.createdAt).toDate().toLocaleDateString()
@@ -127,18 +127,18 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-900 font-extrabold">{t("Total :")}</span>
+                        <span className="text-zinc-900 font-extrabold">{t("Total :")}</span>
                         <span className="text-[#9E6E4E] font-sans font-bold">
                           {req.total || 0} {t("currency.da", "DA")}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-xs bg-white border border-slate-150 p-3 rounded-2xl max-w-2xl">
-                      <span className="font-extrabold text-slate-900 block mb-0.5">
+                    <div className="text-xs bg-white border border-zinc-150 p-3 rounded-2xl max-w-2xl">
+                      <span className="font-extrabold text-zinc-900 block mb-0.5">
                         {t("Motif :")} {req.returnRequest?.reason}
                       </span>
-                      <span className="text-slate-500 font-medium leading-relaxed italic">
+                      <span className="text-zinc-500 font-medium leading-relaxed italic">
                         "{req.returnRequest?.details}"
                       </span>
                     </div>
@@ -147,7 +147,7 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
                   <div className="shrink-0 flex items-center">
                     <button
                       onClick={() => navigate(`/order/${req.id}`)}
-                      className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-transparent border border-slate-300 rounded-xl font-bold text-xs text-slate-900 transition-all flex items-center justify-center gap-1.5"
+                      className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-transparent border border-zinc-300 rounded-2xl font-bold text-xs text-zinc-900 transition-all flex items-center justify-center gap-1.5"
                     >
                       <span>{t("Détails Commande")}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -160,11 +160,11 @@ export const ReturnManagement: React.FC<{ currentUser: UserProfile | { uid: stri
         )}
       </div>
 
-      <div className="bg-transparent border border-slate-200 rounded-2xl p-5 flex gap-4 mt-6">
-        <AlertCircle className="w-6 h-6 text-slate-500 shrink-0" />
+      <div className="bg-transparent border border-zinc-200 rounded-2xl p-5 flex gap-4 mt-6">
+        <AlertCircle className="w-6 h-6 text-zinc-500 shrink-0" />
         <div>
-          <h4 className="font-bold text-slate-800 text-sm mb-1">{t("Politique de retour simplifiée")}</h4>
-          <p className="text-slate-600 text-xs rtl:text-sm font-medium leading-relaxed">
+          <h4 className="font-bold text-zinc-800 text-sm mb-1">{t("Politique de retour simplifiée")}</h4>
+          <p className="text-zinc-600 text-xs rtl:text-sm font-medium leading-relaxed">
             {t(
               "Notre modèle de Paiement à la Livraison permet de vérifier le colis à réception. Si un article ne correspond pas (taille, modèle), signalez-le immédiatement. Les retours validés sont remboursés directement selon les conditions de notre service client."
             )}

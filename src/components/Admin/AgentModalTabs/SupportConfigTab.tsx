@@ -28,7 +28,7 @@ export const SupportConfigTab: React.FC<SupportConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, personality: e.target.value })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-purple-500"
           >
             <option value="warm">{t("Très Chaleureux (Hospitalité Algérienne)")}</option>
             <option value="professional">{t("Professionnel & Distingué")}</option>
@@ -49,7 +49,7 @@ export const SupportConfigTab: React.FC<SupportConfigTabProps> = ({
             placeholder={t(
               "Saisissez les règles de retour, prix d'expéditions par wilaya d'Algérie, SAV..."
             )}
-            className="px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500 resize-none text-xs leading-relaxed"
+            className="px-4 py-3 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-purple-500 resize-none text-xs leading-relaxed"
           />
         </div>
       </div>

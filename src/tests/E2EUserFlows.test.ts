@@ -689,6 +689,15 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
     });
 
     it("successfully releases held escrow funds to seller's wallet upon delivery confirmation", async () => {
+      // Transition order status to DELIVERED
+      const existingOrder = orderStore.get(orderIdForPayment);
+      if (existingOrder) {
+        orderStore.set(orderIdForPayment, {
+          ...existingOrder,
+          status: "DELIVERED",
+        });
+      }
+
       // Establish an escrow holding record in DB
       escrowStore.set(orderIdForPayment, {
         id: orderIdForPayment,

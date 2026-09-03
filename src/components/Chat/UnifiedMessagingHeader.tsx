@@ -43,7 +43,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
             <button
               type="button"
               onClick={onBack}
-              className="p-1.5 rounded-xl hover:bg-[#f4ecd8] text-slate-600 hover:text-[#1e3835] transition-colors cursor-pointer"
+              className="p-1.5 rounded-2xl hover:bg-[#f4ecd8] text-zinc-600 hover:text-[#1e3835] transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -65,7 +65,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
             <button
               type="button"
               onClick={onBlock}
-              className="p-2 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+              className="p-2 rounded-2xl hover:bg-rose-50 text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer"
               title="Bloquer cette conversation"
             >
               <Ban className="w-4 h-4" />
@@ -74,7 +74,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-[#f4ecd8] text-slate-500 hover:text-[#1e3835] transition-colors cursor-pointer"
+            className="p-2 rounded-2xl hover:bg-[#f4ecd8] text-zinc-500 hover:text-[#1e3835] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -89,10 +89,10 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
               {propertyImage ? (
                 <img loading="lazy" decoding="async" src={propertyImage}
                   alt={propertyTitle}
-                  className="w-11 h-11 rounded-xl object-cover border border-[#e8e2d4] shrink-0"
+                  className="w-11 h-11 rounded-2xl object-cover border border-[#e8e2d4] shrink-0"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-xl bg-[#f4ecd8] flex items-center justify-center shrink-0 border border-[#e8e2d4] text-[#1e3835]">
+                <div className="w-11 h-11 rounded-2xl bg-[#f4ecd8] flex items-center justify-center shrink-0 border border-[#e8e2d4] text-[#1e3835]">
                   <Building2 className="w-5 h-5" />
                 </div>
               )}
@@ -107,7 +107,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
                     {propertyPrice.toLocaleString('fr-DZ')} DZD
                   </p>
                 ) : (
-                  <p className="text-[10px] text-slate-500 font-mono">Réf: {propertyId}</p>
+                  <p className="text-[10px] text-zinc-500 font-mono">Réf: {propertyId}</p>
                 )}
               </div>
             </div>
@@ -115,7 +115,7 @@ export const UnifiedMessagingHeader: React.FC<UnifiedMessagingHeaderProps> = ({
             <button
               type="button"
               onClick={handleNavigateToProperty}
-              className="px-3 py-1.5 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+              className="px-3 py-1.5 bg-[#1e3835] hover:bg-[#152725] text-white rounded-2xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
             >
               <span>Fiche</span>
               <ExternalLink className="w-3 h-3 text-[#ebdcb8]" />

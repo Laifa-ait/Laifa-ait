@@ -204,7 +204,7 @@ realEstatePropertyRouter.get(
         results = results.filter((p) => Boolean(p.isLegalVerified) === Boolean(isLegalVerified));
       }
       if (req.query.isPriceNegotiable !== undefined) {
-        const isNeg = req.query.isPriceNegotiable === 'true' || req.query.isPriceNegotiable === true;
+        const isNeg = String(req.query.isPriceNegotiable) === 'true';
         results = results.filter((p) => Boolean(p.isPriceNegotiable) === isNeg);
       }
       if (req.query.paymentAdvanceMonths !== undefined) {
@@ -434,7 +434,7 @@ realEstatePropertyRouter.get(
         results = results.filter((p) => Boolean(p.isLegalVerified) === Boolean(isLegalVerified));
       }
       if (req.query.isPriceNegotiable !== undefined) {
-        const isNeg = req.query.isPriceNegotiable === 'true' || req.query.isPriceNegotiable === true;
+        const isNeg = String(req.query.isPriceNegotiable) === 'true';
         results = results.filter((p) => Boolean(p.isPriceNegotiable) === isNeg);
       }
       if (req.query.paymentAdvanceMonths !== undefined) {

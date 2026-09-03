@@ -96,7 +96,7 @@ export const AppShortcutsHub: React.FC = () => {
               </div>
 
               {/* Title label underneath */}
-              <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 text-center line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+              <span className="text-[11px] sm:text-[12px] font-bold text-zinc-800 dark:text-zinc-200 text-center line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                 {displayName}
               </span>
             </button>

@@ -60,7 +60,7 @@ const THEME_COORDS: Record<
   "Auto & Moto": {
     icon: "🚗",
     from: "from-red-550",
-    to: "to-slate-700",
+    to: "to-zinc-700",
     text: "text-red-600",
     glow: "rgba(239, 68, 68, 0.15)",
     badge: "bg-red-50 text-red-700 border-red-100",
@@ -360,7 +360,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
   return (
     <div className="space-y-8" id="progressive-disclosure-preferences">
       {/* Immersive Dark Spotify Premium Banner */}
-      <div className="relative overflow-hidden bg-slate-950 text-white rounded-[2rem] p-8 md:p-10 shadow-2xl">
+      <div className="relative overflow-hidden bg-zinc-950 text-white rounded-[2rem] p-8 md:p-10 shadow-2xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/20 to-orange-600/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute bottom-0 left-12 w-60 h-60 bg-gradient-to-tr from-rose-500/15 to-purple-600/10 rounded-full blur-[60px] pointer-events-none" />
 
@@ -374,7 +374,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
             <h3 className="font-extrabold text-3xl sm:text-4.5xl tracking-tight text-white leading-tight">
               {isArabic ? "اختر اهتماماتك المفضلة" : "Mes Thèmes & Préférences"}
             </h3>
-            <p className="text-slate-350 text-xs sm:text-sm font-medium leading-relaxed">
+            <p className="text-zinc-350 text-xs sm:text-sm font-medium leading-relaxed">
               {isArabic
                 ? "انقر على الفئة الكبرى لاختيارها كلها، ستفتح لك قائمة فريدة لتعديل واختيار عناصر فرعية معينة بكل مرونة وبطريقة مسلية !"
                 : "Sélectionnez directement une thématique majeure pour l'activer, puis affinez vos réglages en cochant les sous-catégories de votre choix."}
@@ -382,9 +382,9 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
           </div>
 
           {/* Real-time stats pill */}
-          <div className="flex items-center md:flex-col gap-3 justify-end flex-shrink-0 bg-slate-900/70 backdrop-blur border border-slate-850 px-5 py-4 rounded-2xl">
+          <div className="flex items-center md:flex-col gap-3 justify-end flex-shrink-0 bg-zinc-900/70 backdrop-blur border border-zinc-850 px-5 py-4 rounded-2xl">
             <div className="text-start md:text-center">
-              <span className="block text-[10px] font-sans font-bold text-slate-400 tracking-wider">
+              <span className="block text-[10px] font-sans font-bold text-zinc-400 tracking-wider">
                 {isArabic ? "الفئات الفرعية النشطة" : "SÉLECTIONNÉES"}
               </span>
               <span className="block text-2xl font-sans font-bold text-amber-400 mt-0.5">{selectedInterests.length}</span>
@@ -393,7 +393,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
               <button
                 type="button"
                 onClick={clearAllSelected}
-                className="text-xs font-bold text-red-400 hover:text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-xl transition-all"
+                className="text-xs font-bold text-red-400 hover:text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-2xl transition-all"
               >
                 {isArabic ? "مسح الكل" : "Tout effacer"}
               </button>
@@ -409,11 +409,11 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
             const subcategories = categoryStructure[parentCat] || [];
             const style = THEME_COORDS[parentCat] || {
               icon: "📦",
-              from: "from-slate-400",
-              to: "to-slate-500",
-              text: "text-slate-600",
+              from: "from-zinc-400",
+              to: "to-zinc-500",
+              text: "text-zinc-600",
               glow: "rgba(0,0,0,0.02)",
-              badge: "bg-transparent border-slate-100",
+              badge: "bg-transparent border-zinc-100",
             };
             const isExpanded = !!expandedCategories[parentCat];
 
@@ -425,8 +425,8 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
             return (
               <div
                 key={parentCat}
-                className={`bg-white border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-350 ${
-                  hasDraftSelections ? "border-slate-900 ring-1 ring-slate-900/5" : "border-slate-100"
+                className={`bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-350 ${
+                  hasDraftSelections ? "border-zinc-900 ring-1 ring-zinc-900/5" : "border-zinc-100"
                 }`}
                 id={`pref-accordion-[${parentCat}]`}
               >
@@ -444,7 +444,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                       className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm bg-gradient-to-tr ${
                         allChildrenSelected
                           ? `${style.from} ${style.to} text-white`
-                          : "bg-transparent border border-slate-150/60"
+                          : "bg-transparent border border-zinc-150/60"
                       }`}
                     >
                       {style.icon}
@@ -452,7 +452,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
 
                     <div className="min-w-0 pr-2 rtl:pr-0 rtl:pl-2 space-y-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-extrabold text-base md:text-lg text-slate-950 tracking-tight">
+                        <span className="font-extrabold text-base md:text-lg text-zinc-950 tracking-tight">
                           {translateKey(parentCat)}
                         </span>
 
@@ -462,7 +462,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                             className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full border ${
                               allChildrenSelected
                                 ? "bg-amber-100/70 text-amber-900 border-amber-200"
-                                : "bg-slate-100 text-slate-700 border-slate-200/50"
+                                : "bg-zinc-100 text-zinc-700 border-zinc-200/50"
                             }`}
                           >
                             {allChildrenSelected
@@ -476,7 +476,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                         )}
                       </div>
 
-                      <span className="block text-xs font-bold text-slate-400">
+                      <span className="block text-xs font-bold text-zinc-400">
                         {subcategories.length} {isArabic ? "خيارات فرعية مدرجة" : "choix de thématiques disponibles"}
                       </span>
                     </div>
@@ -489,21 +489,21 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                       className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                         hasDraftSelections
                           ? allChildrenSelected
-                            ? "bg-slate-950 text-white"
-                            : "bg-slate-200 text-slate-800"
-                          : "border-2 border-slate-200 text-transparent hover:border-slate-400"
+                            ? "bg-zinc-950 text-white"
+                            : "bg-zinc-200 text-zinc-800"
+                          : "border-2 border-zinc-200 text-transparent hover:border-zinc-400"
                       }`}
                     >
                       <Check className="w-4 h-4 stroke-[3px]" />
                     </div>
 
-                    <div className="w-px h-6 bg-slate-150" />
+                    <div className="w-px h-6 bg-zinc-150" />
 
                     {/* Expand accordion toggler */}
                     <button
                       type="button"
                       onClick={(e) => handleToggleAccordion(parentCat, e)}
-                      className="p-2 bg-transparent hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-xl transition-colors"
+                      className="p-2 bg-transparent hover:bg-zinc-100 text-zinc-500 hover:text-zinc-800 rounded-2xl transition-colors"
                       title={isArabic ? "توسيع / إغلاق" : "Voir les détails"}
                     >
                       {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -519,11 +519,11 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="border-t border-slate-100"
+                      className="border-t border-zinc-100"
                     >
                       <div className="bg-transparent/70 p-5 md:p-6 space-y-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-[10px] font-sans font-bold uppercase text-slate-400 tracking-wider">
+                          <p className="text-[10px] font-sans font-bold uppercase text-zinc-400 tracking-wider">
                             {isArabic
                               ? `تخصيص الفئات الفرعية لـ ${translateKey(parentCat)} :`
                               : `Affiner les rubriques de ${translateKey(parentCat)} :`}
@@ -538,19 +538,19 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                                 const updated = new Set([...selectedInterests, ...subcategories]);
                                 setSelectedInterests(Array.from(updated));
                               }}
-                              className="text-[10px] font-bold text-slate-600 hover:text-slate-950 flex items-center gap-1"
+                              className="text-[10px] font-bold text-zinc-600 hover:text-zinc-950 flex items-center gap-1"
                             >
                               <CheckSquare className="w-3 h-3 text-emerald-600" />
                               {isArabic ? "تفعيل الكل" : "Activer tout"}
                             </button>
-                            <span className="text-slate-300 text-xs">|</span>
+                            <span className="text-zinc-300 text-xs">|</span>
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedInterests((prev) => prev.filter((sub) => !subcategories.includes(sub)));
                               }}
-                              className="text-[10px] font-bold text-slate-600 hover:text-red-600 flex items-center gap-1"
+                              className="text-[10px] font-bold text-zinc-600 hover:text-red-600 flex items-center gap-1"
                             >
                               <Square className="w-3 h-3 text-red-500" />
                               {isArabic ? "تعطيل الكل" : "Désactiver tout"}
@@ -575,7 +575,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
                                 className={`flex items-center justify-between px-4 py-3 rounded-2xl border text-start transition-all duration-200 ${
                                   isSubSelected
                                     ? `bg-gradient-to-br ${style.from} ${style.to} border-transparent text-white shadow-sm shadow-orange-100`
-                                    : "bg-white border-slate-150 text-slate-700 hover:border-slate-300 hover:bg-transparent"
+                                    : "bg-white border-zinc-150 text-zinc-700 hover:border-zinc-300 hover:bg-transparent"
                                 }`}
                                 id={`pref-pill-[${subName}]`}
                               >
@@ -585,7 +585,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
 
                                 <div
                                   className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                    isSubSelected ? "bg-white text-slate-950" : "border border-slate-300 bg-transparent"
+                                    isSubSelected ? "bg-white text-zinc-950" : "border border-zinc-300 bg-transparent"
                                   }`}
                                 >
                                   {isSubSelected && <Check className="w-3 h-3 stroke-[3px]" />}
@@ -604,12 +604,12 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
         </div>
 
         {/* Dynamic Sticky Bottom Options Board */}
-        <div className="bg-white border border-slate-150 shadow-xl rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-4 z-40">
+        <div className="bg-white border border-zinc-150 shadow-xl rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-4 z-40">
           <div className="text-start">
-            <span className="block text-[10px] font-sans font-bold text-slate-400 tracking-wider">
+            <span className="block text-[10px] font-sans font-bold text-zinc-400 tracking-wider">
               {isArabic ? "تقييم التخصيص التلقائي :" : "MOTEUR D'AFFINITÉ"}
             </span>
-            <span className="text-xs font-extrabold text-slate-700">
+            <span className="text-xs font-extrabold text-zinc-700">
               {selectedInterests.length > 0
                 ? isArabic
                   ? `لقد قمت بتخصيص ${selectedInterests.length} فئة فرعية مفضلة.`
@@ -624,7 +624,7 @@ export const CustomerPreferences: React.FC<CustomerPreferencesProps> = ({ curren
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-8 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs tracking-widest uppercase rounded-full transition-all disabled:opacity-50 min-h-[48px]"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-8 py-3.5 bg-zinc-950 hover:bg-zinc-900 text-white font-extrabold text-xs tracking-widest uppercase rounded-full transition-all disabled:opacity-50 min-h-[48px]"
             >
               {saving ? (
                 <RefreshCw className="w-4 h-4 animate-spin text-white" />

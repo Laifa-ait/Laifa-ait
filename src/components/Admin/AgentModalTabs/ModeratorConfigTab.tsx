@@ -39,7 +39,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, strictness: e.target.value })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-emerald-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-emerald-500"
           >
             <option value="strict">
               {t("Strict (Anti-liens, anti-whatsapp, anti-numéros)")}
@@ -60,7 +60,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, customForbiddenWords: e.target.value })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-emerald-500 resize-none font-mono"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-emerald-500 resize-none font-mono"
             placeholder="Ex: whatsapp, viber, ouedkniss, +213"
           />
         </div>
@@ -73,7 +73,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
           </h5>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase">
+            <label className="text-xs font-bold text-zinc-400 uppercase">
               {t("Titre Fictif du Produit")}
             </label>
             <input
@@ -85,7 +85,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase">
+            <label className="text-xs font-bold text-zinc-400 uppercase">
               {t("Description du Produit")}
             </label>
             <textarea
@@ -126,7 +126,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
         </h4>
 
         {!moderatorResult && !isRunningAgent && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-xl">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-2xl">
             <HelpCircle className="w-8 h-8 text-zinc-300 mb-2" />
             <p className="text-xs font-medium text-zinc-500">
               {t(
@@ -160,7 +160,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
                 )}
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase">
+                <span className="text-xs text-zinc-400 font-bold uppercase">
                   {t("Score de Qualité")}
                 </span>
                 <span
@@ -199,7 +199,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
             </div>
 
             {(moderatorResult.infractionsDetected?.length ?? 0) > 0 && (
-              <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 space-y-1">
+              <div className="bg-red-50/50 border border-red-100 rounded-2xl p-3 space-y-1">
                 <strong className="text-xs font-bold text-red-900 block">
                   ⚠️ {t("Anomalies Détectées :")}
                 </strong>
@@ -211,7 +211,7 @@ export const ModeratorConfigTab: React.FC<ModeratorConfigTabProps> = ({
               </div>
             )}
 
-            <div className="bg-zinc-50 border border-zinc-100 p-4 rounded-xl">
+            <div className="bg-zinc-50 border border-zinc-100 p-4 rounded-2xl">
               <strong className="text-xs font-bold text-zinc-700 block mb-1">
                 💬 {t("Retour d'Audit pour le Vendeur :")}
               </strong>

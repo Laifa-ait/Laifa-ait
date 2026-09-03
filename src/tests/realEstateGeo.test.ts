@@ -172,6 +172,7 @@ describe('Real Estate (Olma Immo) Geospatial Engine Suite (OLM-02)', () => {
         description: 'Magnifique villa avec piscine.',
         propertyType: 'villa',
         listingType: 'sale',
+        legalPapers: ['livret_foncier'],
         price: 45000000,
         pricePeriod: 'total',
         areaSquareMeters: 350,

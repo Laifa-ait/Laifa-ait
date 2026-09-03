@@ -45,7 +45,7 @@ export const AdminArtisansTable: React.FC<AdminArtisansTableProps> = ({
         );
       case 'blocked':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-white">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-800 text-white">
             <Ban className="w-3.5 h-3.5" /> Bloqué
           </span>
         );
@@ -56,18 +56,18 @@ export const AdminArtisansTable: React.FC<AdminArtisansTableProps> = ({
 
   if (!artisans || artisans.length === 0) {
     return (
-      <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-        <p className="text-slate-500 font-medium text-sm">Aucun artisan trouvé avec ces critères.</p>
+      <div className="bg-white p-12 rounded-2xl border border-zinc-200 text-center">
+        <p className="text-zinc-500 font-medium text-sm">Aucun artisan trouvé avec ces critères.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-2xl border border-zinc-200 shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-black uppercase tracking-wider">
+            <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-black uppercase tracking-wider">
               <th className="p-4">Artisan / Nom Pro</th>
               <th className="p-4">Métier / Exp.</th>
               <th className="p-4">Localisation</th>
@@ -75,12 +75,12 @@ export const AdminArtisansTable: React.FC<AdminArtisansTableProps> = ({
               <th className="p-4 text-right">Actions Moderation</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-800">
+          <tbody className="divide-y divide-zinc-100 text-xs font-medium text-zinc-800">
             {artisans.map((artisan) => (
-              <tr key={artisan.id} className="hover:bg-slate-50/50 transition-colors">
+              <tr key={artisan.id} className="hover:bg-zinc-50/50 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-700 overflow-hidden shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center font-black text-zinc-700 overflow-hidden shrink-0">
                       {artisan.avatarUrl ? (
                         <img loading="lazy" decoding="async" src={artisan.avatarUrl} alt={artisan.fullName} className="w-full h-full object-cover" />
                       ) : (
@@ -88,11 +88,11 @@ export const AdminArtisansTable: React.FC<AdminArtisansTableProps> = ({
                       )}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">{artisan.fullName}</p>
+                      <p className="font-bold text-zinc-900">{artisan.fullName}</p>
                       {artisan.professionalName && (
-                        <p className="text-xs text-slate-500">{artisan.professionalName}</p>
+                        <p className="text-xs text-zinc-500">{artisan.professionalName}</p>
                       )}
-                      <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                      <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-0.5">
                         <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {artisan.phone}</span>
                       </div>
                     </div>
@@ -103,17 +103,17 @@ export const AdminArtisansTable: React.FC<AdminArtisansTableProps> = ({
                   <span className="font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg">
                     {artisan.tradeName}
                   </span>
-                  <p className="text-[11px] text-slate-500 mt-1">
+                  <p className="text-[11px] text-zinc-500 mt-1">
                     {artisan.yearsOfExperience} an(s) d'expérience
                   </p>
                 </td>
 
                 <td className="p-4">
-                  <div className="flex items-center gap-1 text-slate-700 font-bold">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center gap-1 text-zinc-700 font-bold">
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                     <span>{artisan.wilaya}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">{artisan.commune}</p>
+                  <p className="text-[11px] text-zinc-500">{artisan.commune}</p>
                 </td>
 
                 <td className="p-4">

@@ -45,7 +45,7 @@ Les habilitations d'accès de la plateforme sont contrôlées par un graphe de r
                      ▼
           [ VENDEUR ('vendor') ]
                      │
-    (Vérification d'email urgence / list)
+    (Vérification d'habilitation serveur / Custom Claims)
                      │
                      ▼
          [ ADMINISTRATEUR ('admin') ]
@@ -207,7 +207,7 @@ export interface AuditLogDocument {
   action: "KYC_APPROVAL" | "KYC_REJECTION" | "USER_SUSPENSION" | "COMMISSION_UPDATE" | "PAYOUT_APPROVAL" | "PAYOUT_REJECTION";
   targetUserId: string;        // Identifiant de l'entité ou du compte cible modifié
   ipAddress: string;           // Adresse IP d'origine de la requête
-  metadata: Record<string, any>; // Détails associés à l'action
+  metadata: Record<string, unknown>; // Détails associés à l'action
   timestamp: string;           // Horodatage ISO d'écriture synchrone
 }
 ```

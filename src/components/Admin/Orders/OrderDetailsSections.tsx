@@ -26,7 +26,7 @@ export const OrderClientProfileCard: React.FC<{ selectedOrder: Order }> = ({ sel
           <span className="block text-[10px] uppercase font-sans font-bold text-zinc-400">
             {t("Téléphone de Contact")}
           </span>
-          <span className="inline-flex items-center gap-1 text-sm font-sans font-bold text-zinc-900 bg-zinc-100 px-3.5 py-1.5 rounded-xl border border-zinc-200">
+          <span className="inline-flex items-center gap-1 text-sm font-sans font-bold text-zinc-900 bg-zinc-100 px-3.5 py-1.5 rounded-2xl border border-zinc-200">
             <Phone className="w-3.5 h-3.5 text-zinc-400" />
             {selectedOrder.shippingAddress?.phone}
           </span>
@@ -131,7 +131,7 @@ export const OrderCommissionCard: React.FC<{
         </div>
       </div>
 
-      <div className="p-3 bg-purple-900/10 rounded-xl text-center text-xs font-sans font-bold text-purple-800">
+      <div className="p-3 bg-purple-900/10 rounded-2xl text-center text-xs font-sans font-bold text-purple-800">
         {t("Net Vendeur à reverser :")} {formatPrice(calculatedOrdersMap[selectedOrder.id]?.netRevenue || 0)}
       </div>
     </div>

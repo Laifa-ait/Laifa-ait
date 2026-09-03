@@ -50,7 +50,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           </div>
           <button
             onClick={() => setSelectedOrder(null)}
-            className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all cursor-pointer border-none"
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-2xl text-white transition-all cursor-pointer border-none"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,7 +76,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 disabled={isUpdatingStatus}
                 value={selectedOrder.status?.toLowerCase() || ""}
                 onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value as OrderStatus)}
-                className="p-3 border border-zinc-200 bg-white rounded-xl text-xs font-sans font-bold uppercase tracking-wider text-zinc-800 outline-none cursor-pointer"
+                className="p-3 border border-zinc-200 bg-white rounded-2xl text-xs font-sans font-bold uppercase tracking-wider text-zinc-800 outline-none cursor-pointer"
               >
                 {Object.keys(statusLabels).map((key) => (
                   <option key={key} value={key}>
@@ -104,7 +104,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     href={`/tracking?id=${selectedOrder.trackingNumber}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 bg-orange-50 text-orange-600 hover:bg-orange-100 font-sans font-bold text-[10px] uppercase tracking-widest rounded-xl transition-colors border border-orange-200 flex items-center gap-2"
+                    className="px-4 py-2 bg-orange-50 text-orange-600 hover:bg-orange-100 font-sans font-bold text-[10px] uppercase tracking-widest rounded-2xl transition-colors border border-orange-200 flex items-center gap-2"
                   >
                     <ExternalLink className="w-3 h-3" />
                     {t("Suivre l'envoi")}
@@ -158,7 +158,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   setSelectedOrderIds([]);
                 }, 100);
               }}
-              className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-white font-sans font-bold text-xs uppercase tracking-widest rounded-xl flex items-center gap-1 cursor-pointer transition-all border-none"
+              className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-white font-sans font-bold text-xs uppercase tracking-widest rounded-2xl flex items-center gap-1 cursor-pointer transition-all border-none"
             >
               <Printer className="w-4 h-4" />
               {t("Imprimer Ticket")} {t("admin_orders.pdf", "(PDF)")}
@@ -167,7 +167,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
           <button
             onClick={() => setSelectedOrder(null)}
-            className="px-5 py-2.5 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-sans font-bold text-xs uppercase tracking-widest rounded-xl cursor-pointer transition-all border-none"
+            className="px-5 py-2.5 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-sans font-bold text-xs uppercase tracking-widest rounded-2xl cursor-pointer transition-all border-none"
           >
             {t("Fermer")}
           </button>

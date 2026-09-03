@@ -64,7 +64,7 @@ export const NewsletterSidebar: React.FC<NewsletterSidebarProps> = ({
         <button
           onClick={generateWithAi}
           disabled={generating}
-          className="w-full bg-white text-zinc-950 py-4 rounded-xl font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50"
+          className="w-full bg-white text-zinc-950 py-4 rounded-2xl font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50"
         >
           {generating ? "IA en cours..." : "Rédiger la Newsletter"}
         </button>

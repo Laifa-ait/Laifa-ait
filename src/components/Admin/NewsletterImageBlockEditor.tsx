@@ -21,9 +21,9 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
       {/* Image Preview Window */}
       {b.content ? (
         <div
-          className={`flex ${getJustifyClass(b.align || "center")} w-full border border-dashed border-transparent hover:border-orange-500/30 p-2 rounded-3xl transition-all relative group/img`}
+          className={`flex ${getJustifyClass(b.align || "center")} w-full border border-dashed border-transparent hover:border-orange-500/30 p-2 rounded-2xl transition-all relative group/img`}
         >
-          <div className="absolute end-4 top-4 z-10 flex items-center gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-white/95 px-3 py-2 rounded-xl shadow-lg border border-zinc-200">
+          <div className="absolute end-4 top-4 z-10 flex items-center gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-white/95 px-3 py-2 rounded-2xl shadow-lg border border-zinc-200">
             <button
               type="button"
               onClick={() => onOpenMediaModal(b.id)}
@@ -90,7 +90,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             <label className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal block font-mono">
               {t("Largeur dans le Mail (Dim.)")}
             </label>
-            <div className="flex bg-white rounded-xl p-1 border border-zinc-200">
+            <div className="flex bg-white rounded-2xl p-1 border border-zinc-200">
               {[30, 50, 75, 100].map((w) => (
                 <button
                   key={w}
@@ -109,7 +109,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             <label className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal block font-mono">
               {t("Alignement de l'Image")}
             </label>
-            <div className="flex bg-white rounded-xl p-1 border border-zinc-200">
+            <div className="flex bg-white rounded-2xl p-1 border border-zinc-200">
               {[
                 { align: "left", icon: AlignLeft, label: "Gauche" },
                 { align: "center", icon: AlignCenter, label: "Centré" },
@@ -138,7 +138,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             <select
               value={b.aspectRatio || "auto"}
               onChange={(e) => updateBlockProperty(b.id, "aspectRatio", e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-zinc-200 text-zinc-800 rounded-xl outline-none font-sans font-bold text-[9px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
+              className="w-full px-3 py-2 bg-white border border-zinc-200 text-zinc-800 rounded-2xl outline-none font-sans font-bold text-[9px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
             >
               <option value="auto">{t("Proportion d'Origine")}</option>
               <option value="1/1">{t("Carré (1:1)")}</option>
@@ -155,7 +155,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             <select
               value={b.rounded || "rounded-2xl"}
               onChange={(e) => updateBlockProperty(b.id, "rounded", e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-zinc-200 text-zinc-800 rounded-xl outline-none font-sans font-bold text-[9px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
+              className="w-full px-3 py-2 bg-white border border-zinc-200 text-zinc-800 rounded-2xl outline-none font-sans font-bold text-[9px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
             >
               <option value="rounded-none">{t("Carré (0px)")}</option>
               <option value="rounded-lg">{t("Léger (rounded-lg)")}</option>
@@ -176,7 +176,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             </span>
           </div>
           <div className="flex gap-2">
-            <div className="flex-1 bg-white border border-zinc-200 rounded-xl px-4 py-2 flex items-center gap-2">
+            <div className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-2 flex items-center gap-2">
               <Link2 className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <input
                 type="text"
@@ -189,7 +189,7 @@ export const NewsletterImageBlockEditor: React.FC<NewsletterImageBlockEditorProp
             <button
               type="button"
               onClick={() => onOpenMediaModal(b.id)}
-              className="px-4 bg-white border border-zinc-200 hover:border-orange-500 hover:bg-orange-50/50 rounded-xl flex items-center justify-center gap-1.5 transition-all text-[9.5px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-zinc-650 hover:text-orange-700"
+              className="px-4 bg-white border border-zinc-200 hover:border-orange-500 hover:bg-orange-50/50 rounded-2xl flex items-center justify-center gap-1.5 transition-all text-[9.5px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-zinc-650 hover:text-orange-700"
             >
               <FolderOpen className="w-4 h-4 text-orange-500 shrink-0" /> {t("Médias")}
             </button>

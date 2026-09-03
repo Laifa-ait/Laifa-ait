@@ -402,7 +402,7 @@ export const NotificationCenter: React.FC = () => {
       case "dispute":
         return <AlertCircle className="w-4 h-4 text-red-600" />;
       default:
-        return <Bell className="w-4 h-4 text-[var(--color-slate-900, #0f172a)]" />;
+        return <Bell className="w-4 h-4 text-[var(--color-zinc-900, #0f172a)]" />;
     }
   };
 
@@ -410,12 +410,12 @@ export const NotificationCenter: React.FC = () => {
     <div className="relative shrink-0" ref={dropdownRef}>
       <motion.button
         onClick={toggleOpen}
-        className="w-10 h-10 rounded-full items-center justify-center bg-slate-50 text-slate-600 border border-slate-200/60 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 cursor-pointer relative flex group shadow-none"
+        className="w-10 h-10 rounded-full items-center justify-center bg-zinc-50 text-zinc-600 border border-zinc-200/60 hover:bg-zinc-100 hover:text-zinc-900 transition-all active:scale-95 cursor-pointer relative flex group shadow-none"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         title={t("Notifications") || "Notifications"}
       >
-        <Bell className="w-5 h-5 stroke-[1.5] text-slate-500 group-hover:text-slate-900" />
+        <Bell className="w-5 h-5 stroke-[1.5] text-zinc-500 group-hover:text-zinc-900" />
         <AnimatePresence>
           {unreadCount > 0 && (
             <motion.div
@@ -443,7 +443,7 @@ export const NotificationCenter: React.FC = () => {
           >
             <div className="px-6 py-4 border-b border-[var(--color-orange-600, #ea580c)]/50 flex items-center justify-between bg-transparent/60 shrink-0">
               <div>
-                <h4 className="font-extrabold text-[var(--color-slate-900, #0f172a)] text-sm">{t("Notifications")}</h4>
+                <h4 className="font-extrabold text-[var(--color-zinc-900, #0f172a)] text-sm">{t("Notifications")}</h4>
                 <p className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase text-[var(--color-orange-600, #ea580c)] tracking-widest rtl:tracking-normal mt-0.5">
                   {t("Mélodieux & Direct")}
                 </p>
@@ -451,7 +451,7 @@ export const NotificationCenter: React.FC = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-[var(--color-slate-900, #0f172a)] hover:text-[var(--color-orange-600, #ea580c)] bg-white border border-[var(--color-orange-600, #ea580c)] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                  className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-[var(--color-zinc-900, #0f172a)] hover:text-[var(--color-orange-600, #ea580c)] bg-white border border-[var(--color-orange-600, #ea580c)] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                 >
                   {t("Tout lire (")}
                   {unreadCount})
@@ -461,7 +461,7 @@ export const NotificationCenter: React.FC = () => {
 
             {permission === "default" && (
               <div className="px-6 py-3 bg-[var(--color-orange-600,#ea580c)]/10 border-b border-[var(--color-orange-600,#ea580c)]/20 flex items-center justify-between gap-4 shrink-0">
-                <span className="text-[10px] sm:text-[11px] font-medium text-slate-700">
+                <span className="text-[10px] sm:text-[11px] font-medium text-zinc-700">
                   {t("notif.enable_desk", "Activer les notifications de bureau en temps réel.")}
                 </span>
                 <button
@@ -476,10 +476,10 @@ export const NotificationCenter: React.FC = () => {
             <div className="max-h-[360px] overflow-y-auto divide-y divide-[#EBE5DF]/30">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center space-y-4">
-                  <div className="w-12 h-12 bg-white/50 border border-[var(--color-orange-600, #ea580c)] rounded-full flex items-center justify-center mx-auto text-stone-400">
+                  <div className="w-12 h-12 bg-white/50 border border-[var(--color-orange-600, #ea580c)] rounded-full flex items-center justify-center mx-auto text-zinc-400">
                     <Bell className="w-5 h-5" />
                   </div>
-                  <p className="text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-[var(--color-slate-900, #0f172a)]/60">
+                  <p className="text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-[var(--color-zinc-900, #0f172a)]/60">
                     {t("Aucune alerte")}
                   </p>
                 </div>
@@ -491,22 +491,22 @@ export const NotificationCenter: React.FC = () => {
                       onClick={() => handleNotificationClick(item)}
                       className={`flex gap-3.5 p-4 text-start transition-colors cursor-pointer select-none relative ${item.read ? "bg-transparent hover:bg-transparent/35" : "bg-[var(--color-orange-600, #ea580c)]/5 hover:bg-[var(--color-orange-600, #ea580c)]/8"}`}
                     >
-                      <div className="w-9 h-9 rounded-xl bg-white border border-[var(--color-orange-600, #ea580c)]/40 flex items-center justify-center shrink-0 shadow-xs">
+                      <div className="w-9 h-9 rounded-2xl bg-white border border-[var(--color-orange-600, #ea580c)]/40 flex items-center justify-center shrink-0 shadow-xs">
                         {getIcon(item.type)}
                       </div>
 
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-start justify-between gap-2">
                           <p
-                            className={`text-xs rtl:text-sm tracking-tight rtl:tracking-normal truncate leading-tight ${item.read ? "text-[var(--color-slate-900, #0f172a)] font-bold" : "text-[var(--color-slate-900, #0f172a)] font-extrabold"}`}
+                            className={`text-xs rtl:text-sm tracking-tight rtl:tracking-normal truncate leading-tight ${item.read ? "text-[var(--color-zinc-900, #0f172a)] font-bold" : "text-[var(--color-zinc-900, #0f172a)] font-extrabold"}`}
                           >
                             {item.title}
                           </p>
-                          <span className="text-[8px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-stone-400 shrink-0 mt-0.5">
+                          <span className="text-[8px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-zinc-400 shrink-0 mt-0.5">
                             {item.time}
                           </span>
                         </div>
-                        <p className="text-[11px] leading-relaxed text-stone-600 font-medium">{item.description}</p>
+                        <p className="text-[11px] leading-relaxed text-zinc-600 font-medium">{item.description}</p>
                       </div>
 
                       <div className="flex flex-col items-center justify-center shrink-0">
@@ -519,7 +519,7 @@ export const NotificationCenter: React.FC = () => {
                             <Check className="w-3 h-3 text-[var(--color-orange-600, #ea580c)]" />
                           </button>
                         ) : (
-                          <span className="w-1.5 h-1.5 bg-stone-300 rounded-full shrink-0" />
+                          <span className="w-1.5 h-1.5 bg-zinc-300 rounded-full shrink-0" />
                         )}
                       </div>
                     </div>
@@ -536,7 +536,7 @@ export const NotificationCenter: React.FC = () => {
                     currentUser ? (userProfile?.role === "seller" ? "/dashboard/seller" : "/dashboard/buyer") : "/auth"
                   );
                 }}
-                className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-[var(--color-slate-900, #0f172a)]/80 hover:text-[var(--color-slate-900, #0f172a)] block w-full text-center py-2 cursor-pointer"
+                className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-[var(--color-zinc-900, #0f172a)]/80 hover:text-[var(--color-zinc-900, #0f172a)] block w-full text-center py-2 cursor-pointer"
               >
                 {t("navbar.seller_dashboard") || "Accéder au Tableau de Bord"}
               </button>

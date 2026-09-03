@@ -35,7 +35,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, focusCategory: e.target.value })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-500"
           >
             <option value="Tout">{t("Toutes les catégories")}</option>
             <option value="Traditionnel">{t("Artisanat & Traditionnel")}</option>
@@ -60,7 +60,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
             placeholder={t(
               "Saisissez des d'informations clés sur la saisonnalité, la monnaie..."
             )}
-            className="px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500 resize-none"
+            className="px-4 py-3 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-500 resize-none"
           />
         </div>
 
@@ -73,7 +73,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, analysisFrequency: e.target.value })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-500"
           >
             <option value="hourly">{t("Toutes les heures")}</option>
             <option value="daily">{t("Chaque jour (conseillé)")}</option>
@@ -84,7 +84,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
         <button
           onClick={runGrowthAnalysis}
           disabled={isRunningAgent}
-          className="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-sm cursor-pointer disabled:bg-zinc-300"
+          className="w-full py-3 bg-blue-600 text-white rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-sm cursor-pointer disabled:bg-zinc-300"
         >
           {isRunningAgent ? (
             <>
@@ -108,7 +108,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
         </h4>
 
         {!growthReport && !isRunningAgent && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-xl">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-2xl">
             <HelpCircle className="w-8 h-8 text-zinc-300 mb-2" />
             <p className="text-xs font-medium text-zinc-500">
               {t(
@@ -129,7 +129,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
 
         {growthReport && (
           <div className="space-y-4 text-sm overflow-y-auto max-h-[350px] pr-2">
-            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-zinc-700 text-xs leading-relaxed">
+            <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 text-zinc-700 text-xs leading-relaxed">
               <strong className="text-blue-900 block mb-1">
                 💡 {t("Synthèse Globale :")}
               </strong>
@@ -140,16 +140,16 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
               {growthReport.kpis?.map((kpi, idx) => (
                 <div
                   key={idx}
-                  className="border border-zinc-100 p-3 rounded-xl bg-zinc-50"
+                  className="border border-zinc-100 p-3 rounded-2xl bg-zinc-50"
                 >
-                  <span className="text-[9px] text-zinc-400 font-bold uppercase block">
+                  <span className="text-xs text-zinc-400 font-bold uppercase block">
                     {kpi.label}
                   </span>
                   <span className="text-base font-sans font-bold text-zinc-800 block">
                     {kpi.value}
                   </span>
                   <span
-                    className={`text-[10px] font-bold ${
+                    className={`text-xs font-bold ${
                       kpi.trend === "up" ? "text-green-600" : "text-red-500"
                     }`}
                   >
@@ -167,7 +167,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
                 {growthReport.topSearches?.map((tag, i) => (
                   <span
                     key={i}
-                    className="px-2 py-0.5 bg-zinc-100 text-zinc-700 text-[10px] rounded-md font-bold uppercase tracking-wider"
+                    className="px-2 py-0.5 bg-zinc-100 text-zinc-700 text-xs rounded-lg font-bold uppercase tracking-wider"
                   >
                     {tag}
                   </span>
@@ -184,7 +184,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
               </p>
             </div>
 
-            <div className="bg-green-50/30 p-4 rounded-xl border border-green-100">
+            <div className="bg-green-50/30 p-4 rounded-2xl border border-green-100">
               <strong className="text-green-900 text-xs block mb-1">
                 🏁 {t("Plan d'Action Direct :")}
               </strong>

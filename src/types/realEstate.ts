@@ -1,6 +1,7 @@
 export type PropertyType = 'apartment' | 'villa' | 'house' | 'studio' | 'commercial' | 'land' | 'office' | 'room' | 'building';
 export type ListingType = 'sale' | 'rent_long' | 'rent_short';
 export type LegalPaperType =
+  | 'acte_notarie'             // Acte notarié générique / legacy
   | 'acte_notarie_individuel'   // Acte notarié dans l'individuel
   | 'acte_dans_indivision'      // Acte notarié dans l'indivision (chiyou3)
   | 'livret_foncier'            // Livret foncier individuel
@@ -91,6 +92,8 @@ export interface Property {
   features: string[];
   images: string[];
   location: GeoPointLocation;
+  commune?: string;
+  wilaya?: string;
   status: PropertyStatus;
   viewsCount: number;
   createdAt: string;

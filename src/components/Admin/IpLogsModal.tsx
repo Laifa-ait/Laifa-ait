@@ -47,14 +47,14 @@ export const IpLogsModal: React.FC<IpLogsModalProps> = ({ user, onClose }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
       >
         <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
           <div>
             <h3 className="font-sans font-bold text-lg text-zinc-900">{t("Historique de connexions")}</h3>
             <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{user.email}</p>
           </div>
-          <button onClick={onClose} className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-500 rounded-xl transition-colors">
+          <button onClick={onClose} className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-500 rounded-2xl transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

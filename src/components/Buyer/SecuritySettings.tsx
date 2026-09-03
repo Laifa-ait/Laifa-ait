@@ -102,10 +102,10 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
   return (
     <div className="space-y-8" id="security-settings-module">
       <div>
-        <h3 className="font-sans font-bold text-xl text-slate-900 tracking-tight rtl:tracking-normal">
+        <h3 className="font-sans font-bold text-xl text-zinc-900 tracking-tight rtl:tracking-normal">
           {t("Configuration de Sécurité")}
         </h3>
-        <p className="text-slate-500 text-xs rtl:text-sm font-medium">
+        <p className="text-zinc-500 text-xs rtl:text-sm font-medium">
           {t("Gérez vos accès et sécurisez votre connexion d'e-commerce.")}
         </p>
       </div>
@@ -114,19 +114,19 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
         {/* Email Form */}
         <form
           onSubmit={triggerEmailUpdate}
-          className="bg-white border border-slate-100 p-8 rounded-3xl space-y-6 shadow-sm"
+          className="bg-white border border-zinc-100 p-8 rounded-2xl space-y-6 shadow-sm"
         >
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+            <div className="w-8 h-8 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
               <Mail className="w-4 h-4" />
             </div>
-            <h4 className="font-sans font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal text-slate-900">
+            <h4 className="font-sans font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal text-zinc-900">
               {t("Adresse de Connexion")}
             </h4>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] rtl:text-[12px] font-bold text-slate-400 uppercase tracking-wider rtl:tracking-normal">
+            <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal">
               {t("Adresse E-mail actuelle et valide")}
             </label>
             <input
@@ -134,7 +134,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-5 py-3.5 bg-transparent border border-slate-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-slate-500 transition-all text-slate-700"
+              className="w-full px-5 py-3.5 bg-transparent border border-zinc-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-zinc-500 transition-all text-zinc-700"
               placeholder={t("Ex: abc@gmail.com") || "Ex: abc@gmail.com"}
             />
           </div>
@@ -142,7 +142,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl font-sans font-bold text-[10px] rtl:text-[12px] uppercase tracking-widest rtl:tracking-normal transition-all focus:scale-95 text-center min-h-[44px]"
+              className="w-full py-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-2xl font-sans font-bold text-[10px] rtl:text-[12px] uppercase tracking-widest rtl:tracking-normal transition-all focus:scale-95 text-center min-h-[44px]"
             >
               {t("Mettre à jour l'e-mail")}
             </button>
@@ -152,20 +152,20 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
         {/* Password Form */}
         <form
           onSubmit={triggerPasswordUpdate}
-          className="bg-white border border-slate-100 p-8 rounded-3xl space-y-6 shadow-sm"
+          className="bg-white border border-zinc-100 p-8 rounded-2xl space-y-6 shadow-sm"
         >
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center text-slate-600">
+            <div className="w-8 h-8 rounded-2xl bg-transparent flex items-center justify-center text-zinc-600">
               <Key className="w-4 h-4" />
             </div>
-            <h4 className="font-sans font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal text-slate-900">
+            <h4 className="font-sans font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal text-zinc-900">
               {t("Changer de Mot de passe")}
             </h4>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2 relative">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-400 uppercase tracking-wider rtl:tracking-normal">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal">
                 {t("Nouveau Mot de passe")}
               </label>
               <input
@@ -173,20 +173,20 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-5 py-3.5 bg-transparent border border-slate-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-slate-500 transition-all text-slate-700"
+                className="w-full px-5 py-3.5 bg-transparent border border-zinc-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-zinc-500 transition-all text-zinc-700"
                 placeholder={t("Minimum 6 caractères") || "Minimum 6 caractères"}
               />
               <button
                 type="button"
                 onClick={() => setShowPassToggle(!showPassToggle)}
-                className="absolute end-4 top-[38px] text-slate-400 hover:text-slate-600 p-1"
+                className="absolute end-4 top-[38px] text-zinc-400 hover:text-zinc-600 p-1"
               >
                 {showPassToggle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-400 uppercase tracking-wider rtl:tracking-normal font-sans">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal font-sans">
                 {t("Confirmer le Mot de passe")}
               </label>
               <input
@@ -194,7 +194,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-5 py-3.5 bg-transparent border border-slate-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-slate-500 transition-all text-slate-700"
+                className="w-full px-5 py-3.5 bg-transparent border border-zinc-100 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:bg-white focus:border-zinc-500 transition-all text-zinc-700"
                 placeholder={t("Répétez le nouveau mot de passe") || "Répétez le nouveau mot de passe"}
               />
             </div>
@@ -203,7 +203,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser 
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-sans font-bold text-[10px] rtl:text-[12px] uppercase tracking-widest rtl:tracking-normal transition-all focus:scale-95 text-center min-h-[44px]"
+              className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl font-sans font-bold text-[10px] rtl:text-[12px] uppercase tracking-widest rtl:tracking-normal transition-all focus:scale-95 text-center min-h-[44px]"
             >
               {t("Changer mon mot de passe")}
             </button>

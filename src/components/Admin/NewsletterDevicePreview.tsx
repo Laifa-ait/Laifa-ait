@@ -52,7 +52,7 @@ export const NewsletterDevicePreview: React.FC<NewsletterDevicePreviewProps> = (
 
               <div className="flex items-center gap-4">
                 {/* View device toggle */}
-                <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200">
+                <div className="flex bg-zinc-100 p-1 rounded-2xl border border-zinc-200">
                   <button
                     type="button"
                     onClick={() => setView("desktop")}
@@ -157,7 +157,7 @@ export const NewsletterDevicePreview: React.FC<NewsletterDevicePreviewProps> = (
                           </div>
                         )}
                         {b.type === "product" && b.productImage && (
-                          <div className="bg-white border border-zinc-100 rounded-3xl p-4 shadow-sm hover:shadow-md max-w-sm mx-auto text-start">
+                          <div className="bg-white border border-zinc-100 rounded-2xl p-4 shadow-sm hover:shadow-md max-w-sm mx-auto text-start">
                             <div className="aspect-square bg-zinc-50 rounded-2xl overflow-hidden relative border border-zinc-100 mb-4 animate-opacity">
                               <img
                                 loading="lazy"
@@ -179,7 +179,7 @@ export const NewsletterDevicePreview: React.FC<NewsletterDevicePreviewProps> = (
                               <span className="text-xs font-mono font-sans font-bold text-orange-600">
                                 {formatPrice(b.productPrice || 0)}
                               </span>
-                              <span className="text-[9px] font-sans font-bold text-white bg-orange-600 px-3.5 py-1.5 rounded-xl uppercase tracking-wider rtl:tracking-normal transition-all hover:bg-orange-700 shadow-md shadow-orange-500/10 cursor-pointer">
+                              <span className="text-[9px] font-sans font-bold text-white bg-orange-600 px-3.5 py-1.5 rounded-2xl uppercase tracking-wider rtl:tracking-normal transition-all hover:bg-orange-700 shadow-md shadow-orange-500/10 cursor-pointer">
                                 {t("Acheter")}
                               </span>
                             </div>

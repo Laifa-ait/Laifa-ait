@@ -43,7 +43,7 @@ export const CurationMobilePreview: React.FC<CurationMobilePreviewProps> = ({
               <span>12:45</span>
               <div className="flex items-center gap-1.5">
                 <span>5G</span>
-                <div className="w-4 h-2 bg-zinc-400 rounded-sm" />
+                <div className="w-4 h-2 bg-zinc-400 rounded-lg" />
               </div>
             </div>
 
@@ -106,20 +106,20 @@ export const CurationMobilePreview: React.FC<CurationMobilePreviewProps> = ({
                 </h3>
 
                 <div className="flex flex-wrap gap-1">
-                  <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded-md">
+                  <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded-lg">
                     {t("Authentique")}
                   </span>
-                  <span className="bg-amber-50 text-amber-700 text-[8px] font-bold px-1.5 py-0.5 rounded-md">
+                  <span className="bg-amber-50 text-amber-700 text-[8px] font-bold px-1.5 py-0.5 rounded-lg">
                     {t("Garantie Qualité")}
                   </span>
                   {target.freeShipping && (
-                    <span className="bg-orange-50 text-[#ea580c] text-[8px] font-bold px-1.5 py-0.5 rounded-md">
+                    <span className="bg-orange-50 text-[#ea580c] text-[8px] font-bold px-1.5 py-0.5 rounded-lg">
                       {t("Livraison Gratuite")}
                     </span>
                   )}
                 </div>
 
-                <div className="bg-white p-2.5 rounded-xl border border-zinc-100 flex items-center justify-between">
+                <div className="bg-white p-2.5 rounded-2xl border border-zinc-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-[10px] font-bold text-zinc-500 border border-zinc-200">
                       {(target.sellerName || "P")[0]}
@@ -133,12 +133,12 @@ export const CurationMobilePreview: React.FC<CurationMobilePreviewProps> = ({
                       </p>
                     </div>
                   </div>
-                  <span className="text-[8px] font-sans font-bold bg-transparent text-zinc-600 border border-zinc-200/60 px-2 py-0.5 rounded-md">
+                  <span className="text-[8px] font-sans font-bold bg-transparent text-zinc-600 border border-zinc-200/60 px-2 py-0.5 rounded-lg">
                     {t("Visiter")}
                   </span>
                 </div>
 
-                <div className="bg-amber-50/40 border border-amber-100 p-2.5 rounded-xl space-y-1.5">
+                <div className="bg-amber-50/40 border border-amber-100 p-2.5 rounded-2xl space-y-1.5">
                   <h4 className="text-[8px] font-sans font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1">
                     <Truck className="w-3 h-3 text-[#ea580c]" />
                     {t("Logistique & Expédition Algérie")}
@@ -163,7 +163,7 @@ export const CurationMobilePreview: React.FC<CurationMobilePreviewProps> = ({
               <button className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-500 bg-transparent cursor-pointer">
                 <MessageCircle className="w-4 h-4" />
               </button>
-              <button className="flex-1 ms-2 py-2 bg-[#ea580c] text-white text-[9px] font-sans font-bold uppercase tracking-widest rounded-xl border-none cursor-pointer text-center">
+              <button className="flex-1 ms-2 py-2 bg-[#ea580c] text-white text-[9px] font-sans font-bold uppercase tracking-widest rounded-2xl border-none cursor-pointer text-center">
                 {t("Ajouter au panier")}
               </button>
             </div>

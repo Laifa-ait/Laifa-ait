@@ -62,14 +62,14 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
   return (
     <section className="mb-6 sm:mb-8 relative z-20">
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8">
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 sm:p-6 lg:p-8 relative">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 p-5 sm:p-6 lg:p-8 relative">
 
         {/* Elegant Design Header with Overline and Bold Main Title */}
         <div className="flex flex-col items-center mb-6 sm:mb-10 text-center relative z-10 px-4 sm:px-6 lg:px-8">
-          <span className="text-[10px] sm:text-[11px] font-sans font-semibold text-slate-500 uppercase tracking-[0.25em] mb-3 select-none">
+          <span className="text-[10px] sm:text-[11px] font-sans font-semibold text-zinc-500 uppercase tracking-[0.25em] mb-3 select-none">
             {t("home.shops.community_badge")}
           </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold text-slate-900 tracking-tight leading-[1.1]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold text-zinc-900 tracking-tight leading-[1.1]">
             {t("home.shops.title")}
           </h2>
         </div>
@@ -79,7 +79,7 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
           {/* Left Navigation Arrow */}
           <button
             onClick={() => scroll("left")}
-            className="hidden lg:flex absolute left-4 sm:left-6 lg:left-10 top-[40%] -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-600 hover:bg-transparent hover:text-slate-900 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+            className="hidden lg:flex absolute left-4 sm:left-6 lg:left-10 top-[40%] -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-zinc-200/90 text-zinc-600 hover:bg-transparent hover:text-zinc-900 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer opacity-0 group-hover/carousel:opacity-100"
             aria-label={t("Voir la boutique précédente")}
           >
             <ChevronLeft className="w-5 h-5 stroke-[2]" />
@@ -94,13 +94,13 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
               ? [...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="min-w-[280px] sm:min-w-[320px] max-w-[360px] h-[340px] bg-transparent rounded-3xl border border-slate-100 shadow-sm animate-pulse flex flex-col overflow-hidden"
+                    className="min-w-[280px] sm:min-w-[320px] max-w-[360px] h-[340px] bg-transparent rounded-2xl border border-zinc-100 shadow-sm animate-pulse flex flex-col overflow-hidden"
                   >
-                    <div className="h-32 sm:h-36 bg-slate-200" />
+                    <div className="h-32 sm:h-36 bg-zinc-200" />
                     <div className="p-5 pt-12 flex-1 flex flex-col gap-3">
-                      <div className="h-4 bg-slate-200 rounded w-2/3" />
-                      <div className="h-3 bg-slate-100 rounded w-1/2" />
-                      <div className="mt-auto h-11 bg-slate-200 rounded-full" />
+                      <div className="h-4 bg-zinc-200 rounded w-2/3" />
+                      <div className="h-3 bg-zinc-100 rounded w-1/2" />
+                      <div className="mt-auto h-11 bg-zinc-200 rounded-full" />
                     </div>
                   </div>
                 ))
@@ -114,11 +114,11 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
                   return (
                     <div
                       key={`${seller.id}-${index}`}
-                      className="min-w-[240px] sm:min-w-[300px] max-w-[240px] sm:max-w-[300px] snap-start snap-always bg-transparent rounded-3xl overflow-hidden border border-slate-100/60 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-1 flex flex-col relative group"
+                      className="min-w-[240px] sm:min-w-[300px] max-w-[240px] sm:max-w-[300px] snap-start snap-always bg-transparent rounded-2xl overflow-hidden border border-zinc-100/60 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-1 flex flex-col relative group"
                     >
                       {/* Cover Photo */}
-                      <div className="h-28 sm:h-32 w-full overflow-hidden relative bg-slate-100">
-                        <div className="absolute inset-0 bg-slate-900/10 mix-blend-multiply group-hover:bg-transparent transition-colors duration-500 z-10" />
+                      <div className="h-28 sm:h-32 w-full overflow-hidden relative bg-zinc-100">
+                        <div className="absolute inset-0 bg-zinc-900/10 mix-blend-multiply group-hover:bg-transparent transition-colors duration-500 z-10" />
                         <OptimizedImage
                           src={coverImage}
                           alt={seller.shopName || "Banner"}
@@ -128,7 +128,7 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
 
                       {/* Circular Verified Overlap Avatar */}
                       <div className="absolute top-[80px] sm:top-[96px] left-5 sm:left-6 z-20">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-slate-50 shadow-sm overflow-hidden bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-1">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-zinc-50 shadow-sm overflow-hidden bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-1">
                           <OptimizedImage
                             src={avatarImage}
                             alt={seller.shopName || "Avatar"}
@@ -142,15 +142,15 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
                         <div className="mb-5">
                           {/* Shop Name & Checked Verified */}
                           <div className="flex items-center gap-2 mb-1.5">
-                            <h3 className="font-sans font-bold text-slate-900 text-base sm:text-lg tracking-tight truncate max-w-[85%]">
+                            <h3 className="font-sans font-bold text-zinc-900 text-base sm:text-lg tracking-tight truncate max-w-[85%]">
                               {seller.shopName}
                             </h3>
                             <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 fill-blue-50 shrink-0" />
                           </div>
 
                           {/* Wilaya Geo Tag */}
-                          <div className="flex items-center gap-1.5 text-slate-500 mt-1">
-                            <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-500" />
+                          <div className="flex items-center gap-1.5 text-zinc-500 mt-1">
+                            <MapPin className="w-3.5 h-3.5 shrink-0 text-zinc-500" />
                             <span className="text-[11px] sm:text-xs font-medium tracking-wide uppercase truncate">
                               {formatLocation(seller.wilaya)}
                             </span>
@@ -163,7 +163,7 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
                             e.stopPropagation();
                             navigate(`/store/${seller.id}`);
                           }}
-                          className="w-full py-3 bg-white hover:bg-slate-900 text-slate-800 hover:text-white border border-slate-200 text-xs sm:text-sm font-sans font-semibold rounded-full transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer flex items-center justify-center gap-2 group/btn"
+                          className="w-full py-3 bg-white hover:bg-zinc-900 text-zinc-800 hover:text-white border border-zinc-200 text-xs sm:text-sm font-sans font-semibold rounded-full transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer flex items-center justify-center gap-2 group/btn"
                         >
                           <span>{t("home.shops.visit_boutique")}</span>
                           <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
@@ -177,7 +177,7 @@ export const BoutiquesMarques: React.FC<BoutiquesMarquesProps> = ({ sellers, isL
           {/* Right Navigation Arrow */}
           <button
             onClick={() => scroll("right")}
-            className="hidden lg:flex absolute right-4 sm:right-6 lg:right-10 top-[40%] -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-600 hover:bg-transparent hover:text-slate-900 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+            className="hidden lg:flex absolute right-4 sm:right-6 lg:right-10 top-[40%] -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-zinc-200/90 text-zinc-600 hover:bg-transparent hover:text-zinc-900 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.05)] active:scale-95 cursor-pointer opacity-0 group-hover/carousel:opacity-100"
             aria-label={t("Voir la boutique suivante")}
           >
             <ChevronRight className="w-5 h-5 stroke-[2]" />

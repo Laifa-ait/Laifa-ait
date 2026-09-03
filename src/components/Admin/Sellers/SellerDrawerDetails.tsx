@@ -180,7 +180,7 @@ export const SellerDrawerDetails: React.FC<{
                       </button>
                     </div>
                     {ocrResult && (
-                      <div className="mt-2 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-2">
+                      <div className="mt-2 p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl space-y-2">
                         <p className="text-[10px] font-bold text-indigo-800 uppercase tracking-widest">
                           {t("Résultats de l'analyse OCR")}
                         </p>

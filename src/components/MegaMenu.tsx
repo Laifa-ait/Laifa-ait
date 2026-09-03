@@ -102,7 +102,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
         borderBottomWidth: isVisible ? "1px" : "0px",
       }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative w-full z-40 bg-white border-slate-100 text-slate-900 font-sans hidden xl:block shadow-sm ${
+      className={`relative w-full z-40 bg-white border-zinc-100 text-zinc-900 font-sans hidden xl:block shadow-sm ${
         activeCategory ? "overflow-visible" : "overflow-hidden"
       }`}
     >
@@ -119,7 +119,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
                   className={`py-3 transition-colors cursor-pointer border-none bg-transparent flex items-center justify-center px-1`}
                 >
                   <span
-                    className={`flex flex-col items-center justify-center gap-1 ${activeCategory === category.id ? "text-orange-600" : "text-slate-600 hover:text-orange-600"}`}
+                    className={`flex flex-col items-center justify-center gap-1 ${activeCategory === category.id ? "text-orange-600" : "text-zinc-600 hover:text-orange-600"}`}
                     title={t(category.name) || category.name}
                   >
                     {category.iconUrl ? (
@@ -152,13 +152,13 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-full start-0 w-full bg-white text-black border-t border-slate-200 shadow-2xl z-50"
+            className="absolute top-full start-0 w-full bg-white text-black border-t border-zinc-200 shadow-2xl z-50"
           >
             <div className="w-full max-w-[1600px] mx-auto px-6 py-10">
               <div className="grid grid-cols-12 gap-12">
                 {/* 1ère Colonne : Liste des sous-catégories (Sections) */}
                 <div className="col-span-3 pe-4">
-                  <h3 className="text-xl font-display italic tracking-[0.1em] rtl:tracking-normal text-slate-900 mb-6 uppercase">
+                  <h3 className="text-xl font-display italic tracking-[0.1em] rtl:tracking-normal text-zinc-900 mb-6 uppercase">
                     {t("sub_categories") || "Sous-catégories"}
                   </h3>
                   <ul className="flex flex-col gap-1">
@@ -247,7 +247,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
                         <Link
                           to={`/product/${productToDisplay.id}`}
                           onClick={() => setActiveCategory(null)}
-                          className="group flex flex-col relative w-full aspect-[4/5] bg-zinc-50 overflow-hidden rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500"
+                          className="group flex flex-col relative w-full aspect-[4/5] bg-zinc-50 overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500"
                         >
                           <OptimizedImage
                             src={productToDisplay.images?.[0] || productToDisplay.image}

@@ -102,7 +102,7 @@ export const AdminInternalNotifications: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2.5 rounded-xl transition-all relative border bg-zinc-900 border-white/10 hover:bg-zinc-800 cursor-pointer ${
+        className={`p-2.5 rounded-2xl transition-all relative border bg-zinc-900 border-white/10 hover:bg-zinc-800 cursor-pointer ${
           unreadCount > 0 ? "text-[#ea580c]" : "text-zinc-400"
         }`}
       >
@@ -110,7 +110,7 @@ export const AdminInternalNotifications: React.FC = () => {
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-[#ea580c] text-[9px] rtl:text-[11px] font-sans font-bold items-center justify-center text-white">
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-[#ea580c] text-xs rtl:text-xs font-sans font-bold items-center justify-center text-white">
               {unreadCount}
             </span>
           </span>
@@ -130,14 +130,14 @@ export const AdminInternalNotifications: React.FC = () => {
                 <h4 className="font-sans font-bold text-white text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal">
                   {t("Alertes Internes")}
                 </h4>
-                <p className="text-[9px] rtl:text-[11px] font-bold text-zinc-500 uppercase tracking-widest rtl:tracking-normal mt-0.5">
+                <p className="text-xs rtl:text-xs font-bold text-zinc-500 uppercase tracking-widest rtl:tracking-normal mt-0.5">
                   {t("Validation SÉCURISÉE")}
                 </p>
               </div>
               {unreadCount > 0 && (
                 <button
                   onClick={clearAll}
-                  className="text-[9px] rtl:text-[11px] font-sans font-bold uppercase text-zinc-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
+                  className="text-xs rtl:text-xs font-sans font-bold uppercase text-zinc-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
                 >
                   {t("Tout lire")}
                 </button>
@@ -148,7 +148,7 @@ export const AdminInternalNotifications: React.FC = () => {
               {notifications.length === 0 ? (
                 <div className="p-10 text-center space-y-3">
                   <ShieldAlert className="w-8 h-8 text-zinc-700 mx-auto" />
-                  <p className="text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-zinc-600">
+                  <p className="text-xs rtl:text-xs font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-zinc-600">
                     {t("Aucune tâche en attente")}
                   </p>
                 </div>
@@ -161,7 +161,7 @@ export const AdminInternalNotifications: React.FC = () => {
                       item.read ? "bg-transparent opacity-60" : "bg-white/5"
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center shrink-0">
                       {getIcon(item.type)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -169,13 +169,13 @@ export const AdminInternalNotifications: React.FC = () => {
                         <p className="text-xs rtl:text-sm font-sans font-bold text-white leading-tight truncate pr-4">
                           {item.sellerName || "Système Admin"}
                         </p>
-                        <span className="text-[8px] font-bold text-zinc-600 uppercase shrink-0">
+                        <span className="text-xs font-bold text-zinc-600 uppercase shrink-0">
                           {item.createdAt
                             ? normalizeTimestamp(item.createdAt).toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                             : "Récemment"}
                         </span>
                       </div>
-                      <p className="text-[11px] text-zinc-400 font-medium leading-relaxed line-clamp-2">
+                      <p className="text-xs text-zinc-400 font-medium leading-relaxed line-clamp-2">
                         {item.message}
                       </p>
                     </div>
@@ -188,7 +188,7 @@ export const AdminInternalNotifications: React.FC = () => {
             <div className="p-4 border-t border-white/10 bg-zinc-900/50 text-center">
               <button
                 onClick={() => navigate("/dashboard/admin/sellers")}
-                className="text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-[#ea580c] hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+                className="text-xs rtl:text-xs font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-[#ea580c] hover:text-white transition-colors bg-transparent border-none cursor-pointer"
               >
                 {t("Voir tous les vendeurs")}
               </button>

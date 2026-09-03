@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "prepare": "test -d .git && husky || true",
+    "prepare": "node -e \"try { if (require('fs').existsSync('.git')) { const { execSync } = require('child_process'); execSync('npx husky', { stdio: 'ignore' }); } } catch(e) {}\"",
     "build:client": "vite build",
     "build:server": "esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
@@ -25,8 +25,7 @@
     "check:translations": "tsx scripts/check-seller-translations.ts",
     "seed:real-estate": "tsx scripts/seed-real-estate.ts",
     "validate:assets": "node scripts/validate-assets.mjs",
-    "audit:ci": "npm ci && npm audit --omit=dev --audit-level=high",
-    "preinstall": "node -e \"if(process.env.npm_execpath && !process.env.npm_execpath.includes(\\\"npm\\\") && !process.env.npm_execpath.includes(\\\"bun\\\")) { console.error(\\\"❌ OLMART: Please use npm or bun to install dependencies\\\"); process.exit(1); }\""
+    "audit:ci": "npm ci && npm audit --omit=dev --audit-level=high"
   },
   "packageManager": "npm@10.9.4",
   "lint-staged": {

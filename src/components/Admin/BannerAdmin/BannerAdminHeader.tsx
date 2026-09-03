@@ -20,7 +20,7 @@ export const BannerAdminHeader: React.FC<BannerAdminHeaderProps> = ({
       {/* Header section with brand accent colors */}
       <div id="banner-admin-header-card" className="bg-white p-6 sm:p-8 rounded-[2rem] border border-zinc-100 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-start">
         <div id="banner-admin-header-info">
-          <span className="text-[10px] font-sans font-black text-orange-600 uppercase tracking-[0.2em] block">
+          <span className="text-xs font-sans font-black text-orange-600 uppercase tracking-[0.2em] block">
             {t("OLMART PREMIER ACCUEIL")}
           </span>
           <h2 className="text-2xl font-black text-zinc-950 uppercase tracking-tight mt-1">
@@ -35,7 +35,7 @@ export const BannerAdminHeader: React.FC<BannerAdminHeaderProps> = ({
           <button
             id="btn-add-banner-header"
             onClick={() => handleOpenBannerModal()}
-            className="h-12 px-6 bg-zinc-950 text-white rounded-xl hover:bg-zinc-850 font-sans font-extrabold text-xs uppercase tracking-widest transition-all shadow-md select-none cursor-pointer flex items-center gap-2 border-none"
+            className="h-12 px-6 bg-zinc-950 text-white rounded-2xl hover:bg-zinc-850 font-sans font-extrabold text-xs uppercase tracking-widest transition-all shadow-md select-none cursor-pointer flex items-center gap-2 border-none"
           >
             <Plus className="w-4.5 h-4.5" />
             <span>{t("Créer une Bannière")}</span>

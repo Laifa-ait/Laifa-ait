@@ -120,7 +120,7 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
-        <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-[#faf8f5] border-l border-[#e8e2d4] text-slate-800 flex flex-col h-full shadow-2xl z-10">
+        <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-[#faf8f5] border-l border-[#e8e2d4] text-zinc-800 flex flex-col h-full shadow-2xl z-10">
           <UnifiedMessagingHeader
             selectedConversation={selectedConversation}
             onBack={() => setSelectedConversation(null)}
@@ -181,7 +181,7 @@ export const UnifiedMessagingDrawer: React.FC<UnifiedMessagingDrawerProps> = ({
                     </div>
                   )}
                   {loadingMessages ? (
-                    <div className="flex items-center justify-center p-8 text-slate-400"><Loader2 className="w-6 h-6 animate-spin text-[#1e3835]" /></div>
+                    <div className="flex items-center justify-center p-8 text-zinc-400"><Loader2 className="w-6 h-6 animate-spin text-[#1e3835]" /></div>
                   ) : (
                     messages.map((msg) => <MessageBubble key={msg.id} msg={msg} isMe={msg.senderId === currentUser?.uid} onReport={(id) => setReportingMessageId(id)} />)
                   )}

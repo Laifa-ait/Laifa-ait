@@ -129,7 +129,7 @@ export const MonthlyUpdateBanner: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             >
               <div className="flex items-center justify-between p-6 border-b border-zinc-100">
                 <h2 className="text-2xl font-sans font-bold text-zinc-900 flex items-center gap-3">

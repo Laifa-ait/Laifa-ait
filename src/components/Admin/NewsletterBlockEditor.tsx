@@ -31,7 +31,7 @@ export const NewsletterBlockEditor: React.FC<NewsletterBlockEditorProps> = ({
       <div className="absolute -start-4 -top-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <button
           onClick={() => removeBlock(b.id)}
-          className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-md border border-red-100"
+          className="p-2 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-md border border-red-100"
           title={t("Supprimer ce bloc") || "Supprimer ce bloc"}
         >
           <Trash2 className="w-4 h-4" />
@@ -56,7 +56,7 @@ export const NewsletterBlockEditor: React.FC<NewsletterBlockEditorProps> = ({
                   key={w}
                   type="button"
                   onClick={() => updateBlockProperty(b.id, "width", w.toString())}
-                  className={`flex-1 py-1 rounded-md font-black text-[9px] uppercase tracking-wider rtl:tracking-normal transition-all ${(b.width || "100") == w.toString() ? "bg-zinc-950 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
+                  className={`flex-1 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider rtl:tracking-normal transition-all ${(b.width || "100") == w.toString() ? "bg-zinc-950 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
                 >
                   {w}%
                 </button>
@@ -88,7 +88,7 @@ export const NewsletterBlockEditor: React.FC<NewsletterBlockEditorProps> = ({
                   key={w}
                   type="button"
                   onClick={() => updateBlockProperty(b.id, "width", w.toString())}
-                  className={`flex-1 py-1 rounded-md font-black text-[9px] uppercase tracking-wider rtl:tracking-normal transition-all ${(b.width || "100") == w.toString() ? "bg-zinc-950 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
+                  className={`flex-1 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider rtl:tracking-normal transition-all ${(b.width || "100") == w.toString() ? "bg-zinc-950 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
                 >
                   {w}%
                 </button>

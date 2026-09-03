@@ -55,25 +55,25 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
   return (
     <div className="space-y-8" id="profile-settings-module">
       <div>
-        <h3 className="font-bold text-xl text-slate-900 tracking-tight rtl:tracking-normal">
+        <h3 className="font-bold text-xl text-zinc-900 tracking-tight rtl:tracking-normal">
           {t("Paramètres du Compte")}
         </h3>
-        <p className="text-slate-500 text-xs rtl:text-sm">
+        <p className="text-zinc-500 text-xs rtl:text-sm">
           {t("Ajustez vos informations d'identité et de communication.")}
         </p>
       </div>
 
       <form
         onSubmit={handleSaveProfile}
-        className="bg-white border border-slate-100 rounded-3xl p-8 space-y-8 shadow-sm"
+        className="bg-white border border-zinc-100 rounded-2xl p-8 space-y-8 shadow-sm"
       >
         {/* Avatar Selectors */}
         <div className="space-y-4">
-          <label className="text-[10px] rtl:text-[12px] font-bold text-slate-500 uppercase tracking-wider rtl:tracking-normal block leading-none">
+          <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-500 uppercase tracking-wider rtl:tracking-normal block leading-none">
             {t("Photo de profil / Avatar")}
           </label>
           <div className="flex flex-wrap items-center gap-6">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-slate-50 shadow-inner relative group shrink-0">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-zinc-50 shadow-inner relative group shrink-0">
               <OptimizedImage
                 src={photoURL || defaultAvatar}
                 alt={t("current avatar") || "current avatar"}
@@ -82,7 +82,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
             </div>
 
             <div className="flex-1 space-y-3 min-w-[200px]">
-              <p className="text-xs rtl:text-sm text-slate-500 font-medium">
+              <p className="text-xs rtl:text-sm text-zinc-500 font-medium">
                 {t("Sélectionnez l'un de nos avatars vintage Premium des années 60/70 faits main :")}
               </p>
               <div className="flex gap-3 flex-wrap">
@@ -91,9 +91,9 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
                     key={idx}
                     type="button"
                     onClick={() => setPhotoURL(src)}
-                    className={`w-10 h-10 rounded-xl overflow-hidden border-2 transition-all relative ${
+                    className={`w-10 h-10 rounded-2xl overflow-hidden border-2 transition-all relative ${
                       photoURL === src
-                        ? "border-slate-900 ring-4 ring-slate-100 scale-95"
+                        ? "border-zinc-900 ring-4 ring-zinc-100 scale-95"
                         : "border-transparent hover:scale-105"
                     }`}
                   >
@@ -103,7 +103,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
                       className="w-full h-full object-cover"
                     />
                     {photoURL === src && (
-                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-zinc-900/40 flex items-center justify-center">
                         <Check className="w-4 h-4 text-white font-heavy" />
                       </div>
                     )}
@@ -117,33 +117,33 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
         {/* Form Inputs Grid */}
         <div className="grid sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] rtl:text-[12px] font-bold text-slate-500 uppercase tracking-wider rtl:tracking-normal block leading-none">
+            <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-500 uppercase tracking-wider rtl:tracking-normal block leading-none">
               {t("Nom complet")}
             </label>
             <div className="relative">
-              <User className="absolute start-5 top-1/2 -translate-y-1/2 w-4 py-1.5 h-auto text-slate-300 pointer-events-none" />
+              <User className="absolute start-5 top-1/2 -translate-y-1/2 w-4 py-1.5 h-auto text-zinc-300 pointer-events-none" />
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full ps-12 pe-6 py-4 bg-transparent border border-slate-100 rounded-2xl outline-none font-bold text-xs rtl:text-sm focus:ring-4 focus:ring-slate-100 focus:bg-white transition-all text-slate-800"
+                className="w-full ps-12 pe-6 py-4 bg-transparent border border-zinc-100 rounded-2xl outline-none font-bold text-xs rtl:text-sm focus:ring-4 focus:ring-zinc-100 focus:bg-white transition-all text-zinc-800"
                 placeholder={t("Ex: Selma Laifa") || "Ex: Selma Laifa"}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] rtl:text-[12px] font-bold text-slate-500 uppercase tracking-wider rtl:tracking-normal block leading-none font-sans">
+            <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-500 uppercase tracking-wider rtl:tracking-normal block leading-none font-sans">
               {t("Numéro de téléphone")}
             </label>
             <div className="relative">
-              <Phone className="absolute start-5 top-1/2 -translate-y-1/2 w-4 py-1.5 h-auto text-slate-300 pointer-events-none" />
+              <Phone className="absolute start-5 top-1/2 -translate-y-1/2 w-4 py-1.5 h-auto text-zinc-300 pointer-events-none" />
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full ps-12 pe-6 py-4 bg-transparent border border-slate-100 rounded-2xl outline-none font-bold text-xs rtl:text-sm focus:ring-4 focus:ring-slate-100 focus:bg-white transition-all text-slate-800"
+                className="w-full ps-12 pe-6 py-4 bg-transparent border border-zinc-100 rounded-2xl outline-none font-bold text-xs rtl:text-sm focus:ring-4 focus:ring-zinc-100 focus:bg-white transition-all text-zinc-800"
                 placeholder={t("Ex: 0550 12 34 56") || "Ex: 0550 12 34 56"}
               />
             </div>
@@ -151,11 +151,11 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser, u
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end pt-4 border-t border-slate-50">
+        <div className="flex justify-end pt-4 border-t border-zinc-50">
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-8 py-3.5 bg-slate-900 text-white hover:bg-slate-800 font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal rounded-xl transition-all shadow-md shadow-slate-100 active:scale-95 disabled:opacity-50 min-h-[44px]"
+            className="flex items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white hover:bg-zinc-800 font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal rounded-2xl transition-all shadow-md shadow-zinc-100 active:scale-95 disabled:opacity-50 min-h-[44px]"
           >
             {saving ? (
               <RefreshCw className="w-4 h-4 animate-spin text-white" />

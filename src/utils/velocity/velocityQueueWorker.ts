@@ -27,6 +27,10 @@ export async function processVelocityJob(sellerId: string): Promise<void> {
  * and schedules processing on setImmediate without blocking the HTTP response thread.
  */
 export function enqueueSellerVelocityCheck(sellerId: string): void {
+  if (!db || !admin || !admin.apps || admin.apps.length === 0) {
+    safeLogger.warn("Skipping enqueueSellerVelocityCheck: Firebase Admin / db is not ready");
+    return;
+  }
   // 1. Write job to durable Firestore queue asynchronously
   db.collection("velocity_jobs").doc(sellerId).set({
     sellerId,
@@ -47,6 +51,9 @@ export function enqueueSellerVelocityCheck(sellerId: string): void {
 }
 
 export async function reconcileVelocityJobs(): Promise<void> {
+  if (!db || !admin || !admin.apps || admin.apps.length === 0) {
+    return;
+  }
   try {
     const pendingJobsSnap = await db.collection("velocity_jobs")
       .where("status", "==", "pending")

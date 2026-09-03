@@ -217,36 +217,36 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
       {/* Dynamic Header & Gen-Z Tabs */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-sans font-bold text-slate-900 tracking-tighter rtl:tracking-normal uppercase">
+          <h2 className="text-3xl font-sans font-bold text-zinc-900 tracking-tighter rtl:tracking-normal uppercase">
             {t("Réseau Vendeurs")}
           </h2>
-          <p className="text-slate-500 font-medium text-sm">
+          <p className="text-zinc-500 font-medium text-sm">
             {t("Suivez vos favoris et explorez les pépites des 58 Wilayas.")}
           </p>
         </div>
 
         {/* Gen Z Light Dual Tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/40 w-fit shrink-0 self-start">
+        <div className="flex bg-zinc-100 p-1 rounded-2xl border border-zinc-200/40 w-fit shrink-0 self-start">
           <button
             onClick={() => setActiveTab("followed")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 ${
-              activeTab === "followed" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 ${
+              activeTab === "followed" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
             }`}
           >
             <UserCheck className="w-4 h-4" />
             {t("Abonnements")}
-            <span className="ms-1.5 px-2 py-0.5 text-[10px] rtl:text-[12px] bg-slate-900 text-white rounded-full font-sans font-bold">
+            <span className="ms-1.5 px-2 py-0.5 text-[10px] rtl:text-[12px] bg-zinc-900 text-white rounded-full font-sans font-bold">
               {stores.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("explore")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 relative ${
-              activeTab === "explore" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 relative ${
+              activeTab === "explore" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
             }`}
           >
-            <Sparkles className="w-4 h-4 text-slate-500" />
+            <Sparkles className="w-4 h-4 text-zinc-500" />
             {t("Explorer")}
             <span className="absolute -top-1.5 -right-1 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -265,25 +265,25 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
           loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-28 bg-transparent rounded-2xl animate-pulse border border-slate-200/60" />
+                <div key={i} className="h-28 bg-transparent rounded-2xl animate-pulse border border-zinc-200/60" />
               ))}
             </div>
           ) : stores.length === 0 ? (
-            <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center bg-transparent border border-slate-200/50 rounded-3xl">
-              <div className="w-20 h-20 bg-white border border-slate-200 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                <Store className="w-8 h-8 text-slate-300" />
+            <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center bg-transparent border border-zinc-200/50 rounded-2xl">
+              <div className="w-20 h-20 bg-white border border-zinc-200 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                <Store className="w-8 h-8 text-zinc-300" />
               </div>
-              <h3 className="text-xl font-sans font-bold text-slate-900 mb-2 tracking-tight rtl:tracking-normal">
+              <h3 className="text-xl font-sans font-bold text-zinc-900 mb-2 tracking-tight rtl:tracking-normal">
                 {t("Aucun abonnement existant")}
               </h3>
-              <p className="text-slate-500 font-medium max-w-sm mb-8 leading-relaxed text-sm">
+              <p className="text-zinc-500 font-medium max-w-sm mb-8 leading-relaxed text-sm">
                 {t(
                   "Abonnez-vous à nos créateurs locaux pour être notifié instantanément de leurs derniers produits & bons plans locaux."
                 )}
               </p>
               <button
                 onClick={() => setActiveTab("explore")}
-                className="px-6 py-3.5 bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-sans font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal transition-all shadow-md shadow-slate-900/10 flex items-center gap-2 scale-100 hover:scale-[1.02] active:scale-95"
+                className="px-6 py-3.5 bg-zinc-900 text-white hover:bg-zinc-800 rounded-2xl font-sans font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal transition-all shadow-md shadow-zinc-900/10 flex items-center gap-2 scale-100 hover:scale-[1.02] active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-orange-300" />
                 {t("Découvrir des pépites")}
@@ -295,14 +295,14 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                 return (
                   <div
                     key={store.id}
-                    className="border border-slate-200/60 rounded-2xl p-5 flex gap-4 hover:border-slate-400 hover:shadow-md transition-all bg-white relative group"
+                    className="border border-zinc-200/60 rounded-2xl p-5 flex gap-4 hover:border-zinc-400 hover:shadow-md transition-all bg-white relative group"
                   >
-                    <div className="absolute top-4 right-4 text-[10px] rtl:text-[12px] font-bold text-slate-400 font-mono uppercase">
+                    <div className="absolute top-4 right-4 text-[10px] rtl:text-[12px] font-bold text-zinc-400 font-mono uppercase">
                       {t("VIP")}
                     </div>
 
                     {/* Shop Avatar */}
-                    <div className="w-16 h-16 rounded-full bg-transparent border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
+                    <div className="w-16 h-16 rounded-full bg-transparent border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                       {store.logo ? (
                         <img
                           loading="lazy"
@@ -311,7 +311,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <Store className="w-6 h-6 text-slate-400" />
+                        <Store className="w-6 h-6 text-zinc-400" />
                       )}
                       <span
                         className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"
@@ -321,25 +321,25 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-sans font-bold text-slate-900 truncate text-base leading-tight group-hover:text-slate-600 transition-colors">
+                      <h4 className="font-sans font-bold text-zinc-900 truncate text-base leading-tight group-hover:text-zinc-600 transition-colors">
                         {store.name}
                       </h4>
-                      <p className="text-xs rtl:text-sm font-bold text-slate-400 uppercase tracking-wider rtl:tracking-normal flex items-center gap-1.5 mt-1 mb-3">
-                        <MapPin className="w-3 h-3 text-slate-500" />
+                      <p className="text-xs rtl:text-sm font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal flex items-center gap-1.5 mt-1 mb-3">
+                        <MapPin className="w-3 h-3 text-zinc-500" />
                         {store.location}
                       </p>
 
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(`/store/${store.sellerId}`)}
-                          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal transition-all"
+                          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal transition-all"
                         >
                           {t("Visiter la vitrine")}
                         </button>
                         <button
                           onClick={() => triggerUnfollow(store)}
                           disabled={actionLoadingId === store.sellerId}
-                          className="p-2 text-slate-400 hover:text-red-500 bg-transparent hover:bg-red-50 border border-slate-100 rounded-xl transition-all"
+                          className="p-2 text-zinc-400 hover:text-red-500 bg-transparent hover:bg-red-50 border border-zinc-100 rounded-2xl transition-all"
                           title={t("Ne plus suivre") || "Ne plus suivre"}
                         >
                           <UserMinus className="w-4 h-4" />
@@ -357,10 +357,10 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
              ======================================================= */
           <div className="space-y-6">
             {/* Filters Bar Context (Premium Search & Horizon Wilaya slider) */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/60 shadow-sm space-y-4">
+            <div className="bg-white p-5 rounded-2xl border border-zinc-200/60 shadow-sm space-y-4">
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+                  <Search className="w-4 h-4 text-zinc-400 absolute left-4 top-3.5" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -369,12 +369,12 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                       t("Rechercher une marque, une friperie ou un artisan...") ||
                       "Rechercher une marque, une friperie ou un artisan..."
                     }
-                    className="w-full bg-transparent border border-slate-200/60 rounded-2xl py-3 ps-11 pe-4 text-sm font-medium focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all"
+                    className="w-full bg-transparent border border-zinc-200/60 rounded-2xl py-3 ps-11 pe-4 text-sm font-medium focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-all"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-700 text-xs rtl:text-sm font-bold font-mono"
+                      className="absolute right-4 top-3.5 text-zinc-400 hover:text-zinc-700 text-xs rtl:text-sm font-bold font-mono"
                     >
                       {t("Clear")}
                     </button>
@@ -386,8 +386,8 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                   onClick={() => setShowAllWilayas(!showAllWilayas)}
                   className={`px-5 py-3 rounded-2xl text-xs rtl:text-sm font-bold border transition-colors flex items-center gap-2 ${
                     showAllWilayas || selectedWilaya !== "Tous"
-                      ? "bg-transparent border-slate-200 text-slate-600"
-                      : "bg-white border-slate-200 text-slate-700 hover:bg-transparent"
+                      ? "bg-transparent border-zinc-200 text-zinc-600"
+                      : "bg-white border-zinc-200 text-zinc-700 hover:bg-transparent"
                   }`}
                 >
                   <MapPin className="w-4 h-4" />
@@ -397,11 +397,11 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
 
               {/* Algerian Wilayas Horizontal Pill Selector */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs rtl:text-sm font-bold text-slate-400 uppercase tracking-wider rtl:tracking-normal">
+                <div className="flex items-center justify-between text-xs rtl:text-sm font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal">
                   <span>{t("Wilayas Populaires")}</span>
                   <button
                     onClick={() => setShowAllWilayas(!showAllWilayas)}
-                    className="text-slate-600 hover:underline"
+                    className="text-zinc-600 hover:underline"
                   >
                     {showAllWilayas ? t("Masquer") : t("Voir les 58 Wilayas")}
                   </button>
@@ -412,10 +412,10 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                     <button
                       key={wilaya}
                       onClick={() => setSelectedWilaya(wilaya)}
-                      className={`px-4 py-2 rounded-xl text-xs rtl:text-sm font-black transition-all ${
+                      className={`px-4 py-2 rounded-2xl text-xs rtl:text-sm font-black transition-all ${
                         selectedWilaya === wilaya
-                          ? "bg-slate-900 text-white shadow-md shadow-slate-900/15 scale-102"
-                          : "bg-transparent text-slate-600 border border-slate-200/50 hover:bg-slate-100 hover:border-slate-300"
+                          ? "bg-zinc-900 text-white shadow-md shadow-zinc-900/15 scale-102"
+                          : "bg-transparent text-zinc-600 border border-zinc-200/50 hover:bg-zinc-100 hover:border-zinc-300"
                       }`}
                     >
                       {wilaya}
@@ -429,16 +429,16 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
             {exploreLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-96 bg-transparent rounded-3xl animate-pulse border border-slate-200/60" />
+                  <div key={i} className="h-96 bg-transparent rounded-2xl animate-pulse border border-zinc-200/60" />
                 ))}
               </div>
             ) : filteredSellers.length === 0 ? (
-              <div className="p-16 text-center text-slate-500 font-medium space-y-4">
-                <div className="w-16 h-16 bg-transparent border border-slate-200 rounded-2xl flex items-center justify-center mx-auto text-slate-300">
+              <div className="p-16 text-center text-zinc-500 font-medium space-y-4">
+                <div className="w-16 h-16 bg-transparent border border-zinc-200 rounded-2xl flex items-center justify-center mx-auto text-zinc-300">
                   <RefreshCw className="w-6 h-6 animate-spin" />
                 </div>
-                <h4 className="font-sans font-bold text-lg text-slate-900">{t("Aucune boutique correspondante")}</h4>
-                <p className="text-slate-500 text-sm max-w-xs mx-auto">
+                <h4 className="font-sans font-bold text-lg text-zinc-900">{t("Aucune boutique correspondante")}</h4>
+                <p className="text-zinc-500 text-sm max-w-xs mx-auto">
                   {t("Essayez de modifier vos filtres ou de recherche par nom.")}
                 </p>
                 <button
@@ -446,7 +446,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                     setSelectedWilaya("Tous");
                     setSearchQuery("");
                   }}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs rtl:text-sm font-bold"
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-2xl text-xs rtl:text-sm font-bold"
                 >
                   {t("Réinitialiser")}
                 </button>
@@ -463,7 +463,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                   return (
                     <div
                       key={seller.id}
-                      className="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col group relative"
+                      className="bg-white rounded-2xl border border-zinc-200/60 overflow-hidden shadow-sm hover:shadow-lg hover:border-zinc-300 transition-all duration-300 flex flex-col group relative"
                     >
                       {/* 1. Header Banner & Aesthetic cover */}
                       <div
@@ -484,8 +484,8 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                         )}
 
                         {/* Wilaya Indicator Ribbon */}
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] rtl:text-[11px] font-sans font-bold tracking-widest rtl:tracking-normal text-slate-900 uppercase border border-slate-200/40 shadow-sm flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] rtl:text-[11px] font-sans font-bold tracking-widest rtl:tracking-normal text-zinc-900 uppercase border border-zinc-200/40 shadow-sm flex items-center gap-1">
+                          <MapPin className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
                           {seller.wilaya || "Algérie"}
                         </div>
                       </div>
@@ -502,7 +502,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <Store className="w-6 h-6 text-slate-400" />
+                              <Store className="w-6 h-6 text-zinc-400" />
                             )}
                           </div>
 
@@ -516,18 +516,18 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                                 handleFollow(seller);
                               }
                             }}
-                            className={`px-4 py-2 rounded-xl font-black text-[10px] rtl:text-[12px] uppercase tracking-wider rtl:tracking-normal transition-all duration-300 flex items-center gap-1.5 ${
+                            className={`px-4 py-2 rounded-2xl font-black text-[10px] rtl:text-[12px] uppercase tracking-wider rtl:tracking-normal transition-all duration-300 flex items-center gap-1.5 ${
                               isUserFollowing
-                                ? "bg-slate-100 text-slate-700 border border-slate-200/60 hover:bg-slate-200 hover:text-red-500"
+                                ? "bg-zinc-100 text-zinc-700 border border-zinc-200/60 hover:bg-zinc-200 hover:text-red-500"
                                 : "bg-zinc-950 text-white hover:bg-zinc-800 hover:scale-102 active:scale-95 shadow-sm"
                             }`}
                           >
                             {isActioning ? (
-                              <span className="w-3 h-3 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+                              <span className="w-3 h-3 border-2 border-zinc-400 border-t-white rounded-full animate-spin" />
                             ) : isUserFollowing ? (
                               <>
                                 <UserCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500 animate-pulse" />
-                                <span className="text-slate-700 font-extrabold">{t("Abonné")}</span>
+                                <span className="text-zinc-700 font-extrabold">{t("Abonné")}</span>
                               </>
                             ) : (
                               <>
@@ -543,7 +543,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                           <div className="flex items-center gap-1.5">
                             <h4
                               onClick={() => navigate(`/store/${seller.id}`)}
-                              className="font-sans font-bold text-slate-900 hover:text-slate-600 transition-colors text-base truncate cursor-pointer select-none"
+                              className="font-sans font-bold text-zinc-900 hover:text-zinc-600 transition-colors text-base truncate cursor-pointer select-none"
                             >
                               {seller.shopName || seller.displayName || "Boutique"}
                             </h4>
@@ -552,18 +552,18 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                               title={t("Vendeur Vérifié & Actif") || "Vendeur Vérifié & Actif"}
                             />
                           </div>
-                          <p className="text-xs rtl:text-sm text-slate-500 font-medium line-clamp-2 leading-relaxed min-h-[2rem]">
+                          <p className="text-xs rtl:text-sm text-zinc-500 font-medium line-clamp-2 leading-relaxed min-h-[2rem]">
                             {seller.shopDescription ||
                               t("Pas de description fournie. Cliquez pour découvrir les collections de ce créateur.")}
                           </p>
                         </div>
 
                         {/* GEN-Z HIGHLIGHT FEED: Product previews with inline catalog prices link */}
-                        <div className="mt-5 pt-4 border-t border-slate-100 shrink-0">
-                          <div className="flex items-center justify-between text-[10px] rtl:text-[12px] font-sans font-bold text-slate-400 uppercase tracking-widest rtl:tracking-normal mb-3">
+                        <div className="mt-5 pt-4 border-t border-zinc-100 shrink-0">
+                          <div className="flex items-center justify-between text-[10px] rtl:text-[12px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal mb-3">
                             <span>{t("Dernières publications")}</span>
                             <span
-                              className="text-slate-600 flex items-center gap-0.5 group/link cursor-pointer"
+                              className="text-zinc-600 flex items-center gap-0.5 group/link cursor-pointer"
                               onClick={() => navigate(`/store/${seller.id}`)}
                             >
                               {t("Voir tout")}
@@ -572,8 +572,8 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                           </div>
 
                           {shopProducts.length === 0 ? (
-                            <div className="bg-transparent rounded-2xl py-6 px-4 text-center border border-dashed border-slate-200/40">
-                              <span className="text-slate-400 font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal flex items-center justify-center gap-1.5">
+                            <div className="bg-transparent rounded-2xl py-6 px-4 text-center border border-dashed border-zinc-200/40">
+                              <span className="text-zinc-400 font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal flex items-center justify-center gap-1.5">
                                 <Package className="w-3.5 h-3.5" />
                                 {t("Collection en cours...")}
                               </span>
@@ -585,7 +585,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                                   <div
                                     key={prod.id}
                                     onClick={() => navigate(`/product/${prod.id}`)}
-                                    className="aspect-square bg-transparent overflow-hidden border border-slate-200/40 group/prod cursor-pointer relative shadow-sm hover:shadow transition-all"
+                                    className="aspect-square bg-transparent overflow-hidden border border-zinc-200/40 group/prod cursor-pointer relative shadow-sm hover:shadow transition-all"
                                   >
                                     {prod.images && prod.images[0] ? (
                                       <img
@@ -595,13 +595,13 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                                         className="w-full h-full object-cover group-hover/prod:scale-105 transition-all duration-300"
                                       />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                      <div className="w-full h-full flex items-center justify-center text-zinc-300">
                                         <Package className="w-5 h-5" />
                                       </div>
                                     )}
 
                                     {/* Custom Price overlay inside tag bubbles */}
-                                    <div className="absolute bottom-1 right-1 left-1 bg-white/90 backdrop-blur-md py-0.5 px-1 rounded-lg text-[8px] font-sans font-bold text-slate-900 text-center truncate border border-slate-200/30">
+                                    <div className="absolute bottom-1 right-1 left-1 bg-white/90 backdrop-blur-md py-0.5 px-1 rounded-lg text-[8px] font-sans font-bold text-zinc-900 text-center truncate border border-zinc-200/30">
                                       {prod.price || "Contact"} {t("DA")}
                                     </div>
                                   </div>

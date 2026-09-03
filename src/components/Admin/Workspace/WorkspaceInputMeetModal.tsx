@@ -32,7 +32,7 @@ export const WorkspaceInputMeetModal: React.FC<WorkspaceInputMeetModalProps> = (
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-zinc-100 shadow-2xl space-y-6 text-start relative">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-zinc-100 shadow-2xl space-y-6 text-start relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
@@ -64,7 +64,7 @@ export const WorkspaceInputMeetModal: React.FC<WorkspaceInputMeetModalProps> = (
               value={meetEmail}
               onChange={(e) => setMeetEmail(e.target.value)}
               placeholder="artisan@domain.dz"
-              className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-blue-500 font-bold"
+              className="w-full text-xs px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none focus:border-blue-500 font-bold"
             />
           </div>
 
@@ -80,7 +80,7 @@ export const WorkspaceInputMeetModal: React.FC<WorkspaceInputMeetModalProps> = (
               className="w-full text-xs px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg outline-none focus:border-blue-500 font-medium"
             />
 
-            <div className="max-h-40 overflow-y-auto pr-1 divide-y divide-zinc-100 border border-zinc-100 rounded-xl">
+            <div className="max-h-40 overflow-y-auto pr-1 divide-y divide-zinc-100 border border-zinc-100 rounded-2xl">
               {filteredMeetSellers.length === 0 ? (
                 <div className="p-3 text-[11px] text-zinc-400 text-center font-bold">
                   {t("Aucun e-mail vendeur trouvé.")}
@@ -113,14 +113,14 @@ export const WorkspaceInputMeetModal: React.FC<WorkspaceInputMeetModalProps> = (
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-2xl text-xs font-bold transition-all cursor-pointer"
           >
             {t("Annuler")}
           </button>
           <button
             onClick={onConfirmMeetSchedule}
             disabled={loadingMeet}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-sans font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
             {loadingMeet ? (
               <Loader2 className="w-4 h-4 animate-spin" />

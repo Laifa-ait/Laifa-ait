@@ -53,8 +53,8 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
     endDate;
 
   return (
-    <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-3xl space-y-4">
-      <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-[var(--color-slate-900, #0f172a)] flex items-center gap-2">
+    <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-4">
+      <h3 className="text-xs font-sans font-bold uppercase tracking-widest text-[var(--color-zinc-900, #0f172a)] flex items-center gap-2">
         <Filter className="w-4 h-4 text-orange-500" />
         {t("Filtres Analytiques & Recherche")}
       </h3>
@@ -65,7 +65,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <label className="block text-[10px] font-sans font-bold text-zinc-450 uppercase tracking-wider">
             {t("ID Commande / Code")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-3 py-2 flex items-center gap-2">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-3 py-2 flex items-center gap-2">
             <Search className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
@@ -82,7 +82,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <label className="block text-[10px] font-sans font-bold text-zinc-450 uppercase tracking-wider">
             {t("Client (Nom/Tel)")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-3 py-2 flex items-center gap-2">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-3 py-2 flex items-center gap-2">
             <Search className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
@@ -102,7 +102,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <select
             value={selectedWilaya}
             onChange={(e) => setSelectedWilaya(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold outer-none text-zinc-700 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl px-3 py-2.5 text-xs font-bold outer-none text-zinc-700 outline-none cursor-pointer"
           >
             <option value="all">{t("Toutes les wilayas actives")}</option>
             {dynamicWilayas.sort().map((w) => (
@@ -121,7 +121,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold outer-none text-zinc-700 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl px-3 py-2.5 text-xs font-bold outer-none text-zinc-700 outline-none cursor-pointer"
           >
             <option value="all">{t("Tous les statuts")}</option>
             {Object.keys(statusLabels).map((key) => (
@@ -137,7 +137,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <label className="block text-[10px] font-sans font-bold text-zinc-450 uppercase tracking-wider">
             {t("Vendeur (ID / Magasin)")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-3 py-2 flex items-center gap-2">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-3 py-2 flex items-center gap-2">
             <Search className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
@@ -154,7 +154,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <label className="block text-[10px] font-sans font-bold text-zinc-450 uppercase tracking-wider">
             {t("Date Début")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-3 py-2 flex items-center gap-2 justify-between">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-3 py-2 flex items-center gap-2 justify-between">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="date"
@@ -170,7 +170,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
           <label className="block text-[10px] font-sans font-bold text-zinc-450 uppercase tracking-wider">
             {t("Date Fin")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-3 py-2 flex items-center gap-2 justify-between">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-3 py-2 flex items-center gap-2 justify-between">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             <input
               type="date"

@@ -68,13 +68,13 @@ export const SellerRejectModal: React.FC<SellerRejectModalProps> = ({
       <div className="flex items-center gap-4">
         <button
           onClick={handleConfirmReject}
-          className="flex-1 bg-red-600 text-white py-4 rounded-xl font-sans font-bold text-[11px] uppercase tracking-widest rtl:tracking-normal shadow-xl shadow-red-500/20 cursor-pointer"
+          className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-sans font-bold text-[11px] uppercase tracking-widest rtl:tracking-normal shadow-xl shadow-red-500/20 cursor-pointer"
         >
           {t("Confirmer Rejet")}
         </button>
         <button
           onClick={() => setRejectModalOpen(false)}
-          className="px-6 py-4 bg-zinc-100 text-zinc-600 rounded-xl font-sans font-bold text-[11px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
+          className="px-6 py-4 bg-zinc-100 text-zinc-600 rounded-2xl font-sans font-bold text-[11px] uppercase tracking-widest rtl:tracking-normal cursor-pointer"
         >
           {t("Annuler")}
         </button>

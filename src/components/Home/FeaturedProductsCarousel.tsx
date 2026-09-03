@@ -109,7 +109,7 @@ export const FeaturedProductsCarousel: React.FC = () => {
               return (
                 <div
                   key={i}
-                  className={`${bentoClass} bg-slate-200 animate-pulse rounded-none border border-zinc-200`}
+                  className={`${bentoClass} bg-zinc-200 animate-pulse rounded-none border border-zinc-200`}
                 />
               );
             })}
@@ -124,18 +124,18 @@ export const FeaturedProductsCarousel: React.FC = () => {
   return (
     <section className="mb-6 sm:mb-8 bg-transparent relative z-20">
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 sm:p-6 lg:p-8 relative">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 p-5 sm:p-6 lg:p-8 relative">
 
         {/* Luxury Header */}
         <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mb-6 pb-2 relative px-2 gap-6">
           <div className="flex flex-col items-center sm:items-start text-center sm:text-start justify-center relative">
             <div className="flex items-center gap-4 mb-4 select-none">
-              <span className="text-[10px] sm:text-[11px] font-sans font-semibold tracking-[0.2em] text-slate-500 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-sans font-semibold tracking-[0.2em] text-zinc-500 uppercase">
                 {t("home.featured.title_premium")}
               </span>
             </div>
 
-            <h3 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold text-slate-900 leading-[1.1] mb-3 tracking-tight">
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold text-zinc-900 leading-[1.1] mb-3 tracking-tight">
               {t("home.featured.title_prefix")}
             </h3>
           </div>
@@ -145,13 +145,13 @@ export const FeaturedProductsCarousel: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handlePrev}
-                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-transparent hover:text-slate-900 transition-colors active:scale-95 shadow-sm cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-transparent hover:text-zinc-900 transition-colors active:scale-95 shadow-sm cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-transparent hover:text-slate-900 transition-colors active:scale-95 shadow-sm cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-transparent hover:text-zinc-900 transition-colors active:scale-95 shadow-sm cursor-pointer"
                 >
                   <ArrowRight className="w-4 h-4 rtl:rotate-180" />
                 </button>
@@ -159,7 +159,7 @@ export const FeaturedProductsCarousel: React.FC = () => {
             )}
             <button
               onClick={() => navigate("/premium-collection")}
-              className="group flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white font-sans font-medium text-sm hover:bg-slate-800 active:scale-95 transition-all shadow-md cursor-pointer border-none"
+              className="group flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-zinc-900 text-white font-sans font-medium text-sm hover:bg-zinc-800 active:scale-95 transition-all shadow-md cursor-pointer border-none"
             >
               {t("home.featured.explore_all")}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -188,9 +188,9 @@ export const FeaturedProductsCarousel: React.FC = () => {
               >
                 <div
                   onClick={() => navigate(`/product/${product.id}`)}
-                  className="group relative flex flex-col rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer w-full h-full transition-all duration-300 ease-out bg-white border border-slate-200/70 shadow-sm hover:shadow-lg"
+                  className="group relative flex flex-col rounded-2xl sm:rounded-2xl overflow-hidden cursor-pointer w-full h-full transition-all duration-300 ease-out bg-white border border-zinc-200/70 shadow-sm hover:shadow-lg"
                 >
-                  <div className="absolute inset-0 bg-slate-900/5 mix-blend-multiply group-hover:bg-slate-900/10 transition-colors duration-500 z-10 pointer-events-none" />
+                  <div className="absolute inset-0 bg-zinc-900/5 mix-blend-multiply group-hover:bg-zinc-900/10 transition-colors duration-500 z-10 pointer-events-none" />
 
                   <img
                     src={coverImage}
@@ -208,7 +208,7 @@ export const FeaturedProductsCarousel: React.FC = () => {
 
                   <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 items-start">
                     {idx === 0 && (
-                      <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[9px] sm:text-[10px] font-sans font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none border border-slate-200/50">
+                      <span className="bg-white/90 backdrop-blur-md text-zinc-800 text-[9px] sm:text-[10px] font-sans font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none border border-zinc-200/50">
                         {t("PIÈCE UNIQUE ARTISANALE")}
                       </span>
                     )}
@@ -217,12 +217,12 @@ export const FeaturedProductsCarousel: React.FC = () => {
                         PROMO
                       </span>
                     )}
-                    <span className="bg-slate-900/80 backdrop-blur-md text-white border border-white/20 text-[9px] sm:text-[10px] font-sans font-medium uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none">
+                    <span className="bg-zinc-900/80 backdrop-blur-md text-white border border-white/20 text-[9px] sm:text-[10px] font-sans font-medium uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm select-none">
                       {product.category || "PREMIUM"}
                     </span>
                   </div>
 
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 z-[1] bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent pointer-events-none transition-opacity duration-300" />
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 z-[1] bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-transparent pointer-events-none transition-opacity duration-300" />
 
                   <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5 flex flex-col items-start justify-end h-full">
                     <h4 className="font-sans font-bold text-white text-[15px] sm:text-[18px] leading-tight drop-shadow-sm line-clamp-2 transition-colors mb-1.5 w-full">
@@ -231,7 +231,7 @@ export const FeaturedProductsCarousel: React.FC = () => {
 
                     <div className="flex items-center justify-between w-full">
                       <span
-                        className="font-sans font-semibold text-slate-200 text-[14px] sm:text-[15px] whitespace-nowrap"
+                        className="font-sans font-semibold text-zinc-200 text-[14px] sm:text-[15px] whitespace-nowrap"
                         dir="ltr"
                       >
                         {formatPrice(product.promoPrice || product.price)}

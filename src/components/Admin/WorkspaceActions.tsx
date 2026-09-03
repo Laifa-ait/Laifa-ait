@@ -38,7 +38,7 @@ export const WorkspaceActions: React.FC = () => {
       <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-zinc-100 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
           <div>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-[#ea580c] bg-orange-50 px-2.5 py-1 rounded-md">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-[#ea580c] bg-orange-50 px-2.5 py-1 rounded-lg">
               Google Workspace Cloud Integration
             </span>
             <h2 className="text-lg md:text-xl font-sans font-bold text-zinc-900 uppercase tracking-tight mt-1">
@@ -51,7 +51,7 @@ export const WorkspaceActions: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-3xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
+          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-2xl bg-[#ea580c]/10 border border-[#ea580c]/20 flex items-center justify-center text-[#ea580c]">
                 <DownloadCloud className="w-5 h-5" />
@@ -77,7 +77,7 @@ export const WorkspaceActions: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-3xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
+          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
                 <Store className="w-5 h-5" />
@@ -103,7 +103,7 @@ export const WorkspaceActions: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-3xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
+          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
                 <FileUp className="w-5 h-5" />
@@ -129,7 +129,7 @@ export const WorkspaceActions: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-3xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
+          <div className="bg-zinc-50 hover:bg-zinc-100/80 rounded-2xl p-5 border border-zinc-200/60 transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600">
                 <Video className="w-5 h-5" />

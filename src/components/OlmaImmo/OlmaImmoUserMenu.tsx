@@ -62,9 +62,9 @@ export const OlmaImmoUserMenu: React.FC = React.memo(() => {
     );
   }
 
-  const avatarUrl = currentUser.photoURL || userProfile?.avatar;
-  const displayName = userProfile?.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Utilisateur';
-  const roleName = userProfile?.role || 'Membre';
+  const avatarUrl = (typeof currentUser.photoURL === 'string' && currentUser.photoURL) || (typeof userProfile?.avatar === 'string' && userProfile.avatar) || undefined;
+  const displayName = (typeof userProfile?.displayName === 'string' && userProfile.displayName) || currentUser.displayName || currentUser.email?.split('@')[0] || 'Utilisateur';
+  const roleName = (typeof userProfile?.role === 'string' && userProfile.role) || 'Membre';
 
   const initials = displayName
     .split(' ')

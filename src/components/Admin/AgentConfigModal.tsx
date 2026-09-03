@@ -206,14 +206,14 @@ export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({
           <div className="p-6 border-t border-zinc-100 flex items-center justify-end gap-3 bg-white">
             <button
               onClick={() => setActiveModal(null)}
-              className="px-5 py-2.5 rounded-xl border border-zinc-200 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
+              className="px-5 py-2.5 rounded-2xl border border-zinc-200 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
             >
               {t("Annuler")}
             </button>
             <button
               onClick={saveConfig}
               disabled={isSavingConfig}
-              className="px-6 py-2.5 rounded-xl bg-orange-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-orange-700 transition-colors shadow-sm disabled:opacity-50"
+              className="px-6 py-2.5 rounded-2xl bg-orange-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-orange-700 transition-colors shadow-sm disabled:opacity-50"
             >
               {isSavingConfig ? t("Enregistrement...") : t("Sauvegarder la configuration")}
             </button>

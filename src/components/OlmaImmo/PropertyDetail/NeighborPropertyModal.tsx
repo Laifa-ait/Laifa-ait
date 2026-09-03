@@ -39,7 +39,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
             <span>Bien Voisin</span>
           </span>
           <span className="text-[11px] font-semibold text-stone-500">
-            {property.commune}, {property.wilaya}
+            {property.commune || ('location' in property && property.location?.commune) || 'Alger'}, {property.wilaya || ('location' in property && property.location?.wilaya) || 'Alger'}
           </span>
         </div>
         <button

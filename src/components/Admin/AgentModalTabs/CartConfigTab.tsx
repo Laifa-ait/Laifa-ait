@@ -40,7 +40,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
                 discountCode: e.target.value.toUpperCase().trim(),
               })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-orange-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-orange-500"
           />
         </div>
 
@@ -59,7 +59,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
                 discountPercent: parseInt(e.target.value) || 10,
               })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-orange-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-orange-500"
           />
         </div>
 
@@ -72,7 +72,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, followUpDelay: parseInt(e.target.value) })
             }
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-orange-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-orange-500"
           >
             <option value={1}>{t("1 Heure après l'abandon")}</option>
             <option value={4}>{t("4 Heures après l'abandon (Recommandé)")}</option>
@@ -87,7 +87,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
           <select
             value={modalConfig.tone || "luxury"}
             onChange={(e) => setModalConfig({ ...modalConfig, tone: e.target.value })}
-            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-medium focus:outline-none focus:border-orange-500"
+            className="px-4 py-2.5 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-orange-500"
           >
             <option value="luxury">{t("Luxueux & Prestigieux")}</option>
             <option value="friendly">{t("Chaleureux & Traditionnel")}</option>
@@ -98,7 +98,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
         <button
           onClick={runCartSimulation}
           disabled={isRunningAgent}
-          className="w-full py-3 bg-orange-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-orange-700 transition-colors shadow-sm cursor-pointer disabled:bg-zinc-300"
+          className="w-full py-3 bg-orange-600 text-white rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-orange-700 transition-colors shadow-sm cursor-pointer disabled:bg-zinc-300"
         >
           {isRunningAgent ? (
             <>
@@ -122,7 +122,7 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
         </h4>
 
         {!cartPreview && !isRunningAgent && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-xl">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-200 rounded-2xl">
             <HelpCircle className="w-8 h-8 text-zinc-300 mb-2" />
             <p className="text-xs font-medium text-zinc-500">
               {t(
@@ -143,14 +143,14 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
 
         {cartPreview && (
           <div className="space-y-4 text-sm overflow-y-auto max-h-[350px] pr-2">
-            <div className="bg-zinc-100 p-3 rounded-xl border border-zinc-200 space-y-1">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+            <div className="bg-zinc-100 p-3 rounded-2xl border border-zinc-200 space-y-1">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
                 {t("Destinataire :")}
               </span>
               <span className="text-xs text-zinc-700 font-bold block">
                 Amine Belkacem (amine.belk@gmail.com)
               </span>
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block pt-1">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block pt-1">
                 {t("Sujet de l'Email :")}
               </span>
               <span className="text-xs text-orange-700 font-black block">
@@ -158,8 +158,8 @@ export const CartConfigTab: React.FC<CartConfigTabProps> = ({
               </span>
             </div>
 
-            <div className="border border-zinc-200 rounded-xl p-4 bg-zinc-50/30">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-3">
+            <div className="border border-zinc-200 rounded-2xl p-4 bg-zinc-50/30">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-3">
                 {t("Aperçu du corps HTML :")}
               </span>
               <div

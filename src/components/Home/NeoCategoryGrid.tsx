@@ -43,10 +43,10 @@ export const NeoCategoryGrid: React.FC<{
       {/* Title block with helper to mention horizontal layout and ability to swipe */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="space-y-1">
-          <h2 className="text-xl sm:text-2xl font-sans font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-sans font-extrabold text-zinc-900 tracking-tight">
             {t("home.categories.explore_by", "Explorer par catégories")}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          <p className="text-xs sm:text-sm text-zinc-500 font-medium">
             {t("home.categories.swipe_hint", "Faites défiler horizontalement pour tout explorer")}
           </p>
         </div>
@@ -55,14 +55,14 @@ export const NeoCategoryGrid: React.FC<{
         <div className="hidden md:flex items-center gap-2">
           <button
             onClick={() => handleScroll("left")}
-            className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-[#2563EB] hover:border-slate-300 active:scale-95 transition-all shadow-sm"
+            className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 hover:text-[#2563EB] hover:border-zinc-300 active:scale-95 transition-all shadow-sm"
             aria-label="Previous categories"
           >
             <ChevronLeft className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`} />
           </button>
           <button
             onClick={() => handleScroll("right")}
-            className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-[#2563EB] hover:border-slate-300 active:scale-95 transition-all shadow-sm"
+            className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 hover:text-[#2563EB] hover:border-zinc-300 active:scale-95 transition-all shadow-sm"
             aria-label="Next categories"
           >
             <ChevronRight className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`} />
@@ -90,7 +90,7 @@ export const NeoCategoryGrid: React.FC<{
                   setActiveCategory(card.key);
                   navigate(`/shop?category=${encodeURIComponent(card.key)}`);
                 }}
-                className="relative flex flex-col w-[85vw] sm:w-[350px] md:w-[400px] h-48 sm:h-52 md:h-56 bg-slate-100 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl active:scale-[0.99] transition-all duration-300 shrink-0 snap-start group border border-slate-200/50"
+                className="relative flex flex-col w-[85vw] sm:w-[350px] md:w-[400px] h-48 sm:h-52 md:h-56 bg-zinc-100 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl active:scale-[0.99] transition-all duration-300 shrink-0 snap-start group border border-zinc-200/50"
               >
                 {/* Background Image (Covering the entire card) - NO global dark overlay filter */}
                 <img
@@ -102,7 +102,7 @@ export const NeoCategoryGrid: React.FC<{
                 />
 
                 {/* Localized bottom-up gradient specifically for text legibility, leaving the upper image completely clear */}
-                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-zinc-950/85 via-zinc-950/20 to-transparent z-10 pointer-events-none" />
 
                 {/* Content Overlay (Writing directly on the card with no white background block) */}
                 <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-end items-start z-20">
@@ -117,7 +117,7 @@ export const NeoCategoryGrid: React.FC<{
                     {card.title}
                   </h3>
                   
-                  <p className="font-sans font-medium text-slate-200/95 text-xs sm:text-sm tracking-wide line-clamp-1 mb-2.5 drop-shadow-sm">
+                  <p className="font-sans font-medium text-zinc-200/95 text-xs sm:text-sm tracking-wide line-clamp-1 mb-2.5 drop-shadow-sm">
                     {card.subtitle}
                   </p>
 

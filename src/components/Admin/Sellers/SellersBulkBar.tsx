@@ -40,7 +40,7 @@ export const SellersBulkBar: React.FC<SellersBulkBarProps> = ({
         <button
           onClick={handleBulkApproveSellers}
           disabled={bulkLoading}
-          className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
+          className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-2xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
           title={t("Approuver la sélection")}
         >
           <UserCheck className="w-3.5 h-3.5" />
@@ -49,7 +49,7 @@ export const SellersBulkBar: React.FC<SellersBulkBarProps> = ({
         <button
           onClick={handleBulkSuspendSellers}
           disabled={bulkLoading}
-          className="py-2.5 px-3 bg-amber-600 hover:bg-amber-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
+          className="py-2.5 px-3 bg-amber-600 hover:bg-amber-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-2xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
           title={t("Suspendre la sélection")}
         >
           <UserX className="w-3.5 h-3.5" />
@@ -58,7 +58,7 @@ export const SellersBulkBar: React.FC<SellersBulkBarProps> = ({
         <button
           onClick={handleBulkDeleteSellers}
           disabled={bulkLoading}
-          className="py-2.5 px-3 bg-red-600 hover:bg-red-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
+          className="py-2.5 px-3 bg-red-600 hover:bg-red-500 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-2xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md disabled:opacity-50"
           title={t("Supprimer la sélection")}
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -66,7 +66,7 @@ export const SellersBulkBar: React.FC<SellersBulkBarProps> = ({
         </button>
         <button
           onClick={() => setSelectedSellerIds([])}
-          className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white font-bold text-[11px] uppercase tracking-wider rounded-xl cursor-pointer border-none transition-all"
+          className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white font-bold text-[11px] uppercase tracking-wider rounded-2xl cursor-pointer border-none transition-all"
         >
           {t("Désélectionner")}
         </button>

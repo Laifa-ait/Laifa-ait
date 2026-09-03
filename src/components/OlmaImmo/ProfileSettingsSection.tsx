@@ -5,9 +5,9 @@ import { ALGERIA_WILAYAS_DATABASE } from '../../data/algerianCommunesDatabase';
 
 export const ProfileSettingsSection: React.FC = () => {
   const { currentUser, userProfile, updateUserProfile } = useAuth();
-  const [displayName, setDisplayName] = useState(userProfile?.displayName || currentUser?.displayName || '');
-  const [phoneNumber, setPhoneNumber] = useState(userProfile?.phoneNumber || '');
-  const [preferredWilaya, setPreferredWilaya] = useState(userProfile?.wilaya || 'Alger');
+  const [displayName, setDisplayName] = useState<string>((typeof userProfile?.displayName === 'string' && userProfile.displayName) || currentUser?.displayName || '');
+  const [phoneNumber, setPhoneNumber] = useState<string>((typeof userProfile?.phoneNumber === 'string' && userProfile.phoneNumber) || '');
+  const [preferredWilaya, setPreferredWilaya] = useState<string>((typeof userProfile?.wilaya === 'string' && userProfile.wilaya) || 'Alger');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

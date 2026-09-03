@@ -12,6 +12,7 @@ vi.mock("../config/firebase-admin", () => {
   const walletStore = new Map<string, MockDocRecord>();
   const payoutStore = new Map<string, MockDocRecord>();
   const txStore = new Map<string, MockDocRecord>();
+  const orderStore = new Map<string, MockDocRecord>();
 
   const mockDb = {
     collection: (colName: string) => ({
@@ -24,6 +25,7 @@ vi.mock("../config/firebase-admin", () => {
             if (colName === "escrow_accounts") data = escrowStore.get(id);
             else if (colName === "seller_wallets") data = walletStore.get(id);
             else if (colName === "payout_requests") data = payoutStore.get(id);
+            else if (colName === "orders") data = orderStore.get(id);
             return {
               exists: !!data,
               data: () => data,
@@ -34,16 +36,19 @@ vi.mock("../config/firebase-admin", () => {
             else if (colName === "seller_wallets") walletStore.set(id, data);
             else if (colName === "payout_requests") payoutStore.set(id, data);
             else if (colName === "seller_wallet_transactions") txStore.set(id, data);
+            else if (colName === "orders") orderStore.set(id, data);
           }),
           update: vi.fn(async (data: Partial<MockDocRecord>) => {
             let existing: MockDocRecord | undefined;
             if (colName === "escrow_accounts") existing = escrowStore.get(id);
             else if (colName === "seller_wallets") existing = walletStore.get(id);
             else if (colName === "payout_requests") existing = payoutStore.get(id);
+            else if (colName === "orders") existing = orderStore.get(id);
             const updated = { ...(existing || {}), ...data };
             if (colName === "escrow_accounts") escrowStore.set(id, updated);
             else if (colName === "seller_wallets") walletStore.set(id, updated);
             else if (colName === "payout_requests") payoutStore.set(id, updated);
+            else if (colName === "orders") orderStore.set(id, updated);
           }),
         };
       },
@@ -54,6 +59,7 @@ vi.mock("../config/firebase-admin", () => {
         let items: MockDocRecord[] = [];
         if (colName === "payout_requests") items = Array.from(payoutStore.values());
         if (colName === "seller_wallet_transactions") items = Array.from(txStore.values());
+        if (colName === "orders") items = Array.from(orderStore.values());
         return {
           docs: items.map((item) => ({ data: () => item })),
         };
@@ -80,6 +86,7 @@ vi.mock("../config/firebase-admin", () => {
     getFirebaseInitState: () => "READY",
     getFirebaseInitError: () => null,
     FirebaseInitState: { READY: "READY", FAILED: "FAILED" },
+    __stores: { escrowStore, walletStore, payoutStore, txStore, orderStore },
   };
 });
 
@@ -107,8 +114,26 @@ vi.mock("../middlewares/auth", () => ({
 }));
 
 describe("Olmart Aman - Escrow & Seller Wallet Tests", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const adminModule = await import("../config/firebase-admin") as unknown as {
+      __stores: {
+        escrowStore: Map<string, MockDocRecord>;
+        walletStore: Map<string, MockDocRecord>;
+        payoutStore: Map<string, MockDocRecord>;
+        txStore: Map<string, MockDocRecord>;
+        orderStore: Map<string, MockDocRecord>;
+      };
+    };
+    adminModule.__stores.orderStore.set("order-test-001", {
+      id: "order-test-001",
+      userId: "buyer-789",
+      sellerIds: ["seller-456"],
+      total: 10000,
+      paymentStatus: "PAID",
+      status: "CONFIRMED",
+      paymentMethod: "CIB_EDAHABIA",
+    });
   });
 
   it("POST /api/v1/payment/escrow/hold - should hold funds in escrow and increase seller pending balance", async () => {
@@ -116,12 +141,6 @@ describe("Olmart Aman - Escrow & Seller Wallet Tests", () => {
       .post("/api/v1/payment/escrow/hold")
       .send({
         orderId: "order-test-001",
-        buyerId: "buyer-789",
-        sellerId: "seller-456",
-        totalAmountDZD: 10000,
-        paymentMethod: "CIB_EDAHABIA",
-        platformFeeRatePercent: 5,
-        autoReleaseDays: 3,
       });
 
     expect(res.status).toBe(201);
@@ -132,6 +151,19 @@ describe("Olmart Aman - Escrow & Seller Wallet Tests", () => {
   });
 
   it("POST /api/v1/payment/escrow/release/:orderId - should release escrow to seller available wallet balance", async () => {
+    const adminModule = await import("../config/firebase-admin") as unknown as {
+      __stores: { orderStore: Map<string, MockDocRecord> };
+    };
+    adminModule.__stores.orderStore.set("order-test-001", {
+      id: "order-test-001",
+      userId: "buyer-789",
+      sellerIds: ["seller-456"],
+      total: 10000,
+      paymentStatus: "PAID",
+      status: "DELIVERED",
+      paymentMethod: "CIB_EDAHABIA",
+    });
+
     const res = await request(app)
       .post("/api/v1/payment/escrow/release/order-test-001")
       .send({

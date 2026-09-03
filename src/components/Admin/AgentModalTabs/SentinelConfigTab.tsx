@@ -32,7 +32,7 @@ export const SentinelConfigTab: React.FC<SentinelConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, autoScanInterval: e.target.value })
             }
-            className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium focus:outline-none focus:border-amber-500"
+            className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs font-medium focus:outline-none focus:border-amber-500"
           >
             <option value="realtime">{t("Temps réel (Événementiel)")}</option>
             <option value="hourly">{t("Toutes les heures")}</option>
@@ -49,7 +49,7 @@ export const SentinelConfigTab: React.FC<SentinelConfigTabProps> = ({
             onChange={(e) =>
               setModalConfig({ ...modalConfig, alertThreshold: e.target.value })
             }
-            className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium focus:outline-none focus:border-amber-500"
+            className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs font-medium focus:outline-none focus:border-amber-500"
           >
             <option value="info">{t("Sensibilité Haute (Avertir dès Info)")}</option>
             <option value="warning">{t("Standard (Avertir à partir de Warning)")}</option>
@@ -74,7 +74,7 @@ export const SentinelConfigTab: React.FC<SentinelConfigTabProps> = ({
         <button
           onClick={runSentinelDiagnostic}
           disabled={isRunningAgent}
-          className="px-5 py-2.5 bg-amber-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-700 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 shrink-0"
+          className="px-5 py-2.5 bg-amber-600 text-white rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-amber-700 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 shrink-0"
         >
           {isRunningAgent ? (
             <>
@@ -111,20 +111,20 @@ export const SentinelConfigTab: React.FC<SentinelConfigTabProps> = ({
 
           {sentinelReport.systemChecks && sentinelReport.systemChecks.length > 0 && (
             <div className="space-y-2 pt-2">
-              <h5 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h5 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                 {t("Contrôles d'Infrastructures :")}
               </h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {sentinelReport.systemChecks.map((chk, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center justify-between text-xs"
+                    className="p-3 bg-zinc-50 border border-zinc-150 rounded-2xl flex items-center justify-between text-xs"
                   >
                     <div>
                       <p className="font-bold text-zinc-800">{chk.name}</p>
-                      <p className="text-[10px] text-zinc-400">{chk.detail}</p>
+                      <p className="text-xs text-zinc-400">{chk.detail}</p>
                     </div>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-md">
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg">
                       {chk.latencyMs}ms
                     </span>
                   </div>

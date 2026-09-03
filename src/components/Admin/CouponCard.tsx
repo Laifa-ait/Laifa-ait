@@ -73,7 +73,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({
   const expiresDate = getExpiresDate(coupon.expiresAt);
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-zinc-200 shadow-sm relative overflow-hidden group hover:border-zinc-300 transition-all">
+    <div className="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm relative overflow-hidden group hover:border-zinc-300 transition-all">
       {/* Status Bar */}
       <div
         className={`absolute top-0 start-0 w-1.5 h-full ${
@@ -86,7 +86,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopy}
-              className="bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-xl text-lg font-sans font-bold text-zinc-900 tracking-widest rtl:tracking-normal inline-flex items-center gap-2 transition-colors active:scale-95 cursor-pointer"
+              className="bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-2xl text-lg font-sans font-bold text-zinc-900 tracking-widest rtl:tracking-normal inline-flex items-center gap-2 transition-colors active:scale-95 cursor-pointer"
               title={t("Cliquer pour copier le code")}
             >
               <span>{coupon.code}</span>
@@ -95,11 +95,11 @@ export const CouponCard: React.FC<CouponCardProps> = ({
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-wider rtl:tracking-normal">
             {coupon.discountType === "percentage" ? (
-              <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+              <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">
                 <Percent className="w-3 h-3" /> {t("Pourcentage")}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+              <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
                 <Tag className="w-3 h-3" /> {t("Montant Fixe")}
               </span>
             )}
@@ -162,7 +162,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({
               coupon.limitedToCategories.map((cat) => (
                 <span
                   key={cat}
-                  className="inline-block bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded-md text-[10px] m-0.5 font-bold uppercase"
+                  className="inline-block bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded-lg text-xs m-0.5 font-bold uppercase"
                 >
                   {t(cat)}
                 </span>
@@ -195,7 +195,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({
             {t("Usage unique client")}
           </span>
           <span
-            className={`font-bold px-2.5 py-0.5 rounded-full text-[10px] ${
+            className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${
               coupon.singleUsePerClient
                 ? "bg-amber-50 text-amber-700 border border-amber-200"
                 : "bg-zinc-100 text-zinc-600"

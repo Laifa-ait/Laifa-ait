@@ -42,7 +42,7 @@ export const MobileCategoriesAccordion: React.FC<MobileCategoriesAccordionProps>
           return (
             <div
               key={i}
-              className="bg-white rounded-xl shadow-xs border border-[#E8F6F8] overflow-hidden"
+              className="bg-white rounded-2xl shadow-xs border border-[#E8F6F8] overflow-hidden"
             >
               <button
                 onClick={() => setExpandedCat(isExpanded ? null : cat.id)}

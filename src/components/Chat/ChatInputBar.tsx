@@ -42,7 +42,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   if (isBlocked) {
     return (
       <div className="p-3 border-t border-[#e8e2d4] bg-white">
-        <div className="p-2 text-center text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl">
+        <div className="p-2 text-center text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-2xl">
           Cette conversation est bloquée.
         </div>
       </div>
@@ -92,7 +92,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="p-2.5 rounded-xl hover:bg-[#f4ecd8] text-slate-500 hover:text-[#1e3835] transition disabled:opacity-50 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center border border-[#e8e2d4]"
+          className="p-2.5 rounded-2xl hover:bg-[#f4ecd8] text-zinc-500 hover:text-[#1e3835] transition disabled:opacity-50 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center border border-[#e8e2d4]"
           title="Joindre une photo ou un document PDF (max 5 Mo)"
         >
           {isUploading ? (
@@ -106,7 +106,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           <button
             type="button"
             onClick={onToggleNegotiate}
-            className="p-2 rounded-xl bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835] border border-[#e8e2d4] transition text-xs font-bold flex items-center gap-1 cursor-pointer min-h-[38px]"
+            className="p-2 rounded-2xl bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835] border border-[#e8e2d4] transition text-xs font-bold flex items-center gap-1 cursor-pointer min-h-[38px]"
             title="Faire une offre de prix"
           >
             <DollarSign className="w-3.5 h-3.5 text-[#7a824e]" />
@@ -120,13 +120,13 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           onChange={(e) => onChangeText(e.target.value)}
           placeholder={isRealEstate ? "Votre message concernant ce bien..." : "Votre message..."}
           disabled={isSending}
-          className="flex-1 bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-[#1e3835] transition min-h-[38px]"
+          className="flex-1 bg-[#faf8f5] border border-[#e8e2d4] rounded-2xl px-3.5 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-hidden focus:border-[#1e3835] transition min-h-[38px]"
         />
 
         <button
           type="submit"
           disabled={isSending || !textInput.trim()}
-          className="p-2.5 bg-[#1e3835] hover:bg-[#152725] disabled:opacity-40 text-white rounded-xl transition flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] shadow-xs"
+          className="p-2.5 bg-[#1e3835] hover:bg-[#152725] disabled:opacity-40 text-white rounded-2xl transition flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] shadow-xs"
         >
           {isSending ? (
             <Loader2 className="w-4 h-4 animate-spin text-[#ebdcb8]" />

@@ -36,7 +36,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
               onNavigate("/auth");
               onClose();
             }}
-            className="w-full bg-white hover:bg-cyan-50 text-[#0088A8] py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-none cursor-pointer shadow-xs active:scale-98"
+            className="w-full bg-white hover:bg-cyan-50 text-[#0088A8] py-2.5 px-4 rounded-2xl font-bold text-xs transition-all border-none cursor-pointer shadow-xs active:scale-98"
           >
             {t("Se connecter")}
           </button>
@@ -66,7 +66,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
           <h4 className="font-bold text-[15px] text-white truncate leading-snug drop-shadow-xs">
             {userProfile?.displayName || currentUser.email}
           </h4>
-          <span className="inline-block text-[11px] font-semibold text-cyan-100 bg-white/15 px-2.5 py-0.5 rounded-md mt-0.5">
+          <span className="inline-block text-[11px] font-semibold text-cyan-100 bg-white/15 px-2.5 py-0.5 rounded-lg mt-0.5">
             {role === "admin"
               ? t("common.admin")
               : role === "seller"
@@ -83,7 +83,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
             onNavigate("/dashboard/buyer");
             onClose();
           }}
-          className="flex-1 py-2.5 px-3 bg-white hover:bg-cyan-50 text-cyan-950 text-xs font-bold rounded-xl text-center transition-all cursor-pointer border-none shadow-xs active:scale-98"
+          className="flex-1 py-2.5 px-3 bg-white hover:bg-cyan-50 text-cyan-950 text-xs font-bold rounded-2xl text-center transition-all cursor-pointer border-none shadow-xs active:scale-98"
         >
           {t("common.my_space")}
         </button>
@@ -94,7 +94,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
               onNavigate("/dashboard/seller");
               onClose();
             }}
-            className="flex-1 py-2.5 px-3 bg-cyan-950/40 hover:bg-cyan-950/60 text-white text-xs font-bold rounded-xl text-center transition-all cursor-pointer border border-white/20 shadow-xs active:scale-98"
+            className="flex-1 py-2.5 px-3 bg-cyan-950/40 hover:bg-cyan-950/60 text-white text-xs font-bold rounded-2xl text-center transition-all cursor-pointer border border-white/20 shadow-xs active:scale-98"
           >
             {t("seller_dashboard")}
           </button>
@@ -106,7 +106,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
               onNavigate("/dashboard/admin");
               onClose();
             }}
-            className="flex-1 py-2.5 px-3 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl border-none text-center transition-all cursor-pointer shadow-xs active:scale-98"
+            className="flex-1 py-2.5 px-3 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-2xl border-none text-center transition-all cursor-pointer shadow-xs active:scale-98"
           >
             {t("common.admin")}
           </button>

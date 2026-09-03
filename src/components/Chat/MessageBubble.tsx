@@ -29,7 +29,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
         className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed shadow-xs relative ${
           isMe
             ? 'bg-[#1e3835] text-white rounded-br-xs'
-            : 'bg-white text-slate-800 border border-[#e8e2d4] rounded-bl-xs'
+            : 'bg-white text-zinc-800 border border-[#e8e2d4] rounded-bl-xs'
         }`}
       >
         <p className="whitespace-pre-wrap break-words">{msg.text}</p>
@@ -43,7 +43,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
                     href={att.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-xl overflow-hidden border border-[#e8e2d4] hover:opacity-90 transition cursor-pointer"
+                    className="block rounded-2xl overflow-hidden border border-[#e8e2d4] hover:opacity-90 transition cursor-pointer"
                   >
                     <img loading="lazy" decoding="async" src={att.url}
                       alt={att.fileName}
@@ -55,7 +55,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
                     href={att.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`flex items-center gap-2 p-2 rounded-xl transition text-xs font-bold cursor-pointer ${
+                    className={`flex items-center gap-2 p-2 rounded-2xl transition text-xs font-bold cursor-pointer ${
                       isMe
                         ? 'bg-white/10 hover:bg-white/20 text-white'
                         : 'bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835]'
@@ -78,7 +78,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, isMe, onRepor
         )}
       </div>
 
-      <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-slate-400 font-medium">
+      <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-zinc-400 font-medium">
         <span>
           {new Date(msg.createdAt).toLocaleTimeString('fr-DZ', {
             hour: '2-digit',

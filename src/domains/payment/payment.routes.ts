@@ -40,13 +40,14 @@ router.get("/escrow/order/:orderId", authenticateToken, async (req: Authenticate
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     safeLogger.error("Error fetching escrow", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la récupération du séquestre." });
   }
 });
 
 /**
  * POST /api/v1/payment/escrow/hold
- * Create an escrow hold for an order
+ * Create an escrow hold for an order.
+ * Strictly derives amounts, fees, and seller ID from verified server-side order.
  */
 router.post("/escrow/hold", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -60,21 +61,33 @@ router.post("/escrow/hold", authenticateToken, async (req: AuthenticatedRequest,
       return res.status(400).json({ error: "Données de séquestre invalides", details: parsed.error.issues });
     }
 
-    // Ensure the caller is either the buyer creating the order or an admin
     const isAdmin = req.user?.role === "admin" || req.user?.role === "superadmin";
-    if (!isAdmin && parsed.data.buyerId !== callerUid) {
-      return res.status(403).json({ error: "Impossible de créer un séquestre pour un autre utilisateur." });
-    }
+    const escrow = await EscrowService.holdEscrow({
+      orderId: parsed.data.orderId,
+      callerUid,
+      isAdmin,
+    });
 
-    const escrow = await EscrowService.holdEscrow(parsed.data);
     return res.status(201).json({ success: true, data: escrow });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
+    if (message === "ORDER_NOT_FOUND") {
+      return res.status(404).json({ error: "Commande introuvable." });
+    }
+    if (message === "FORBIDDEN_ORDER_ACCESS") {
+      return res.status(403).json({ error: "Accès refusé : vous n'êtes pas l'acheteur de cette commande." });
+    }
+    if (message === "ORDER_NOT_PAID") {
+      return res.status(400).json({ error: "Impossible de créer un séquestre pour une commande non payée." });
+    }
+    if (message === "INVALID_ORDER_AMOUNT") {
+      return res.status(400).json({ error: "Montant de commande invalide pour la mise sous séquestre." });
+    }
     if (message === "ESCROW_ALREADY_EXISTS") {
       return res.status(409).json({ error: "Un compte séquestre existe déjà pour cette commande." });
     }
     safeLogger.error("Error creating escrow", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la mise sous séquestre." });
   }
 });
 
@@ -111,11 +124,14 @@ router.post("/escrow/release/:orderId", authenticateToken, async (req: Authentic
     if (message === "FORBIDDEN_ESCROW_RELEASE") {
       return res.status(403).json({ error: "Seul l'acheteur ou un administrateur peut valider la libération." });
     }
+    if (message === "ORDER_NOT_DELIVERED") {
+      return res.status(400).json({ error: "La commande doit être confirmée ou livrée avant de libérer les fonds." });
+    }
     if (message.startsWith("ESCROW_CANNOT_BE_RELEASED_STATUS_")) {
       return res.status(400).json({ error: `Impossible de libérer les fonds dans l'état actuel : ${message}` });
     }
     safeLogger.error("Error releasing escrow", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la libération des fonds." });
   }
 });
 
@@ -135,7 +151,7 @@ router.get("/wallet/me", authenticateToken, async (req: AuthenticatedRequest, re
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     safeLogger.error("Error fetching seller wallet", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la récupération du portefeuille." });
   }
 });
 
@@ -157,7 +173,7 @@ router.get("/wallet/transactions", authenticateToken, async (req: AuthenticatedR
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     safeLogger.error("Error listing wallet transactions", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la récupération des transactions." });
   }
 });
 
@@ -199,7 +215,7 @@ router.post("/wallet/withdraw", authenticateToken, async (req: AuthenticatedRequ
       return res.status(404).json({ error: "Portefeuille vendeur introuvable." });
     }
     safeLogger.error("Error requesting withdrawal", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors de la demande de retrait." });
   }
 });
 
@@ -216,7 +232,7 @@ router.get("/admin/withdrawals", authenticateToken, authorizeAdmin, async (req: 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     safeLogger.error("Admin error listing payouts", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors du chargement des demandes de virement." });
   }
 });
 
@@ -247,7 +263,7 @@ router.post("/admin/withdrawals/:id/process", authenticateToken, authorizeAdmin,
       return res.status(400).json({ error: "Cette demande a déjà été clôturée." });
     }
     safeLogger.error("Admin error processing payout", { err: message });
-    return res.status(500).json({ error: `Erreur serveur : ${message}` });
+    return res.status(500).json({ error: "Une erreur interne est survenue lors du traitement du virement." });
   }
 });
 

@@ -20,9 +20,9 @@ export const DisputeDetailsPanel: React.FC<DisputeDetailsPanelProps> = ({
   return (
     <div className="shrink-0 flex flex-col">
       {/* Accordion Toggle */}
-      <div className="bg-slate-50/50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-slate-600">
+      <div className="bg-zinc-50/50 border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-zinc-600">
         <span className="truncate max-w-[250px]">
-          {t('Motif :')} <strong className="text-slate-800">{dispute.reason}</strong>
+          {t('Motif :')} <strong className="text-zinc-800">{dispute.reason}</strong>
         </span>
         <button 
           onClick={() => setShowDetails(!showDetails)}
@@ -35,13 +35,13 @@ export const DisputeDetailsPanel: React.FC<DisputeDetailsPanelProps> = ({
 
       {/* Collapsible Details */}
       {showDetails && (
-        <div className="p-4 bg-orange-50/40 border-b border-slate-200 max-h-40 overflow-y-auto space-y-3">
-          <div className="text-xs text-slate-700 italic font-medium leading-relaxed bg-white/80 p-3 rounded-xl border border-orange-100">
+        <div className="p-4 bg-orange-50/40 border-b border-zinc-200 max-h-40 overflow-y-auto space-y-3">
+          <div className="text-xs text-zinc-700 italic font-medium leading-relaxed bg-white/80 p-3 rounded-2xl border border-orange-100">
             "{dispute.details}"
           </div>
           {dispute.photos && dispute.photos.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                 {t('Photos initiales de réclamation :')}
               </span>
               <div className="flex flex-wrap gap-2 pt-0.5">
@@ -49,7 +49,7 @@ export const DisputeDetailsPanel: React.FC<DisputeDetailsPanelProps> = ({
                   <div 
                     key={i} 
                     onClick={() => onPhotoClick(photo)}
-                    className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 cursor-pointer hover:border-orange-500 hover:scale-105 transition-all relative shrink-0 bg-white"
+                    className="w-12 h-12 rounded-2xl overflow-hidden border border-zinc-200 cursor-pointer hover:border-orange-500 hover:scale-105 transition-all relative shrink-0 bg-white"
                   >
                     <img loading="lazy" decoding="async" src={photo} 
                       alt={`Evidence ${i}`} 

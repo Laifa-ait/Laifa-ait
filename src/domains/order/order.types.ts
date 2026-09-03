@@ -88,6 +88,7 @@ export interface OrderItem {
 export interface Order {
   id: string;
   userId: string;
+  buyerId?: string;
   sellerIds: string[];
   deliveryBoyId?: string;
   deliveryBoyName?: string;
@@ -106,6 +107,7 @@ export interface Order {
 
   status: OrderStatus;
   paymentStatus?: string;
+  paymentMethod?: string;
 
   // Optional return/dispute data
   returnRequest?: ReturnRequest;

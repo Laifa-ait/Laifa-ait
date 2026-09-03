@@ -284,13 +284,13 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
 
   const renderHeader = () => {
     const hasImage = hasActiveImage;
-    const titleColor = "text-slate-900";
-    const subtitleColor = hasImage ? "text-slate-900/80" : "text-slate-900/60";
+    const titleColor = "text-zinc-900";
+    const subtitleColor = hasImage ? "text-zinc-900/80" : "text-zinc-900/60";
     const seeMoreLabel = t("home.sections.see_more");
 
     if (hasImage) {
       return (
-        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-4 group/header relative border-b border-slate-200/10 pb-3">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-4 group/header relative border-b border-zinc-200/10 pb-3">
           <div className="flex flex-col">
             <h2
               className={`text-xl sm:text-2xl font-black tracking-tight rtl:tracking-normal leading-tight ${titleColor}`}
@@ -307,7 +307,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigate("/collection/" + encodeURIComponent(section.id || getSectionTitle()))}
-              className="group relative flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 bg-white/50 hover:bg-white/80 text-[8.5px] font-sans font-bold text-slate-900 uppercase tracking-[0.1em] transition-all cursor-pointer shadow-sm"
+              className="group relative flex items-center gap-1 px-3 py-1.5 rounded-full border border-zinc-200 bg-white/50 hover:bg-white/80 text-[8.5px] font-sans font-bold text-zinc-900 uppercase tracking-[0.1em] transition-all cursor-pointer shadow-sm"
             >
               <span>{seeMoreLabel}</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform duration-300 text-zinc-900 stroke-[2.5]" />
@@ -332,8 +332,8 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     const tailPart = words[words.length - 1] || "";
 
     return (
-      <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2.5">
-        <h3 className="text-lg sm:text-xl font-extralight text-slate-900 tracking-tight rtl:tracking-normal leading-none font-display flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 border-b border-zinc-200 pb-2.5">
+        <h3 className="text-lg sm:text-xl font-extralight text-zinc-900 tracking-tight rtl:tracking-normal leading-none font-display flex items-center gap-2">
           {section.subtitle && (
             <span className="text-[9px] rtl:text-[11px] font-sans font-bold tracking-[0.15em] text-zinc-900 select-none animate-pulse hidden sm:inline uppercase me-2">
               ✦ {section.subtitle} ✦
@@ -342,16 +342,16 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
           {headPart ? (
             <>
               {headPart}{" "}
-              <span className="font-semibold tracking-tighter rtl:tracking-normal text-slate-900">{tailPart}</span>
+              <span className="font-semibold tracking-tighter rtl:tracking-normal text-zinc-900">{tailPart}</span>
             </>
           ) : (
-            <span className="font-semibold tracking-tighter rtl:tracking-normal text-slate-900">{tailPart}</span>
+            <span className="font-semibold tracking-tighter rtl:tracking-normal text-zinc-900">{tailPart}</span>
           )}
         </h3>
 
         <button
           onClick={() => navigate("/collection/" + encodeURIComponent(section.id || getSectionTitle()))}
-          className="group relative flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-slate-200 bg-white hover:border-slate-300 hover:bg-transparent text-[8.5px] sm:text-[9.2px] font-bold text-slate-900 uppercase tracking-[0.25em] transition-all shadow-sm hover:shadow-md cursor-pointer animate-fade-in"
+          className="group relative flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-zinc-200 bg-white hover:border-zinc-300 hover:bg-transparent text-[8.5px] sm:text-[9.2px] font-bold text-zinc-900 uppercase tracking-[0.25em] transition-all shadow-sm hover:shadow-md cursor-pointer animate-fade-in"
         >
           <span>{seeMoreLabel}</span>
           <ArrowRight className="w-3 h-3 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform duration-300 text-zinc-900 stroke-[2.5]" />
@@ -363,14 +363,14 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
   const getCardStyle = () => {
     switch (section.style) {
       case "glass":
-        return "bg-white/80 backdrop-blur-md border border-white/80 shadow-sm rounded-xl sm:rounded-2xl hover:bg-white";
+        return "bg-white/80 backdrop-blur-md border border-white/80 shadow-sm rounded-2xl sm:rounded-2xl hover:bg-white";
       case "minimal":
-        return "bg-transparent border border-slate-200 rounded-xl sm:rounded-2xl hover:border-slate-300";
+        return "bg-transparent border border-zinc-200 rounded-2xl sm:rounded-2xl hover:border-zinc-300";
       case "immersive":
-        return "bg-white rounded-xl sm:rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md hover:-translate-y-0.5 relative";
+        return "bg-white rounded-2xl sm:rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md hover:-translate-y-0.5 relative";
       case "premium":
       default:
-        return "bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/70 hover:shadow-md hover:-translate-y-0.5";
+        return "bg-white rounded-2xl sm:rounded-2xl shadow-sm border border-zinc-200/70 hover:shadow-md hover:-translate-y-0.5";
     }
   };
 
@@ -403,7 +403,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     return (
     <section className="mb-6 sm:mb-8 relative z-20">
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8">
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 sm:p-6 lg:p-8 relative">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 p-5 sm:p-6 lg:p-8 relative">
         <div className="w-full mx-auto relative z-10">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-4">
@@ -422,7 +422,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
 
             <button
               onClick={() => navigate("/ventes-flash")}
-              className="px-4 py-2 sm:px-6 sm:py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs sm:text-sm font-sans font-medium shadow-sm transition-all active:scale-95 flex items-center gap-2 group border border-teal-600 cursor-pointer shrink-0"
+              className="px-4 py-2 sm:px-6 sm:py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-2xl text-xs sm:text-sm font-sans font-medium shadow-sm transition-all active:scale-95 flex items-center gap-2 group border border-teal-600 cursor-pointer shrink-0"
             >
               <span>{t("view_all", "Voir tout")}</span>
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -481,7 +481,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
             {[...Array(section.limit || section.rules?.maxItems || 8)].map((_, i) => (
               <div
                 key={i}
-                className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)] aspect-[4/5] bg-stone-200/50 animate-pulse rounded-none"
+                className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)] aspect-[4/5] bg-zinc-200/50 animate-pulse rounded-none"
               />
             ))}
           </div>
@@ -491,10 +491,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
               <button
                 type="button"
                 onClick={() => scroll("left")}
-                className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-slate-900 border border-slate-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
+                className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-zinc-900 border border-zinc-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
                 aria-label={t("Voir les produits précédents")}
               >
-                <ChevronLeft className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+                <ChevronLeft className="w-5 h-5 text-zinc-700 stroke-[2.5]" />
               </button>
             )}
 
@@ -513,10 +513,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
               <button
                 type="button"
                 onClick={() => scroll("right")}
-                className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-slate-900 border border-slate-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
+                className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-zinc-900 border border-zinc-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
                 aria-label={t("Voir plus de produits")}
               >
-                <ChevronRight className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+                <ChevronRight className="w-5 h-5 text-zinc-700 stroke-[2.5]" />
               </button>
             )}
 
@@ -533,7 +533,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
     ? "relative z-10 p-4 sm:p-6 pb-5 sm:pb-7 rounded-[2rem] animate-fade-in " +
       "bg-gradient-to-b from-white/10 via-white/5 to-transparent border-[1.5px] border-white/30 " +
       "shadow-sm"
-    : "bg-white rounded-[2rem] p-5 sm:p-6 lg:p-8 shadow-sm border border-slate-100 relative animate-fade-in";
+    : "bg-white rounded-[2rem] p-5 sm:p-6 lg:p-8 shadow-sm border border-zinc-100 relative animate-fade-in";
 
   return (
     <section
@@ -551,7 +551,7 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
               {[...Array(section.limit || section.rules?.maxItems || 8)].map((_, i) => (
                 <div
                   key={i}
-                  className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)] aspect-[4/5] bg-stone-200/50 animate-pulse rounded-none"
+                  className="snap-start snap-always shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)] aspect-[4/5] bg-zinc-200/50 animate-pulse rounded-none"
                 />
               ))}
             </div>
@@ -561,10 +561,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
                 <button
                   type="button"
                   onClick={() => scroll("left")}
-                  className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-slate-900 border border-slate-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
+                  className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-zinc-900 border border-zinc-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
                   aria-label={t("Voir les produits précédents")}
                 >
-                  <ChevronLeft className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+                  <ChevronLeft className="w-5 h-5 text-zinc-700 stroke-[2.5]" />
                 </button>
               )}
 
@@ -587,10 +587,10 @@ export const DynamicSection: React.FC<{ section: HomepageSection; isFramed?: boo
                 <button
                   type="button"
                   onClick={() => scroll("right")}
-                  className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-slate-900 border border-slate-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
+                  className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white text-zinc-900 border border-zinc-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:flex hidden shadow-md hover:shadow-lg cursor-pointer"
                   aria-label={t("Voir plus de produits")}
                 >
-                  <ChevronRight className="w-5 h-5 text-slate-700 stroke-[2.5]" />
+                  <ChevronRight className="w-5 h-5 text-zinc-700 stroke-[2.5]" />
                 </button>
               )}
 

@@ -52,7 +52,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-900 placeholder-zinc-400 outline-none focus:border-orange-500 shadow-sm"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-2xl text-xs font-bold text-zinc-900 placeholder-zinc-400 outline-none focus:border-orange-500 shadow-sm"
             />
           </div>
         </div>
@@ -82,7 +82,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
                       <div
                         key={prod.id}
                         onClick={() => handleSelectProduct(prod)}
-                        className="bg-white rounded-3xl border border-zinc-200 hover:border-orange-500 hover:shadow-xl p-3 transition-all cursor-pointer group"
+                        className="bg-white rounded-2xl border border-zinc-200 hover:border-orange-500 hover:shadow-xl p-3 transition-all cursor-pointer group"
                       >
                         <div className="aspect-square rounded-2xl bg-zinc-100 overflow-hidden relative border border-zinc-100">
                           <img
@@ -130,7 +130,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
                   <div
                     key={banner.id}
                     onClick={() => handleSelectImage(banner.url)}
-                    className="bg-white rounded-3xl border border-zinc-200 hover:border-orange-500 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col"
+                    className="bg-white rounded-2xl border border-zinc-200 hover:border-orange-500 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col"
                   >
                     <div className="aspect-video bg-zinc-100 overflow-hidden relative">
                       <img
@@ -153,7 +153,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
                           {t("Haute Définition (HD)")}
                         </p>
                       </div>
-                      <span className="text-[9px] font-sans font-bold uppercase text-orange-600 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-100 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
+                      <span className="text-[9px] font-sans font-bold uppercase text-orange-600 bg-orange-50 px-3 py-1.5 rounded-2xl border border-orange-100 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
                         {t("Choisir")}
                       </span>
                     </div>
@@ -185,7 +185,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
               <input
                 type="url"
                 required
-                className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-xl outline-none font-bold text-xs"
+                className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl outline-none font-bold text-xs"
                 placeholder="https://example.com/image.jpg"
                 value={customImageUrl}
                 onChange={(e) => setCustomImageUrl(e.target.value)}
@@ -199,7 +199,7 @@ export const NewsletterMediaTabContents: React.FC<NewsletterMediaTabContentsProp
                 }
               }}
               disabled={!customImageUrl.trim()}
-              className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal rounded-xl disabled:opacity-50 transition-colors shadow-lg shadow-orange-500/10"
+              className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal rounded-2xl disabled:opacity-50 transition-colors shadow-lg shadow-orange-500/10"
             >
               {t("Valider et appliquer l'image")}
             </button>

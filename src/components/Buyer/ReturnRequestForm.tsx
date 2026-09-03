@@ -117,24 +117,24 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed inset-0 z-[100] bg-slate-950/20 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-zinc-950/20 backdrop-blur-sm flex items-center justify-center p-4"
     >
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-[2rem] p-6 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto"
       >
-        <button type="button" onClick={onClose} className="absolute top-4 end-4 p-2 text-slate-400 hover:text-slate-600">
+        <button type="button" onClick={onClose} className="absolute top-4 end-4 p-2 text-zinc-400 hover:text-zinc-600">
           <X className="w-5 h-5" />
         </button>
-        <h2 className="text-xl font-sans font-bold text-slate-900 mb-6">{t("Demander un retour")}</h2>
+        <h2 className="text-xl font-sans font-bold text-zinc-900 mb-6">{t("Demander un retour")}</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs rtl:text-sm font-bold text-slate-500 uppercase mb-2">{t("Motif")}</label>
+            <label className="block text-xs rtl:text-sm font-bold text-zinc-500 uppercase mb-2">{t("Motif")}</label>
             <select
               value={reason || ""}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full p-4 bg-transparent border border-slate-200 rounded-2xl font-medium text-slate-800"
+              className="w-full p-4 bg-transparent border border-zinc-200 rounded-2xl font-medium text-zinc-800"
             >
               {REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -145,17 +145,17 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
           </div>
 
           <div>
-            <label className="block text-xs rtl:text-sm font-bold text-slate-500 uppercase mb-2">{t("Détails")}</label>
+            <label className="block text-xs rtl:text-sm font-bold text-zinc-500 uppercase mb-2">{t("Détails")}</label>
             <textarea
               value={details || ""}
               onChange={(e) => setDetails(e.target.value)}
-              className="w-full p-4 bg-transparent border border-slate-200 rounded-2xl h-24 font-medium text-slate-800 resize-none"
+              className="w-full p-4 bg-transparent border border-zinc-200 rounded-2xl h-24 font-medium text-zinc-800 resize-none"
               placeholder={t("Expliquez en détail le problème...") || "Expliquez en détail le problème..."}
             />
           </div>
 
           <div>
-            <label className="block text-xs rtl:text-sm font-bold text-slate-500 uppercase mb-2">
+            <label className="block text-xs rtl:text-sm font-bold text-zinc-500 uppercase mb-2">
               {t("Preuves (Photos)")}
             </label>
             <input
@@ -171,11 +171,11 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
                 {photos.map((photo, idx) => (
                   <div
                     key={idx}
-                    className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200"
+                    className="relative w-16 h-16 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200"
                   >
                     {photo.uploading ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-                        <Loader2 className="w-5 h-5 text-slate-500 animate-spin" />
+                        <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
                       </div>
                     ) : (
                       <>
@@ -203,7 +203,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 hover:bg-transparent hover:text-slate-700 transition-colors disabled:opacity-50 font-bold"
+                className="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-2xl text-zinc-500 hover:bg-transparent hover:text-zinc-700 transition-colors disabled:opacity-50 font-bold"
               >
                 <Camera className="w-5 h-5" /> {t("Ajouter des photos (Max 5)")}
               </button>
@@ -213,7 +213,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestProps> = ({ orderId, onClo
 
         <button
           disabled={loading}
-          className="w-full mt-6 py-4 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-2xl font-bold hover:bg-[#A94320] transition-colors disabled:opacity-50"
+          className="w-full mt-6 py-4 flex items-center justify-center gap-2 bg-zinc-900 text-white rounded-2xl font-bold hover:bg-[#A94320] transition-colors disabled:opacity-50"
         >
           {loading && <Loader2 className="w-5 h-5 animate-spin" />}
           {loading ? "Envoi en cours..." : "Envoyer la demande"}

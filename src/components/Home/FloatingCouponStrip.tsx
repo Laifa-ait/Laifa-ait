@@ -37,12 +37,12 @@ export const FloatingCouponStrip: React.FC = () => {
 
           {/* Left: Icon & Text */}
           <div className="flex items-center gap-2 sm:gap-3 z-10 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 text-amber-200">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 text-amber-200">
               <Gift className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] sm:text-xs font-black uppercase bg-amber-400 text-red-900 px-1.5 py-0.2 rounded-md tracking-wider shrink-0">
+                <span className="text-[10px] sm:text-xs font-black uppercase bg-amber-400 text-red-900 px-1.5 py-0.2 rounded-lg tracking-wider shrink-0">
                   {isArabic ? "هدية خاصة" : "OFFRE BIENVENUE"}
                 </span>
                 <p className="text-xs sm:text-sm font-bold truncate">
@@ -94,16 +94,16 @@ export const FloatingCouponStrip: React.FC = () => {
       {/* Claim Voucher Celebration Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100 text-center relative overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Top red header illustration */}
-            <div className="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-lg mb-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-lg mb-4">
               <Gift className="w-8 h-8" />
             </div>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-1">
+            <h3 className="text-xl font-bold text-zinc-900 mb-1">
               {isArabic ? "🎉 مبروك! حصلت على 500 دج" : "🎉 Félicitations !"}
             </h3>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm text-zinc-600 mb-4">
               {isArabic
                 ? "تم تفعيل رمز الخصم OLMA500 لحسابك بنجاح."
                 : "Votre coupon de 500 DA a été activé avec le code promo :"}
@@ -113,7 +113,7 @@ export const FloatingCouponStrip: React.FC = () => {
               <span className="text-lg font-black font-mono text-orange-600 tracking-widest">
                 OLMA500
               </span>
-              <span className="text-xs font-bold text-slate-500">
+              <span className="text-xs font-bold text-zinc-500">
                 -500 DA
               </span>
             </div>
@@ -131,7 +131,7 @@ export const FloatingCouponStrip: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-3 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-colors border-none cursor-pointer"
+                className="px-4 py-3 bg-zinc-100 text-zinc-700 rounded-2xl font-bold text-sm hover:bg-zinc-200 transition-colors border-none cursor-pointer"
               >
                 {isArabic ? "إغلاق" : "Fermer"}
               </button>

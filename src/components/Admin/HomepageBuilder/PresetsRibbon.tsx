@@ -67,15 +67,15 @@ export const PresetsRibbon: React.FC<PresetsRibbonProps> = ({ onApplyPreset }) =
   const { t } = useTranslation();
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm" id="presets-ribbon">
+    <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm" id="presets-ribbon">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-500" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
             {t("Modèles Prédéfinis & Tendances 2026")}
           </h4>
         </div>
-        <span className="text-[11px] font-medium text-slate-500">
+        <span className="text-[11px] font-medium text-zinc-500">
           {t("Création instantanée en 1 clic")}
         </span>
       </div>
@@ -85,22 +85,22 @@ export const PresetsRibbon: React.FC<PresetsRibbonProps> = ({ onApplyPreset }) =
             key={preset.name}
             type="button"
             onClick={() => onApplyPreset(preset.data)}
-            className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-amber-400 bg-slate-50/50 hover:bg-amber-50/30 transition-all text-left group cursor-pointer"
+            className="flex items-center justify-between p-3 rounded-2xl border border-zinc-200 hover:border-amber-400 bg-zinc-50/50 hover:bg-amber-50/30 transition-all text-left group cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-white shadow-xs border border-slate-100 group-hover:scale-110 transition-transform">
+              <div className="p-2 rounded-lg bg-white shadow-xs border border-zinc-100 group-hover:scale-110 transition-transform">
                 {preset.icon}
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-amber-800">
+                <div className="text-xs font-bold text-zinc-900 group-hover:text-amber-800">
                   {preset.name}
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium">
+                <div className="text-[10px] text-zinc-500 font-medium">
                   Type: {preset.data.type}
                 </div>
               </div>
             </div>
-            <Plus className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
+            <Plus className="w-4 h-4 text-zinc-400 group-hover:text-amber-600 transition-colors" />
           </button>
         ))}
       </div>

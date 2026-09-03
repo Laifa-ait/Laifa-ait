@@ -67,22 +67,22 @@ export const InstallPrompt: React.FC = () => {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-24 md:bottom-6 start-4 end-4 md:start-auto md:w-[350px] bg-white rounded-3xl p-5 shadow-2xl z-[100] border border-zinc-100 flex gap-4 items-start"
+          className="fixed bottom-24 md:bottom-6 start-4 end-4 md:start-auto md:w-[350px] bg-white rounded-2xl p-5 shadow-2xl z-[100] border border-zinc-100 flex gap-4 items-start"
         >
           <div className="w-12 h-12 bg-orange-50 text-[var(--color-orange-600, #ea580c)] rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-orange-100">
              <Smartphone className="w-6 h-6" />
           </div>
           <div className="flex-1 mt-0.5">
              <div className="flex justify-between items-start">
-               <h4 className="font-sans font-bold text-[var(--color-slate-900, #0f172a)] text-sm tracking-tight rtl:tracking-normal leading-none mb-1.5 pt-0.5">{t("Installez l'application")}</h4>
-               <button onClick={handleDismiss} className="text-stone-400 hover:text-stone-600 -mt-1 -mr-1 p-1">
+               <h4 className="font-sans font-bold text-[var(--color-zinc-900, #0f172a)] text-sm tracking-tight rtl:tracking-normal leading-none mb-1.5 pt-0.5">{t("Installez l'application")}</h4>
+               <button onClick={handleDismiss} className="text-zinc-400 hover:text-zinc-600 -mt-1 -mr-1 p-1">
                  <X className="w-4 h-4" />
                </button>
              </div>
-             <p className="text-xs rtl:text-sm font-bold text-stone-500 leading-snug mb-3">{t("Pour un accès ultra-rapide et un meilleur suivi de vos commandes, même avec peu de réseau.")}</p>
+             <p className="text-xs rtl:text-sm font-bold text-zinc-500 leading-snug mb-3">{t("Pour un accès ultra-rapide et un meilleur suivi de vos commandes, même avec peu de réseau.")}</p>
              <button 
                onClick={handleInstall}
-               className="w-full flex items-center justify-center gap-2 py-2.5 bg-[var(--color-orange-600, #ea580c)] text-white text-[11px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal rounded-xl hover:bg-[var(--color-orange-600, #ea580c)] transition-colors shadow-sm"
+               className="w-full flex items-center justify-center gap-2 py-2.5 bg-[var(--color-orange-600, #ea580c)] text-white text-[11px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal rounded-2xl hover:bg-[var(--color-orange-600, #ea580c)] transition-colors shadow-sm"
              >
                <Download className="w-3.5 h-3.5" />
                {t("Ajouter à l'écran d'accueil")}</button>

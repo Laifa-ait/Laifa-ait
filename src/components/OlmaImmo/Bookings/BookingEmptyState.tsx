@@ -8,8 +8,8 @@ interface BookingEmptyStateProps {
 
 export const BookingEmptyState: React.FC<BookingEmptyStateProps> = ({ activeTab }) => {
   return (
-    <div className="bg-white rounded-3xl p-12 text-center border border-[#e8e2d4] shadow-xs space-y-4 max-w-lg mx-auto">
-      <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mx-auto border border-[#ebdcb8]">
+    <div className="bg-white rounded-2xl p-12 text-center border border-[#e8e2d4] shadow-xs space-y-4 max-w-lg mx-auto">
+      <div className="w-16 h-16 rounded-2xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mx-auto border border-[#ebdcb8]">
         <Palmtree className="w-8 h-8" />
       </div>
 
@@ -19,7 +19,7 @@ export const BookingEmptyState: React.FC<BookingEmptyStateProps> = ({ activeTab 
             ? 'Aucune réservation de séjour'
             : 'Aucun séjour dans cette catégorie'}
         </h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
           Découvrez des villas balnéaires, chalets de montagne et appartements meublés pour vos vacances à travers l'Algérie.
         </p>
       </div>

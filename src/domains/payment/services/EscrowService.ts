@@ -1,55 +1,111 @@
 import { db } from "../../../config/firebase-admin";
-import { EscrowAccount, WalletAccount, WalletTransaction } from "../payment.types";
+import { EscrowAccount, WalletAccount, WalletTransaction, PaymentMethod } from "../payment.types";
+import { Order } from "../../order/order.types";
 import { safeLogger } from "../../../utils/logger";
+
+export interface HoldEscrowParams {
+  orderId: string;
+  callerUid?: string;
+  isAdmin?: boolean;
+  autoReleaseDays?: number;
+  // Optional direct params when called internally by verified webhooks
+  directBuyerId?: string;
+  directSellerId?: string;
+  directAmountDZD?: number;
+  directPaymentMethod?: PaymentMethod;
+}
 
 export class EscrowService {
   /**
-   * Create an escrow record within an ACID transaction when an order is created
+   * Create an escrow record within an ACID transaction after validating order and payment
    */
-  public static async holdEscrow(payload: {
-    orderId: string;
-    buyerId: string;
-    sellerId: string;
-    totalAmountDZD: number;
-    paymentMethod: "CIB_EDAHABIA" | "BARIDIMOB" | "COD_AMAN" | "WALLET";
-    platformFeeRatePercent?: number;
-    autoReleaseDays?: number;
-  }): Promise<EscrowAccount> {
+  public static async holdEscrow(payload: HoldEscrowParams): Promise<EscrowAccount> {
     if (!db) {
       throw new Error("Base de données non disponible");
     }
 
-    const feeRate = payload.platformFeeRatePercent ?? 5;
-    const platformFeeDZD = Math.round((payload.totalAmountDZD * feeRate) / 100);
-    const sellerPayoutAmountDZD = payload.totalAmountDZD - platformFeeDZD;
-
-    const escrowRef = db.collection("escrow_accounts").doc(payload.orderId);
-    const walletRef = db.collection("seller_wallets").doc(payload.sellerId);
+    const { orderId, callerUid, isAdmin = false, autoReleaseDays = 3 } = payload;
+    const escrowRef = db.collection("escrow_accounts").doc(orderId);
+    const orderRef = db.collection("orders").doc(orderId);
 
     const now = new Date().toISOString();
-    const autoReleaseDate = new Date(Date.now() + (payload.autoReleaseDays ?? 3) * 24 * 60 * 60 * 1000).toISOString();
+    const autoReleaseDate = new Date(Date.now() + autoReleaseDays * 24 * 60 * 60 * 1000).toISOString();
 
-    const escrowData: EscrowAccount = {
-      id: payload.orderId,
-      orderId: payload.orderId,
-      buyerId: payload.buyerId,
-      sellerId: payload.sellerId,
-      totalAmountDZD: payload.totalAmountDZD,
-      platformFeeRatePercent: feeRate,
-      platformFeeDZD,
-      sellerPayoutAmountDZD,
-      status: "HELD",
-      paymentMethod: payload.paymentMethod,
-      heldAt: now,
-      autoReleaseAt: autoReleaseDate,
-    };
-
-    await db.runTransaction(async (transaction) => {
+    const createdEscrow = await db.runTransaction(async (transaction): Promise<EscrowAccount> => {
       const existingEscrow = await transaction.get(escrowRef);
       if (existingEscrow.exists) {
         throw new Error("ESCROW_ALREADY_EXISTS");
       }
 
+      // 1. Reconcile directly with order in Firestore
+      const orderDoc = await transaction.get(orderRef);
+      let buyerId = payload.directBuyerId;
+      let sellerId = payload.directSellerId;
+      let totalAmountDZD = payload.directAmountDZD;
+      let paymentMethod: PaymentMethod = payload.directPaymentMethod || "CIB_EDAHABIA";
+
+      if (orderDoc.exists) {
+        const order = orderDoc.data() as Order;
+
+        // Security check: caller must be the buyer or an admin
+        if (callerUid && !isAdmin) {
+          const orderBuyer = order.userId || order.buyerId;
+          if (orderBuyer !== callerUid) {
+            throw new Error("FORBIDDEN_ORDER_ACCESS");
+          }
+        }
+
+        // Security check: order must be paid or confirmed
+        const isPaid =
+          order.paymentStatus === "PAID" ||
+          order.status === "CONFIRMED" ||
+          order.status === "PROCESSING" ||
+          order.status === "confirmed" ||
+          order.status === "processing";
+
+        if (!isPaid && !isAdmin && !payload.directAmountDZD) {
+          throw new Error("ORDER_NOT_PAID");
+        }
+
+        // Derive verified financial values from order
+        totalAmountDZD = Number(order.total || totalAmountDZD || 0);
+        buyerId = order.userId || order.buyerId || buyerId || "unknown_buyer";
+        sellerId = order.sellerIds?.[0] || order.items?.[0]?.sellerId || sellerId || "unknown_seller";
+        if (order.paymentMethod) {
+          paymentMethod = order.paymentMethod as PaymentMethod;
+        }
+      } else if (!isAdmin && !payload.directAmountDZD) {
+        throw new Error("ORDER_NOT_FOUND");
+      }
+
+      if (!buyerId) buyerId = "unknown_buyer";
+      if (!sellerId) sellerId = "unknown_seller";
+      if (!totalAmountDZD || totalAmountDZD <= 0) {
+        throw new Error("INVALID_ORDER_AMOUNT");
+      }
+
+      // Server-authoritative platform fee (standard 5%)
+      const feeRate = 5;
+      const platformFeeDZD = Math.round((totalAmountDZD * feeRate) / 100);
+      const sellerPayoutAmountDZD = totalAmountDZD - platformFeeDZD;
+
+      const escrowData: EscrowAccount = {
+        id: orderId,
+        orderId,
+        buyerId,
+        sellerId,
+        totalAmountDZD,
+        platformFeeRatePercent: feeRate,
+        platformFeeDZD,
+        sellerPayoutAmountDZD,
+        status: "HELD",
+        paymentMethod,
+        heldAt: now,
+        autoReleaseAt: autoReleaseDate,
+      };
+
+      // 2. Update Seller Wallet pending balance
+      const walletRef = db.collection("seller_wallets").doc(sellerId);
       const walletDoc = await transaction.get(walletRef);
       if (walletDoc.exists) {
         const wallet = walletDoc.data() as WalletAccount;
@@ -59,7 +115,7 @@ export class EscrowService {
         });
       } else {
         const newWallet: WalletAccount = {
-          sellerId: payload.sellerId,
+          sellerId,
           availableBalanceDZD: 0,
           pendingEscrowBalanceDZD: sellerPayoutAmountDZD,
           totalEarningsDZD: 0,
@@ -71,14 +127,18 @@ export class EscrowService {
       }
 
       transaction.set(escrowRef, escrowData);
+      return escrowData;
     });
 
-    safeLogger.info("Escrow funds held in transaction", { orderId: payload.orderId, amount: payload.totalAmountDZD });
-    return escrowData;
+    safeLogger.info("Escrow funds held securely in transaction", {
+      orderId,
+      totalAmountDZD: createdEscrow.totalAmountDZD,
+    });
+    return createdEscrow;
   }
 
   /**
-   * Release escrow funds to seller's wallet after buyer confirmation or timeout
+   * Release escrow funds to seller's wallet after buyer confirmation or admin override
    */
   public static async releaseEscrow(
     orderId: string,
@@ -90,6 +150,7 @@ export class EscrowService {
     }
 
     const escrowRef = db.collection("escrow_accounts").doc(orderId);
+    const orderRef = db.collection("orders").doc(orderId);
     const now = new Date().toISOString();
     let updatedEscrow: EscrowAccount | null = null;
 
@@ -107,6 +168,25 @@ export class EscrowService {
       // Only the buyer of the order or an authorized admin can release
       if (!isAdmin && escrow.buyerId !== callerUid) {
         throw new Error("FORBIDDEN_ESCROW_RELEASE");
+      }
+
+      // Verify order delivery state
+      const orderDoc = await transaction.get(orderRef);
+      if (orderDoc.exists) {
+        const order = orderDoc.data() as Order;
+        const validStatuses = [
+          "DELIVERED",
+          "delivered",
+          "CONFIRMED",
+          "confirmed",
+          "COMPLETED",
+          "completed",
+          "PICKED_UP",
+          "picked_up",
+        ];
+        if (!isAdmin && !validStatuses.includes(order.status)) {
+          throw new Error("ORDER_NOT_DELIVERED");
+        }
       }
 
       const walletRef = db.collection("seller_wallets").doc(escrow.sellerId);

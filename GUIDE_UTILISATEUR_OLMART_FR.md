@@ -347,7 +347,7 @@ Tous les appels d'interfaces s'effectuent sous le préfixe unifié `/api/v1/` :
 *   **Authentification (`/api/v1/auth`) :**
     *   `POST /api/v1/auth/request-otp` : Initie l'inscription logistique et l'envoi d'OTP par SMS.
     *   `POST /api/v1/auth/verify-otp` : Vérifie l'OTP saisi et authentifie l'utilisateur.
-    *   `POST /api/v1/auth/heal-admin` : Mise à niveau de session et attribution des privilèges d'administration d'urgence.
+    *   `POST /api/v1/auth/heal-admin` : Mise à niveau de session et attribution des privilèges d'administration après vérification d'habilitation sécurisée côté serveur.
 *   **Catalogue Articles (`/api/v1/products`) :**
     *   `GET /api/v1/products` : Consultation facettée avec filtres Wilayas et budgets.
     *   `POST /api/v1/products` : Publication de fiches produits avec poids d'expédition obligatoire.

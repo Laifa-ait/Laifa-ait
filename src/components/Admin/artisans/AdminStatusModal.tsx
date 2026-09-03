@@ -60,26 +60,26 @@ export const AdminStatusModal: React.FC<AdminStatusModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div className="bg-white w-full max-w-md rounded-2xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h3 className="font-bold text-slate-900 text-sm">Changement de Statut Moderation</h3>
+    <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div className="bg-white w-full max-w-md rounded-2xl border border-zinc-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
+          <h3 className="font-bold text-zinc-900 text-sm">Changement de Statut Moderation</h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-zinc-200 text-zinc-500 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
-            <p className="font-bold text-slate-900">{artisan.fullName}</p>
-            <p className="text-slate-500">{artisan.tradeName} • {artisan.wilaya}</p>
+          <div className="bg-zinc-50 p-3 rounded-2xl border border-zinc-200 text-xs">
+            <p className="font-bold text-zinc-900">{artisan.fullName}</p>
+            <p className="text-zinc-500">{artisan.tradeName} • {artisan.wilaya}</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 mb-1">
               Action sélectionnée : <span className="text-amber-600">{getStatusLabel(targetStatus)}</span>
             </label>
             <textarea
@@ -87,12 +87,12 @@ export const AdminStatusModal: React.FC<AdminStatusModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Motif ou commentaire administratif (optionnel)..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-slate-900 focus:outline-hidden"
+              className="w-full px-3 py-2 rounded-2xl border border-zinc-200 text-xs font-medium focus:ring-2 focus:ring-zinc-900 focus:outline-hidden"
             />
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -102,14 +102,14 @@ export const AdminStatusModal: React.FC<AdminStatusModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+              className="px-4 py-2 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs cursor-pointer"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-4 h-4" />
               <span>Confirmer</span>

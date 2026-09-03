@@ -64,7 +64,7 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
                     />
                     <div className="flex-1 min-w-0 pr-1">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mb-1">
-                        {p.wilaya}
+                        {p.wilaya || p.location?.wilaya || 'Alger'}
                       </span>
                       <h4 className="text-xs font-bold text-stone-900 truncate">
                         {p.title}

@@ -193,8 +193,8 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                       referrerPolicy="no-referrer"
                     />
                   </picture>
-                  <div className="absolute inset-0 bg-slate-900/35 z-0 mix-blend-multiply" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/10 to-transparent z-0" />
+                  <div className="absolute inset-0 bg-zinc-900/35 z-0 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/70 via-zinc-900/10 to-transparent z-0" />
                 </div>
               )}
 
@@ -245,7 +245,7 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                 {subtitle && (
                   <p
                     className={`text-xs sm:text-sm md:text-base mb-6 sm:mb-8 max-w-md text-start font-sans font-medium leading-relaxed ${
-                      isDefault1 || isDefault2 ? "text-zinc-800" : "text-slate-100/90"
+                      isDefault1 || isDefault2 ? "text-zinc-800" : "text-zinc-100/90"
                     }`}
                   >
                     {isDefault1 
@@ -263,12 +263,12 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                   className={`font-sans font-extrabold text-[10px] sm:text-xs uppercase tracking-widest px-5 py-3 sm:px-6 sm:py-3.5 flex items-center gap-2.5 rounded-full cursor-pointer transition-all shadow-md ${
                     isDefault1 || isDefault2 
                       ? "bg-zinc-950 text-white hover:bg-[#85D053]" 
-                      : "bg-white text-slate-900 hover:bg-slate-100"
+                      : "bg-white text-zinc-900 hover:bg-zinc-100"
                   }`}
                 >
                   <span>{isDefault1 ? "Shop Now" : buttonText || t("cat_explore")}</span>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    isDefault1 || isDefault2 ? "bg-white text-zinc-950" : "bg-slate-900 text-white"
+                    isDefault1 || isDefault2 ? "bg-white text-zinc-950" : "bg-zinc-900 text-white"
                   }`}>
                     <ArrowUpRight className="w-3 h-3" />
                   </div>

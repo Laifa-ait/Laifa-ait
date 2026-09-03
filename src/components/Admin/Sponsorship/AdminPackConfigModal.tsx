@@ -57,11 +57,11 @@ export const AdminPackConfigModal: React.FC<AdminPackConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-5 bg-gradient-to-r from-zinc-900 to-amber-950 text-white flex items-center justify-between border-b border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-500/20 rounded-xl text-amber-400 border border-amber-500/30">
+            <div className="p-2.5 bg-amber-500/20 rounded-2xl text-amber-400 border border-amber-500/30">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
@@ -87,7 +87,7 @@ export const AdminPackConfigModal: React.FC<AdminPackConfigModalProps> = ({
               <div key={tierKey} className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase px-2.5 py-1 rounded-md bg-zinc-900 text-white">
+                    <span className="text-xs font-black uppercase px-2.5 py-1 rounded-lg bg-zinc-900 text-white">
                       Pack {tierKey.toUpperCase()}
                     </span>
                     <span className="text-xs text-zinc-500 font-medium">({pack?.name})</span>
@@ -118,7 +118,7 @@ export const AdminPackConfigModal: React.FC<AdminPackConfigModalProps> = ({
                         step="500"
                         value={pack?.pricing[days] || 1500}
                         onChange={(e) => handlePriceChange(tierKey, days, parseInt(e.target.value, 10) || 0)}
-                        className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-bold font-mono bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        className="w-full px-3 py-2 rounded-2xl border border-zinc-300 text-xs font-bold font-mono bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                       />
                     </div>
                   ))}
@@ -133,7 +133,7 @@ export const AdminPackConfigModal: React.FC<AdminPackConfigModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-zinc-300 text-xs font-bold text-zinc-700 hover:bg-zinc-200"
+            className="px-4 py-2 rounded-2xl border border-zinc-300 text-xs font-bold text-zinc-700 hover:bg-zinc-200"
           >
             {t("Annuler")}
           </button>
@@ -141,7 +141,7 @@ export const AdminPackConfigModal: React.FC<AdminPackConfigModalProps> = ({
             type="button"
             disabled={isSaving}
             onClick={handleSubmit}
-            className="px-5 py-2.5 rounded-xl bg-amber-600 text-white hover:bg-amber-700 text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shadow-amber-600/20"
+            className="px-5 py-2.5 rounded-2xl bg-amber-600 text-white hover:bg-amber-700 text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shadow-amber-600/20"
           >
             <Save className="w-4 h-4" />
             {isSaving ? t("Enregistrement...") : t("Enregistrer les Tarifs")}

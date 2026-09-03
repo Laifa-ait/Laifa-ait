@@ -100,7 +100,7 @@ export const AdminManualGuide: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setIsGuideOpen(!isGuideOpen)}
-            className="flex items-center gap-2 px-5 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal transition-all cursor-pointer border-none"
+            className="flex items-center gap-2 px-5 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-2xl font-sans font-bold text-xs uppercase tracking-widest rtl:tracking-normal transition-all cursor-pointer border-none"
           >
             {isGuideOpen ? (
               <>
@@ -116,7 +116,7 @@ export const AdminManualGuide: React.FC = () => {
           </button>
           <button
             onClick={() => exportManualToPDF(t)}
-            className="flex items-center gap-2 px-5 py-3 bg-[#ea580c] hover:bg-orange-600 text-white rounded-xl font-sans font-bold text-[10px] uppercase tracking-widest rtl:tracking-normal transition-all cursor-pointer shadow-md shadow-orange-500/10 border-none"
+            className="flex items-center gap-2 px-5 py-3 bg-[#ea580c] hover:bg-orange-600 text-white rounded-2xl font-sans font-bold text-xs uppercase tracking-widest rtl:tracking-normal transition-all cursor-pointer shadow-md shadow-orange-500/10 border-none"
           >
             <Download className="w-4 h-4" /> {t("Exporter PDF officiel")}
           </button>
@@ -128,7 +128,7 @@ export const AdminManualGuide: React.FC = () => {
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex gap-3 text-amber-800 text-xs font-bold items-start">
             <AlertCircle className="w-5 h-5 shrink-0 text-amber-600" />
             <div>
-              <p className="uppercase tracking-wider rtl:tracking-normal font-sans font-bold text-[9px] mb-1 text-amber-900">
+              <p className="uppercase tracking-wider rtl:tracking-normal font-sans font-bold text-xs mb-1 text-amber-900">
                 {t("Règle de Sécurité Interne (DevSecOps)")}
               </p>
               {t(

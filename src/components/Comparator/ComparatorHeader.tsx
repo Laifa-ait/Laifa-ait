@@ -58,19 +58,19 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
   };
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm mb-6 space-y-4">
+    <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm mb-6 space-y-4">
       {/* Top Title & Primary Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">
               {t("Matrice de Comparaison Pro") || "Matrice de Comparaison Pro"}
             </h1>
             <span className="bg-amber-100 text-amber-900 font-bold text-xs px-3 py-1 rounded-full border border-amber-200">
               {productCount} / 4 {t("produits") || "produits"}
             </span>
           </div>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">
+          <p className="text-zinc-500 text-xs sm:text-sm mt-1">
             {t("Analysez côte à côte les performances, tarifs et garanties sans aucune concession.") ||
               "Analysez côte à côte les performances, tarifs et garanties sans aucune concession."}
           </p>
@@ -78,13 +78,13 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Switcher */}
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center me-2">
+          <div className="bg-zinc-100 p-1 rounded-2xl flex items-center me-2">
             <button
               onClick={() => onViewModeChange('matrix')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'matrix'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-zinc-900 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800'
               }`}
               title="Vue Tableau Matrice"
             >
@@ -95,8 +95,8 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
               onClick={() => onViewModeChange('cards')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'cards'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-zinc-900 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800'
               }`}
               title="Vue Cartes Côtes-à-Côte"
             >
@@ -108,7 +108,7 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
           {productCount < 4 && (
             <button
               onClick={onOpenAddModal}
-              className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm"
+              className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>{t("Ajouter un produit") || "Ajouter un produit"}</span>
@@ -117,7 +117,7 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-all"
+            className="flex items-center gap-1.5 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs font-semibold px-3.5 py-2.5 rounded-2xl transition-all"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
             <span className="hidden sm:inline">{copied ? (t("Lien copié !") || "Lien copié !") : (t("Partager") || "Partager")}</span>
@@ -125,7 +125,7 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
 
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-all hidden lg:flex"
+            className="flex items-center gap-1.5 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs font-semibold px-3.5 py-2.5 rounded-2xl transition-all hidden lg:flex"
           >
             <Printer className="w-4 h-4" />
             <span>{t("Imprimer") || "Imprimer"}</span>
@@ -133,7 +133,7 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
 
           <button
             onClick={onClear}
-            className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition-all ms-auto md:ms-0"
+            className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold px-3 py-2.5 rounded-2xl transition-all ms-auto md:ms-0"
             title={t("Vider la comparaison") || "Vider la comparaison"}
           >
             <Trash2 className="w-4 h-4" />
@@ -142,10 +142,10 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
       </div>
 
       {/* Control Bar: Filters & Toggles */}
-      <div className="pt-3 border-t border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="pt-3 border-t border-zinc-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider me-1 flex items-center gap-1">
+          <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider me-1 flex items-center gap-1">
             <SlidersHorizontal className="w-3.5 h-3.5" />
             {t("Filtres") || "Filtres"}:
           </span>
@@ -153,10 +153,10 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
             <button
               key={cat}
               onClick={() => onCategoryChange(cat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${
                 selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                  ? "bg-zinc-900 text-white shadow-sm"
+                  : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600"
               }`}
             >
               {cat}
@@ -167,22 +167,22 @@ export const ComparatorHeader: React.FC<ComparatorHeaderProps> = ({
         {/* Search input & Diffs Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
               type="text"
               value={specFilter}
               onChange={(e) => onSpecFilterChange(e.target.value)}
               placeholder={t("Filtrer une caractéristique...") || "Filtrer une caractéristique..."}
-              className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 transition-all"
+              className="w-full bg-zinc-50 border border-zinc-200/80 rounded-2xl pl-9 pr-3 py-1.5 text-xs text-zinc-800 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:border-amber-500 transition-all"
             />
           </div>
 
           <button
             onClick={onToggleDifferences}
-            className={`flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+            className={`flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold border transition-all ${
               showOnlyDifferences
                 ? "bg-amber-500 text-white border-amber-600 shadow-sm"
-                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
             }`}
           >
             <Filter className="w-3.5 h-3.5" />

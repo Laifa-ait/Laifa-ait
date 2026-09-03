@@ -158,4 +158,45 @@ describe("Payment Webhook Security & Signature Validation", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
   });
+
+  it("verifyChargilySignature fails-closed when webhook secret is missing", () => {
+    delete process.env.CHARGILY_WEBHOOK_SECRET;
+    delete process.env.CHARGILY_SECRET_KEY;
+    const payload = JSON.stringify({ event: "checkout.paid", id: "evt_fail_closed" });
+    const signature = "dummy_signature";
+
+    const isValid = WebhookService.verifyChargilySignature(payload, signature);
+    expect(isValid).toBe(false);
+  });
+
+  it("verifyBaridiMobSignature fails-closed when webhook secret is missing", () => {
+    delete process.env.BARIDIMOB_WEBHOOK_SECRET;
+    delete process.env.BARIDIMOB_SECRET_KEY;
+    const payload = JSON.stringify({ transactionId: "tx_fail_closed", amountDZD: 1000 });
+    const signature = "dummy_signature";
+
+    const isValid = WebhookService.verifyBaridiMobSignature(payload, signature);
+    expect(isValid).toBe(false);
+  });
+
+  it("processChargilyEvent rejects events with missing event identifier", async () => {
+    const result = await WebhookService.processChargilyEvent({
+      type: "checkout.paid",
+      data: { status: "paid", amount: 1000 },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toContain("manquant");
+  });
+
+  it("processBaridiMobEvent rejects events with missing transactionId", async () => {
+    const result = await WebhookService.processBaridiMobEvent({
+      orderId: "ord_missing_tx",
+      amountDZD: 1000,
+      status: "SUCCESS",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toContain("transactionId manquant");
+  });
 });

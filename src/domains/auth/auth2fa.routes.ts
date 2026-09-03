@@ -142,7 +142,7 @@ router.post(
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       safeLogger.error("2FA send code error", { userId, err: errorMsg });
-      return res.status(500).json({ error: errorMsg });
+      return res.status(500).json({ error: "Une erreur interne est survenue lors de l'envoi du code 2FA." });
     }
   },
 );
@@ -172,7 +172,8 @@ router.post(
       return res.json({ success: true });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      return res.status(500).json({ error: errorMsg });
+      safeLogger.error("2FA verify code error", { userId, err: errorMsg });
+      return res.status(500).json({ error: "Une erreur interne est survenue lors de la vérification du code 2FA." });
     }
   },
 );

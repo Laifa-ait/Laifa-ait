@@ -116,12 +116,12 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-[#faf8f5] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#e8e2d4] relative animate-scale-up font-sans">
+    <div className="fixed inset-0 z-50 bg-zinc-900/70 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-[#faf8f5] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#e8e2d4] relative animate-scale-up font-sans">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer transition-colors"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-2 rounded-full hover:bg-zinc-100 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -139,12 +139,12 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
               <h3 className="text-xl font-bold text-[#1e3835] font-['Playfair_Display',serif]">
                 Réservation en attente de confirmation
               </h3>
-              <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                Votre demande de séjour pour <strong className="text-slate-900">{propertyTitle}</strong> a été enregistrée avec succès sous la référence <span className="font-mono font-bold text-[#1e3835]">{createdBookingId}</span>.
+              <p className="text-xs text-zinc-600 max-w-sm mx-auto leading-relaxed">
+                Votre demande de séjour pour <strong className="text-zinc-900">{propertyTitle}</strong> a été enregistrée avec succès sous la référence <span className="font-mono font-bold text-[#1e3835]">{createdBookingId}</span>.
               </p>
             </div>
 
-            <div className="bg-white border border-[#e8e2d4] rounded-2xl p-4 text-left space-y-2 text-xs text-slate-700">
+            <div className="bg-white border border-[#e8e2d4] rounded-2xl p-4 text-left space-y-2 text-xs text-zinc-700">
               <div className="flex justify-between font-medium">
                 <span>Dates du séjour :</span>
                 <span className="font-bold text-[#1e3835]">{formatDateLabel(startDate)} → {formatDateLabel(endDate)}</span>
@@ -163,7 +163,7 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
               <button
                 type="button"
                 onClick={handleGoToMyBookings}
-                className="w-full py-3 px-4 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-3 px-4 bg-[#1e3835] hover:bg-[#152725] text-white rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <span>Mes séjours</span>
                 <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
@@ -172,7 +172,7 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
               <button
                 type="button"
                 onClick={handleContactOwner}
-                className="w-full py-3 px-4 bg-[#ebdcb8] hover:bg-[#e2d0a5] text-[#1e3835] rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-3 px-4 bg-[#ebdcb8] hover:bg-[#e2d0a5] text-[#1e3835] rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Contacter l'hôte</span>
@@ -193,39 +193,39 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
             {/* Property Summary Header */}
             <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3.5 flex items-center gap-3">
               {propertyImage ? (
-                <img loading="lazy" decoding="async" src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-xl object-cover border border-[#e8e2d4] shrink-0" />
+                <img loading="lazy" decoding="async" src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-2xl object-cover border border-[#e8e2d4] shrink-0" />
               ) : (
-                <div className="w-14 h-14 rounded-xl bg-[#ebdcb8]/40 border border-[#b8a679]/30 flex items-center justify-center text-[#1e3835] shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-[#ebdcb8]/40 border border-[#b8a679]/30 flex items-center justify-center text-[#1e3835] shrink-0">
                   <Building2 className="w-6 h-6" />
                 </div>
               )}
               <div className="min-w-0">
                 <h4 className="text-sm font-bold text-[#1e3835] truncate">{propertyTitle}</h4>
-                <p className="text-xs text-slate-500 font-medium">{propertyLocation}</p>
+                <p className="text-xs text-zinc-500 font-medium">{propertyLocation}</p>
               </div>
             </div>
 
             {/* Dates & Guests Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Dates</span>
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block">Dates</span>
                 <span className="font-bold text-[#1e3835] block mt-0.5">{formatDateLabel(startDate)}</span>
-                <span className="text-[11px] text-slate-500 font-medium">au {formatDateLabel(endDate)} ({totalNights} nuit{totalNights > 1 ? 's' : ''})</span>
+                <span className="text-[11px] text-zinc-500 font-medium">au {formatDateLabel(endDate)} ({totalNights} nuit{totalNights > 1 ? 's' : ''})</span>
               </div>
 
               <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Voyageurs</span>
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block">Voyageurs</span>
                 <span className="font-bold text-[#1e3835] block mt-0.5">
                   {guests.adults} adulte{guests.adults > 1 ? 's' : ''}
                 </span>
-                <span className="text-[11px] text-slate-500 font-medium">
+                <span className="text-[11px] text-zinc-500 font-medium">
                   {guests.children > 0 ? `${guests.children} enfant${guests.children > 1 ? 's' : ''}` : 'Aucun enfant'}
                 </span>
               </div>
             </div>
 
             {/* Detailed Price Calculation Box */}
-            <div className="bg-[#f0ece1] border border-[#ded5be] rounded-2xl p-4 space-y-2 text-xs text-slate-800">
+            <div className="bg-[#f0ece1] border border-[#ded5be] rounded-2xl p-4 space-y-2 text-xs text-zinc-800">
               <div className="flex justify-between">
                 <span>Prix du séjour ({totalNights} nuit{totalNights > 1 ? 's' : ''})</span>
                 <span className="font-semibold">{subtotal.toLocaleString('fr-DZ')} DA</span>

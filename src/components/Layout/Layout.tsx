@@ -78,7 +78,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   if (hideNavigation) {
     return (
       <div
-        className={`min-h-screen w-full font-sans selection:bg-rose-200 text-slate-900 ${i18n.language === "ar" ? "rtl" : "ltr"}`}
+        className={`min-h-screen w-full font-sans selection:bg-rose-200 text-zinc-900 ${i18n.language === "ar" ? "rtl" : "ltr"}`}
         dir={i18n.language === "ar" ? "rtl" : "ltr"}
       >
         {children}
@@ -88,10 +88,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div
-      className={`min-h-screen overflow-x-clip w-full max-w-full text-slate-900 font-sans selection:bg-rose-200 pb-0 sm:pb-0 ${i18n.language === "ar" ? "rtl" : "ltr"}`}
+      className={`min-h-screen overflow-x-clip w-full max-w-full text-zinc-900 font-sans selection:bg-rose-200 pb-0 sm:pb-0 ${i18n.language === "ar" ? "rtl" : "ltr"}`}
       dir={i18n.language === "ar" ? "rtl" : "ltr"}
     >
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] bg-white text-slate-900 px-4 py-2 font-medium rounded-md shadow-lg border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] bg-white text-zinc-900 px-4 py-2 font-medium rounded-lg shadow-lg border border-zinc-200 outline-none focus:ring-2 focus:ring-teal-500">
         Aller au contenu principal
       </a>
 
@@ -125,7 +125,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {!isOnline && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full z-50 flex items-center gap-2 shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-900 text-white px-6 py-3 rounded-full z-50 flex items-center gap-2 shadow-lg">
           <WifiOff className="w-4 h-4" />
           <span className="text-sm font-medium">Mode hors ligne</span>
         </div>

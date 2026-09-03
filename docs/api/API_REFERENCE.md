@@ -100,16 +100,16 @@ Pour se prémunir des injections de données et garantir l'intégrité logistiqu
     *   `OTP_CODE_EXPIRED` (HTTP 410)
 
 #### `POST /api/v1/auth/heal-admin`
-*   **Description :** Met à niveau de manière transparente les rôles de l'utilisateur en administrateur système (Custom Claims Firebase) si son e-mail figure sur la liste blanche d'urgence.
-*   **Permissions :** Utilisateur authentifié.
-*   **Payload (JSON) :** Aucun (lecture de l'email via le décodeur JWT).
+*   **Description :** Met à niveau de manière transparente les rôles de l'utilisateur en administrateur système (Custom Claims Firebase) après vérification d'autorisation sécurisée côté serveur.
+*   **Permissions :** Utilisateur authentifié bénéficiant d'une habilitation administrative vérifiée côté serveur.
+*   **Payload (JSON) :** Aucun (extraction sécurisée de l'UID via le décodeur JWT côté serveur).
 *   **Réponse de succès (200 OK) :**
     ```json
     {
       "success": true,
       "data": {
         "status": "ADMIN_PRIVILEGES_GRANTED",
-        "email": "laifa.ait@gmail.com"
+        "role": "admin"
       }
     }
     ```

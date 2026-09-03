@@ -136,13 +136,13 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             <h3 className="text-xl font-sans font-bold text-zinc-900 uppercase tracking-tight">
               {selectedBanner ? t("Modifier la Bannière") : t("Créer une Bannière d'Accueil")}
             </h3>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
               {t("Remplissez et validez soigneusement les dimensions requises")}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-zinc-100 rounded-xl text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+            className="p-2 hover:bg-zinc-100 rounded-2xl text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -155,7 +155,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             {/* Title and Title Color */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
               <div className="space-y-1.5 md:col-span-2">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Titre de la Bannière *")}
                 </label>
                 <input
@@ -164,11 +164,11 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   placeholder={t("ex: Sélection Premium") || "ex: Sélection Premium"}
                   value={bannerTitle}
                   onChange={(e) => setBannerTitle(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-350 bg-white"
+                  className="w-full h-11 px-4 rounded-2xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-350 bg-white"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Couleur Titre")}
                 </label>
                 <div className="flex gap-1.5">
@@ -176,14 +176,14 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     type="color"
                     value={bannerTitleColor}
                     onChange={(e) => setBannerTitleColor(e.target.value)}
-                    className="w-11 h-11 rounded-xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
+                    className="w-11 h-11 rounded-2xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
                   />
                   <input
                     type="text"
                     placeholder="#FFFFFF"
                     value={bannerTitleColor}
                     onChange={(e) => setBannerTitleColor(e.target.value)}
-                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-300 bg-white"
+                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-2xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-300 bg-white"
                   />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             {/* Subtitle and Subtitle Color */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 pt-3">
               <div className="space-y-1.5 md:col-span-2">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Sous-titre de la Bannière")}
                 </label>
                 <input
@@ -203,11 +203,11 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   }
                   value={bannerSubtitle}
                   onChange={(e) => setBannerSubtitle(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white"
+                  className="w-full h-11 px-4 rounded-2xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Couleur Sous-titre")}
                 </label>
                 <div className="flex gap-1.5">
@@ -215,14 +215,14 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     type="color"
                     value={bannerSubtitleColor}
                     onChange={(e) => setBannerSubtitleColor(e.target.value)}
-                    className="w-11 h-11 rounded-xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
+                    className="w-11 h-11 rounded-2xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
                   />
                   <input
                     type="text"
                     placeholder="#FFFFFF"
                     value={bannerSubtitleColor}
                     onChange={(e) => setBannerSubtitleColor(e.target.value)}
-                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
+                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-2xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
                   />
                 </div>
               </div>
@@ -231,7 +231,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             {/* Button CTA text and styling */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 pt-3">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Texte du Bouton *")}
                 </label>
                 <input
@@ -240,11 +240,11 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   placeholder={t("ex: Découvrir") || "ex: Découvrir"}
                   value={bannerButtonText}
                   onChange={(e) => setBannerButtonText(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white"
+                  className="w-full h-11 px-4 rounded-2xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Fond du Bouton")}
                 </label>
                 <div className="flex gap-1.5">
@@ -252,19 +252,19 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     type="color"
                     value={bannerBtnBgColor}
                     onChange={(e) => setBannerBtnBgColor(e.target.value)}
-                    className="w-11 h-11 rounded-xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
+                    className="w-11 h-11 rounded-2xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
                   />
                   <input
                     type="text"
                     placeholder="#FFFFFF"
                     value={bannerBtnBgColor}
                     onChange={(e) => setBannerBtnBgColor(e.target.value)}
-                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
+                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-2xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Écriture Bouton")}
                 </label>
                 <div className="flex gap-1.5">
@@ -272,14 +272,14 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     type="color"
                     value={bannerBtnTextColor}
                     onChange={(e) => setBannerBtnTextColor(e.target.value)}
-                    className="w-11 h-11 rounded-xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
+                    className="w-11 h-11 rounded-2xl cursor-pointer border border-zinc-200 shrink-0 select-none bg-transparent"
                   />
                   <input
                     type="text"
                     placeholder="#18181B"
                     value={bannerBtnTextColor}
                     onChange={(e) => setBannerBtnTextColor(e.target.value)}
-                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
+                    className="w-full h-11 px-2.5 border border-zinc-200 rounded-2xl text-xs uppercase font-mono font-bold focus:outline-none focus:border-orange-500 bg-white"
                   />
                 </div>
               </div>
@@ -290,22 +290,22 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
               {/* Desktop configuration */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-baseline">
-                  <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                     {t("Image Bureau * (1920x800 px)")}
                   </label>
-                  <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-2 rounded">
+                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 rounded">
                     {t("Obligatoire")}
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {bannerDesktopImage && (
-                    <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 rounded-xl p-3 text-xs font-semibold">
+                    <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 rounded-2xl p-3 text-xs font-semibold">
                       <Check className="w-4 h-4 text-green-600 shrink-0" />
                       <span className="truncate flex-1">{t("Image bureau sélectionnée avec succès !")}</span>
                       <button
                         type="button"
                         onClick={() => setBannerDesktopImage("")}
-                        className="text-[10px] text-zinc-500 hover:text-red-500 border border-zinc-200 hover:border-red-200 bg-white px-2 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
+                        className="text-xs text-zinc-500 hover:text-red-500 border border-zinc-200 hover:border-red-200 bg-white px-2 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
                       >
                         {t("Effacer")}
                       </button>
@@ -313,7 +313,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   )}
 
                   <label
-                    className={`w-full h-11 px-4 rounded-xl border-2 border-dashed flex items-center justify-between cursor-pointer transition-all select-none group ${
+                    className={`w-full h-11 px-4 rounded-2xl border-2 border-dashed flex items-center justify-between cursor-pointer transition-all select-none group ${
                       bannerDesktopImage
                         ? "border-zinc-200 hover:border-orange-300 hover:bg-zinc-50/50"
                         : "border-orange-500 hover:border-orange-600 bg-orange-50/10"
@@ -323,7 +323,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                       <Upload className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />
                       <span>{bannerDesktopImage ? t("Remplacer l'image") : t("Importer une photo de bureau")}</span>
                     </div>
-                    <span className="text-[9px] text-zinc-400 font-medium">{t("PNG, JPG, WEBP")}</span>
+                    <span className="text-xs text-zinc-400 font-medium">{t("PNG, JPG, WEBP")}</span>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
@@ -335,7 +335,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 </div>
                 {isUploadingDesktop && (
                   <div className="flex flex-col gap-1 mt-1">
-                    <div className="text-[9px] text-orange-600 font-bold uppercase transition flex items-center justify-between">
+                    <div className="text-xs text-orange-600 font-bold uppercase transition flex items-center justify-between">
                       <span>{t("Chargement...")}</span>
                       <span>{uploadProgressDesktop}%</span>
                     </div>
@@ -352,20 +352,20 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
               {/* Mobile configuration */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-baseline">
-                  <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                     {t("Image Mobile (800x1000 px)")}
                   </label>
-                  <span className="text-[9px] font-bold text-zinc-400 uppercase">{t("Optionnel")}</span>
+                  <span className="text-xs font-bold text-zinc-400 uppercase">{t("Optionnel")}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {bannerMobileImage && (
-                    <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 rounded-xl p-3 text-xs font-semibold">
+                    <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 rounded-2xl p-3 text-xs font-semibold">
                       <Check className="w-4 h-4 text-green-600 shrink-0" />
                       <span className="truncate flex-1">{t("Image mobile sélectionnée avec succès !")}</span>
                       <button
                         type="button"
                         onClick={() => setBannerMobileImage("")}
-                        className="text-[10px] text-zinc-500 hover:text-red-500 border border-zinc-200 hover:border-red-200 bg-white px-2 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
+                        className="text-xs text-zinc-500 hover:text-red-500 border border-zinc-200 hover:border-red-200 bg-white px-2 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
                       >
                         {t("Effacer")}
                       </button>
@@ -373,7 +373,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   )}
 
                   <label
-                    className={`w-full h-11 px-4 rounded-xl border-2 border-dashed flex items-center justify-between cursor-pointer transition-all select-none group ${
+                    className={`w-full h-11 px-4 rounded-2xl border-2 border-dashed flex items-center justify-between cursor-pointer transition-all select-none group ${
                       bannerMobileImage
                         ? "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50"
                         : "border-zinc-300 hover:border-zinc-500 bg-zinc-50/10"
@@ -385,7 +385,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                         {bannerMobileImage ? t("Remplacer l'image") : t("Importer une photo mobile (Optionnelle)")}
                       </span>
                     </div>
-                    <span className="text-[9px] text-zinc-400 font-medium font-semibold">{t("Optionnel")}</span>
+                    <span className="text-xs text-zinc-400 font-medium font-semibold">{t("Optionnel")}</span>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
@@ -397,7 +397,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 </div>
                 {isUploadingMobile && (
                   <div className="flex flex-col gap-1 mt-1">
-                    <div className="text-[9px] text-zinc-600 font-bold uppercase transition flex items-center justify-between">
+                    <div className="text-xs text-zinc-600 font-bold uppercase transition flex items-center justify-between">
                       <span>{t("Chargement...")}</span>
                       <span>{uploadProgressMobile}%</span>
                     </div>
@@ -415,13 +415,13 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             {/* Tag ID selection (required) */}
             <div className="space-y-1.5 pt-1 border-t border-zinc-100">
               <div className="flex justify-between items-baseline">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Tag de Redirection d'Accueil *")}
                 </label>
-                <span className="text-[9px] font-bold text-zinc-400">{t("Clic → Filtre Catalogue")}</span>
+                <span className="text-xs font-bold text-zinc-400">{t("Clic → Filtre Catalogue")}</span>
               </div>
               {tags.length === 0 ? (
-                <div className="p-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold font-mono">
+                <div className="p-3 bg-red-50 text-red-500 rounded-2xl text-xs font-bold font-mono">
                   {t("Veuillez d'abord créer au moins un Tag dans l'onglet tags avant d'ajouter une bannière !")}
                 </div>
               ) : (
@@ -429,7 +429,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   required
                   value={bannerTagId}
                   onChange={(e) => setBannerTagId(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white cursor-pointer"
+                  className="w-full h-11 px-4 rounded-2xl border border-zinc-200 text-sm focus:outline-none focus:border-orange-500 bg-white cursor-pointer"
                 >
                   <option value="">{t("Sélectionnez un tag...")}</option>
                   {tags.map((tag) => (
@@ -444,15 +444,15 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             {/* Featured Products Selection */}
             <div className="space-y-3 pt-3 border-t border-zinc-100">
               <div className="flex justify-between items-baseline">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-xs font-sans font-bold uppercase tracking-widest text-zinc-500">
                   {t("Produits Mis en Avant (VIP)")}
                 </label>
-                <span className="text-[9px] font-bold text-zinc-400">{t("Seront affichés en premier")}</span>
+                <span className="text-xs font-bold text-zinc-400">{t("Seront affichés en premier")}</span>
               </div>
 
               {/* Selected products visualization */}
               {bannerFeaturedProducts.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2 p-3 bg-orange-50 rounded-xl border border-orange-100">
+                <div className="flex flex-wrap gap-2 mb-2 p-3 bg-orange-50 rounded-2xl border border-orange-100">
                   {bannerFeaturedProducts.map((prodId) => {
                     const p = allProducts.find((x) => x.id === prodId);
                     return p ? (
@@ -460,12 +460,12 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                         key={prodId}
                         className="flex items-center gap-1.5 bg-white border border-orange-200 ps-2 pe-1 py-1 rounded-lg shadow-sm text-xs group animate-fade-in"
                       >
-                        <img loading="lazy" src={p.image} className="w-5 h-5 rounded-md object-cover" alt="" referrerPolicy="no-referrer" />
+                        <img loading="lazy" src={p.image} className="w-5 h-5 rounded-lg object-cover" alt="" referrerPolicy="no-referrer" />
                         <span className="font-semibold text-zinc-800 max-w-[120px] truncate">{p.name}</span>
                         <button
                           type="button"
                           onClick={() => setBannerFeaturedProducts((prev) => prev.filter((id) => id !== prodId))}
-                          className="p-0.5 text-zinc-400 hover:text-red-500 bg-zinc-50 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                          className="p-0.5 text-zinc-400 hover:text-red-500 bg-zinc-50 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -484,10 +484,10 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   }
                   value={productSearchTerm}
                   onChange={(e) => setProductSearchTerm(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs focus:outline-none focus:border-zinc-500 bg-zinc-50"
+                  className="w-full h-10 px-3 rounded-2xl border border-zinc-200 text-xs focus:outline-none focus:border-zinc-500 bg-zinc-50"
                 />
                 {productSearchTerm.length > 1 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto">
                     {allProducts
                       .filter((p) => !bannerFeaturedProducts.includes(p.id))
                       .filter((p) => p.name.toLowerCase().includes(productSearchTerm.toLowerCase()))
@@ -503,7 +503,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                           <img loading="lazy" src={p.image} className="w-8 h-8 rounded-lg object-cover" alt="" referrerPolicy="no-referrer" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-zinc-900 truncate">{p.name}</p>
-                            <p className="text-[10px] text-zinc-500">
+                            <p className="text-xs text-zinc-500">
                               {p.price} {t("DA")}
                             </p>
                           </div>
@@ -515,7 +515,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                         !bannerFeaturedProducts.includes(p.id) &&
                         p.name.toLowerCase().includes(productSearchTerm.toLowerCase())
                     ).length === 0 && (
-                      <div className="p-3 text-center text-[10px] text-zinc-500 font-bold uppercase">
+                      <div className="p-3 text-center text-xs text-zinc-500 font-bold uppercase">
                         {t("Aucun résultat")}
                       </div>
                     )}
@@ -530,7 +530,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 <label className="text-xs font-extrabold text-zinc-950 uppercase">
                   {t("Statut de la publication")}
                 </label>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase">
+                <p className="text-xs font-bold text-zinc-500 uppercase">
                   {t("Visible en page d'accueil si coché")}
                 </p>
               </div>
@@ -548,19 +548,19 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 <label className="text-xs font-extrabold text-zinc-950 uppercase flex items-center gap-1.5">
                   <span>{t("🎯 Ciblage Fin & Personnalisation")}</span>
                 </label>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase">
+                <p className="text-xs font-bold text-zinc-500 uppercase">
                   {t("Ajustez l'affichage de la bannière sur l'accueil")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-start">
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Audience Cible")}
                   </label>
                   <select
                     value={bannerTargetUserType}
                     onChange={(e) => setBannerTargetUserType(e.target.value as "all" | "new" | "logged_in")}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850 cursor-pointer"
                   >
                     <option value="all">{t("Tout le monde (Tous)")}</option>
                     <option value="new">{t("Nouveaux Visiteurs uniquement")}</option>
@@ -568,7 +568,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Wilayas Cibles (")}
                     {bannerTargetRegions.length})
                   </label>
@@ -580,7 +580,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                       }
                       e.target.value = "";
                     }}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850 cursor-pointer"
                   >
                     <option value="">{t("+ Ajouter une Wilaya")}</option>
                     {ALGERIA_WILAYAS.map((w) => (
@@ -592,17 +592,17 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 </div>
               </div>
               {bannerTargetRegions.length > 0 && (
-                <div className="flex flex-wrap gap-1 p-2 bg-white border border-zinc-200 rounded-xl max-h-[70px] overflow-y-auto">
+                <div className="flex flex-wrap gap-1 p-2 bg-white border border-zinc-200 rounded-2xl max-h-[70px] overflow-y-auto">
                   {bannerTargetRegions.map((w) => (
                     <span
                       key={w}
-                      className="inline-flex items-center gap-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 px-2 py-0.5 rounded-md text-[8px] font-sans font-bold"
+                      className="inline-flex items-center gap-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 px-2 py-0.5 rounded-lg text-xs font-sans font-bold"
                     >
                       {w}
                       <button
                         type="button"
                         onClick={() => setBannerTargetRegions(bannerTargetRegions.filter((item) => item !== w))}
-                        className="hover:text-red-600 text-[8px] font-sans font-bold leading-none ms-1 bg-transparent border-none p-0 cursor-pointer"
+                        className="hover:text-red-600 text-xs font-sans font-bold leading-none ms-1 bg-transparent border-none p-0 cursor-pointer"
                       >
                         ✕
                       </button>
@@ -611,7 +611,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setBannerTargetRegions([])}
-                    className="text-red-500 hover:text-red-700 text-[8px] font-bold underline bg-transparent border-none p-0 cursor-pointer ms-auto"
+                    className="text-red-500 hover:text-red-700 text-xs font-bold underline bg-transparent border-none p-0 cursor-pointer ms-auto"
                   >
                     {t("Vider tout")}
                   </button>
@@ -625,31 +625,31 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 <label className="text-xs font-extrabold text-zinc-950 uppercase flex items-center gap-1.5">
                   <span>{t("📅 Programmation temporelle")}</span>
                 </label>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase">
+                <p className="text-xs font-bold text-zinc-500 uppercase">
                   {t("Configurez la période d'activité de la bannière")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-start">
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Date de début")}
                   </label>
                   <input
                     type="datetime-local"
                     value={bannerStartDate}
                     onChange={(e) => setBannerStartDate(e.target.value)}
-                    className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850"
+                    className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Date de fin")}
                   </label>
                   <input
                     type="datetime-local"
                     value={bannerEndDate}
                     onChange={(e) => setBannerEndDate(e.target.value)}
-                    className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850"
+                    className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850"
                   />
                 </div>
               </div>
@@ -661,19 +661,19 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                 <label className="text-xs font-extrabold text-zinc-950 uppercase flex items-center gap-1.5">
                   <span>{t("📊 Zone d'affichage & Test A/B")}</span>
                 </label>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase">
+                <p className="text-xs font-bold text-zinc-500 uppercase">
                   {t("Associez la bannière à une zone et un groupe de test")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-start">
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Zone d'affichage")}
                   </label>
                   <select
                     value={bannerZone}
                     onChange={(e) => setBannerZone(e.target.value as "carousel_main" | "grid_top" | "grid_bottom" | "sidebar")}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850 cursor-pointer"
                   >
                     <option value="carousel_main">{t("Carrousel Principal")}</option>
                     <option value="grid_top">{t("Grille Haute")}</option>
@@ -682,13 +682,13 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[9px] font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
+                  <label className="block text-xs font-sans font-bold uppercase tracking-wider text-zinc-700 mb-1">
                     {t("Groupe de Test A/B")}
                   </label>
                   <select
                     value={bannerAbGroup}
                     onChange={(e) => setBannerAbGroup(e.target.value as "all" | "A" | "B")}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-[10px] bg-white text-zinc-850 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-800 font-bold text-xs bg-white text-zinc-850 cursor-pointer"
                   >
                     <option value="all">{t("Tous (Pas d'A/B test)")}</option>
                     <option value="A">{t("Groupe de test A")}</option>
@@ -702,7 +702,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
             <button
               type="submit"
               disabled={isUploadingDesktop || isUploadingMobile}
-              className="w-full h-12 bg-zinc-950 text-white hover:bg-zinc-850 rounded-xl font-sans font-bold text-xs uppercase tracking-widest transition-colors select-none cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+              className="w-full h-12 bg-zinc-950 text-white hover:bg-zinc-850 rounded-2xl font-sans font-bold text-xs uppercase tracking-widest transition-colors select-none cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
             >
               <Check className="w-4 h-4" />
               <span>{t("Enregistrer la Bannière")}</span>
@@ -719,7 +719,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
 
               {/* Desktop Preview Card (Ratio 21:9) */}
               <div className="space-y-1.5">
-                <span className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest block">
+                <span className="text-xs font-sans font-bold text-zinc-400 uppercase tracking-widest block">
                   {t("Format Bureau (Aperçu)")}
                 </span>
                 <div className="w-full aspect-[2.4/1] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-200 relative shadow-md">
@@ -732,7 +732,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-zinc-400 text-center uppercase gap-1 text-[10px] font-mono">
+                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-zinc-400 text-center uppercase gap-1 text-xs font-mono">
                       <ImageIcon className="w-8 h-8 opacity-40 shrink-0" />
                       <span>{t("Pas d'image desktop")}</span>
                     </div>
@@ -744,7 +744,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   {/* Marketing data overlays */}
                   <div className="absolute inset-0 flex flex-col justify-end p-4 text-white text-start">
                     {tags.find((t) => t.id === bannerTagId) && (
-                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/15 tracking-widest uppercase font-sans font-bold text-[7px] w-fit mb-1">
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/15 tracking-widest uppercase font-sans font-bold text-xs w-fit mb-1">
                         {tags.find((t) => t.id === bannerTagId)?.name}
                       </span>
                     )}
@@ -756,7 +756,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     </h3>
                     {bannerSubtitle && (
                       <p
-                        className="text-[9px] font-semibold leading-normal mb-1 tracking-wide select-none drop-shadow-sm"
+                        className="text-xs font-semibold leading-normal mb-1 tracking-wide select-none drop-shadow-sm"
                         style={{ color: bannerSubtitleColor }}
                       >
                         {bannerSubtitle}
@@ -765,7 +765,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     <button
                       type="button"
                       style={{ backgroundColor: bannerBtnBgColor, color: bannerBtnTextColor }}
-                      className="rounded-lg py-1 px-3 text-[8px] uppercase tracking-widest font-sans font-bold shrink-0 w-fit pointer-events-none mt-1 shadow-sm"
+                      className="rounded-lg py-1 px-3 text-xs uppercase tracking-widest font-sans font-bold shrink-0 w-fit pointer-events-none mt-1 shadow-sm"
                     >
                       {bannerButtonText}
                     </button>
@@ -775,7 +775,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
 
               {/* Mobile Preview Frame Phone Mockup (Ratio 4:5) */}
               <div className="space-y-1.5">
-                <span className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest block">
+                <span className="text-xs font-sans font-bold text-zinc-400 uppercase tracking-widest block">
                   {t("Format Téléphone (Aperçu)")}
                 </span>
                 <div className="w-44 aspect-[4/5] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-200 relative mx-auto shadow-md">
@@ -796,12 +796,12 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
                       />
-                      <div className="absolute top-1.5 start-1.5 px-1.5 py-0.5 bg-orange-600/90 rounded text-[7px] font-sans font-bold text-white uppercase tracking-wider select-none leading-none">
+                      <div className="absolute top-1.5 start-1.5 px-1.5 py-0.5 bg-orange-600/90 rounded text-xs font-sans font-bold text-white uppercase tracking-wider select-none leading-none">
                         {t("Desktop Fallback")}
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-zinc-400 text-center uppercase gap-1 text-[9px] font-mono">
+                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-zinc-400 text-center uppercase gap-1 text-xs font-mono">
                       <ImageIcon className="w-6 h-6 opacity-40 shrink-0" />
                       <span>{t("Pas d'image")}</span>
                     </div>
@@ -812,19 +812,19 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                   {/* Mobile mockup detail */}
                   <div className="absolute inset-x-0 bottom-0 p-3 text-white text-start">
                     {tags.find((t) => t.id === bannerTagId) && (
-                      <span className="inline-block tracking-widest uppercase font-sans font-bold text-[6px] text-zinc-300 drop-shadow mb-0.5">
+                      <span className="inline-block tracking-widest uppercase font-sans font-bold text-xs text-zinc-300 drop-shadow mb-0.5">
                         {tags.find((t) => t.id === bannerTagId)?.name}
                       </span>
                     )}
                     <h4
-                      className="text-[10px] font-sans font-bold leading-tight mb-0.5 uppercase select-none tracking-tight drop-shadow truncate"
+                      className="text-xs font-sans font-bold leading-tight mb-0.5 uppercase select-none tracking-tight drop-shadow truncate"
                       style={{ color: bannerTitleColor }}
                     >
                       {bannerTitle || "Titre de la Bannière"}
                     </h4>
                     {bannerSubtitle && (
                       <p
-                        className="text-[7px] font-semibold leading-tight mb-1 opacity-95 truncate"
+                        className="text-xs font-semibold leading-tight mb-1 opacity-95 truncate"
                         style={{ color: bannerSubtitleColor }}
                       >
                         {bannerSubtitle}
@@ -833,7 +833,7 @@ export const BannerFormModal: React.FC<BannerFormModalProps> = ({
                     <button
                       type="button"
                       style={{ backgroundColor: bannerBtnBgColor, color: bannerBtnTextColor }}
-                      className="rounded py-1 px-2.5 text-[7px] uppercase tracking-widest font-sans font-bold shrink-0 w-fit pointer-events-none block shadow-sm mt-0.5"
+                      className="rounded py-1 px-2.5 text-xs uppercase tracking-widest font-sans font-bold shrink-0 w-fit pointer-events-none block shadow-sm mt-0.5"
                     >
                       {bannerButtonText}
                     </button>

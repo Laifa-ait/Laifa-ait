@@ -251,7 +251,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   placeholder={t("EX: RAMADAN26")}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl font-mono uppercase focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl font-mono uppercase focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
                 />
               </div>
 
@@ -265,7 +265,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   value={usageLimit}
                   onChange={(e) => setUsageLimit(e.target.value)}
                   placeholder={t("Optionnel (Ex: 100)")}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
                 />
               </div>
             </div>
@@ -282,7 +282,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                     setDiscountType(e.target.value as CouponDiscountType);
                     setDiscountValue("");
                   }}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all font-semibold"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all font-semibold"
                 >
                   <option value="percentage">{t("Pourcentage (%)")}</option>
                   <option value="fixed">{t("Montant Fixe (DA)")}</option>
@@ -301,7 +301,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   value={discountValue}
                   onChange={(e) => setDiscountValue(e.target.value)}
                   placeholder={discountType === "percentage" ? t("Ex: 15") : t("Ex: 1000")}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
                 />
               </div>
             </div>
@@ -319,7 +319,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   value={minOrderValue}
                   onChange={(e) => setMinOrderValue(e.target.value)}
                   placeholder={t("Ex: 5000")}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
                 />
               </div>
 
@@ -333,7 +333,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
                   min={new Date().toISOString().slice(0, 16)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl focus:ring-1 focus:ring-zinc-950 outline-none transition-all"
                 />
               </div>
             </div>
@@ -355,7 +355,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                 <p className="text-xs font-bold text-zinc-800 uppercase tracking-wide">
                   {t("Limiter à un usage unique par client")}
                 </p>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-xs text-zinc-500">
                   {t("Si activé, chaque client d'OLMART ne pourra utiliser ce code qu'une seule fois.")}
                 </p>
               </div>
@@ -368,11 +368,11 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   <Layers className="w-4 h-4 text-zinc-500" />
                   {t("Limitation par Catégorie")}
                 </label>
-                <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-md font-mono font-bold">
+                <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-lg font-mono font-bold">
                   {selectedCategories.length} {t("Sélectionnées")}
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 mb-2">
+              <p className="text-xs text-zinc-500 mb-2">
                 {t("Laissez vide pour autoriser toutes les catégories d'OLMART.")}
               </p>
 
@@ -383,13 +383,13 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   placeholder={t("Filtrer les catégories...")}
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
-                  className="w-full ps-9 pe-4 py-2 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl text-xs outline-none transition-all"
+                  className="w-full ps-9 pe-4 py-2 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl text-xs outline-none transition-all"
                 />
               </div>
 
               <div className="border border-zinc-100 rounded-2xl max-h-[140px] overflow-y-auto p-3 space-y-2.5 bg-zinc-50/30">
                 {filteredCategories.length === 0 ? (
-                  <p className="text-[11px] text-zinc-400 text-center py-4">{t("Aucune catégorie trouvée")}</p>
+                  <p className="text-xs text-zinc-400 text-center py-4">{t("Aucune catégorie trouvée")}</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {filteredCategories.map((cat) => {
@@ -399,7 +399,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                           key={cat}
                           type="button"
                           onClick={() => handleToggleCategory(cat)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
+                          className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all text-left ${
                             isSelected
                               ? "bg-zinc-950 text-white shadow-sm"
                               : "bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-300"
@@ -421,11 +421,11 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   <User className="w-4 h-4 text-zinc-500" />
                   {t("Limitation par Vendeur")}
                 </label>
-                <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-md font-mono font-bold">
+                <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-lg font-mono font-bold">
                   {selectedSellers.length} {t("Sélectionnés")}
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 mb-2">
+              <p className="text-xs text-zinc-500 mb-2">
                 {t("Laissez vide pour autoriser tous les vendeurs d'OLMART.")}
               </p>
 
@@ -436,13 +436,13 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   placeholder={t("Filtrer les vendeurs par boutique ou email...")}
                   value={sellerSearch}
                   onChange={(e) => setSellerSearch(e.target.value)}
-                  className="w-full ps-9 pe-4 py-2 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-xl text-xs outline-none transition-all"
+                  className="w-full ps-9 pe-4 py-2 bg-zinc-50 border border-zinc-200 focus:border-zinc-950 rounded-2xl text-xs outline-none transition-all"
                 />
               </div>
 
               <div className="border border-zinc-100 rounded-2xl max-h-[140px] overflow-y-auto p-3 space-y-2.5 bg-zinc-50/30">
                 {filteredSellers.length === 0 ? (
-                  <p className="text-[11px] text-zinc-400 text-center py-4">{t("Aucun vendeur trouvé")}</p>
+                  <p className="text-xs text-zinc-400 text-center py-4">{t("Aucun vendeur trouvé")}</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {filteredSellers.map((seller) => {
@@ -452,7 +452,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                           key={seller.id}
                           type="button"
                           onClick={() => handleToggleSeller(seller.id)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
+                          className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all text-left ${
                             isSelected
                               ? "bg-zinc-950 text-white shadow-sm"
                               : "bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-300"
@@ -477,7 +477,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
               onClose();
               resetForm();
             }}
-            className="px-6 py-3 font-sans font-bold text-zinc-600 hover:bg-zinc-100 rounded-xl transition-colors text-xs uppercase tracking-wider"
+            className="px-6 py-3 font-sans font-bold text-zinc-600 hover:bg-zinc-100 rounded-2xl transition-colors text-xs uppercase tracking-wider"
           >
             {t("Annuler")}
           </button>
@@ -485,7 +485,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="px-8 py-3 bg-zinc-950 text-white font-sans font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-50"
+            className="px-8 py-3 bg-zinc-950 text-white font-sans font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-zinc-800 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-50"
           >
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

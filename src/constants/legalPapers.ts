@@ -17,6 +17,20 @@ export interface LegalPaperInfo {
 }
 
 export const LEGAL_PAPERS_CONFIG: Record<LegalPaperType, LegalPaperInfo> = {
+  acte_notarie: {
+    type: 'acte_notarie',
+    title: "Acte notarié authentique",
+    label: "Acte notarié authentique",
+    shortLabel: 'Acte Notarié',
+    description: "Acte notarié officiel enregistré et publié attestant des droits de propriété réels.",
+    legalScope: "Titre authentique établi par devant notaire avec enregistrement fiscal.",
+    buyerAdvice: "Titre notarié légal assurant la transmission des droits de propriété selon la loi foncière.",
+    badgeBg: 'bg-emerald-50',
+    badgeText: 'text-emerald-800',
+    badgeBorder: 'border-emerald-200',
+    isVerifiedLegal: true,
+    icon: ShieldCheck,
+  },
   acte_notarie_individuel: {
     type: 'acte_notarie_individuel',
     title: "Acte notarié dans l'individuel",

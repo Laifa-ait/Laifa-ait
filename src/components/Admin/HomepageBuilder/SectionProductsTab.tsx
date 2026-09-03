@@ -75,13 +75,13 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
       {/* Category filter & limit */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-zinc-700 mb-1">
             {t("Filtrer par Catégorie Principale")}
           </label>
           <select
             value={secCategory}
             onChange={(e) => setSecCategory(e.target.value)}
-            className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer"
+            className="w-full px-3 py-2.5 text-xs rounded-2xl border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer"
           >
             <option value="">{t("Toutes les catégories (Multi-rayons)")}</option>
             {categoriesList.map((cat) => (
@@ -93,7 +93,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-zinc-700 mb-1">
             {t("Nombre max de produits à afficher")} ({secLimit || 8})
           </label>
           <input
@@ -103,9 +103,9 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
             step={2}
             value={secLimit || 8}
             onChange={(e) => setSecLimit(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500 mt-2"
+            className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-amber-500 mt-2"
           />
-          <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+          <div className="flex justify-between text-[10px] text-zinc-400 mt-1 font-mono">
             <span>4</span>
             <span>8</span>
             <span>12</span>
@@ -116,11 +116,11 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
       </div>
 
       {/* Selected Products Strip */}
-      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+      <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PackageCheck className="w-4 h-4 text-emerald-600" />
-            <h4 className="text-xs font-bold text-slate-900">
+            <h4 className="text-xs font-bold text-zinc-900">
               {t("Produits Sélectionnés Manuellement")} ({selectedProducts.length})
             </h4>
           </div>
@@ -136,7 +136,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
         </div>
 
         {selectedProducts.length === 0 ? (
-          <p className="text-xs text-slate-500 italic">
+          <p className="text-xs text-zinc-500 italic">
             {t("Aucun produit manuel sélectionné. Les produits seront sélectionnés automatiquement selon la catégorie et le type.")}
           </p>
         ) : (
@@ -144,12 +144,12 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
             {selectedProducts.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-2xs text-xs font-medium text-slate-800 group"
+                className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-2xl border border-zinc-200 shadow-2xs text-xs font-medium text-zinc-800 group"
               >
                 {p.images && p.images[0] && (
                   <img loading="lazy" decoding="async" src={p.images[0]}
                     alt={p.name}
-                    className="w-5 h-5 object-cover rounded-md"
+                    className="w-5 h-5 object-cover rounded-lg"
                   />
                 )}
                 <span className="max-w-[120px] truncate">{p.name}</span>
@@ -159,7 +159,7 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleRemoveSelected(p.id)}
-                  className="text-slate-400 hover:text-rose-500 cursor-pointer"
+                  className="text-zinc-400 hover:text-rose-500 cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -172,22 +172,22 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
       {/* Product Picker Search & Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-700">
+          <label className="text-xs font-bold text-zinc-700">
             {t("Ajouter des produits au catalogue de cette section")}
           </label>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-zinc-500">
             {availableFiltered.length} {t("produits trouvés")}
           </span>
         </div>
 
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={productSearch}
             onChange={(e) => setProductSearch(e.target.value)}
             placeholder={t("Rechercher un produit par nom...")}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-2xl border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
           />
         </div>
 
@@ -199,17 +199,17 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
                 key={p.id}
                 type="button"
                 onClick={() => handleToggleProduct(p.id)}
-                className={`flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                className={`flex items-center gap-2.5 p-2 rounded-2xl border text-left transition-all cursor-pointer ${
                   isSelected
                     ? "bg-amber-50/80 border-amber-500 ring-1 ring-amber-500"
-                    : "bg-white border-slate-200 hover:border-slate-300"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <div className="w-9 h-9 rounded-lg bg-slate-100 shrink-0 overflow-hidden relative">
+                <div className="w-9 h-9 rounded-lg bg-zinc-100 shrink-0 overflow-hidden relative">
                   {p.images && p.images[0] ? (
                     <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[9px] text-slate-400">
+                    <div className="w-full h-full flex items-center justify-center text-[9px] text-zinc-400">
                       Img
                     </div>
                   )}
@@ -220,8 +220,8 @@ export const SectionProductsTab: React.FC<SectionProductsTabProps> = ({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 truncate">{p.name}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">
+                  <p className="text-xs font-bold text-zinc-900 truncate">{p.name}</p>
+                  <p className="text-[10px] text-zinc-500 font-medium">
                     {formatPrice(p.price)} DZD
                   </p>
                 </div>

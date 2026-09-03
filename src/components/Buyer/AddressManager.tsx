@@ -188,10 +188,10 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
     <div className="space-y-8" id="address-manager-module">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-sans font-bold text-xl text-slate-900 tracking-tight rtl:tracking-normal text-start">
+          <h3 className="font-sans font-bold text-xl text-zinc-900 tracking-tight rtl:tracking-normal text-start">
             {t("Mon Carnet d'Adresses")}
           </h3>
-          <p className="text-slate-500 text-xs rtl:text-sm text-start">
+          <p className="text-zinc-500 text-xs rtl:text-sm text-start">
             {t("Configurez vos adresses de livraison principales et de facturation légale.")}
           </p>
         </div>
@@ -201,7 +201,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
               setShowAddForm(true);
               handleWilayaChange("16 Alger");
             }}
-            className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-md"
+            className="flex items-center gap-2 px-6 py-3.5 bg-zinc-900 text-white font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
           >
             <Plus className="w-4 h-4" /> {t("Nouvelle adresse")}
           </button>
@@ -211,15 +211,15 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
       {showAddForm && (
         <form
           onSubmit={handleAddAddress}
-          className="bg-transparent border border-slate-150 rounded-3xl p-8 space-y-6 animate-pulse-once text-start"
+          className="bg-transparent border border-zinc-150 rounded-2xl p-8 space-y-6 animate-pulse-once text-start"
         >
-          <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-widest rtl:tracking-normal flex items-center gap-2">
-            <Compass className="w-5 h-5 text-slate-500 animate-spin-slow" /> {t("Ajouter une adresse structurée")}
+          <h4 className="font-extrabold text-sm text-zinc-900 uppercase tracking-widest rtl:tracking-normal flex items-center gap-2">
+            <Compass className="w-5 h-5 text-zinc-500 animate-spin-slow" /> {t("Ajouter une adresse structurée")}
           </h4>
 
           <div className="grid sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                 {t("Nom du destinataire / Raison sociale")}
               </label>
               <input
@@ -227,13 +227,13 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all"
+                className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all"
                 placeholder={t("Ex: Amine Benali (ou EURL Alger)") || "Ex: Amine Benali (ou EURL Alger)"}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                 {t("Téléphone de livraison")}
               </label>
               <input
@@ -241,19 +241,19 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all"
+                className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all"
                 placeholder={t("Ex: 0550 12 34 56") || "Ex: 0550 12 34 56"}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                 {t("Wilaya")}
               </label>
               <select
                 value={formData.wilaya}
                 onChange={(e) => handleWilayaChange(e.target.value)}
-                className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal outline-none focus:ring-4 focus:ring-slate-100 cursor-pointer"
+                className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal outline-none focus:ring-4 focus:ring-zinc-100 cursor-pointer"
               >
                 {ALGERIA_WILAYAS.map((w: WilayaOption) => {
                   const val = `${w.code} ${w.name}`;
@@ -269,7 +269,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
             {/* Daïra / Arrondissement selection */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+                <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                   {t("Daïra / Arrondissement")}
                 </label>
                 <button
@@ -292,13 +292,13 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                   placeholder={t("Saisissez la Daïra") || "Saisissez la Daïra"}
                   value={formData.daira}
                   onChange={(e) => setFormData({ ...formData, daira: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all"
+                  className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all"
                 />
               ) : (
                 <select
                   value={formData.daira}
                   onChange={(e) => handleDairaChange(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:ring-4 focus:ring-slate-100 cursor-pointer"
+                  className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:ring-4 focus:ring-zinc-100 cursor-pointer"
                 >
                   {currentDairas.map((d) => (
                     <option key={d} value={d}>
@@ -312,7 +312,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
             {/* Commune / Baladia selection */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+                <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                   {t("Commune / Baladia")}
                 </label>
                 <button
@@ -335,13 +335,13 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                   placeholder={t("Saisissez la commune") || "Saisissez la commune"}
                   value={formData.commune}
                   onChange={(e) => setFormData({ ...formData, commune: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all"
+                  className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all"
                 />
               ) : (
                 <select
                   value={formData.commune}
                   onChange={(e) => setFormData({ ...formData, commune: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:ring-4 focus:ring-slate-100 cursor-pointer"
+                  className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:ring-4 focus:ring-zinc-100 cursor-pointer"
                 >
                   {currentCommunes.map((c: string) => (
                     <option key={c} value={c}>
@@ -354,7 +354,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
 
             {/* Code Postal with regex validation */}
             <div className="space-y-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                 {t("Code Postal (Algérien - 5 Chiffres)")}
               </label>
               <input
@@ -363,13 +363,13 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                 maxLength={5}
                 value={formData.codePostal}
                 onChange={(e) => setFormData({ ...formData, codePostal: e.target.value.replace(/\D/g, "") })}
-                className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all"
+                className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-bold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all"
                 placeholder={t("Ex: 16000") || "Ex: 16000"}
               />
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-650 uppercase tracking-wider rtl:tracking-normal block">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-650 uppercase tracking-wider rtl:tracking-normal block">
                 {t("Rue / Bâtiment / N° de porte (Détails de livraison)")}
               </label>
               <textarea
@@ -377,7 +377,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                 required
                 value={formData.rue}
                 onChange={(e) => setFormData({ ...formData, rue: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-semibold text-xs rtl:text-sm outline-none focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all resize-none"
+                className="w-full px-5 py-3.5 bg-white border border-zinc-200 rounded-2xl font-semibold text-xs rtl:text-sm outline-none focus:border-zinc-500 focus:ring-4 focus:ring-zinc-100 transition-all resize-none"
                 placeholder={
                   t("Ex: Cité 500 Logements, Bâtiment C, Appartement 12") ||
                   "Ex: Cité 500 Logements, Bâtiment C, Appartement 12"
@@ -387,7 +387,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
 
             {/* Address Roles Logic (Gifting and B2B enabled) */}
             <div className="sm:col-span-2 space-y-3 pt-3">
-              <label className="text-[10px] rtl:text-[12px] font-bold text-slate-500 uppercase tracking-wider rtl:tracking-normal block leading-none text-start">
+              <label className="text-[10px] rtl:text-[12px] font-bold text-zinc-500 uppercase tracking-wider rtl:tracking-normal block leading-none text-start">
                 {t("Usage de l'adresse")}
               </label>
               <div className="flex gap-6">
@@ -396,9 +396,9 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                     type="checkbox"
                     checked={formData.isShipping}
                     onChange={(e) => setFormData({ ...formData, isShipping: e.target.checked })}
-                    className="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-500 accent-slate-900 cursor-pointer"
+                    className="w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-500 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="text-xs rtl:text-sm font-bold text-slate-700 select-none">
+                  <span className="text-xs rtl:text-sm font-bold text-zinc-700 select-none">
                     {t("Adresse de Livraison (Shipping)")}
                   </span>
                 </label>
@@ -408,9 +408,9 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                     type="checkbox"
                     checked={formData.isBilling}
                     onChange={(e) => setFormData({ ...formData, isBilling: e.target.checked })}
-                    className="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-500 accent-slate-900 cursor-pointer"
+                    className="w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-500 accent-zinc-900 cursor-pointer"
                   />
-                  <span className="text-xs rtl:text-sm font-bold text-slate-700 select-none">
+                  <span className="text-xs rtl:text-sm font-bold text-zinc-700 select-none">
                     {t("Adresse de Facturation (Billing)")}
                   </span>
                 </label>
@@ -418,18 +418,18 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-150">
+          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-150">
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="px-6 py-3 border border-slate-200 text-slate-600 rounded-xl font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal hover:bg-white transition-all cursor-pointer"
+              className="px-6 py-3 border border-zinc-200 text-zinc-600 rounded-2xl font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal hover:bg-white transition-all cursor-pointer"
             >
               {t("Annuler")}
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-8 py-3 bg-slate-900 text-white rounded-xl font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal hover:bg-slate-800 transition-all disabled:opacity-50 cursor-pointer"
+              className="px-8 py-3 bg-zinc-900 text-white rounded-2xl font-extrabold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal hover:bg-zinc-800 transition-all disabled:opacity-50 cursor-pointer"
             >
               {saving ? "Sauvegarde..." : "Enregistrer cette adresse"}
             </button>
@@ -438,10 +438,10 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
       )}
 
       {addresses.length === 0 ? (
-        <div className="bg-transparent rounded-3xl p-12 text-center border border-slate-100 animate-pulse-once">
-          <MapPin className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 font-bold text-sm">{t("Aucune adresse enregistrée")}</p>
-          <p className="text-slate-400 text-xs rtl:text-sm mt-1">
+        <div className="bg-transparent rounded-2xl p-12 text-center border border-zinc-100 animate-pulse-once">
+          <MapPin className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+          <p className="text-zinc-500 font-bold text-sm">{t("Aucune adresse enregistrée")}</p>
+          <p className="text-zinc-400 text-xs rtl:text-sm mt-1">
             {t("Ajoutez une adresse pour débloquer le service de livraison structuré d'Olma.")}
           </p>
         </div>
@@ -451,27 +451,27 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
             return (
               <div
                 key={addr.id}
-                className={`p-6 rounded-3xl border transition-all duration-350 relative flex flex-col justify-between text-start group ${
+                className={`p-6 rounded-2xl border transition-all duration-350 relative flex flex-col justify-between text-start group ${
                   addr.isDefault
-                    ? "bg-white border-slate-900 ring-2 ring-slate-900/5 shadow-md shadow-slate-900/5"
-                    : "bg-white border-slate-100 hover:border-slate-300 shadow-sm"
+                    ? "bg-white border-zinc-900 ring-2 ring-zinc-900/5 shadow-md shadow-zinc-900/5"
+                    : "bg-white border-zinc-100 hover:border-zinc-300 shadow-sm"
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       {addr.isDefault && (
-                        <span className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-full bg-slate-900 text-white shadow-xs">
+                        <span className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-full bg-zinc-900 text-white shadow-xs">
                           {t("Principale")}
                         </span>
                       )}
                       {addr.isShipping && (
-                        <span className="px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-md bg-blue-50 text-blue-600 border border-blue-100">
+                        <span className="px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
                           {t("LIVR")}
                         </span>
                       )}
                       {addr.isBilling && (
-                        <span className="px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-md bg-purple-50 text-purple-600 border border-purple-100">
+                        <span className="px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider rtl:tracking-normal rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
                           {t("FACT")}
                         </span>
                       )}
@@ -479,39 +479,39 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
                     {!addr.isDefault && (
                       <button
                         onClick={() => handleSetDefault(addr.id)}
-                        className="text-[10px] rtl:text-[12px] font-bold text-slate-400 hover:text-slate-900 underline opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        className="text-[10px] rtl:text-[12px] font-bold text-zinc-400 hover:text-zinc-900 underline opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                       >
                         {t("Définir par défaut")}
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-1.5 text-slate-700">
-                    <p className="font-sans font-bold text-sm text-slate-900 tracking-tight rtl:tracking-normal">
+                  <div className="space-y-1.5 text-zinc-700">
+                    <p className="font-sans font-bold text-sm text-zinc-900 tracking-tight rtl:tracking-normal">
                       {addr.name || userProfile?.displayName}
                     </p>
-                    <p className="font-extrabold text-[11px] text-slate-800 uppercase tracking-widest rtl:tracking-normal">
+                    <p className="font-extrabold text-[11px] text-zinc-800 uppercase tracking-widest rtl:tracking-normal">
                       {addr.wilaya} • {addr.daira ? `${addr.daira} • ` : ""}
                       {addr.commune}
                     </p>
-                    <p className="text-xs rtl:text-sm font-semibold text-slate-500">
+                    <p className="text-xs rtl:text-sm font-semibold text-zinc-500">
                       {t("CP:")}
                       {addr.codePostal || "16000"}
                     </p>
-                    <p className="text-xs rtl:text-sm font-medium text-slate-400">{addr.rue}</p>
+                    <p className="text-xs rtl:text-sm font-medium text-zinc-400">{addr.rue}</p>
 
-                    <p className="text-[11px] font-bold text-slate-500 mt-2.5 flex items-center gap-1.5">
+                    <p className="text-[11px] font-bold text-zinc-500 mt-2.5 flex items-center gap-1.5">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       {addr.phone}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-4 mt-4 border-t border-slate-50">
+                <div className="flex justify-end pt-4 mt-4 border-t border-zinc-50">
                   <button
                     type="button"
                     onClick={() => handleDeleteAddress(addr.id)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                    className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all cursor-pointer"
                     title={t("Supprimer cette adresse") || "Supprimer cette adresse"}
                   >
                     <Trash2 className="w-4 h-4" />

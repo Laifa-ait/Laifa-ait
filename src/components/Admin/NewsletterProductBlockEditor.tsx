@@ -19,7 +19,7 @@ export const NewsletterProductBlockEditor: React.FC<NewsletterProductBlockEditor
   return (
     <div className="space-y-6 text-center">
       {b.productImage ? (
-        <div className="bg-white border border-zinc-100 rounded-3xl p-4 transition-all hover:shadow-md max-w-sm mx-auto">
+        <div className="bg-white border border-zinc-100 rounded-2xl p-4 transition-all hover:shadow-md max-w-sm mx-auto">
           <div className="aspect-square bg-zinc-50 rounded-2xl overflow-hidden relative border border-zinc-100 mb-4 group/img">
             <div className="absolute end-3 top-3 z-10 opacity-0 group-hover/img:opacity-100 transition-opacity bg-white/95 px-3 py-1.5 rounded-lg shadow-sm border border-zinc-200">
               <button
@@ -85,7 +85,7 @@ export const NewsletterProductBlockEditor: React.FC<NewsletterProductBlockEditor
             <label className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal block font-mono">
               {t("Largeur du Produit (Dim.)")}
             </label>
-            <div className="flex bg-white rounded-xl p-1 border border-zinc-200">
+            <div className="flex bg-white rounded-2xl p-1 border border-zinc-200">
               {[30, 50, 75, 100].map((w) => (
                 <button
                   key={w}
@@ -102,7 +102,7 @@ export const NewsletterProductBlockEditor: React.FC<NewsletterProductBlockEditor
             <button
               type="button"
               onClick={() => onOpenMediaModal(b.id)}
-              className="w-full py-3 bg-white border border-zinc-200 hover:border-orange-500 hover:bg-orange-50 rounded-xl flex items-center justify-center gap-1.5 transition-all text-[9.5px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-zinc-650 hover:text-orange-700"
+              className="w-full py-3 bg-white border border-zinc-200 hover:border-orange-500 hover:bg-orange-50 rounded-2xl flex items-center justify-center gap-1.5 transition-all text-[9.5px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal text-zinc-650 hover:text-orange-700"
             >
               <FolderOpen className="w-4 h-4 text-orange-500 shrink-0" /> {t("Changer de Produit")}
             </button>
@@ -112,7 +112,7 @@ export const NewsletterProductBlockEditor: React.FC<NewsletterProductBlockEditor
           <label className="text-[9px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal block font-mono">
             {t("Lien hypertexte personnalisé (optionnel)")}
           </label>
-          <div className="bg-white border border-zinc-200 rounded-xl px-4 py-2 flex items-center gap-2">
+          <div className="bg-white border border-zinc-200 rounded-2xl px-4 py-2 flex items-center gap-2">
             <Link2 className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
             <input
               type="text"

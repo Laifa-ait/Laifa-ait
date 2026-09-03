@@ -31,7 +31,7 @@ export const OverviewTopLists: React.FC<OverviewTopListsProps> = ({
             topProducts.map((p, i) => (
               <div key={i} className="flex items-center gap-4">
                 <div
-                  className="w-10 h-10 rounded-xl bg-zinc-100 flex-shrink-0 bg-cover bg-center"
+                  className="w-10 h-10 rounded-2xl bg-zinc-100 flex-shrink-0 bg-cover bg-center"
                   style={{ backgroundImage: `url(${p.images?.[0] || ""})` }}
                 />
                 <div className="flex-1 min-w-0">
@@ -56,7 +56,7 @@ export const OverviewTopLists: React.FC<OverviewTopListsProps> = ({
           ) : (
             topSellers.map((s, i) => (
               <div key={i} className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
                   {s.displayName?.charAt(0) || "V"}
                 </div>
                 <div className="flex-1 min-w-0">

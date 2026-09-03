@@ -41,12 +41,12 @@ export const NewsletterCanvas: React.FC<NewsletterCanvasProps> = ({
           <input
             type="text"
             placeholder={t("Ex: Prêts pour l'été ?") || "Ex: Prêts pour l'été ?"}
-            className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-3 font-sans font-bold text-zinc-950 outline-none focus:border-orange-500 transition-colors"
+            className="w-full bg-white border border-zinc-200 rounded-2xl px-5 py-3 font-sans font-bold text-zinc-950 outline-none focus:border-orange-500 transition-colors"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
           />
         </div>
-        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-zinc-100">
+        <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-zinc-100">
           <button
             onClick={() => setView("desktop")}
             className={`px-4 py-2.5 rounded flex items-center gap-2 text-[10px] font-black uppercase transition-all ${view === "desktop" ? "bg-zinc-950 text-white shadow-md" : "text-zinc-400 hover:text-zinc-700"}`}
@@ -77,7 +77,7 @@ export const NewsletterCanvas: React.FC<NewsletterCanvasProps> = ({
           {/* Content Blocks List */}
           <div className="p-8 flex flex-wrap gap-6 items-start justify-start min-h-[400px]">
             {blocks.length === 0 && (
-              <div className="py-20 text-center border-2 border-dashed border-zinc-200 rounded-3xl w-full">
+              <div className="py-20 text-center border-2 border-dashed border-zinc-200 rounded-2xl w-full">
                 <Plus className="w-10 h-10 text-zinc-300 mx-auto mb-4 animate-bounce" />
                 <p className="text-zinc-500 font-sans font-bold uppercase text-[10px] tracking-widest rtl:tracking-normal">
                   {t("Ajoutez des blocs pour commencer")}

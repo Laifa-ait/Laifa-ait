@@ -1,4 +1,4 @@
-import { admin } from "../config/firebase-admin";
+import { admin, db } from "../config/firebase-admin";
 import { safeLogger } from "../utils/logger";
 
 const CHECK_INTERVAL = 60 * 1000; // 1 minute
@@ -6,6 +6,9 @@ let workerInterval: NodeJS.Timeout | null = null;
 let isJobRunning = false;
 
 export const executeProductPublisherJob = async (): Promise<number> => {
+  if (!db || !admin || !admin.apps || admin.apps.length === 0) {
+    return 0;
+  }
   if (isJobRunning) {
     safeLogger.warn("[Olmart Workers] ⏳ Product Publisher Worker skip: previous cycle still in progress.");
     return 0;
@@ -15,7 +18,7 @@ export const executeProductPublisherJob = async (): Promise<number> => {
   try {
     const now = Date.now();
     
-    const snapshot = await admin.firestore().collection("products")
+    const snapshot = await db.collection("products")
       .where("publishAt", "<=", now)
       .get();
 
@@ -23,7 +26,7 @@ export const executeProductPublisherJob = async (): Promise<number> => {
       return 0;
     }
 
-    const batch = admin.firestore().batch();
+    const batch = db.batch();
     let updatedCount = 0;
 
     snapshot.forEach((doc) => {
@@ -38,7 +41,7 @@ export const executeProductPublisherJob = async (): Promise<number> => {
         });
         
         // Log activity
-        const activityRef = admin.firestore().collection("admin_activities").doc();
+        const activityRef = db.collection("admin_activities").doc();
         batch.set(activityRef, {
           type: "product_published",
           message: `Produit publié automatiquement (Cron): ${data.name || doc.id}`,

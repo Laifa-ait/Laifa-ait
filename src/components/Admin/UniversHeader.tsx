@@ -26,7 +26,7 @@ export const UniversHeader: React.FC<UniversHeaderProps> = ({
 }) => {
   return (
     <>
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div>
           <div className="flex items-center gap-2 text-orange-600 mb-1">
             <Sparkles className="w-5 h-5 fill-current" />
@@ -34,10 +34,10 @@ export const UniversHeader: React.FC<UniversHeaderProps> = ({
               Dashboard Admin Olma
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
             Gestion des Applications & Raccourcis Accueil
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Personnalisez les icônes, dégradés, badges et routes des applications de l'écosystème
             et de la barre d'accueil en direct.
           </p>
@@ -55,7 +55,7 @@ export const UniversHeader: React.FC<UniversHeaderProps> = ({
           <button
             type="button"
             onClick={onSeed}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors flex items-center gap-2"
+            className="px-3.5 py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition-colors flex items-center gap-2"
           >
             <Database className="w-4 h-4 text-orange-500" />
             <span>Réinitialiser (Seed)</span>
@@ -63,7 +63,7 @@ export const UniversHeader: React.FC<UniversHeaderProps> = ({
           <button
             type="button"
             onClick={onRefresh}
-            className="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors"
+            className="p-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition-colors"
             title="Actualiser"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -71,24 +71,24 @@ export const UniversHeader: React.FC<UniversHeaderProps> = ({
         </div>
       </header>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             placeholder="Filtrer une application..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl"
+            className="w-full pl-10 pr-4 py-2 text-xs bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-2xl"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-slate-400 font-semibold">Statut :</span>
+          <span className="text-xs text-zinc-400 font-semibold">Statut :</span>
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-3 py-2 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+            className="px-3 py-2 text-xs font-bold bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl"
           >
             <option value="all">Tous les statuts ({totalApps})</option>
             <option value="active">Actif</option>

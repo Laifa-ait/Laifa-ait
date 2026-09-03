@@ -51,7 +51,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] bg-[var(--color-slate-900, #0f172a)]/40 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[200] bg-[var(--color-zinc-900, #0f172a)]/40 backdrop-blur-sm flex items-center justify-center p-4"
         >
           <motion.div
             initial={{ scale: 0.95 }}
@@ -61,7 +61,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
             <div className="w-16 h-16 bg-[var(--color-orange-600, #ea580c)]/10 text-[var(--color-orange-600, #ea580c)] rounded-full flex items-center justify-center mx-auto mb-6">
               <ShieldCheck className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-sans font-bold text-[var(--color-slate-900, #0f172a)] text-center mb-2">{t("Vérification 2FA")}</h3>
+            <h3 className="text-xl font-sans font-bold text-[var(--color-zinc-900, #0f172a)] text-center mb-2">{t("Vérification 2FA")}</h3>
             <p className="text-sm text-zinc-500 text-center mb-6">
               {t("Entrez le code reçu par")}
               {method === "email" ? "e-mail" : "SMS"}.
@@ -71,13 +71,13 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
               value={code}
               onChange={(e) => setCode(e.target.value)}
               maxLength={6}
-              className="w-full text-center text-2xl font-bold tracking-[0.5em] py-4 bg-zinc-50 border border-zinc-200 rounded-xl mb-6 outline-none focus:border-[var(--color-orange-600, #ea580c)]"
+              className="w-full text-center text-2xl font-bold tracking-[0.5em] py-4 bg-zinc-50 border border-zinc-200 rounded-2xl mb-6 outline-none focus:border-[var(--color-orange-600, #ea580c)]"
               placeholder="000000"
             />
             <button
               onClick={handleVerify}
               disabled={loading || code.length !== 6}
-              className="w-full py-4 bg-[var(--color-slate-900, #0f172a)] text-white rounded-2xl font-bold hover:bg-[#0a0b0c] transition-all disabled:opacity-50"
+              className="w-full py-4 bg-[var(--color-zinc-900, #0f172a)] text-white rounded-2xl font-bold hover:bg-[#0a0b0c] transition-all disabled:opacity-50"
             >
               {loading ? "Vérification..." : "Valider le code"}
             </button>

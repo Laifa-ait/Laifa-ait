@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import {
   User as FirebaseUser,
   onAuthStateChanged,
@@ -28,6 +28,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string, role: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile?: (data: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -187,6 +188,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await signOut(auth);
   };
 
+  const updateUserProfile = useCallback(async (data: Partial<UserProfile>) => {
+    if (!currentUser) return;
+    try {
+      const response = await apiPost<{ success: boolean; data?: UserProfile }>("/api/v1/auth/sync", {
+        ...data,
+        displayName: data.displayName || currentUser.displayName || "",
+        email: currentUser.email || "",
+        role: userProfile?.role || "buyer",
+      });
+      if (response?.data) {
+        setUserProfile(response.data);
+      } else {
+        setUserProfile((prev) => (prev ? ({ ...prev, ...data } as UserProfile) : null));
+      }
+    } catch (err) {
+      safeLogger.error("Failed to update user profile", { err: err instanceof Error ? err.message : String(err) });
+      throw err;
+    }
+  }, [currentUser, userProfile?.role]);
+
   useEffect(() => {
     const handleUnauthorized = async () => {
       safeLogger.warn("AuthContext: Received auth:unauthorized event");
@@ -213,8 +234,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       signInWithEmail,
       signUpWithEmail,
       logout,
+      updateUserProfile,
     }),
-    [currentUser, userProfile, loading]
+    [currentUser, userProfile, loading, updateUserProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

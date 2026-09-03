@@ -26,7 +26,7 @@ export const CurationPendingList: React.FC<CurationPendingListProps> = ({
 
   return (
     <div className="w-full lg:w-[350px] shrink-0 space-y-6">
-      <div className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-6 border border-zinc-100 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-sans font-bold text-zinc-900 uppercase tracking-wider">
             {t("Produits en attente")}
@@ -49,12 +49,12 @@ export const CurationPendingList: React.FC<CurationPendingListProps> = ({
 
       <div className="space-y-4 max-h-[60vh] lg:max-h-[70vh] overflow-y-auto pr-1">
         {loading ? (
-          <div className="bg-white rounded-3xl p-10 border border-zinc-100 flex flex-col items-center justify-center gap-3 text-zinc-400 font-bold text-xs">
+          <div className="bg-white rounded-2xl p-10 border border-zinc-100 flex flex-col items-center justify-center gap-3 text-zinc-400 font-bold text-xs">
             <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
             <span>{t("Chargement des produits...")}</span>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-3xl p-10 border border-zinc-100 text-center text-zinc-400 font-bold text-xs">
+          <div className="bg-white rounded-2xl p-10 border border-zinc-100 text-center text-zinc-400 font-bold text-xs">
             {t("Aucun produit en attente.")}
           </div>
         ) : (
@@ -64,7 +64,7 @@ export const CurationPendingList: React.FC<CurationPendingListProps> = ({
               <button
                 key={p.id}
                 onClick={() => onSelectProduct(p)}
-                className={`w-full text-start p-4 rounded-3xl border transition-all duration-200 flex gap-4 cursor-pointer outline-none ${
+                className={`w-full text-start p-4 rounded-2xl border transition-all duration-200 flex gap-4 cursor-pointer outline-none ${
                   isSelected
                     ? "bg-amber-500/10 border-amber-500 shadow-sm"
                     : "bg-white border-zinc-100 hover:border-zinc-200 hover:shadow-sm"
@@ -90,7 +90,7 @@ export const CurationPendingList: React.FC<CurationPendingListProps> = ({
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs font-sans font-bold text-zinc-900">{p.price} DA</span>
-                    <span className="text-[9px] font-sans font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[9px] font-sans font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">
                       {p.category || t("Divers")}
                     </span>
                   </div>

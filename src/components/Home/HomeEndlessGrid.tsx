@@ -97,14 +97,14 @@ export const HomeEndlessGrid: React.FC = () => {
   if (loading) {
     return (
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pb-16">
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 sm:p-6 lg:p-8">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 p-5 sm:p-6 lg:p-8">
           <div className="flex flex-col items-center justify-center text-center mb-8">
-            <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-full mb-4" />
-            <div className="w-64 h-8 bg-slate-200 animate-pulse rounded-lg mb-2" />
+            <div className="w-32 h-6 bg-zinc-200 animate-pulse rounded-full mb-4" />
+            <div className="w-64 h-8 bg-zinc-200 animate-pulse rounded-lg mb-2" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 md:gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-square rounded-xl sm:rounded-2xl bg-slate-100/80 animate-pulse border border-slate-200/60" />
+              <div key={i} className="aspect-square rounded-2xl sm:rounded-2xl bg-zinc-100/80 animate-pulse border border-zinc-200/60" />
             ))}
           </div>
         </div>
@@ -117,17 +117,17 @@ export const HomeEndlessGrid: React.FC = () => {
   return (
     <section className="mb-6 sm:mb-8 relative z-20">
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8">
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 sm:p-6 lg:p-8 relative">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 p-5 sm:p-6 lg:p-8 relative">
 
       <div className="flex flex-col items-center justify-center text-center mb-8 relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 text-slate-700 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] mb-5 border border-slate-200">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-100 text-zinc-700 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] mb-5 border border-zinc-200">
           <Sparkles className="w-3.5 h-3.5" />
           {t("home.endless_grid.badge") || "COLLECTION INFINIE"}
         </div>
-        <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-[1.1]">
+        <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 leading-[1.1]">
           {t("home.endless_grid.title") || "Galerie d'Inspirations"}
         </h3>
-        <p className="font-sans text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed mt-4">
+        <p className="font-sans text-sm md:text-base text-zinc-500 max-w-2xl leading-relaxed mt-4">
           {t("home.endless_grid.desc") || "Explorez notre collection complète. De nouvelles merveilles s'ajoutent continuellement."}
         </p>
       </div>

@@ -36,9 +36,9 @@ sequenceDiagram
         Gateway->>DB: Transaction ACID : Crée profil (role: "buyer", status: "active")
     end
     
-    alt L'adresse correspond à un admin de confiance (ex: laifa.ait@gmail.com)
-        Gateway->>Auth: Mettre à niveau les Custom Claims { role: "admin" }
-        Gateway->>DB: Met à jour le rôle en base ("admin")
+    alt Privilèges d'administration vérifiés côté serveur (Custom Claims / Rôle validé)
+        Gateway->>Auth: Mettre à niveau / Vérifier les Custom Claims { role: "admin" }
+        Gateway->>DB: Met à jour le statut en base ("admin")
     end
 
     DB-->>Gateway: Profil utilisateur consolidé

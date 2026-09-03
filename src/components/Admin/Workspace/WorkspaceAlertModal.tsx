@@ -15,7 +15,7 @@ interface WorkspaceAlertModalProps {
 export const WorkspaceAlertModal: React.FC<WorkspaceAlertModalProps> = ({ alert, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-zinc-100 shadow-2xl space-y-5 text-start relative">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full border border-zinc-100 shadow-2xl space-y-5 text-start relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
@@ -62,7 +62,7 @@ export const WorkspaceAlertModal: React.FC<WorkspaceAlertModalProps> = ({ alert,
         <div className="pt-2">
           <button
             onClick={onClose}
-            className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-2xl text-xs font-bold transition-all cursor-pointer"
           >
             Fermer
           </button>

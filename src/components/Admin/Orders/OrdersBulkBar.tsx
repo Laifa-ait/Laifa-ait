@@ -39,7 +39,7 @@ export const OrdersBulkBar: React.FC<OrdersBulkBarProps> = ({
       <div className="flex flex-wrap gap-2 w-full md:w-auto justify-center">
         <button
           onClick={handleBulkPrint}
-          className="py-2.5 px-4 bg-white hover:bg-zinc-100 text-zinc-950 font-sans font-bold text-[11px] uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md"
+          className="py-2.5 px-4 bg-white hover:bg-zinc-100 text-zinc-950 font-sans font-bold text-[11px] uppercase tracking-wider rounded-2xl flex items-center gap-1.5 cursor-pointer border-none transition-all shadow-md"
         >
           <Printer className="w-3.5 h-3.5 text-[#F46B1D]" />
           {t("Print Labels Bulk")} {t("admin_orders.pdf", "(PDF)")}
@@ -52,7 +52,7 @@ export const OrdersBulkBar: React.FC<OrdersBulkBarProps> = ({
               e.target.value = "";
             }
           }}
-          className="py-2.5 px-3 bg-zinc-800 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-xl cursor-pointer border-none transition-all focus:outline-none"
+          className="py-2.5 px-3 bg-zinc-800 text-white font-sans font-bold text-[11px] uppercase tracking-wider rounded-2xl cursor-pointer border-none transition-all focus:outline-none"
         >
           <option value="">⚙️ {t("Changer Statut (Bulk)")}</option>
           {Object.keys(statusLabels).map((k) => (
@@ -64,7 +64,7 @@ export const OrdersBulkBar: React.FC<OrdersBulkBarProps> = ({
 
         <button
           onClick={() => setSelectedOrderIds([])}
-          className="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white font-bold text-[11px] uppercase tracking-wider rounded-xl cursor-pointer border-none transition-all"
+          className="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white font-bold text-[11px] uppercase tracking-wider rounded-2xl cursor-pointer border-none transition-all"
         >
           {t("Désélectionner")}
         </button>

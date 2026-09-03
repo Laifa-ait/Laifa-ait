@@ -390,7 +390,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: isRtl ? "-100%" : "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 220 }}
-            className={`fixed top-0 bottom-0 ${isRtl ? "left-0" : "right-0"} w-full sm:w-[440px] bg-transparent z-[210] shadow-2xl flex flex-col border-s border-stone-250`}
+            className={`fixed top-0 bottom-0 ${isRtl ? "left-0" : "right-0"} w-full sm:w-[440px] bg-transparent z-[210] shadow-2xl flex flex-col border-s border-zinc-250`}
             dir={isRtl ? "rtl" : "ltr"}
           >
             {/* Header */}
@@ -435,9 +435,9 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                   <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
                 </div>
               ) : timelineItems.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-stone-400 space-y-3">
-                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-inner border-2 border-stone-100">
-                    <MessageCircle className="w-6 h-6 text-stone-300" />
+                <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 space-y-3">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-inner border-2 border-zinc-100">
+                    <MessageCircle className="w-6 h-6 text-zinc-300" />
                   </div>
                   <p className="text-xs font-semibold">{t("no_messages") || "Aucun message ou journal pour l'instant."}</p>
                 </div>
@@ -477,7 +477,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
 
                         <div className="space-y-1">
                           <div
-                            className={`p-3.5 rounded-3xl text-sm leading-relaxed relative group/msg ${
+                            className={`p-3.5 rounded-2xl text-sm leading-relaxed relative group/msg ${
                               isMe 
                                 ? "bg-zinc-950 text-white rounded-tr-none shadow-md" 
                                 : "bg-white border-2 border-zinc-950 text-zinc-900 rounded-tl-none shadow-md"
@@ -497,7 +497,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                             )}
 
                             {item.flagged && (
-                              <div className="mt-1 bg-red-50 text-red-600 text-[10px] px-2 py-1 rounded-md flex items-center gap-1 font-medium border border-red-150">
+                              <div className="mt-1 bg-red-50 text-red-600 text-[10px] px-2 py-1 rounded-lg flex items-center gap-1 font-medium border border-red-150">
                                 <AlertCircle className="w-3 h-3" />
                                 {t("Message signalé")}
                               </div>
@@ -509,14 +509,14 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                                 type="button"
                                 onClick={() => setReportingMessageId(item.id)}
                                 title={t("Signaler ce message")}
-                                className="absolute -right-8 top-1/2 -translate-y-1/2 p-1 hover:text-red-500 text-stone-400 rounded transition-all cursor-pointer opacity-0 group-hover/msg:opacity-100 bg-transparent border-none"
+                                className="absolute -right-8 top-1/2 -translate-y-1/2 p-1 hover:text-red-500 text-zinc-400 rounded transition-all cursor-pointer opacity-0 group-hover/msg:opacity-100 bg-transparent border-none"
                               >
                                 <Flag className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
                           
-                          <span className={`text-[9px] font-mono block px-1 ${isMe ? "text-end text-zinc-400" : "text-start text-stone-400"}`}>
+                          <span className={`text-[9px] font-mono block px-1 ${isMe ? "text-end text-zinc-400" : "text-start text-zinc-400"}`}>
                             {new Date(item.timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                             {isMe && <CheckCheck className="w-3 h-3 text-emerald-500 inline ms-1" />}
                           </span>
@@ -529,7 +529,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
             </div>
 
             {/* Quick reply templates carousel */}
-            <div className="px-4 py-2 bg-stone-100 border-t border-b border-stone-200 shrink-0 flex items-center gap-2 overflow-x-auto scrollbar-none">
+            <div className="px-4 py-2 bg-zinc-100 border-t border-b border-zinc-200 shrink-0 flex items-center gap-2 overflow-x-auto scrollbar-none">
               <div className="flex items-center gap-1 text-orange-600 text-[10px] font-sans font-bold uppercase tracking-widest shrink-0">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{t("Modèles")} :</span>
@@ -542,7 +542,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                       key={index}
                       type="button"
                       onClick={() => handleQuickReply(labelText)}
-                      className="bg-white hover:bg-zinc-900 hover:text-white border border-stone-300 text-stone-700 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all shadow-sm active:scale-95 cursor-pointer"
+                      className="bg-white hover:bg-zinc-900 hover:text-white border border-zinc-300 text-zinc-700 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
                       {labelText}
                     </button>
@@ -552,7 +552,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
             </div>
 
             {/* Form input area */}
-            <div className="p-4 bg-white border-t border-stone-100 shrink-0">
+            <div className="p-4 bg-white border-t border-zinc-100 shrink-0">
               {error && (
                 <div className="mb-3 p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-2xl flex items-start gap-2 text-xs font-semibold leading-relaxed">
                   <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
@@ -573,7 +573,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="p-3 text-stone-500 hover:text-orange-600 transition-all rounded-full cursor-pointer disabled:opacity-50 shrink-0 border border-zinc-200 flex items-center justify-center bg-transparent"
+                  className="p-3 text-zinc-500 hover:text-orange-600 transition-all rounded-full cursor-pointer disabled:opacity-50 shrink-0 border border-zinc-200 flex items-center justify-center bg-transparent"
                 >
                   {uploading ? <Loader2 className="w-4.5 h-4.5 animate-spin text-orange-600" /> : <Paperclip className="w-4.5 h-4.5" />}
                 </button>
@@ -588,7 +588,7 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                     }}
                     maxLength={1000}
                     placeholder={t("type_message") || "Votre message sécurisé..."}
-                    className="w-full bg-transparent border-2 border-zinc-950 rounded-[2rem] ps-6 pe-14 py-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-zinc-900 placeholder:text-stone-400"
+                    className="w-full bg-transparent border-2 border-zinc-950 rounded-[2rem] ps-6 pe-14 py-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-zinc-900 placeholder:text-zinc-400"
                   />
                   <button
                     type="submit"
@@ -605,18 +605,18 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
           {/* Flag Report Modal overlay */}
           {reportingMessageId && (
             <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-6 w-full max-w-sm border border-stone-200 shadow-2xl relative animate-in zoom-in-95 duration-150 text-start">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-sm border border-zinc-200 shadow-2xl relative animate-in zoom-in-95 duration-150 text-start">
                 <h4 className="font-sans font-bold text-sm text-zinc-900 mb-2 uppercase tracking-wide">
                   {t("Signaler ce message")}
                 </h4>
-                <p className="text-xs text-stone-500 mb-4 leading-relaxed">
+                <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
                   {t("Veuillez indiquer la raison du signalement. Le message sera examiné par nos modérateurs sous 24 heures.")}
                 </p>
                 <textarea
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
                   placeholder={t("Ex: Contenu agressif, partage de contact externe, spam...")}
-                  className="w-full p-3 text-xs border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/15 focus:border-red-500 mb-4 h-24 font-sans font-medium"
+                  className="w-full p-3 text-xs border border-zinc-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500/15 focus:border-red-500 mb-4 h-24 font-sans font-medium"
                 />
                 <div className="flex gap-2 justify-end">
                   <button
@@ -625,14 +625,14 @@ export const LiveChatDrawer: React.FC<LiveChatDrawerProps> = ({ isOpen, onClose,
                       setReportingMessageId(null);
                       setReportReason("");
                     }}
-                    className="px-4 py-2 text-xs font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all cursor-pointer border-none"
+                    className="px-4 py-2 text-xs font-semibold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-2xl transition-all cursor-pointer border-none"
                   >
                     {t("Annuler")}
                   </button>
                   <button
                     type="button"
                     onClick={handleReportMessage}
-                    className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all cursor-pointer border-none"
+                    className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-2xl transition-all cursor-pointer border-none"
                   >
                     {t("Confirmer")}
                   </button>
