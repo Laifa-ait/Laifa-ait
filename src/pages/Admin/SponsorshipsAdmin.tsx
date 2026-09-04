@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { apiGet, apiPost } from '../../lib/api';
 import { SponsorshipPackConfig, SponsorshipTier, DEFAULT_SPONSORSHIP_PACKS } from '../../domains/seller/sponsorship.types';
 import { AdminPackConfigModal } from '../../components/Admin/Sponsorship/AdminPackConfigModal';
+import { AdminSponsoredCampaignsTab } from '../../components/Admin/Sponsorship/AdminSponsoredCampaignsTab';
 import { AppTimestamp, normalizeTimestamp } from '../../utils/date';
 
 interface SponsorshipRequest {
@@ -26,6 +27,7 @@ interface SponsorshipRequest {
 
 export const SponsorshipsAdmin: React.FC = () => {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'packs'>('campaigns');
   const [requests, setRequests] = useState<SponsorshipRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,7 +123,36 @@ export const SponsorshipsAdmin: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-zinc-100">
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-zinc-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab('campaigns')}
+          className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-colors relative ${
+            activeTab === 'campaigns'
+              ? 'text-orange-600 border-b-2 border-orange-600'
+              : 'text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Campagnes Emplacements (Accueil, Catégorie, Recherche)
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('packs')}
+          className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-colors relative ${
+            activeTab === 'packs'
+              ? 'text-orange-600 border-b-2 border-orange-600'
+              : 'text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Demandes de Packs (Bronze, Silver, Gold)
+        </button>
+      </div>
+
+      {activeTab === 'campaigns' ? (
+        <AdminSponsoredCampaignsTab />
+      ) : (
+        <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-zinc-100">
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <h3 className="text-xl font-sans font-bold text-zinc-950 uppercase tracking-widest rtl:tracking-normal">{t("Requêtes en attente")}</h3>
             <div className="relative w-full md:w-96">
@@ -203,6 +234,7 @@ export const SponsorshipsAdmin: React.FC = () => {
             )}
          </div>
       </div>
+      )}
 
       <AdminPackConfigModal
         isOpen={showConfigModal}

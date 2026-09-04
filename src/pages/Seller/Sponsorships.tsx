@@ -10,6 +10,7 @@ import { SponsorshipAnalyticsHeader } from "../../components/Seller/Sponsorship/
 import { SponsorshipPackSelectorModal } from "../../components/Seller/Sponsorship/SponsorshipPackSelectorModal";
 import { SponsorshipHistoryList } from "../../components/Seller/Sponsorship/SponsorshipHistoryList";
 import { SponsorshipGuideSection } from "../../components/Seller/Sponsorship/SponsorshipGuideSection";
+import { SponsoredCampaignsManager } from "../../components/Seller/Sponsorship/SponsoredCampaignsManager";
 import { SponsorshipPackConfig, SponsorshipTier, SponsorshipAnalyticsSummary, SponsorshipRequest, DEFAULT_SPONSORSHIP_PACKS } from "../../domains/seller/sponsorship.types";
 
 export const SellerSponsorships: React.FC = () => {
@@ -204,6 +205,9 @@ export const SellerSponsorships: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Emplacements Sponsorisés (Accueil, Catégorie, Recherche) */}
+      <SponsoredCampaignsManager products={products} />
 
       {/* History & Analytics Table */}
       <SponsorshipHistoryList requests={sponsorshipRequests} />

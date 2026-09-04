@@ -5,6 +5,7 @@ import adminMarketingRouter from "./routes/adminMarketing.routes";
 import adminHomepageRouter from "./routes/adminHomepage.routes";
 import adminSystemRouter from "./routes/adminSystem.routes";
 import adminAIRouter from "./routes/adminAI.routes";
+import adminSponsoredCampaignRouter from "../sponsorship/controllers/adminSponsoredCampaign.controller";
 
 const adminRouter = Router();
 
@@ -14,5 +15,6 @@ adminRouter.use(adminMarketingRouter);
 adminRouter.use(adminHomepageRouter);
 adminRouter.use(adminSystemRouter);
 adminRouter.use(adminAIRouter);
+adminRouter.use(adminSponsoredCampaignRouter);
 
 export default adminRouter;

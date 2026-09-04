@@ -7,6 +7,7 @@ import sellerReviewRouter from "./controllers/SellerReviewController";
 import sellerSponsorshipRouter from "./controllers/SellerSponsorshipController";
 import sellerOrderRouter from "./controllers/SellerOrderController";
 import sellerCouponRouter from "./controllers/SellerCouponController";
+import sellerSponsoredCampaignRouter from "../sponsorship/controllers/sellerSponsoredCampaign.controller";
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use(sellerReviewRouter);
 router.use(sellerSponsorshipRouter);
 router.use(sellerOrderRouter);
 router.use(sellerCouponRouter);
+router.use(sellerSponsoredCampaignRouter);
 
 export default router;

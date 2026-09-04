@@ -10,6 +10,7 @@ import auth2faRouter from "./auth/auth2fa.routes";
 import orderChatRouter from "./messaging/orderChat.routes";
 import marketingRouter from "./marketing/marketing.routes";
 import notificationRouter from "./notifications/notification.routes";
+import publicSponsoredCampaignRouter from "./sponsorship/controllers/publicSponsoredCampaign.controller";
 import type { AuthenticatedRequest } from "../middlewares/auth";
 
 const router = Router();
@@ -26,6 +27,7 @@ router.use(auth2faRouter);
 router.use(orderChatRouter);
 router.use(marketingRouter);
 router.use(notificationRouter);
+router.use("/api/v1/public/sponsored", publicSponsoredCampaignRouter);
 
 export type { AuthenticatedRequest };
 export default router;

@@ -39,7 +39,8 @@ export type WalletTransactionType =
   | "WITHDRAWAL_PAID"
   | "WITHDRAWAL_REJECTED_REFUND"
   | "DISPUTE_DEDUCTION"
-  | "ADMIN_ADJUSTMENT";
+  | "ADMIN_ADJUSTMENT"
+  | "SPONSORSHIP_PAYMENT";
 
 export interface WalletTransaction {
   id: string;

@@ -7,6 +7,7 @@ import { NeoCategoryGrid } from "../../components/Home/NeoCategoryGrid";
 import { FeaturedProductsCarousel } from "../../components/Home/FeaturedProductsCarousel";
 import { DynamicSection } from "../../components/Home/DynamicSection";
 import { HomeEndlessGrid } from "../../components/Home/HomeEndlessGrid";
+import { SponsoredSection } from "../../components/Home/SponsoredSection";
 import { Banner } from "../../domains/home/homepage.types";
 import { Helmet } from "react-helmet-async";
 import { useUserHabits } from "../../hooks/useUserHabits";
@@ -159,6 +160,9 @@ export const Home: React.FC = () => {
 
       {/* c) UNE section « Promotions du moment » (les produits ayant flashPrice ou promoPrice actifs, réutilise le carrousel existant) */}
       <FeaturedProductsCarousel products={featuredProducts} />
+
+      {/* Emplacements Sponsorisés Home (masqué si vide, zéro mock fallback) */}
+      <SponsoredSection />
 
       {/* Sections administrables dynamiques */}
       {[...(homepageSections || [])]
