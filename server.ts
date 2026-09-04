@@ -8,6 +8,7 @@ import { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } from "./s
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
 import { safeLogger } from "./src/utils/logger";
 
+// Port is read from process.env.PORT for Cloud Run compatibility, defaulting to 3000
 const PORT = Number(process.env.PORT) || 3000;
 const bootStartTime = Date.now();
 
