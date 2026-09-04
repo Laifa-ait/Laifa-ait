@@ -108,27 +108,23 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
   });
 
   afterAll(async () => {
-    try {
-      // Cleanup seed records
-      await db.collection("users").doc(buyerUid).delete();
-      await db.collection("users").doc(sellerUid).delete();
-      await db.collection("users").doc(otherUserUid).delete();
-      await db.collection("users").doc(adminUid).delete();
+    // Cleanup seed records
+    await db.collection("users").doc(buyerUid).delete();
+    await db.collection("users").doc(sellerUid).delete();
+    await db.collection("users").doc(otherUserUid).delete();
+    await db.collection("users").doc(adminUid).delete();
 
-      await db.collection("disputes").doc(disputeId).delete();
-      await db.collection("disputes").doc(otherDisputeId).delete();
+    await db.collection("disputes").doc(disputeId).delete();
+    await db.collection("disputes").doc(otherDisputeId).delete();
 
-      const attachSnap = await db.collection("disputeAttachments").where("disputeId", "in", [disputeId, otherDisputeId]).get();
-      for (const doc of attachSnap.docs) {
-        await doc.ref.delete();
-      }
+    const attachSnap = await db.collection("disputeAttachments").where("disputeId", "in", [disputeId, otherDisputeId]).get();
+    for (const doc of attachSnap.docs) {
+      await doc.ref.delete();
+    }
 
-      const msgsSnap = await db.collection("disputeMessages").where("disputeId", "in", [disputeId, otherDisputeId]).get();
-      for (const doc of msgsSnap.docs) {
-        await doc.ref.delete();
-      }
-    } catch {
-      // Ignore cleanup errors
+    const msgsSnap = await db.collection("disputeMessages").where("disputeId", "in", [disputeId, otherDisputeId]).get();
+    for (const doc of msgsSnap.docs) {
+      await doc.ref.delete();
     }
 
     vi.restoreAllMocks();

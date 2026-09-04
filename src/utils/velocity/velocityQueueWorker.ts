@@ -10,7 +10,12 @@ export async function processVelocityJob(sellerId: string): Promise<void> {
   try {
     await checkSellerVelocityLimit(sellerId);
     // Delete completed job from durable Firestore queue
-    await db.collection("velocity_jobs").doc(sellerId).delete().catch(() => {});
+    await db.collection("velocity_jobs").doc(sellerId).delete().catch((deleteErr) => {
+      safeLogger.warn("Failed to delete completed velocity job from Firestore queue", {
+        sellerId,
+        err: deleteErr instanceof Error ? deleteErr.message : String(deleteErr)
+      });
+    });
   } catch (err) {
     safeLogger.error("Error processing velocity job", { sellerId, err: err instanceof Error ? err.message : String(err) });
   }
@@ -22,17 +27,18 @@ export async function processVelocityJob(sellerId: string): Promise<void> {
  * and schedules processing on setImmediate without blocking the HTTP response thread.
  */
 export function enqueueSellerVelocityCheck(sellerId: string): void {
-  const firestoreDb = db || (admin && admin.firestore ? admin.firestore() : null);
-  if (!firestoreDb) {
+  if (!db || !admin || !admin.apps || admin.apps.length === 0) {
     safeLogger.warn("Skipping enqueueSellerVelocityCheck: Firebase Admin / db is not ready");
     return;
   }
   // 1. Write job to durable Firestore queue asynchronously
-  firestoreDb.collection("velocity_jobs").doc(sellerId).set({
+  db.collection("velocity_jobs").doc(sellerId).set({
     sellerId,
     status: "pending",
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  }).catch(() => {});
+  }).catch(err => {
+    safeLogger.error("Failed to persist velocity job in velocity_jobs collection", { sellerId, err: err instanceof Error ? err.message : String(err) });
+  });
 
   // 2. Decoupled execution scheduled via setImmediate (runs after HTTP response is dispatched)
   setImmediate(() => {
@@ -45,12 +51,11 @@ export function enqueueSellerVelocityCheck(sellerId: string): void {
 }
 
 export async function reconcileVelocityJobs(): Promise<void> {
-  const firestoreDb = db || (admin && admin.firestore ? admin.firestore() : null);
-  if (!firestoreDb) {
+  if (!db || !admin || !admin.apps || admin.apps.length === 0) {
     return;
   }
   try {
-    const pendingJobsSnap = await firestoreDb.collection("velocity_jobs")
+    const pendingJobsSnap = await db.collection("velocity_jobs")
       .where("status", "==", "pending")
       .limit(100)
       .get();
@@ -71,11 +76,19 @@ export async function reconcileVelocityJobs(): Promise<void> {
 
 export function startVelocityWorker(intervalMs = 300000): void {
   // Run initial reconciliation on boot
-  reconcileVelocityJobs().catch(() => {});
+  reconcileVelocityJobs().catch((err) => {
+    safeLogger.error("Failed to run initial velocity reconciliation on boot", {
+      err: err instanceof Error ? err.message : String(err)
+    });
+  });
 
   if (velocityWorkerInterval) return;
   velocityWorkerInterval = setInterval(() => {
-    reconcileVelocityJobs().catch(() => {});
+    reconcileVelocityJobs().catch((err) => {
+      safeLogger.error("Failed to run periodic velocity reconciliation in background worker", {
+        err: err instanceof Error ? err.message : String(err)
+      });
+    });
   }, intervalMs);
   if (velocityWorkerInterval.unref) {
     velocityWorkerInterval.unref();

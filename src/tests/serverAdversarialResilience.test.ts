@@ -176,7 +176,11 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     });
 
     afterEach(() => {
-      fs.rmSync(tempDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Safe no-op cleanup
+      }
     });
 
     const multiScriptHtml = `<!DOCTYPE html>
@@ -238,15 +242,14 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
   describe("6. P0.1 — Test de Concurrence Réel du Product Publisher Worker", () => {
     it("demonstrates Job #1 acquires isJobRunning lock, causing Job #2 to return 0 immediately, then lock is released", async () => {
       const { executeProductPublisherJob } = await import("../workers/productPublisher");
-      const { admin, db } = await import("../config/firebase-admin");
-      const targetDb = db || admin.firestore();
+      const { admin } = await import("../config/firebase-admin");
       expect(typeof executeProductPublisherJob).toBe("function");
 
       let job1ResolveFirestore: ((val: unknown) => void) | null = null;
       let job1InProgress = false;
 
       // Mock Firestore query to hang until we manually resolve it, proving genuine concurrency
-      const getSpy = vi.spyOn(targetDb, "collection").mockReturnValue({
+      const getSpy = vi.spyOn(admin.firestore(), "collection").mockReturnValue({
         where: () => ({
           get: () => {
             job1InProgress = true;
