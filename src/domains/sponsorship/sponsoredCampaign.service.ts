@@ -52,6 +52,10 @@ export class SponsoredCampaignService {
     return SellerCampaignService.cancelSellerCampaign(sellerId, campaignId);
   }
 
+  public static async cancelCampaign(sellerId: string, campaignId: string): Promise<SponsoredCampaign> {
+    return SellerCampaignService.cancelSellerCampaign(sellerId, campaignId);
+  }
+
   // --- Admin operations ---
   public static async adminListCampaigns(filter?: {
     status?: string;

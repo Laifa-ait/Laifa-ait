@@ -79,7 +79,7 @@ router.post("/events", async (req: Request, res: Response) => {
       clientIdentifier,
     });
 
-    return res.status(200).json({ success: true, ...result });
+    return res.status(200).json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur enregistrement événement.";
     const status = message.includes("introuvable") ? 404 : 400;

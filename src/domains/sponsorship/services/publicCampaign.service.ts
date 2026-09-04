@@ -39,10 +39,16 @@ export class PublicCampaignService {
     const { placement, category, searchQuery, limit = 8 } = params;
     const nowMs = Date.now();
 
+    // Firestore Compound Index Required:
+    // Collection: "sponsored_campaigns", Fields: placement ASC, moderationStatus ASC
+    // Bound candidate campaigns before product reads to prevent unbounded memory usage
+    const candidateLimit = Math.max(limit * 5, 25);
+
     const snap = await db
       .collection("sponsored_campaigns")
       .where("placement", "==", placement)
       .where("moderationStatus", "==", "approved")
+      .limit(candidateLimit)
       .get();
 
     if (snap.empty) {
@@ -64,8 +70,8 @@ export class PublicCampaignService {
         return;
       }
 
-      // Operational status check
-      if (c.status !== "active" && c.status !== "approved") {
+      // Operational status check: only active campaigns are publicly diffusable
+      if (c.status !== "active") {
         return;
       }
 
@@ -105,12 +111,7 @@ export class PublicCampaignService {
         continue;
       }
 
-      const isProductActive =
-        (product.status === "active" || product.status === "approved") &&
-        product.status !== "deleted" &&
-        product.status !== "pending_deletion";
-
-      if (!isProductActive) {
+      if (product.status !== "active") {
         continue;
       }
 
@@ -158,7 +159,7 @@ export class PublicCampaignService {
         sellerId: product.sellerId,
         sellerName: product.sellerName,
         rating: product.rating,
-        reviewCount: product.reviewCount,
+        reviewCount: product.stats?.reviewCount ?? 0,
         isSponsored: true,
       };
 
@@ -209,8 +210,13 @@ export class PublicCampaignService {
     const campaign = campaignDoc.data() as SponsoredCampaign;
 
     // Falsification protection: Product ID must match campaign
-    if (productId && campaign.productId !== productId) {
+    if (campaign.productId !== productId) {
       throw new Error("Incohérence entre le produit spécifié et la campagne.");
+    }
+
+    // Operational status check: only active campaigns accept analytics
+    if (campaign.status !== "active") {
+      throw new Error(`Campagne non active (statut: ${campaign.status}).`);
     }
 
     // Validation: Campaign must be approved, paid, and within time window
@@ -228,6 +234,22 @@ export class PublicCampaignService {
 
     if (campaign.placement !== placement) {
       throw new Error("Emplacement incohérent avec la campagne.");
+    }
+
+    // Verify product is still active and owned by campaign seller
+    const productRef = db.collection("products").doc(campaign.productId);
+    const productDoc = await productRef.get();
+    if (!productDoc.exists) {
+      throw new Error("Produit sponsorisé introuvable.");
+    }
+
+    const product = productDoc.data() as Product;
+    if (product.sellerId !== campaign.sellerId) {
+      throw new Error("Incohérence du vendeur associé au produit.");
+    }
+
+    if (product.status !== "active") {
+      throw new Error("Le produit associé à la campagne n'est plus actif.");
     }
 
     // Deduplication using distinct client fingerprint in a 30-second window

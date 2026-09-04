@@ -7,6 +7,7 @@ import {
 import { calculateCampaignPrice } from "../../../config/sponsoredPricing";
 import { Product } from "../../product/product.types";
 import { safeLogger } from "../../../utils/logger";
+import { validatePaymentProofInput } from "./sponsorshipValidation.utils";
 
 export class SellerCampaignService {
   public static async createCampaign(
@@ -35,6 +36,16 @@ export class SellerCampaignService {
       throw new Error("Identifiant produit obligatoire.");
     }
 
+    // Validate payment proof if provided
+    const proofValidation = validatePaymentProofInput({
+      paymentProofReference,
+      paymentProofUrl,
+      paymentProofNotes,
+    });
+    if (!proofValidation.isValid) {
+      throw new Error(proofValidation.error);
+    }
+
     // 1. Verify product eligibility
     const productRef = db.collection("products").doc(productId);
     const productDoc = await productRef.get();
@@ -51,12 +62,7 @@ export class SellerCampaignService {
     }
 
     // Active & published validation
-    const isProductActive =
-      (product.status === "active" || product.status === "approved") &&
-      product.status !== "deleted" &&
-      product.status !== "pending_deletion";
-
-    if (!isProductActive) {
+    if (product.status !== "active") {
       throw new Error("Seuls les produits actifs et publiés peuvent être sponsorisés.");
     }
 
@@ -139,6 +145,11 @@ export class SellerCampaignService {
   ): Promise<SponsoredCampaign> {
     if (!db) {
       throw new Error("Base de données non disponible");
+    }
+
+    const proofValidation = validatePaymentProofInput(proof);
+    if (!proofValidation.isValid) {
+      throw new Error(proofValidation.error);
     }
 
     const campaignRef = db.collection("sponsored_campaigns").doc(campaignId);
@@ -246,6 +257,10 @@ export class SellerCampaignService {
 
       if (campaign.status === "cancelled" || campaign.status === "completed") {
         throw new Error("Cette campagne ne peut plus être annulée.");
+      }
+
+      if (campaign.paymentStatus === "paid" || campaign.status === "active") {
+        throw new Error("Impossible d'annuler une campagne déjà payée ou active.");
       }
 
       transaction.update(campaignRef, {

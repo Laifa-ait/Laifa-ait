@@ -61,11 +61,16 @@ export class AdminCampaignService {
       }
 
       const campaign = doc.data() as SponsoredCampaign;
-      if (campaign.status === "cancelled") {
-        throw new Error("Impossible de valider le paiement d'une campagne annulée.");
+      if (campaign.status === "cancelled" || campaign.status === "completed") {
+        throw new Error(`Impossible de valider le paiement d'une campagne terminée ou annulée (statut actuel : ${campaign.status}).`);
       }
       if (campaign.moderationStatus === "rejected") {
         throw new Error("Impossible de valider le paiement d'une campagne rejetée.");
+      }
+
+      if (campaign.paymentStatus === "paid") {
+        updatedCampaign = campaign;
+        return;
       }
 
       const isApproved = campaign.moderationStatus === "approved";
@@ -87,6 +92,7 @@ export class AdminCampaignService {
         type: "SPONSORED_CAMPAIGN_PAYMENT",
         action: "CONFIRM_PAYMENT",
         adminId,
+        targetId: campaignId,
         campaignId,
         priceAmount: campaign.priceAmount,
         notes: notes ? notes.trim() : "Paiement manuel confirmé par l'administrateur",
@@ -148,6 +154,7 @@ export class AdminCampaignService {
         type: "SPONSORED_CAMPAIGN_MODERATION",
         action: "APPROVE_CAMPAIGN",
         adminId,
+        targetId: campaignId,
         campaignId,
         details: `Campagne #${campaignId} approuvée par ${adminId}`,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -190,6 +197,10 @@ export class AdminCampaignService {
 
       const campaign = doc.data() as SponsoredCampaign;
 
+      if (campaign.paymentStatus === "paid" || campaign.moderationStatus === "approved") {
+        throw new Error("Impossible de rejeter une campagne déjà payée ou approuvée.");
+      }
+
       const updates: Partial<SponsoredCampaign> = {
         moderationStatus: "rejected",
         status: "rejected",
@@ -204,6 +215,7 @@ export class AdminCampaignService {
         type: "SPONSORED_CAMPAIGN_MODERATION",
         action: "REJECT_CAMPAIGN",
         adminId,
+        targetId: campaignId,
         campaignId,
         details: `Campagne #${campaignId} rejetée par ${adminId}. Motif: ${reason}`,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -242,6 +254,10 @@ export class AdminCampaignService {
 
       const campaign = doc.data() as SponsoredCampaign;
 
+      if (campaign.moderationStatus !== "approved" && campaign.status !== "active") {
+        throw new Error("Seules les campagnes approuvées ou actives peuvent être suspendues.");
+      }
+
       const updates: Partial<SponsoredCampaign> = {
         moderationStatus: "suspended",
         status: "paused",
@@ -256,6 +272,7 @@ export class AdminCampaignService {
         type: "SPONSORED_CAMPAIGN_MODERATION",
         action: "SUSPEND_CAMPAIGN",
         adminId,
+        targetId: campaignId,
         campaignId,
         details: `Campagne #${campaignId} suspendue par ${adminId}`,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),

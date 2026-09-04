@@ -56,7 +56,7 @@ export const SponsoredProductCard: React.FC<SponsoredProductCardProps> = ({
       <div className="relative aspect-square bg-zinc-100 overflow-hidden">
         {product.image ? (
           <img
-            src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })}
+            src={getOptimizedImageUrl(product.image, 400)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"

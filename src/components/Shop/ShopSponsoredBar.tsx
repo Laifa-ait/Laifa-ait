@@ -39,18 +39,30 @@ export const ShopSponsoredBar: React.FC<ShopSponsoredBarProps> = ({
 
         const res = await fetch(`/api/v1/public/sponsored/products?${queryParams.toString()}`);
         if (!res.ok) {
-          if (isMounted) setLoading(false);
+          if (isMounted) {
+            setLoading(false);
+            setItems([]);
+            onSponsoredProductIdsLoaded?.([]);
+          }
           return;
         }
 
         const json = await res.json();
-        if (isMounted && json?.success && Array.isArray(json.data)) {
-          setItems(json.data);
-          const ids = json.data.map((i: PublicSponsoredProductDTO) => i.product.id);
-          onSponsoredProductIdsLoaded?.(ids);
+        if (isMounted) {
+          if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
+            setItems(json.data);
+            const ids = json.data.map((i: PublicSponsoredProductDTO) => i.product.id);
+            onSponsoredProductIdsLoaded?.(ids);
+          } else {
+            setItems([]);
+            onSponsoredProductIdsLoaded?.([]);
+          }
         }
       } catch {
-        // Silently fail - no breaking of organic shopping
+        if (isMounted) {
+          setItems([]);
+          onSponsoredProductIdsLoaded?.([]);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -60,6 +72,7 @@ export const ShopSponsoredBar: React.FC<ShopSponsoredBarProps> = ({
 
     return () => {
       isMounted = false;
+      onSponsoredProductIdsLoaded?.([]);
     };
   }, [placement, category, searchQuery, onSponsoredProductIdsLoaded]);
 

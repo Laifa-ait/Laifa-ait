@@ -47,7 +47,7 @@ interface MockCampaign {
 
 const mockProducts = new Map<string, MockProduct>();
 const mockCampaigns = new Map<string, MockCampaign>();
-const mockAuditLogs: Array<{ action?: string; targetId?: string; adminId?: string; details?: unknown }> = [];
+const mockAuditLogs: Array<{ action?: string; targetId?: string; adminId?: string; details?: unknown; campaignId?: string }> = [];
 
 vi.mock("../config/firebase-admin", () => {
   const adminMock = {
@@ -441,7 +441,7 @@ describe("Sponsored Campaigns System", () => {
         durationDays: 5,
         priceAmount: 4000,
         currency: "DZD",
-        paymentStatus: "paid",
+        paymentStatus: "pending",
         moderationStatus: "pending",
         status: "pending",
         impressions: 0,
@@ -504,8 +504,36 @@ describe("Sponsored Campaigns System", () => {
       expect(suspended.status).toBe("paused");
       expect(mockAuditLogs.some((l) => l.action === "SUSPEND_CAMPAIGN")).toBe(true);
 
-      // Admin rejects
-      const rejected = await SponsoredCampaignService.adminRejectCampaign("admin_super", "camp_admin_test", "Non conforme");
+      // Attempting to reject a paid campaign must be blocked
+      await expect(
+        SponsoredCampaignService.adminRejectCampaign("admin_super", "camp_admin_test", "Tentative rejet après paiement")
+      ).rejects.toThrow("Impossible de rejeter une campagne déjà payée");
+
+      // Admin rejects an unpaid pending campaign
+      mockCampaigns.set("camp_unpaid_reject", {
+        id: "camp_unpaid_reject",
+        sellerId: "seller_1",
+        productId: "prod_1",
+        productName: "Tapis Berbère",
+        productPrice: 15000,
+        productCategory: "Artisanat",
+        productImage: "https://example.com/tapis.jpg",
+        placement: "home",
+        startAt: past.toISOString(),
+        endAt: future.toISOString(),
+        durationDays: 5,
+        priceAmount: 4000,
+        currency: "DZD",
+        paymentStatus: "pending",
+        moderationStatus: "pending",
+        status: "pending",
+        impressions: 0,
+        clicks: 0,
+        createdAt: past.toISOString(),
+        updatedAt: past.toISOString(),
+      });
+
+      const rejected = await SponsoredCampaignService.adminRejectCampaign("admin_super", "camp_unpaid_reject", "Non conforme");
       expect(rejected.moderationStatus).toBe("rejected");
       expect(rejected.rejectionReason).toBe("Non conforme");
       expect(mockAuditLogs.some((l) => l.action === "REJECT_CAMPAIGN")).toBe(true);
@@ -579,7 +607,7 @@ describe("Sponsored Campaigns System", () => {
         eventType: "impression" as const,
         placement: "home" as const,
         productId: "prod_1",
-        sessionId: "sess_123",
+        clientIdentifier: "client_123",
       };
 
       const firstTrack = await SponsoredCampaignService.recordAnalyticsEvent(eventPayload);
@@ -590,6 +618,286 @@ describe("Sponsored Campaigns System", () => {
       const duplicateTrack = await SponsoredCampaignService.recordAnalyticsEvent(eventPayload);
       expect(duplicateTrack.success).toBe(true);
       expect(duplicateTrack.deduplicated).toBe(true);
+    });
+
+    describe("Payment Proof Validation Suite", () => {
+      it("should reject non-textual or empty proof", async () => {
+        const { validatePaymentProofInput } = await import("../domains/sponsorship/services/sponsorshipValidation.utils");
+
+        // Non-textual proof reference
+        const nonTextRef = validatePaymentProofInput({
+          paymentProofReference: 12345 as unknown as string,
+        });
+        expect(nonTextRef.isValid).toBe(false);
+        expect(nonTextRef.error).toContain("chaîne de caractères");
+
+        // Empty proof after trim
+        const emptyRef = validatePaymentProofInput({
+          paymentProofReference: "    ",
+        });
+        expect(emptyRef.isValid).toBe(false);
+        expect(emptyRef.error).toContain("ne peut pas être vide");
+      });
+
+      it("should reject invalid URL or non-HTTPS URL", async () => {
+        const { validatePaymentProofInput } = await import("../domains/sponsorship/services/sponsorshipValidation.utils");
+
+        // Malformed URL
+        const invalidUrl = validatePaymentProofInput({
+          paymentProofUrl: "ftp-or-not-a-url",
+        });
+        expect(invalidUrl.isValid).toBe(false);
+        expect(invalidUrl.error).toContain("URL valide");
+
+        // Non-HTTPS URL
+        const httpUrl = validatePaymentProofInput({
+          paymentProofUrl: "http://example.com/receipt.pdf",
+        });
+        expect(httpUrl.isValid).toBe(false);
+        expect(httpUrl.error).toContain("protocole sécurisé HTTPS");
+
+        // Valid HTTPS URL
+        const validHttps = validatePaymentProofInput({
+          paymentProofUrl: "https://example.com/receipt.pdf",
+        });
+        expect(validHttps.isValid).toBe(true);
+      });
+
+      it("should reject notes exceeding 500 characters", async () => {
+        const { validatePaymentProofInput } = await import("../domains/sponsorship/services/sponsorshipValidation.utils");
+
+        const longNotes = "A".repeat(501);
+        const res = validatePaymentProofInput({
+          paymentNotes: longNotes,
+        });
+        expect(res.isValid).toBe(false);
+        expect(res.error).toContain("500 caractères");
+      });
+    });
+
+    describe("State Transitions and Idempotence Suite", () => {
+      it("should be idempotent on double payment confirmation without duplicate audit log", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_idempotent_test", {
+          id: "camp_idempotent_test",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "pending",
+          moderationStatus: "pending",
+          status: "pending",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        // First confirmation
+        const firstConfirm = await SponsoredCampaignService.adminConfirmPayment("admin_super", "camp_idempotent_test", "Reçu vérifié");
+        expect(firstConfirm.paymentStatus).toBe("paid");
+        const logCountAfterFirst = mockAuditLogs.filter(
+          (l) => l.action === "CONFIRM_PAYMENT" && l.targetId === "camp_idempotent_test"
+        ).length;
+        expect(logCountAfterFirst).toBe(1);
+
+        // Second confirmation (idempotent call)
+        const secondConfirm = await SponsoredCampaignService.adminConfirmPayment("admin_super", "camp_idempotent_test", "Reçu revérifié");
+        expect(secondConfirm.paymentStatus).toBe("paid");
+        const logCountAfterSecond = mockAuditLogs.filter(
+          (l) => l.action === "CONFIRM_PAYMENT" && l.targetId === "camp_idempotent_test"
+        ).length;
+        expect(logCountAfterSecond).toBe(1); // No duplicate audit log
+      });
+
+      it("should block confirmation of payment on cancelled or completed campaign", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_cancelled_test", {
+          id: "camp_cancelled_test",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "pending",
+          moderationStatus: "pending",
+          status: "cancelled",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await expect(
+          SponsoredCampaignService.adminConfirmPayment("admin_super", "camp_cancelled_test")
+        ).rejects.toThrow("statut actuel : cancelled");
+      });
+
+      it("should block suspension of a campaign in an invalid state", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_invalid_suspend", {
+          id: "camp_invalid_suspend",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "pending",
+          moderationStatus: "pending",
+          status: "pending",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await expect(
+          SponsoredCampaignService.adminSuspendCampaign("admin_super", "camp_invalid_suspend", "Motif")
+        ).rejects.toThrow("Seules les campagnes approuvées ou actives peuvent être suspendues");
+      });
+
+      it("should block seller cancellation of a paid or active campaign", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_seller_paid", {
+          id: "camp_seller_paid",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "paid",
+          moderationStatus: "approved",
+          status: "active",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await expect(
+          SponsoredCampaignService.cancelCampaign("seller_1", "camp_seller_paid")
+        ).rejects.toThrow("Impossible d'annuler une campagne déjà payée ou active");
+      });
+    });
+
+    describe("Analytics Eligibility Suite", () => {
+      it("should reject analytics event on suspended or paused campaign", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_paused_analytics", {
+          id: "camp_paused_analytics",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "paid",
+          moderationStatus: "suspended",
+          status: "paused",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await expect(
+          SponsoredCampaignService.recordAnalyticsEvent({
+            campaignId: "camp_paused_analytics",
+            eventType: "impression",
+            placement: "home",
+            productId: "prod_1",
+            clientIdentifier: "client_user_1",
+          })
+        ).rejects.toThrow("Campagne non active (statut: paused)");
+      });
+
+      it("should reject analytics event when product is inactive", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        // Seed inactive product
+        mockProducts.set("prod_inactive_test", {
+          id: "prod_inactive_test",
+          sellerId: "seller_1",
+          name: "Produit Inactif",
+          price: 1000,
+          category: "Artisanat",
+          image: "https://example.com/prod.jpg",
+          status: "archived",
+        });
+
+        mockCampaigns.set("camp_inactive_product", {
+          id: "camp_inactive_product",
+          sellerId: "seller_1",
+          productId: "prod_inactive_test",
+          productName: "Produit Inactif",
+          productPrice: 1000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/prod.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "paid",
+          moderationStatus: "approved",
+          status: "active",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await expect(
+          SponsoredCampaignService.recordAnalyticsEvent({
+            campaignId: "camp_inactive_product",
+            eventType: "click",
+            placement: "home",
+            productId: "prod_inactive_test",
+            clientIdentifier: "client_user_2",
+          })
+        ).rejects.toThrow("Le produit associé à la campagne n'est plus actif");
+      });
     });
   });
 });
