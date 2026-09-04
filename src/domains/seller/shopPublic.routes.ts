@@ -238,6 +238,15 @@ router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: R
         const isExpired = expiresAtIso ? new Date(expiresAtIso) <= now : false;
         if (isExpired) return null;
 
+        let createdAtMs = 0;
+        if (d.createdAt?.toDate) {
+          createdAtMs = d.createdAt.toDate().getTime();
+        } else if (d.createdAt?.seconds) {
+          createdAtMs = d.createdAt.seconds * 1000;
+        } else if (d.createdAt) {
+          createdAtMs = new Date(d.createdAt).getTime() || 0;
+        }
+
         return {
           id: doc.id,
           code: d.code,
@@ -246,17 +255,15 @@ router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: R
           minOrderAmount: Number(d.minOrderAmount ?? d.minOrderValue) || 0,
           expiresAt: expiresAtIso,
           sellerId: d.sellerId,
+          createdAtMs,
         };
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
 
-    // Deterministic sort: highest discount value first, lowest min order amount, earliest expiry, deterministic id
+    // Deterministic sort: creation descending, then expiration, then id ascending
     activeCoupons.sort((a, b) => {
-      if (b.discountValue !== a.discountValue) {
-        return b.discountValue - a.discountValue;
-      }
-      if (a.minOrderAmount !== b.minOrderAmount) {
-        return a.minOrderAmount - b.minOrderAmount;
+      if (b.createdAtMs !== a.createdAtMs) {
+        return b.createdAtMs - a.createdAtMs;
       }
       if (a.expiresAt && b.expiresAt) {
         const cmp = new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();

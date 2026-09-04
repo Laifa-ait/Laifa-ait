@@ -28,6 +28,10 @@
     "audit:ci": "npm ci && npm audit --omit=dev --audit-level=high"
   },
   "packageManager": "npm@10.9.4",
+  "engines": {
+    "node": "22.22.2",
+    "npm": ">=10.0.0"
+  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "prettier --write",

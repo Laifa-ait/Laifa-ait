@@ -74,8 +74,8 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
-    } catch (err: unknown) {
-      console.warn("Seeding dispute test data warning:", err instanceof Error ? err.message : String(err));
+    } catch {
+      // Ignore seeding errors in environments without live emulator
     }
 
     // 4. Spy on token verification
@@ -131,8 +131,8 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
       for (const doc of msgsSnap.docs) {
         await doc.ref.delete();
       }
-    } catch (err: unknown) {
-      console.warn("Cleanup dispute test data warning:", err instanceof Error ? err.message : String(err));
+    } catch {
+      // Ignore cleanup errors
     }
 
     vi.restoreAllMocks();

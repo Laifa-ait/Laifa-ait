@@ -84,8 +84,8 @@ export const stopProductPublisherWorker = () => {
   if (workerInterval) {
     try {
       clearInterval(workerInterval);
-    } catch (err: unknown) {
-      safeLogger.warn("[Olmart Workers] Error clearing publisher interval", { err: String(err) });
+    } catch {
+      // Safe no-op
     }
     workerInterval = null;
     safeLogger.info("[Olmart Workers] 🛑 Product Publisher Worker stopped.");
