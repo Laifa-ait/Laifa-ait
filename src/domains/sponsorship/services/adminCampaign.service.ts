@@ -133,6 +133,10 @@ export class AdminCampaignService {
       if (campaign.moderationStatus === "rejected") {
         throw new Error("Impossible d'approuver une campagne déjà rejetée.");
       }
+      if (campaign.moderationStatus === "approved") {
+        updatedCampaign = campaign;
+        return;
+      }
 
       // Campaign only becomes active if payment is already confirmed AND time window is active
       const isPaid = campaign.paymentStatus === "paid";
@@ -196,6 +200,11 @@ export class AdminCampaignService {
       }
 
       const campaign = doc.data() as SponsoredCampaign;
+
+      if (campaign.moderationStatus === "rejected") {
+        updatedCampaign = campaign;
+        return;
+      }
 
       if (campaign.paymentStatus === "paid" || campaign.moderationStatus === "approved") {
         throw new Error("Impossible de rejeter une campagne déjà payée ou approuvée.");

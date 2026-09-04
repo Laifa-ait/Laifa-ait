@@ -719,6 +719,92 @@ describe("Sponsored Campaigns System", () => {
         expect(logCountAfterSecond).toBe(1); // No duplicate audit log
       });
 
+      it("should be idempotent on adminApproveCampaign and not duplicate audit logs", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_approve_idempotent", {
+          id: "camp_approve_idempotent",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "paid",
+          moderationStatus: "pending",
+          status: "pending",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        // First approval
+        const firstApprove = await SponsoredCampaignService.adminApproveCampaign("admin_super", "camp_approve_idempotent");
+        expect(firstApprove.moderationStatus).toBe("approved");
+        const logCountFirst = mockAuditLogs.filter(
+          (l) => l.action === "APPROVE_CAMPAIGN" && l.targetId === "camp_approve_idempotent"
+        ).length;
+        expect(logCountFirst).toBe(1);
+
+        // Second approval (idempotent call)
+        const secondApprove = await SponsoredCampaignService.adminApproveCampaign("admin_super", "camp_approve_idempotent");
+        expect(secondApprove.moderationStatus).toBe("approved");
+        const logCountSecond = mockAuditLogs.filter(
+          (l) => l.action === "APPROVE_CAMPAIGN" && l.targetId === "camp_approve_idempotent"
+        ).length;
+        expect(logCountSecond).toBe(1); // Unchanged
+      });
+
+      it("should be idempotent on adminRejectCampaign and not duplicate audit logs", async () => {
+        const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+        mockCampaigns.set("camp_reject_idempotent", {
+          id: "camp_reject_idempotent",
+          sellerId: "seller_1",
+          productId: "prod_1",
+          productName: "Tapis Berbère",
+          productPrice: 15000,
+          productCategory: "Artisanat",
+          productImage: "https://example.com/tapis.jpg",
+          placement: "home",
+          startAt: new Date(Date.now() - 1000).toISOString(),
+          endAt: new Date(Date.now() + 100000).toISOString(),
+          durationDays: 5,
+          priceAmount: 4000,
+          currency: "DZD",
+          paymentStatus: "pending",
+          moderationStatus: "pending",
+          status: "pending",
+          impressions: 0,
+          clicks: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        // First rejection
+        const firstReject = await SponsoredCampaignService.adminRejectCampaign("admin_super", "camp_reject_idempotent", "Non conforme");
+        expect(firstReject.moderationStatus).toBe("rejected");
+        const logCountFirst = mockAuditLogs.filter(
+          (l) => l.action === "REJECT_CAMPAIGN" && l.targetId === "camp_reject_idempotent"
+        ).length;
+        expect(logCountFirst).toBe(1);
+
+        // Second rejection (idempotent call)
+        const secondReject = await SponsoredCampaignService.adminRejectCampaign("admin_super", "camp_reject_idempotent", "Non conforme nouveau");
+        expect(secondReject.moderationStatus).toBe("rejected");
+        const logCountSecond = mockAuditLogs.filter(
+          (l) => l.action === "REJECT_CAMPAIGN" && l.targetId === "camp_reject_idempotent"
+        ).length;
+        expect(logCountSecond).toBe(1); // Unchanged
+      });
+
       it("should block confirmation of payment on cancelled or completed campaign", async () => {
         const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
 
