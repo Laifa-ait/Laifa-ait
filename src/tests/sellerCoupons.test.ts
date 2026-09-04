@@ -1,181 +1,385 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import express, { Request, Response, NextFunction } from "express";
+import request from "supertest";
+
+// Mock user state for dynamic test identity
+let currentMockUser: { uid: string; role: string; email?: string } | null = {
+  uid: "seller_authenticated_123",
+  role: "seller",
+};
+
+// 1. Mock authentication middleware before importing routers
+vi.mock("../middlewares/auth", () => ({
+  authenticateToken: (req: Request, res: Response, next: NextFunction) => {
+    if (!currentMockUser) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+    (req as unknown as { user: unknown }).user = currentMockUser;
+    next();
+  },
+  authorizeSeller: (_req: Request, _res: Response, next: NextFunction) => {
+    next();
+  },
+}));
+
+// In-memory Firestore mock store for route testing
+interface MockCouponDoc {
+  id: string;
+  code: string;
+  sellerId: string;
+  discountType: string;
+  discountValue: number;
+  minOrderAmount?: number;
+  minOrderValue?: number;
+  expiresAt?: unknown;
+  expiryDate?: unknown;
+  isActive: boolean;
+  maxUses?: number | null;
+  usageLimit?: number | null;
+  usedCount?: number;
+  usageCount?: number;
+  limitedToSellers?: string[];
+  createdAt?: unknown;
+}
+
+const mockCouponsDb = new Map<string, MockCouponDoc>();
+const mockCodeLocks = new Map<string, { couponId: string; sellerId: string }>();
+
+vi.mock("../config/firebase-admin", () => {
+  const adminMock = {
+    firestore: {
+      FieldValue: {
+        serverTimestamp: () => ({ _type: "serverTimestamp" }),
+      },
+      Timestamp: {
+        fromDate: (d: Date) => ({
+          toDate: () => d,
+          toISOString: () => d.toISOString(),
+          seconds: Math.floor(d.getTime() / 1000),
+        }),
+      },
+    },
+  };
+
+  const dbMock = {
+    collection: (colName: string) => {
+      if (colName === "coupon_codes") {
+        return {
+          doc: (code: string) => ({
+            get: async () => ({
+              exists: mockCodeLocks.has(code),
+              data: () => mockCodeLocks.get(code),
+            }),
+            set: async (data: { couponId: string; sellerId: string }) => {
+              mockCodeLocks.set(code, data);
+            },
+            delete: async () => {
+              mockCodeLocks.delete(code);
+            },
+          }),
+        };
+      }
+
+      if (colName === "coupons") {
+        return {
+          doc: (docId?: string) => {
+            const id = docId || `coup_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+            return {
+              id,
+              get: async () => {
+                const item = mockCouponsDb.get(id);
+                return {
+                  id,
+                  exists: Boolean(item),
+                  data: () => item,
+                };
+              },
+              update: async (patch: Partial<MockCouponDoc>) => {
+                const item = mockCouponsDb.get(id);
+                if (item) {
+                  mockCouponsDb.set(id, { ...item, ...patch });
+                }
+              },
+              delete: async () => {
+                mockCouponsDb.delete(id);
+              },
+            };
+          },
+          where: (field: string, op: string, val: unknown) => {
+            const filters: Array<{ field: string; op: string; val: unknown }> = [{ field, op, val }];
+            const queryObj = {
+              where: (f2: string, op2: string, v2: unknown) => {
+                filters.push({ field: f2, op: op2, val: v2 });
+                return queryObj;
+              },
+              limit: (_n: number) => queryObj,
+              get: async () => {
+                const docs = Array.from(mockCouponsDb.values()).filter((c) => {
+                  return filters.every((filter) => {
+                    if (filter.field === "sellerId") return c.sellerId === filter.val;
+                    if (filter.field === "isActive") return c.isActive === filter.val;
+                    if (filter.field === "code") return c.code === filter.val;
+                    return true;
+                  });
+                });
+                return {
+                  empty: docs.length === 0,
+                  docs: docs.map((d) => ({
+                    id: d.id,
+                    data: () => d,
+                  })),
+                };
+              },
+            };
+            return queryObj;
+          },
+        };
+      }
+
+      return {
+        doc: () => ({
+          get: async () => ({ exists: false, data: () => ({}) }),
+        }),
+      };
+    },
+    runTransaction: async (updateFunction: (t: unknown) => Promise<unknown>) => {
+      const transactionMock = {
+        get: async (refOrQuery: { exists?: boolean; data?: () => unknown; get?: () => Promise<unknown> }) => {
+          if (typeof refOrQuery.get === "function") {
+            return refOrQuery.get();
+          }
+          return refOrQuery;
+        },
+        set: (ref: { id: string }, data: Record<string, unknown>) => {
+          if (data.code && data.couponId) {
+            // lock doc
+            mockCodeLocks.set(data.code as string, {
+              couponId: data.couponId as string,
+              sellerId: data.sellerId as string,
+            });
+          } else {
+            // coupon doc
+            mockCouponsDb.set(ref.id, {
+              id: ref.id,
+              ...data,
+            } as MockCouponDoc);
+          }
+        },
+      };
+      return updateFunction(transactionMock);
+    },
+    batch: () => ({
+      delete: (ref: { id: string }) => {
+        mockCouponsDb.delete(ref.id);
+      },
+      commit: async () => {
+        return;
+      },
+    }),
+  };
+
+  return {
+    admin: adminMock,
+    db: dbMock,
+  };
+});
+
+import sellerCouponRouter from "../domains/seller/controllers/SellerCouponController";
+import shopPublicRouter from "../domains/seller/shopPublic.routes";
 import { CouponService, ProductItemForCoupon } from "../domains/marketing/coupon.service";
 
-describe("Seller Coupons Targeted Security & Integrity Suite", () => {
-  // 1. sellerId ALWAYS DERIVED FROM AUTHENTICATED TOKEN
-  describe("1. sellerId derivation & IDOR security", () => {
-    it("should strictly assign the authenticated seller's UID from token, ignoring any sellerId in payload", () => {
-      const authenticatedSellerUid = "seller_auth_real_123";
+describe("Seller Coupons Targeted Security & Routes Suite", () => {
+  let app: express.Application;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCouponsDb.clear();
+    mockCodeLocks.clear();
+    currentMockUser = {
+      uid: "seller_authenticated_123",
+      role: "seller",
+    };
+
+    app = express();
+    app.use(express.json());
+    app.use(sellerCouponRouter);
+    app.use(shopPublicRouter);
+  });
+
+  // 1. ROUTE TESTS: REAL CONTROLLERS VIA SUPERTEST
+  describe("1. Real Route Tests (Seller Coupon Controller & Public Shop)", () => {
+    it("POST /api/v1/seller/coupons ignores sellerId in payload and strictly derives it from req.user.uid", async () => {
       const maliciousPayload = {
-        code: "HACK50",
+        code: "SUMMER20",
         discountType: "percentage",
         discountValue: 20,
+        expiryDate: "2026-12-31T23:59:59.000Z",
+        minOrderAmount: 1000,
         sellerId: "victim_seller_999", // Attempted spoofing
         createdBy: "victim_seller_999",
       };
 
-      // Simulating controller payload extraction: sellerId is hardcoded to req.user.uid
-      const safeCreatedDoc = {
-        code: maliciousPayload.code.toUpperCase(),
-        discountType: maliciousPayload.discountType,
-        discountValue: maliciousPayload.discountValue,
-        sellerId: authenticatedSellerUid, // Must come from req.user.uid
-        createdBy: authenticatedSellerUid,
-        limitedToSellers: [authenticatedSellerUid],
-      };
+      const res = await request(app)
+        .post("/api/v1/seller/coupons")
+        .send(maliciousPayload);
 
-      expect(safeCreatedDoc.sellerId).toBe("seller_auth_real_123");
-      expect(safeCreatedDoc.sellerId).not.toBe(maliciousPayload.sellerId);
-      expect(safeCreatedDoc.limitedToSellers).toEqual(["seller_auth_real_123"]);
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.coupon.sellerId).toBe("seller_authenticated_123");
+      expect(res.body.coupon.sellerId).not.toBe("victim_seller_999");
+      expect(res.body.coupon.limitedToSellers).toEqual(["seller_authenticated_123"]);
+
+      // Verify stored in DB
+      const created = Array.from(mockCouponsDb.values()).find((c) => c.code === "SUMMER20");
+      expect(created).toBeDefined();
+      expect(created?.sellerId).toBe("seller_authenticated_123");
     });
 
-    it("should refuse modification or deletion of another seller's coupon (IDOR guard)", () => {
-      const authenticatedSellerUid = "seller_auth_real_123";
-      const existingCouponDoc = {
-        id: "coup_victim_888",
-        code: "VICTIMPROMO",
-        sellerId: "other_seller_456",
+    it("PUT /api/v1/seller/coupons/:id/status returns 403 when modifying another seller's coupon (IDOR guard)", async () => {
+      mockCouponsDb.set("coup_other_seller", {
+        id: "coup_other_seller",
+        code: "OTHER20",
+        sellerId: "other_seller_888", // Not seller_authenticated_123
+        discountType: "percentage",
+        discountValue: 20,
         isActive: true,
-      };
-
-      // Controller ownership verification
-      const canEdit = existingCouponDoc.sellerId === authenticatedSellerUid;
-      const canDelete = existingCouponDoc.sellerId === authenticatedSellerUid;
-
-      expect(canEdit).toBe(false);
-      expect(canDelete).toBe(false);
-
-      // Verify status code contract
-      const idorResponse = canEdit
-        ? { status: 200 }
-        : { status: 403, error: "Accès refusé : vous ne pouvez modifier que vos propres coupons (IDOR Guard)." };
-
-      expect(idorResponse.status).toBe(403);
-      expect(idorResponse.error).toContain("IDOR Guard");
-    });
-  });
-
-  // 2. TRANSACTIONAL UNIQUENESS OF COUPON CODE
-  describe("2. Transactional code uniqueness & atomic locking", () => {
-    it("should normalize coupon codes to uppercase and detect duplicate code collision", () => {
-      const existingCodes = new Set(["WELCOME10", "ALGERIA2026", "FLASH50"]);
-
-      const attempt1 = "welcome10";
-      const upper1 = attempt1.trim().toUpperCase();
-      const isDuplicate1 = existingCodes.has(upper1);
-
-      expect(upper1).toBe("WELCOME10");
-      expect(isDuplicate1).toBe(true);
-
-      const attempt2 = "  algeria2026  ";
-      const upper2 = attempt2.trim().toUpperCase();
-      const isDuplicate2 = existingCodes.has(upper2);
-
-      expect(upper2).toBe("ALGERIA2026");
-      expect(isDuplicate2).toBe(true);
-
-      const attempt3 = "NEWSELLER15";
-      const upper3 = attempt3.trim().toUpperCase();
-      const isDuplicate3 = existingCodes.has(upper3);
-
-      expect(upper3).toBe("NEWSELLER15");
-      expect(isDuplicate3).toBe(false);
-    });
-
-    it("simulates atomic transaction rollback when coupon_codes lock document already exists", async () => {
-      const lockStore = new Map<string, { couponId: string; sellerId: string }>();
-      lockStore.set("DISCOUNT20", { couponId: "coup_1", sellerId: "seller_A" });
-
-      const createCouponTransaction = async (code: string, sellerId: string) => {
-        const upper = code.trim().toUpperCase();
-        if (lockStore.has(upper)) {
-          throw new Error("Ce code promo existe déjà. Veuillez choisir un autre code.");
-        }
-        lockStore.set(upper, { couponId: "coup_2", sellerId });
-        return { success: true };
-      };
-
-      await expect(createCouponTransaction("discount20", "seller_B")).rejects.toThrow(
-        "Ce code promo existe déjà. Veuillez choisir un autre code."
-      );
-    });
-  });
-
-  // 3. PUBLIC EXCLUSION OF EXPIRED, INACTIVE, AND EXHAUSTED COUPONS
-  describe("3. Public filtering of expired, deactivated, and exhausted coupons", () => {
-    it("excludes coupons where isActive === false", () => {
-      const coupons = [
-        { id: "c1", code: "ACTIVE10", isActive: true, expiresAt: "2099-01-01T00:00:00.000Z", usageLimit: 100, usedCount: 5 },
-        { id: "c2", code: "DISABLED20", isActive: false, expiresAt: "2099-01-01T00:00:00.000Z", usageLimit: 100, usedCount: 0 },
-      ];
-
-      const activeOnly = coupons.filter((c) => c.isActive);
-      expect(activeOnly.map((c) => c.code)).toEqual(["ACTIVE10"]);
-    });
-
-    it("excludes coupons where expiry date is in the past", () => {
-      const now = new Date("2026-09-04T12:00:00.000Z");
-      const coupons = [
-        { id: "c1", code: "VALID", isActive: true, expiresAt: "2026-10-01T00:00:00.000Z" },
-        { id: "c2", code: "EXPIRED_YESTERDAY", isActive: true, expiresAt: "2026-09-03T00:00:00.000Z" },
-        { id: "c3", code: "EXPIRED_JUST_NOW", isActive: true, expiresAt: "2026-09-04T11:59:59.000Z" },
-      ];
-
-      const nonExpired = coupons.filter((c) => {
-        if (!c.expiresAt) return true;
-        return new Date(c.expiresAt) > now;
       });
 
-      expect(nonExpired.map((c) => c.code)).toEqual(["VALID"]);
+      const res = await request(app)
+        .put("/api/v1/seller/coupons/coup_other_seller/status")
+        .send({ isActive: false });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("IDOR Guard");
+      expect(mockCouponsDb.get("coup_other_seller")?.isActive).toBe(true);
     });
 
-    it("excludes coupons where usageCount >= maxUses or usedCount >= usageLimit", () => {
-      const coupons = [
-        { id: "c1", code: "PLENTY_LEFT", maxUses: 50, usageCount: 12 },
-        { id: "c2", code: "EXHAUSTED_MAX_USES", maxUses: 10, usageCount: 10 },
-        { id: "c3", code: "EXHAUSTED_OVERFLOW", maxUses: 5, usageCount: 8 },
-        { id: "c4", code: "EXHAUSTED_LEGACY_FIELDS", usageLimit: 20, usedCount: 20 },
-        { id: "c5", code: "UNLIMITED", maxUses: null, usageCount: 150 },
-      ];
-
-      const available = coupons.filter((c) => {
-        const limit = typeof c.maxUses === "number" ? c.maxUses : typeof c.usageLimit === "number" ? c.usageLimit : null;
-        const used = typeof c.usageCount === "number" ? c.usageCount : typeof c.usedCount === "number" ? c.usedCount : 0;
-        if (limit !== null && limit > 0 && used >= limit) {
-          return false;
-        }
-        return true;
+    it("DELETE /api/v1/seller/coupons/:id returns 403 when deleting another seller's coupon (IDOR guard)", async () => {
+      mockCouponsDb.set("coup_victim_del", {
+        id: "coup_victim_del",
+        code: "VICTIM30",
+        sellerId: "other_seller_888",
+        discountType: "percentage",
+        discountValue: 30,
+        isActive: true,
       });
 
-      expect(available.map((c) => c.code)).toEqual(["PLENTY_LEFT", "UNLIMITED"]);
+      const res = await request(app).delete("/api/v1/seller/coupons/coup_victim_del");
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("IDOR Guard");
+      expect(mockCouponsDb.has("coup_victim_del")).toBe(true);
+    });
+
+    it("POST /api/v1/seller/coupons rejects duplicate code collision in coupon_codes lock collection", async () => {
+      // Pre-populate code lock
+      mockCodeLocks.set("DUPLICATE10", {
+        couponId: "coup_existing",
+        sellerId: "seller_first",
+      });
+
+      const res = await request(app)
+        .post("/api/v1/seller/coupons")
+        .send({
+          code: "DUPLICATE10",
+          discountType: "percentage",
+          discountValue: 10,
+          expiryDate: "2026-12-31T23:59:59.000Z",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("Ce code promo existe déjà. Veuillez choisir un autre code.");
+    });
+
+    it("GET /api/v1/public/shops/:sellerId/coupons removes inactive, expired, and exhausted coupons, without returning createdAtMs", async () => {
+      const sellerId = "shop_seller_456";
+      const now = new Date();
+      const futureDate = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+      const pastDate = new Date(now.getTime() - 2 * 24 * 3600 * 1000);
+
+      // 1. Valid active coupon
+      mockCouponsDb.set("c_valid", {
+        id: "c_valid",
+        code: "VALID15",
+        sellerId,
+        discountType: "percentage",
+        discountValue: 15,
+        isActive: true,
+        expiresAt: { toDate: () => futureDate, toISOString: () => futureDate.toISOString() },
+        maxUses: 100,
+        usedCount: 5,
+        createdAt: { toDate: () => new Date(now.getTime() - 1000) },
+      });
+
+      // 2. Inactive coupon
+      mockCouponsDb.set("c_inactive", {
+        id: "c_inactive",
+        code: "INACTIVE50",
+        sellerId,
+        discountType: "percentage",
+        discountValue: 50,
+        isActive: false,
+        expiresAt: { toDate: () => futureDate, toISOString: () => futureDate.toISOString() },
+        createdAt: { toDate: () => new Date() },
+      });
+
+      // 3. Expired coupon
+      mockCouponsDb.set("c_expired", {
+        id: "c_expired",
+        code: "EXPIRED10",
+        sellerId,
+        discountType: "percentage",
+        discountValue: 10,
+        isActive: true,
+        expiresAt: { toDate: () => pastDate, toISOString: () => pastDate.toISOString() },
+        createdAt: { toDate: () => new Date() },
+      });
+
+      // 4. Exhausted coupon (usedCount >= maxUses)
+      mockCouponsDb.set("c_exhausted", {
+        id: "c_exhausted",
+        code: "EXHAUSTED25",
+        sellerId,
+        discountType: "percentage",
+        discountValue: 25,
+        isActive: true,
+        expiresAt: { toDate: () => futureDate, toISOString: () => futureDate.toISOString() },
+        maxUses: 10,
+        usedCount: 10,
+        createdAt: { toDate: () => new Date() },
+      });
+
+      const res = await request(app).get(`/api/v1/public/shops/${sellerId}/coupons`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.coupons).toHaveLength(1);
+      expect(res.body.coupons[0].code).toBe("VALID15");
+
+      // Verify createdAtMs is NOT leaked in the public DTO
+      expect(res.body.coupons[0].createdAtMs).toBeUndefined();
     });
   });
 
-  // 4. RESTRICTION OF COUPON TO SELLER ITEMS AT CHECKOUT
-  describe("4. Restriction of seller coupon to seller items at checkout", () => {
+  // 2. REAL SERVICE CODE TESTS: COUPON SERVICE RESTRICTIONS AT CHECKOUT
+  describe("2. Real CouponService item restriction & subtotal calculation", () => {
     const cartItems: ProductItemForCoupon[] = [
       {
-        id: "prod_artisanal_carpet",
         productId: "prod_artisanal_carpet",
-        name: "Tapis Berbère Artisanal",
         price: 15000,
         quantity: 1,
         sellerId: "seller_artisan_ghardaia",
         category: "Maison & Décoration",
       },
       {
-        id: "prod_leather_bag",
         productId: "prod_leather_bag",
-        name: "Sac en Cuir Véritable",
         price: 8000,
         quantity: 1,
         sellerId: "seller_artisan_ghardaia",
         category: "Maroquinerie",
       },
       {
-        id: "prod_tech_phone",
         productId: "prod_tech_phone",
-        name: "Smartphone Galaxy",
         price: 45000,
         quantity: 1,
         sellerId: "seller_tech_algiers", // Different seller
@@ -201,7 +405,7 @@ describe("Seller Coupons Targeted Security & Integrity Suite", () => {
 
       expect(hasRestrictions).toBe(true);
       expect(eligibleItems).toHaveLength(2);
-      expect(eligibleItems.map((i) => i.id)).toEqual(["prod_artisanal_carpet", "prod_leather_bag"]);
+      expect(eligibleItems.map((i) => i.productId)).toEqual(["prod_artisanal_carpet", "prod_leather_bag"]);
       expect(eligibleSubtotal).toBe(23000); // 15000 + 8000
 
       // Calculate discount on eligible subtotal

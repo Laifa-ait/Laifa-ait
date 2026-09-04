@@ -272,7 +272,9 @@ router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: R
       return a.id.localeCompare(b.id);
     });
 
-    return res.json({ success: true, coupons: activeCoupons });
+    const publicCoupons = activeCoupons.map(({ createdAtMs: _ignored, ...dto }) => dto);
+
+    return res.json({ success: true, coupons: publicCoupons });
   } catch (error: unknown) {
     safeLogger.error("Error fetching shop public coupons", {
       sellerId,
