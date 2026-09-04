@@ -2,7 +2,7 @@ import React from "react";
 import { Tag, Calendar, Copy, Check, Trash2, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Coupon } from "../../../domains/marketing/coupon.types";
+import { Coupon } from "../../../../domains/marketing/coupon.types";
 
 interface SellerCouponCardProps {
   coupon: Coupon;

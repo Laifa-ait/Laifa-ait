@@ -178,8 +178,8 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     afterEach(() => {
       try {
         fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch {
-        // Safe no-op cleanup
+      } catch (err: unknown) {
+        console.warn("Temp dir cleanup warning:", err instanceof Error ? err.message : String(err));
       }
     });
 

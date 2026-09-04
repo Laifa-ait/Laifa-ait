@@ -218,6 +218,14 @@ router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: R
     const activeCoupons = snap.docs
       .map((doc) => {
         const d = doc.data();
+
+        // Check if usage limit reached
+        const maxUses = typeof d.maxUses === "number" ? d.maxUses : (typeof d.usageLimit === "number" ? d.usageLimit : null);
+        const currentUses = Number(d.usedCount ?? d.usageCount) || 0;
+        if (maxUses !== null && maxUses > 0 && currentUses >= maxUses) {
+          return null;
+        }
+
         let expiresAtIso: string | null = null;
         if (d.expiresAt?.toDate) {
           expiresAtIso = d.expiresAt.toDate().toISOString();
@@ -241,6 +249,21 @@ router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: R
         };
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
+
+    // Deterministic sort: highest discount value first, lowest min order amount, earliest expiry, deterministic id
+    activeCoupons.sort((a, b) => {
+      if (b.discountValue !== a.discountValue) {
+        return b.discountValue - a.discountValue;
+      }
+      if (a.minOrderAmount !== b.minOrderAmount) {
+        return a.minOrderAmount - b.minOrderAmount;
+      }
+      if (a.expiresAt && b.expiresAt) {
+        const cmp = new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
+        if (cmp !== 0) return cmp;
+      }
+      return a.id.localeCompare(b.id);
+    });
 
     return res.json({ success: true, coupons: activeCoupons });
   } catch (error: unknown) {

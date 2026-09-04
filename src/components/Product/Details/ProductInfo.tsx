@@ -385,16 +385,16 @@ export const ProductInfo: React.FC<InfoProps> = ({
 
           {/* Discrete Seller Promo Coupon Banner */}
           <SellerCouponBanner
-            sellerId={shop.id || product.sellerId || product.sellerUid}
+            sellerId={shop.id || product.sellerId}
             className="mt-1"
           />
         </div>
       )}
 
       {/* Discrete Seller Promo Coupon Banner (if no shop block rendered) */}
-      {!shop && (product.sellerId || product.sellerUid) && (
+      {!shop && product.sellerId && (
         <SellerCouponBanner
-          sellerId={product.sellerId || product.sellerUid}
+          sellerId={product.sellerId}
           className="mt-2"
         />
       )}

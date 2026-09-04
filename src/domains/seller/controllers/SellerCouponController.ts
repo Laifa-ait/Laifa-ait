@@ -7,6 +7,27 @@ import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
 
+const getDocMillis = (docData: Record<string, unknown>): number => {
+  const val = docData.createdAt;
+  if (!val) return 0;
+  if (typeof val === "object" && val !== null) {
+    if ("toDate" in val && typeof (val as { toDate: () => Date }).toDate === "function") {
+      return (val as { toDate: () => Date }).toDate().getTime();
+    }
+    if ("seconds" in val && typeof (val as { seconds: number }).seconds === "number") {
+      return (val as { seconds: number }).seconds * 1000;
+    }
+    if (val instanceof Date) {
+      return val.getTime();
+    }
+  }
+  if (typeof val === "string" || typeof val === "number") {
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+  return 0;
+};
+
 // GET /api/v1/seller/coupons - Fetch only the authenticated seller's coupons
 router.get(
   "/api/v1/seller/coupons",
@@ -24,7 +45,7 @@ router.get(
         .where("sellerId", "==", sellerId)
         .get();
 
-      const coupons = snap.docs.map((doc) => {
+      const coupons: Record<string, unknown>[] = snap.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -33,11 +54,7 @@ router.get(
       });
 
       // Sort by creation descending in memory if missing composite index
-      coupons.sort((a, b) => {
-        const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-        const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
-        return timeB - timeA;
-      });
+      coupons.sort((a, b) => getDocMillis(b) - getDocMillis(a));
 
       return res.json({ success: true, coupons });
     } catch (error: unknown) {

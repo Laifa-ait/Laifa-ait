@@ -161,10 +161,10 @@ export const Home: React.FC = () => {
       <FeaturedProductsCarousel products={featuredProducts} />
 
       {/* Sections administrables dynamiques */}
-      {homepageSections
-        ?.filter((section) => section && section.isActive)
-        ?.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-        ?.map((section) => (
+      {[...(homepageSections || [])]
+        .filter((section) => section && section.isActive)
+        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+        .map((section) => (
           <DynamicSection key={section.id} section={section} />
         ))}
 

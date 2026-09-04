@@ -22,7 +22,7 @@ interface CustomCategoryItem {
 
 export const useHomeCategoryConfig = (
   customCategories: CustomCategoryItem[] = [],
-  categoryHierarchy: Record<string, string[]> = {},
+  categoryHierarchy: Record<string, unknown> | Record<string, Record<string, string[]>> = {},
   categoriesVisiteesCount?: Record<string, number>,
   favoriteCategory?: string | null
 ) => {
@@ -58,23 +58,27 @@ export const useHomeCategoryConfig = (
 
   const activeCategoriesConfig = useMemo<CategoryCardConfig[]>(() => {
     const baseMap = Object.keys(categoryHierarchy).map((catKey) => {
-      const defaultMapping = defaultCategoryMapping.find((dm) => dm.key === catKey) || {
-        key: catKey,
-        title: catKey,
-        subtitle: t("home.discover_category_articles", { category: catKey }),
-        image: "/images/placeholders/product.svg",
-        gradient: "from-zinc-950/80 via-zinc-950/20 to-transparent",
-      };
-      return defaultMapping;
+      const defaultMapping = defaultCategoryMapping.find((dm) => dm.key === catKey);
+      const translatedTitle = defaultMapping?.title || t(`categories.${catKey}`, t(`cat_${catKey}`, catKey));
+      return (
+        defaultMapping || {
+          key: catKey,
+          title: translatedTitle,
+          subtitle: t("home.discover_category_articles", { category: translatedTitle }),
+          image: "/images/placeholders/product.svg",
+          gradient: "from-zinc-950/80 via-zinc-950/20 to-transparent",
+        }
+      );
     });
 
     return baseMap.map((categoryItem) => {
       const custom = customCategories.find((cc) => cc.id === categoryItem.key);
       if (custom) {
+        const title = custom.title || categoryItem.title;
         return {
           ...categoryItem,
-          title: custom.title || categoryItem.title,
-          subtitle: custom.subtitle || categoryItem.subtitle,
+          title,
+          subtitle: custom.subtitle || t("home.discover_category_articles", { category: title }),
           image: custom.image || categoryItem.image,
           gradient: custom.gradient || categoryItem.gradient,
           featuredProductIds: custom.featuredProductIds || [],
