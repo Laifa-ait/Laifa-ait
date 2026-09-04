@@ -16,13 +16,6 @@ interface MockProduct {
   status: string;
 }
 
-interface MockWallet {
-  availableBalanceDZD: number;
-  pendingBalanceDZD: number;
-  totalWithdrawnDZD: number;
-  updatedAt: unknown;
-}
-
 interface MockCampaign {
   id: string;
   sellerId: string;
@@ -37,9 +30,14 @@ interface MockCampaign {
   durationDays: number;
   priceAmount: number;
   currency: string;
-  paymentStatus: "paid" | "unpaid";
+  paymentStatus: "pending" | "paid";
   moderationStatus: "pending" | "approved" | "rejected" | "suspended";
-  status: "pending_payment" | "pending_review" | "active" | "paused" | "completed" | "cancelled" | "rejected";
+  status: "pending" | "active" | "paused" | "completed" | "cancelled" | "rejected";
+  paymentProofReference?: string;
+  paymentProofNotes?: string;
+  paymentProofUrl?: string;
+  paidAt?: string;
+  paymentConfirmedBy?: string;
   impressions: number;
   clicks: number;
   rejectionReason?: string;
@@ -48,10 +46,8 @@ interface MockCampaign {
 }
 
 const mockProducts = new Map<string, MockProduct>();
-const mockWallets = new Map<string, MockWallet>();
 const mockCampaigns = new Map<string, MockCampaign>();
 const mockAuditLogs: Array<{ action?: string; targetId?: string; adminId?: string; details?: unknown }> = [];
-const mockWalletTransactions: Array<{ walletId: string; amount: number; type: string; description: string }> = [];
 
 vi.mock("../config/firebase-admin", () => {
   const adminMock = {
@@ -114,6 +110,7 @@ vi.mock("../config/firebase-admin", () => {
                       if (f.field === "sellerId") return c.sellerId === f.val;
                       if (f.field === "status") return c.status === f.val;
                       if (f.field === "moderationStatus") return c.moderationStatus === f.val;
+                      if (f.field === "paymentStatus") return c.paymentStatus === f.val;
                       if (f.field === "placement") return c.placement === f.val;
                       return true;
                     });
@@ -134,6 +131,7 @@ vi.mock("../config/firebase-admin", () => {
                     if (f.field === "sellerId") return c.sellerId === f.val;
                     if (f.field === "status") return c.status === f.val;
                     if (f.field === "moderationStatus") return c.moderationStatus === f.val;
+                    if (f.field === "paymentStatus") return c.paymentStatus === f.val;
                     if (f.field === "placement") return c.placement === f.val;
                     return true;
                   });
@@ -153,33 +151,14 @@ vi.mock("../config/firebase-admin", () => {
         };
       }
 
-      if (colName === "seller_wallets" || colName === "wallets") {
-        return {
-          doc: (sellerId: string) => ({
-            id: sellerId,
-            get: async () => ({
-              exists: mockWallets.has(sellerId),
-              id: sellerId,
-              data: () => mockWallets.get(sellerId),
-            }),
-            collection: (subCol: string) => {
-              if (subCol === "transactions") {
-                return {
-                  doc: () => ({
-                    set: async (txData: { amount: number; type: string; description: string }) => {
-                      mockWalletTransactions.push({ walletId: sellerId, ...txData });
-                    },
-                  }),
-                };
-              }
-              return {};
-            },
-          }),
-        };
-      }
-
       if (colName === "audit_logs") {
         return {
+          doc: (id?: string) => ({
+            id: id || `audit_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            set: async (logData: { action?: string; targetId?: string; adminId?: string; details?: unknown }) => {
+              mockAuditLogs.push(logData);
+            },
+          }),
           add: async (log: { action?: string; targetId?: string; adminId?: string; details?: unknown }) => {
             mockAuditLogs.push(log);
           },
@@ -206,13 +185,6 @@ vi.mock("../config/firebase-admin", () => {
       const mockTx = {
         get: async (docRef: { id?: string }) => {
           const id = docRef.id || "";
-          if (mockWallets.has(id)) {
-            return {
-              exists: true,
-              id,
-              data: () => mockWallets.get(id),
-            };
-          }
           if (mockCampaigns.has(id)) {
             return {
               exists: true,
@@ -224,10 +196,6 @@ vi.mock("../config/firebase-admin", () => {
         },
         update: (docRef: { id?: string }, data: Record<string, unknown>) => {
           const id = docRef.id || "";
-          if (mockWallets.has(id)) {
-            const current = mockWallets.get(id)!;
-            mockWallets.set(id, { ...current, ...data } as MockWallet);
-          }
           if (mockCampaigns.has(id)) {
             const current = mockCampaigns.get(id)!;
             mockCampaigns.set(id, { ...current, ...data } as MockCampaign);
@@ -238,13 +206,8 @@ vi.mock("../config/firebase-admin", () => {
           if (data.placement && data.sellerId) {
             mockCampaigns.set(id, data as unknown as MockCampaign);
           }
-          if (data.type === "SPONSORSHIP_PAYMENT") {
-            mockWalletTransactions.push({
-              walletId: id,
-              amount: Number(data.amount),
-              type: String(data.type),
-              description: String(data.description),
-            });
+          if (data.action) {
+            mockAuditLogs.push(data);
           }
         },
       };
@@ -262,10 +225,8 @@ vi.mock("../config/firebase-admin", () => {
 describe("Sponsored Campaigns System", () => {
   beforeEach(() => {
     mockProducts.clear();
-    mockWallets.clear();
     mockCampaigns.clear();
     mockAuditLogs.length = 0;
-    mockWalletTransactions.length = 0;
 
     // Seed test product
     mockProducts.set("prod_1", {
@@ -287,14 +248,6 @@ describe("Sponsored Campaigns System", () => {
       category: "Mode",
       image: "https://example.com/robe.jpg",
       status: "active",
-    });
-
-    // Seed wallet
-    mockWallets.set("seller_1", {
-      availableBalanceDZD: 20000,
-      pendingBalanceDZD: 0,
-      totalWithdrawnDZD: 0,
-      updatedAt: new Date().toISOString(),
     });
   });
 
@@ -347,7 +300,7 @@ describe("Sponsored Campaigns System", () => {
     });
   });
 
-  describe("2. Service Layer Operations", () => {
+  describe("2. Service Layer Operations (Decoupled from Wallet)", () => {
     it("should create a campaign and enforce IDOR when seller does not own product", async () => {
       const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
 
@@ -364,7 +317,7 @@ describe("Sponsored Campaigns System", () => {
       ).rejects.toThrow("Vous ne pouvez pas sponsoriser un produit appartenant à un autre vendeur.");
     });
 
-    it("should create campaign with wallet payment in ACID transaction", async () => {
+    it("should create campaign with paymentStatus: 'pending' without touching wallet", async () => {
       const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
 
       const start = new Date(Date.now() + 86400000);
@@ -375,7 +328,6 @@ describe("Sponsored Campaigns System", () => {
         placement: "home",
         startAt: start.toISOString(),
         endAt: end.toISOString(),
-        payFromWallet: true,
       });
 
       expect(campaign.sellerId).toBe("seller_1");
@@ -383,38 +335,92 @@ describe("Sponsored Campaigns System", () => {
       expect(campaign.placement).toBe("home");
       expect(campaign.durationDays).toBe(7);
       expect(campaign.priceAmount).toBe(7 * 800);
-      expect(campaign.paymentStatus).toBe("paid");
+      // Decoupled from wallet: payment status is pending
+      expect(campaign.paymentStatus).toBe("pending");
       expect(campaign.moderationStatus).toBe("pending");
       expect(campaign.status).toBe("pending");
-
-      // Verify wallet was debited
-      const updatedWallet = mockWallets.get("seller_1");
-      expect(updatedWallet?.availableBalanceDZD).toBe(20000 - 5600); // 14400
     });
 
-    it("should fail wallet payment if balance is insufficient", async () => {
+    it("should allow seller to submit payment proof for their pending campaign", async () => {
       const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
 
-      // Set low balance
-      mockWallets.set("seller_1", {
-        availableBalanceDZD: 100,
-        pendingBalanceDZD: 0,
-        totalWithdrawnDZD: 0,
-        updatedAt: "",
+      // Seed campaign
+      mockCampaigns.set("camp_pending_proof", {
+        id: "camp_pending_proof",
+        sellerId: "seller_1",
+        productId: "prod_1",
+        productName: "Tapis",
+        productPrice: 15000,
+        productCategory: "Artisanat",
+        productImage: "https://example.com/tapis.jpg",
+        placement: "home",
+        startAt: new Date().toISOString(),
+        endAt: new Date().toISOString(),
+        durationDays: 7,
+        priceAmount: 5600,
+        currency: "DZD",
+        paymentStatus: "pending",
+        moderationStatus: "pending",
+        status: "pending",
+        impressions: 0,
+        clicks: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
-      const start = new Date(Date.now() + 86400000);
-      const end = new Date(start.getTime() + 86400000 * 7);
-
+      // Another seller fails (IDOR protection)
       await expect(
-        SponsoredCampaignService.createCampaign("seller_1", {
-          productId: "prod_1",
-          placement: "home",
-          startAt: start.toISOString(),
-          endAt: end.toISOString(),
-          payFromWallet: true,
+        SponsoredCampaignService.submitPaymentProof("seller_other", "camp_pending_proof", {
+          paymentProofReference: "REC-987654",
+          paymentProofNotes: "Virement BaridiMob",
         })
-      ).rejects.toThrow("INSUFFICIENT_WALLET_BALANCE");
+      ).rejects.toThrow("Accès refusé");
+
+      // Owner submits successfully
+      const updated = await SponsoredCampaignService.submitPaymentProof("seller_1", "camp_pending_proof", {
+        paymentProofReference: "REC-987654",
+        paymentProofNotes: "Virement BaridiMob",
+      });
+      expect(updated.paymentProofReference).toBe("REC-987654");
+      expect(updated.paymentProofNotes).toBe("Virement BaridiMob");
+    });
+
+    it("should allow admin to confirm manual payment with atomic audit log", async () => {
+      const { SponsoredCampaignService } = await import("../domains/sponsorship/sponsoredCampaign.service");
+
+      mockCampaigns.set("camp_confirm_pay", {
+        id: "camp_confirm_pay",
+        sellerId: "seller_1",
+        productId: "prod_1",
+        productName: "Tapis",
+        productPrice: 15000,
+        productCategory: "Artisanat",
+        productImage: "https://example.com/tapis.jpg",
+        placement: "home",
+        startAt: new Date().toISOString(),
+        endAt: new Date().toISOString(),
+        durationDays: 7,
+        priceAmount: 5600,
+        currency: "DZD",
+        paymentStatus: "pending",
+        moderationStatus: "pending",
+        status: "pending",
+        paymentProofReference: "REC-12345",
+        impressions: 0,
+        clicks: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      const confirmed = await SponsoredCampaignService.adminConfirmPayment(
+        "admin_123",
+        "camp_confirm_pay",
+        "Vérification effectuée sur relevé CCP"
+      );
+
+      expect(confirmed.paymentStatus).toBe("paid");
+      expect(confirmed.paymentConfirmedBy).toBe("admin_123");
+      expect(mockAuditLogs.some((l) => l.action === "CONFIRM_PAYMENT")).toBe(true);
     });
 
     it("should allow seller to cancel their campaign with IDOR verification", async () => {
@@ -437,7 +443,7 @@ describe("Sponsored Campaigns System", () => {
         currency: "DZD",
         paymentStatus: "paid",
         moderationStatus: "pending",
-        status: "pending_review",
+        status: "pending",
         impressions: 0,
         clicks: 0,
         createdAt: new Date().toISOString(),
@@ -477,7 +483,7 @@ describe("Sponsored Campaigns System", () => {
         currency: "DZD",
         paymentStatus: "paid",
         moderationStatus: "pending",
-        status: "pending_review",
+        status: "pending",
         impressions: 0,
         clicks: 0,
         createdAt: past.toISOString(),

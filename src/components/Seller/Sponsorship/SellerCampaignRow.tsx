@@ -1,15 +1,17 @@
 import React from "react";
-import { CheckCircle2, Clock, Ban, Eye, MousePointer } from "lucide-react";
+import { CheckCircle2, Clock, Ban, Eye, MousePointer, CreditCard } from "lucide-react";
 import { SponsoredCampaign } from "../../../types/sponsoredCampaign";
 
 interface SellerCampaignRowProps {
   campaign: SponsoredCampaign;
   onCancel: (id: string) => Promise<void>;
+  onAddProof?: (campaign: SponsoredCampaign) => void;
 }
 
 export const SellerCampaignRow: React.FC<SellerCampaignRowProps> = ({
   campaign: c,
   onCancel,
+  onAddProof,
 }) => {
   const ctr = c.impressions > 0 ? ((c.clicks / c.impressions) * 100).toFixed(1) : "0.0";
 
@@ -91,9 +93,16 @@ export const SellerCampaignRow: React.FC<SellerCampaignRowProps> = ({
         <div className="font-mono font-bold text-zinc-900">
           {c.priceAmount.toLocaleString()} DZD
         </div>
-        <span className={`text-[10px] ${c.paymentStatus === "paid" ? "text-emerald-600 font-bold" : "text-amber-600"}`}>
-          {c.paymentStatus === "paid" ? "Payé" : "En attente"}
-        </span>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className={`text-[10px] font-bold ${c.paymentStatus === "paid" ? "text-emerald-600" : "text-amber-600"}`}>
+            {c.paymentStatus === "paid" ? "Payé" : "Paiement en attente"}
+          </span>
+          {c.paymentProofReference && (
+            <span className="text-[9px] bg-zinc-100 text-zinc-600 px-1 rounded" title={`Réf: ${c.paymentProofReference}`}>
+              Reçu joint
+            </span>
+          )}
+        </div>
       </td>
       <td className="py-3.5 pr-3">{getStatusBadge()}</td>
       <td className="py-3.5 pr-3">
@@ -111,16 +120,28 @@ export const SellerCampaignRow: React.FC<SellerCampaignRowProps> = ({
           </span>
         </div>
       </td>
-      <td className="py-3.5 text-right">
-        {c.status !== "cancelled" && c.status !== "completed" && (
-          <button
-            type="button"
-            onClick={() => onCancel(c.id)}
-            className="px-2.5 py-1 text-[11px] font-bold text-zinc-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-        )}
+      <td className="py-3.5 text-right pr-4">
+        <div className="flex items-center justify-end gap-1.5">
+          {c.paymentStatus !== "paid" && c.status !== "cancelled" && onAddProof && (
+            <button
+              type="button"
+              onClick={() => onAddProof(c)}
+              className="px-2 py-1 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 rounded-lg inline-flex items-center gap-1 transition-colors"
+            >
+              <CreditCard className="w-3 h-3" />
+              {c.paymentProofReference ? "Modifier reçu" : "Transmettre reçu"}
+            </button>
+          )}
+          {c.status !== "cancelled" && c.status !== "completed" && (
+            <button
+              type="button"
+              onClick={() => onCancel(c.id)}
+              className="px-2 py-1 text-[11px] font-bold text-zinc-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              Annuler
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );

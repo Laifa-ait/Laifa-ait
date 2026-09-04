@@ -6,19 +6,41 @@ const router = Router();
 
 /**
  * GET /api/v1/admin/sponsored-campaigns
- * List all campaigns with optional filters
+ * List all campaigns with optional status and payment filters
  */
 router.get("/admin/sponsored-campaigns", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { status, moderationStatus } = req.query;
+    const { status, moderationStatus, paymentStatus } = req.query;
     const campaigns = await SponsoredCampaignService.adminListCampaigns({
       status: status as string,
       moderationStatus: moderationStatus as string,
+      paymentStatus: paymentStatus as string,
     });
     return res.status(200).json({ success: true, data: campaigns });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur récupération des campagnes admin.";
     return res.status(500).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/v1/admin/sponsored-campaigns/:campaignId/confirm-payment
+ * Confirm manual payment for a campaign
+ */
+router.post("/admin/sponsored-campaigns/:campaignId/confirm-payment", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const adminId = req.user?.uid;
+    if (!adminId) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+
+    const { notes } = req.body;
+    const campaign = await SponsoredCampaignService.adminConfirmPayment(adminId, req.params.campaignId, notes);
+    return res.status(200).json({ success: true, data: campaign });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur confirmation du paiement.";
+    const status = message.includes("introuvable") ? 404 : 400;
+    return res.status(status).json({ error: message });
   }
 });
 

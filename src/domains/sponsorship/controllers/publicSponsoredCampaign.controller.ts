@@ -1,8 +1,18 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import { SponsoredCampaignService } from "../sponsoredCampaign.service";
 import { SponsoredPlacement } from "../../../types/sponsoredCampaign";
 
 const router = Router();
+
+function deriveClientFingerprint(req: Request, clientSessionId?: string): string {
+  if (clientSessionId && typeof clientSessionId === "string" && clientSessionId.trim().length >= 8) {
+    return clientSessionId.trim().substring(0, 64);
+  }
+  const ip = req.ip || req.socket.remoteAddress || "127.0.0.1";
+  const ua = req.headers["user-agent"] || "unknown_ua";
+  return crypto.createHash("sha256").update(`${ip}:${ua}`).digest("hex").substring(0, 24);
+}
 
 /**
  * GET /api/v1/public/sponsored/products
@@ -37,7 +47,7 @@ router.get("/products", async (req: Request, res: Response) => {
 /**
  * POST /api/v1/public/sponsored/events
  * Record an impression or click event unitarily
- * Client-passed counters or sellerIds are completely ignored
+ * Anti-tampering: productId is verified against the stored campaign, status must be paid & active
  */
 router.post("/events", async (req: Request, res: Response) => {
   try {
@@ -59,12 +69,14 @@ router.post("/events", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Identifiant produit requis." });
     }
 
+    const clientIdentifier = deriveClientFingerprint(req, typeof sessionId === "string" ? sessionId : undefined);
+
     const result = await SponsoredCampaignService.recordAnalyticsEvent({
       campaignId,
       eventType,
       placement,
       productId,
-      sessionId: typeof sessionId === "string" ? sessionId : undefined,
+      clientIdentifier,
     });
 
     return res.status(200).json({ success: true, ...result });

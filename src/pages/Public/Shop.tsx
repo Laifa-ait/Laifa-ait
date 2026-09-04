@@ -21,6 +21,7 @@ import { DynamicFilterPanel } from '../../components/Shop/DynamicFilterPanel';
 import { Helmet } from 'react-helmet-async';
 import { useUI } from '../../context/UIContext';
 import { Breadcrumbs } from '../../components/Layout/Breadcrumbs';
+import { ShopSponsoredBar } from '../../components/Shop/ShopSponsoredBar';
 
 export const Shop: React.FC = () => {
   const { t } = useTranslation();
@@ -268,6 +269,11 @@ export const Shop: React.FC = () => {
   } = useFacetedFilters(finalProductsList, activeCategory);
 
   const finalFilteredProducts = filteredProducts;
+  const [sponsoredProductIds, setSponsoredProductIds] = useState<string[]>([]);
+  const displayOrganicProducts = useMemo(
+    () => finalFilteredProducts.filter((p) => !sponsoredProductIds.includes(p.id)),
+    [finalFilteredProducts, sponsoredProductIds]
+  );
 
   useEffect(() => {
     if (!searchQuery) return;
@@ -554,6 +560,21 @@ export const Shop: React.FC = () => {
                </div>
             </div>
 
+            {/* Sponsored Products Bar (Category & Search Placements) */}
+            {searchQuery ? (
+              <ShopSponsoredBar
+                placement="search"
+                searchQuery={searchQuery}
+                onSponsoredProductIdsLoaded={setSponsoredProductIds}
+              />
+            ) : activeCategory && activeCategory !== "Tous" ? (
+              <ShopSponsoredBar
+                placement="category"
+                category={activeCategory}
+                onSponsoredProductIdsLoaded={setSponsoredProductIds}
+              />
+            ) : null}
+
             {isLoadingProducts ? (
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8">
                   {[...Array(12)].map((_, i) => (
@@ -590,11 +611,11 @@ export const Shop: React.FC = () => {
                      {t('clear_filters', 'Effacer les filtres')}
                   </button>
                </div>
-            ) : finalFilteredProducts.length > 0 ? (
+            ) : displayOrganicProducts.length > 0 ? (
                <div className="flex flex-col gap-10">
                   {viewMode === "grid" ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8">
-                       {finalFilteredProducts.map((product, i) => (
+                       {displayOrganicProducts.map((product, i) => (
                          <div key={product.id}>
                            <ProductCard product={product} index={i} />
                          </div>
@@ -602,7 +623,7 @@ export const Shop: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-0 border-t border-slate-100 pt-4">
-                       {finalFilteredProducts.map((product, i) => (
+                       {displayOrganicProducts.map((product, i) => (
                          <ProductListCard key={product.id} product={product} index={i} />
                        ))}
                     </div>

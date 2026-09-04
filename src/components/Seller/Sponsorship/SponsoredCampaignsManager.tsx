@@ -6,6 +6,7 @@ import { SponsoredCampaign, SponsoredPlacement } from "../../../types/sponsoredC
 import { toast } from "react-hot-toast";
 import { SponsoredCampaignCreateModal } from "./SponsoredCampaignCreateModal";
 import { SellerCampaignRow } from "./SellerCampaignRow";
+import { SellerPaymentProofModal } from "./SellerPaymentProofModal";
 
 interface SponsoredCampaignsManagerProps {
   products: Product[];
@@ -30,8 +31,12 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
     d.setDate(d.getDate() + 8);
     return d.toISOString().split("T")[0];
   });
-  const [payFromWallet, setPayFromWallet] = useState(false);
+  const [paymentProofReference, setPaymentProofReference] = useState("");
+  const [paymentProofNotes, setPaymentProofNotes] = useState("");
   const [pricingPreview, setPricingPreview] = useState<{ durationDays: number; priceAmount: number } | null>(null);
+
+  // Modal proof state
+  const [proofCampaign, setProofCampaign] = useState<SponsoredCampaign | null>(null);
 
   const fetchCampaigns = useCallback(async () => {
     setLoading(true);
@@ -90,7 +95,8 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
         placement,
         startAt: new Date(startDate).toISOString(),
         endAt: new Date(endDate).toISOString(),
-        payFromWallet,
+        paymentProofReference: paymentProofReference.trim() || undefined,
+        paymentProofNotes: paymentProofNotes.trim() || undefined,
       };
 
       const res = await apiPost<{ success: boolean; data: SponsoredCampaign }>(
@@ -99,8 +105,10 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
       );
 
       if (res?.success) {
-        toast.success("Campagne créée avec succès !");
+        toast.success("Campagne créée ! En attente de validation administrative.");
         setShowModal(false);
+        setPaymentProofReference("");
+        setPaymentProofNotes("");
         await fetchCampaigns();
       }
     } catch (err: unknown) {
@@ -125,6 +133,25 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erreur d'annulation.";
+      toast.error(msg);
+    }
+  };
+
+  const handleSubmitProof = async (campaignId: string, reference: string, notes: string) => {
+    try {
+      const res = await apiPost<{ success: boolean; data: SponsoredCampaign }>(
+        `/api/v1/seller/sponsored-campaigns/${campaignId}/payment-proof`,
+        {
+          paymentProofReference: reference,
+          paymentProofNotes: notes,
+        }
+      );
+      if (res?.success) {
+        toast.success("Justificatif transmis avec succès !");
+        await fetchCampaigns();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur envoi justificatif.";
       toast.error(msg);
     }
   };
@@ -180,6 +207,7 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
                   key={c.id}
                   campaign={c}
                   onCancel={handleCancelCampaign}
+                  onAddProof={(campaign) => setProofCampaign(campaign)}
                 />
               ))}
             </tbody>
@@ -199,11 +227,20 @@ export const SponsoredCampaignsManager: React.FC<SponsoredCampaignsManagerProps>
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
-        payFromWallet={payFromWallet}
-        setPayFromWallet={setPayFromWallet}
+        paymentProofReference={paymentProofReference}
+        setPaymentProofReference={setPaymentProofReference}
+        paymentProofNotes={paymentProofNotes}
+        setPaymentProofNotes={setPaymentProofNotes}
         pricingPreview={pricingPreview}
         submitting={submitting}
         onSubmit={handleCreateCampaign}
+      />
+
+      <SellerPaymentProofModal
+        isOpen={Boolean(proofCampaign)}
+        onClose={() => setProofCampaign(null)}
+        campaign={proofCampaign}
+        onSubmit={handleSubmitProof}
       />
     </div>
   );

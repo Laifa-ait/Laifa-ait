@@ -37,6 +37,25 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
     fetchCampaigns();
   }, [fetchCampaigns]);
 
+  const handleConfirmPayment = async (campaignId: string) => {
+    const notes = window.prompt("Notes de validation du paiement (ex: Reçu vérifié sur BaridiMob / CCP) :", "Paiement manuel vérifié et confirmé");
+    if (notes === null) return; // user cancelled prompt
+
+    try {
+      const res = await apiPost<{ success: boolean; data: SponsoredCampaign }>(
+        `/api/v1/admin/sponsored-campaigns/${campaignId}/confirm-payment`,
+        { notes }
+      );
+      if (res?.success) {
+        toast.success("Paiement validé avec succès !");
+        await fetchCampaigns();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur validation paiement.";
+      toast.error(msg);
+    }
+  };
+
   const handleApprove = async (campaignId: string) => {
     try {
       const res = await apiPost<{ success: boolean; data: SponsoredCampaign }>(
@@ -102,6 +121,7 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
 
     if (!matchesSearch) return false;
     if (statusFilter === "all") return true;
+    if (statusFilter === "pending_payment") return c.paymentStatus === "pending";
     if (statusFilter === "pending") return c.moderationStatus === "pending";
     if (statusFilter === "approved") return c.moderationStatus === "approved";
     if (statusFilter === "rejected") return c.moderationStatus === "rejected";
@@ -109,7 +129,7 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
     return true;
   });
 
-  const pendingCount = campaigns.filter((c) => c.moderationStatus === "pending").length;
+  const pendingCount = campaigns.filter((c) => c.moderationStatus === "pending" || c.paymentStatus === "pending").length;
 
   return (
     <div className="space-y-6">
@@ -118,12 +138,12 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
         <div>
           <h3 className="text-base font-bold text-zinc-950">Modération des Produits Sponsorisés</h3>
           <p className="text-xs text-zinc-500 mt-1">
-            Gérez la visibilité des campagnes créées par les vendeurs du marché Olmart.
+            Vérifiez les paiements manuels et approuvez les campagnes créées par les vendeurs.
           </p>
         </div>
         {pendingCount > 0 && (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
-            {pendingCount} en attente d'approbation
+            {pendingCount} action(s) requise(s)
           </span>
         )}
       </div>
@@ -144,6 +164,7 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
           {[
             { id: "all", label: "Toutes" },
+            { id: "pending_payment", label: "Paiement en attente" },
             { id: "pending", label: "À modérer" },
             { id: "approved", label: "Approuvées" },
             { id: "rejected", label: "Rejetées" },
@@ -178,7 +199,7 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
                   <th className="py-3 pl-4 pr-3">Produit & Vendeur</th>
                   <th className="py-3 pr-3">Emplacement</th>
                   <th className="py-3 pr-3">Période</th>
-                  <th className="py-3 pr-3">Budget</th>
+                  <th className="py-3 pr-3">Budget & Reçu</th>
                   <th className="py-3 pr-3">Modération</th>
                   <th className="py-3 pr-3">Métriques</th>
                   <th className="py-3 pr-4 text-right">Actions</th>
@@ -195,6 +216,7 @@ export const AdminSponsoredCampaignsTab: React.FC = () => {
                       setRejectionReason("");
                     }}
                     onSuspend={handleSuspend}
+                    onConfirmPayment={handleConfirmPayment}
                   />
                 ))}
               </tbody>

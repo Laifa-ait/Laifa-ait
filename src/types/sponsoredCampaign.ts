@@ -1,5 +1,4 @@
 import { AppTimestamp } from "../utils/date";
-import { Product } from "../domains/product/product.types";
 
 export type SponsoredPlacement = "home" | "category" | "search";
 
@@ -43,6 +42,13 @@ export interface SponsoredCampaign {
   paymentStatus: SponsoredPaymentStatus;
   moderationStatus: SponsoredModerationStatus;
   rejectionReason?: string;
+  // Private payment proof fields (strictly excluded from public API)
+  paymentProofUrl?: string;
+  paymentProofReference?: string;
+  paymentProofNotes?: string;
+  paymentProofSubmittedAt?: string;
+  paymentConfirmedAt?: string;
+  paymentConfirmedBy?: string;
   createdAt: AppTimestamp | string;
   updatedAt: AppTimestamp | string;
   approvedAt?: AppTimestamp | string;
@@ -53,10 +59,24 @@ export interface SponsoredCampaign {
   clicks: number;
 }
 
+export interface PublicSponsoredProductSummary {
+  id: string;
+  name: string;
+  price: number;
+  promoPrice?: number;
+  image?: string;
+  category: string;
+  sellerId: string;
+  sellerName?: string;
+  rating?: number;
+  reviewCount?: number;
+  isSponsored: true;
+}
+
 export interface PublicSponsoredProductDTO {
   campaignId: string;
   placement: SponsoredPlacement;
-  product: Product;
+  product: PublicSponsoredProductSummary;
 }
 
 export interface CreateSponsoredCampaignInput {
@@ -64,4 +84,13 @@ export interface CreateSponsoredCampaignInput {
   placement: SponsoredPlacement;
   startAt: string;
   endAt: string;
+  paymentProofReference?: string;
+  paymentProofUrl?: string;
+  paymentProofNotes?: string;
+}
+
+export interface SubmitPaymentProofInput {
+  paymentProofReference?: string;
+  paymentProofUrl?: string;
+  paymentProofNotes?: string;
 }

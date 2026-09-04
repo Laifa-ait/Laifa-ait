@@ -35,7 +35,7 @@ router.get("/api/v1/seller/sponsored-campaigns/pricing/preview", authenticateTok
 
 /**
  * POST /api/v1/seller/sponsored-campaigns
- * Create a new sponsored campaign
+ * Create a new sponsored campaign (decoupled from wallet, pending manual verification)
  */
 router.post("/api/v1/seller/sponsored-campaigns", authenticateToken, authorizeSeller, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -44,9 +44,8 @@ router.post("/api/v1/seller/sponsored-campaigns", authenticateToken, authorizeSe
       return res.status(401).json({ error: "Authentification requise" });
     }
 
-    const { productId, placement, startAt, endAt, payFromWallet } = req.body;
+    const { productId, placement, startAt, endAt, paymentProofReference, paymentProofUrl, paymentProofNotes } = req.body;
 
-    // Strict validation
     if (!productId || typeof productId !== "string") {
       return res.status(400).json({ error: "Identifiant du produit obligatoire." });
     }
@@ -59,21 +58,52 @@ router.post("/api/v1/seller/sponsored-campaigns", authenticateToken, authorizeSe
       return res.status(400).json({ error: "Dates de début et de fin obligatoires." });
     }
 
-    // Notice: Any sellerId, status, priceAmount, paymentStatus passed in req.body are completely ignored!
-    // Everything is derived from authenticated token and server pricing rules.
     const campaign = await SponsoredCampaignService.createCampaign(sellerId, {
       productId,
       placement,
       startAt,
       endAt,
-      payFromWallet: Boolean(payFromWallet),
+      paymentProofReference,
+      paymentProofUrl,
+      paymentProofNotes,
     });
 
     return res.status(201).json({ success: true, data: campaign });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erreur lors de la création de la campagne.";
     safeLogger.error("[SellerSponsoredCampaignController] Error creating campaign", { err: message });
-    return res.status(400).json({ error: message });
+    const status = message.includes("autre vendeur") || message.includes("Accès refusé") ? 403 : 400;
+    return res.status(status).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/v1/seller/sponsored-campaigns/:campaignId/payment-proof
+ * Submit or update proof of payment for a campaign
+ */
+router.post("/api/v1/seller/sponsored-campaigns/:campaignId/payment-proof", authenticateToken, authorizeSeller, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const sellerId = req.user?.uid;
+    if (!sellerId) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+
+    const { paymentProofReference, paymentProofUrl, paymentProofNotes } = req.body;
+    if (!paymentProofReference && !paymentProofUrl) {
+      return res.status(400).json({ error: "Référence ou URL du justificatif requise." });
+    }
+
+    const campaign = await SponsoredCampaignService.submitPaymentProof(sellerId, req.params.campaignId, {
+      paymentProofReference,
+      paymentProofUrl,
+      paymentProofNotes,
+    });
+
+    return res.status(200).json({ success: true, data: campaign });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur transmission justificatif.";
+    const status = message.includes("Accès refusé") ? 403 : message.includes("introuvable") ? 404 : 400;
+    return res.status(status).json({ error: message });
   }
 });
 
