@@ -24,6 +24,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { toast } from "react-hot-toast";
 import { ConfirmModal } from "../../ui/ConfirmModal";
 import { apiGet, apiPost } from "../../../lib/api";
+import { SellerCouponBanner } from "../../Shop/SellerCouponBanner";
 
 const MATERIAL_TRANSLATIONS: Record<string, Record<string, string>> = {
   Coton: { fr: "Coton", en: "Cotton", ar: "قطن" },
@@ -381,7 +382,21 @@ export const ProductInfo: React.FC<InfoProps> = ({
               <span>WhatsApp Direct</span>
             </a>
           </div>
+
+          {/* Discrete Seller Promo Coupon Banner */}
+          <SellerCouponBanner
+            sellerId={shop.id || product.sellerId || product.sellerUid}
+            className="mt-1"
+          />
         </div>
+      )}
+
+      {/* Discrete Seller Promo Coupon Banner (if no shop block rendered) */}
+      {!shop && (product.sellerId || product.sellerUid) && (
+        <SellerCouponBanner
+          sellerId={product.sellerId || product.sellerUid}
+          className="mt-2"
+        />
       )}
 
       {/* VARIANTS (COLOR/SIZE) - BEAUTIFUL BRASS AND BLUE STUDS DESIGN */}

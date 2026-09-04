@@ -7,6 +7,7 @@ import { ImageAdjusterModal } from '../../components/ui/ImageAdjusterModal';
 import { StoreProductsFilter } from '../../components/Store/StoreProductsFilter';
 import { StoreAboutView } from '../../components/Store/StoreAboutView';
 import { StoreProfileHeader } from '../../components/Store/StoreProfileHeader';
+import { SellerCouponBanner } from '../../components/Shop/SellerCouponBanner';
 import { useStoreProfile } from './hooks/useStoreProfile';
 
 export interface PublicStoreInfo {
@@ -138,6 +139,12 @@ export const StoreProfile: React.FC = () => {
         onBannerSelect={handleBannerFileSelect}
         onLogoSelect={handleLogoFileSelect}
         onFollowToggle={handleFollowToggle}
+      />
+
+      {/* Discrete Seller Promo Coupon Banner */}
+      <SellerCouponBanner
+        sellerId={storeInfo.sellerId || storeInfo.id || storeInfo.uid}
+        className="mb-6"
       />
 
       {/* Navigation Tabs */}

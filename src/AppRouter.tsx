@@ -97,6 +97,11 @@ const SellerSponsorships = React.lazy(() =>
     default: module.SellerSponsorships,
   }))
 );
+const SellerCoupons = React.lazy(() =>
+  import("./pages/Seller/SellerCoupons").then((module) => ({
+    default: module.SellerCoupons,
+  }))
+);
 
 const AdminDashboardLayout = React.lazy(() =>
   import("./pages/Admin/AdminDashboardLayout").then((module) => ({
@@ -764,6 +769,7 @@ export const AppRouter: React.FC = () => {
                 <Route path="support" element={<SellerSupport />} />
                 <Route path="reviews" element={<SellerReviews />} />
                 <Route path="sponsorships" element={<SellerSponsorships />} />
+                <Route path="coupons" element={<SellerCoupons />} />
               </Route>
 
               {/* Admin Dashboard (Modular) */}

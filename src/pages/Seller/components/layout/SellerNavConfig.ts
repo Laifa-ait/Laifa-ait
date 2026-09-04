@@ -8,6 +8,7 @@ import {
   Award,
   AlertTriangle,
   Star,
+  Tag,
   Settings,
   ShieldCheck,
   LifeBuoy,
@@ -27,6 +28,7 @@ export function getSellerNavItems(t: TFunction): SellerNavItem[] {
   return [
     { id: "seller-nav-overview", to: "/dashboard/seller", icon: LayoutDashboard, label: t("seller.menu.overview", "Vue d'ensemble"), end: true },
     { id: "seller-nav-catalog", to: "/dashboard/seller/catalog", icon: Package, label: t("seller.menu.catalog", "Catalogue Produits") },
+    { id: "seller-nav-coupons", to: "/dashboard/seller/coupons", icon: Tag, label: t("seller.menu.coupons", "Mes coupons") },
     { id: "seller-nav-orders", to: "/dashboard/seller/orders", icon: ShoppingBag, label: t("seller.menu.orders", "Commandes") },
     { id: "seller-nav-shipping", to: "/dashboard/seller/shipping", icon: Truck, label: t("seller.menu.shipping", "Expéditions & Tarifs") },
     { id: "seller-nav-returns", to: "/dashboard/seller/returns", icon: RotateCcw, label: t("seller.menu.returns", "Gestion des Retours") },

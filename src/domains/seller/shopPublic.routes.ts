@@ -200,6 +200,62 @@ router.get("/api/v1/public/shops/:sellerId/products", async (req: Request, res: 
   }
 });
 
+// GET public active coupons for a shop
+router.get("/api/v1/public/shops/:sellerId/coupons", async (req: Request, res: Response) => {
+  const { sellerId } = req.params;
+  try {
+    if (!sellerId) {
+      return res.status(400).json({ success: false, error: "Missing sellerId parameter" });
+    }
+
+    const snap = await db
+      .collection("coupons")
+      .where("sellerId", "==", sellerId)
+      .where("isActive", "==", true)
+      .get();
+
+    const now = new Date();
+    const activeCoupons = snap.docs
+      .map((doc) => {
+        const d = doc.data();
+        let expiresAtIso: string | null = null;
+        if (d.expiresAt?.toDate) {
+          expiresAtIso = d.expiresAt.toDate().toISOString();
+        } else if (d.expiryDate?.toDate) {
+          expiresAtIso = d.expiryDate.toDate().toISOString();
+        } else if (typeof d.expiresAt === "string") {
+          expiresAtIso = d.expiresAt;
+        }
+
+        const isExpired = expiresAtIso ? new Date(expiresAtIso) <= now : false;
+        if (isExpired) return null;
+
+        return {
+          id: doc.id,
+          code: d.code,
+          discountType: d.discountType,
+          discountValue: Number(d.discountValue) || 0,
+          minOrderAmount: Number(d.minOrderAmount ?? d.minOrderValue) || 0,
+          expiresAt: expiresAtIso,
+          sellerId: d.sellerId,
+        };
+      })
+      .filter((c): c is NonNullable<typeof c> => c !== null);
+
+    return res.json({ success: true, coupons: activeCoupons });
+  } catch (error: unknown) {
+    safeLogger.error("Error fetching shop public coupons", {
+      sellerId,
+      err: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Erreur interne",
+      coupons: [],
+    });
+  }
+});
+
 // GET explore top products
 router.get("/api/v1/explore/products", async (_req: Request, res: Response) => {
   try {
