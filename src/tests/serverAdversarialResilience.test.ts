@@ -176,11 +176,7 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     });
 
     afterEach(() => {
-      try {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch {
-        // Safe no-op cleanup
-      }
+      fs.rmSync(tempDir, { recursive: true, force: true });
     });
 
     const multiScriptHtml = `<!DOCTYPE html>

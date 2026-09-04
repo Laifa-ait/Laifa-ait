@@ -27,56 +27,52 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
   let savedFiles: Record<string, { buffer: Buffer; options: Record<string, unknown> }> = {};
 
   beforeAll(async () => {
-    try {
-      // 1. Seed users
-      await db.collection("users").doc(buyerUid).set({
-        role: "buyer",
-        email: "buyer@olmart.dz"
-      });
+    // 1. Seed users
+    await db.collection("users").doc(buyerUid).set({
+      role: "buyer",
+      email: "buyer@olmart.dz"
+    });
 
-      await db.collection("users").doc(sellerUid).set({
-        role: "seller",
-        email: "seller@olmart.dz"
-      });
+    await db.collection("users").doc(sellerUid).set({
+      role: "seller",
+      email: "seller@olmart.dz"
+    });
 
-      await db.collection("users").doc(otherUserUid).set({
-        role: "buyer",
-        email: "intruder@olmart.dz"
-      });
+    await db.collection("users").doc(otherUserUid).set({
+      role: "buyer",
+      email: "intruder@olmart.dz"
+    });
 
-      await db.collection("users").doc(adminUid).set({
-        role: "admin",
-        email: "admin@olmart.dz"
-      });
+    await db.collection("users").doc(adminUid).set({
+      role: "admin",
+      email: "admin@olmart.dz"
+    });
 
-      // 2. Seed main dispute
-      await db.collection("disputes").doc(disputeId).set({
-        orderId: "ORD-SEC-001",
-        buyerId: buyerUid,
-        sellerId: sellerUid,
-        status: "open",
-        reason: "Colis endommagé",
-        details: "L'écran est brisé à la réception.",
-        frozenAmount: 5000,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+    // 2. Seed main dispute
+    await db.collection("disputes").doc(disputeId).set({
+      orderId: "ORD-SEC-001",
+      buyerId: buyerUid,
+      sellerId: sellerUid,
+      status: "open",
+      reason: "Colis endommagé",
+      details: "L'écran est brisé à la réception.",
+      frozenAmount: 5000,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
 
-      // 3. Seed other dispute for mismatch testing
-      await db.collection("disputes").doc(otherDisputeId).set({
-        orderId: "ORD-SEC-002",
-        buyerId: otherUserUid,
-        sellerId: sellerUid,
-        status: "open",
-        reason: "Retard de livraison",
-        details: "Non reçu",
-        frozenAmount: 3000,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
-    } catch {
-      // Ignore seeding errors in environments without live emulator
-    }
+    // 3. Seed other dispute for mismatch testing
+    await db.collection("disputes").doc(otherDisputeId).set({
+      orderId: "ORD-SEC-002",
+      buyerId: otherUserUid,
+      sellerId: sellerUid,
+      status: "open",
+      reason: "Retard de livraison",
+      details: "Non reçu",
+      frozenAmount: 3000,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
 
     // 4. Spy on token verification
     verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
