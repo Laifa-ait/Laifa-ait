@@ -25,7 +25,7 @@ function isPortListening(port: number): boolean {
 process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
 process.env.GCLOUD_PROJECT = process.env.GCLOUD_PROJECT || "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
 process.env.GOOGLE_CLOUD_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
-process.env.FIREBASE_DATABASE_ID = process.env.FIREBASE_DATABASE_ID || "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
+process.env.FIREBASE_DATABASE_ID = process.env.FIREBASE_DATABASE_ID || "(default)";
 
 // Dynamically bind to local emulator connections if the emulator daemon is actively running
 const firestorePortActive = isPortListening(8085);

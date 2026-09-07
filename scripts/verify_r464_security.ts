@@ -35,7 +35,7 @@ async function getIdToken(uid: string, role: string, email: string) {
 async function run() {
   console.log('🚀 Starting R4.6.4 Firestore Security & Backend Verification Suite...');
 
-  const databaseId = process.env.VITE_FIREBASE_DATABASE_ID || process.env.FIREBASE_DATABASE_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915';
+  const databaseId = process.env.VITE_FIREBASE_DATABASE_ID || process.env.FIREBASE_DATABASE_ID || '(default)';
   const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915';
 
   const firestoreRestBaseUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents`;
