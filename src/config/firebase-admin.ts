@@ -126,21 +126,27 @@ const setupFirestore = () => {
     const configDatabaseId =
       process.env.FIREBASE_DATABASE_ID ||
       process.env.VITE_FIREBASE_DATABASE_ID ||
-      (typeof firebaseConfig.firestoreDatabaseId === "string" ? firebaseConfig.firestoreDatabaseId : undefined) ||
-      "(default)";
+      (typeof firebaseConfig.firestoreDatabaseId === "string" ? firebaseConfig.firestoreDatabaseId : undefined);
+
+    const effectiveDatabaseId = configDatabaseId || "(default)";
+    if (!configDatabaseId) {
+      safeLogger.warn(
+        "[Firestore Core] ⚠️ FIREBASE_DATABASE_ID non défini dans l'environnement. Connexion de secours sur la base par défaut '(default)'."
+      );
+    }
 
     logDev(`[Firestore Core] 📂 Mapping Firestore instance for Project: [${adminApp.options.projectId || targetProjectId}]`);
 
     // Attempt with named database if provided and not "(default)"
-    if (configDatabaseId && configDatabaseId !== "(default)") {
-      logDev(`[Firestore Core] 🔗 Database ID specified: [${configDatabaseId}]`);
+    if (effectiveDatabaseId && effectiveDatabaseId !== "(default)") {
+      logDev(`[Firestore Core] 🔗 Database ID specified: [${effectiveDatabaseId}]`);
       try {
-        const testDb = getFirestore(adminApp, configDatabaseId);
+        const testDb = getFirestore(adminApp, effectiveDatabaseId);
         db = testDb;
-        logDev(`[Firestore Core] 🟢 Connected and mapped Named Database: [${configDatabaseId}]`);
+        logDev(`[Firestore Core] 🟢 Connected and mapped Named Database: [${effectiveDatabaseId}]`);
       } catch (dbErr: unknown) {
         const dbMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
-        safeLogger.error("[Firestore Core] ❌ Named DB mapping failed, falling back to default", { err: dbMsg });
+        safeLogger.warn("[Firestore Core] ⚠️ Named DB mapping failed, falling back to default", { err: dbMsg });
         db = adminApp.firestore();
       }
     } else {

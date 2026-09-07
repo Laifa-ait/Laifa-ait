@@ -9,7 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(router);
 
-describe("OrderStatusController Restock Real Integration Suite", () => {
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+
+describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Suite", () => {
   const sellerUid = "test_integration_seller_999";
   const buyerUid = "test_integration_buyer_999";
   const otherSellerUid = "test_integration_other_seller_111";
@@ -23,8 +25,7 @@ describe("OrderStatusController Restock Real Integration Suite", () => {
   let verifyTokenSpy: MockInstance;
 
   beforeAll(async () => {
-    // Si nous ne sommes pas dans un environnement d'intégration avec émulateur Firestore, sauter l'accès réseau
-    if (!process.env.FIRESTORE_EMULATOR_HOST && !process.env.INTEGRATION_TESTS) {
+    if (!hasEmulator) {
       verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
       return;
     }

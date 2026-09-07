@@ -9,7 +9,9 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use("/api/v1/disputes", router);
 
-describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0.6.8)", () => {
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+
+describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0.6.8)", () => {
   const buyerUid = "test_dispute_buyer_101";
   const sellerUid = "test_dispute_seller_101";
   const otherUserUid = "test_dispute_intruder_101";
@@ -27,6 +29,7 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
   let savedFiles: Record<string, { buffer: Buffer; options: Record<string, unknown> }> = {};
 
   beforeAll(async () => {
+    if (!hasEmulator) return;
     // 1. Seed users
     await db.collection("users").doc(buyerUid).set({
       role: "buyer",
@@ -108,6 +111,7 @@ describe("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0
   });
 
   afterAll(async () => {
+    if (!hasEmulator) return;
     // Cleanup seed records
     await db.collection("users").doc(buyerUid).delete();
     await db.collection("users").doc(sellerUid).delete();

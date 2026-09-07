@@ -66,8 +66,16 @@ try {
   app = getApps().length === 0 ? initializeApp(clientConfig) : getApp();
   auth = getAuth(app);
   storage = getStorage(app);
-  const customDbId = import.meta.env?.VITE_FIREBASE_DATABASE_ID || "(default)";
-  db = customDbId && customDbId !== "(default)" ? getFirestore(app, customDbId) : getFirestore(app);
+  const customDbId =
+    import.meta.env?.VITE_FIREBASE_DATABASE_ID ||
+    (typeof process !== "undefined" ? process.env?.FIREBASE_DATABASE_ID : undefined);
+
+  if (!customDbId && !isTestEnv) {
+    safeLogger.error("[Firebase Client] ❌ VITE_FIREBASE_DATABASE_ID manquant ! Veuillez définir cette variable d'environnement.");
+  }
+
+  const effectiveDbId = customDbId || "(default)";
+  db = effectiveDbId !== "(default)" ? getFirestore(app, effectiveDbId) : getFirestore(app);
 } catch (err: unknown) {
   const errorObj = err as { code?: string; message?: string };
   if (errorObj?.code === "app/duplicate-app") {

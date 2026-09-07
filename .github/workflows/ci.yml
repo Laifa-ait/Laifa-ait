@@ -11,12 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VITE_FIREBASE_API_KEY: "AIzaSyFakeKeyForCiTesting1234567890"
-  VITE_FIREBASE_AUTH_DOMAIN: "olmart-ci-demo.firebaseapp.com"
-  VITE_FIREBASE_PROJECT_ID: "olmart-ci-demo"
-  VITE_FIREBASE_STORAGE_BUCKET: "olmart-ci-demo.appspot.com"
-  VITE_FIREBASE_MESSAGING_SENDER_ID: "123456789012"
-  VITE_FIREBASE_APP_ID: "1:123456789012:web:abcdef1234567890"
   NODE_OPTIONS: "--no-deprecation"
 
 jobs:
@@ -24,6 +18,13 @@ jobs:
     name: Lint, Typecheck, Test & Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      VITE_FIREBASE_API_KEY: "AIzaSyFakeKeyForCiTesting1234567890"
+      VITE_FIREBASE_AUTH_DOMAIN: "olmart-ci-demo.firebaseapp.com"
+      VITE_FIREBASE_PROJECT_ID: "olmart-ci-demo"
+      VITE_FIREBASE_STORAGE_BUCKET: "olmart-ci-demo.appspot.com"
+      VITE_FIREBASE_MESSAGING_SENDER_ID: "123456789012"
+      VITE_FIREBASE_APP_ID: "1:123456789012:web:abcdef1234567890"
 
     steps:
       - name: Checkout Source Code
@@ -101,6 +102,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build-and-test
+    env:
+      VITE_FIREBASE_API_KEY: "AIzaSyFakeKeyForCiTesting1234567890"
+      VITE_FIREBASE_AUTH_DOMAIN: "olmart-ci-demo.firebaseapp.com"
+      VITE_FIREBASE_PROJECT_ID: "olmart-ci-demo"
+      VITE_FIREBASE_STORAGE_BUCKET: "olmart-ci-demo.appspot.com"
+      VITE_FIREBASE_MESSAGING_SENDER_ID: "123456789012"
+      VITE_FIREBASE_APP_ID: "1:123456789012:web:abcdef1234567890"
 
     steps:
       - name: Checkout Source Code
@@ -217,6 +225,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS_STAGING }}
       - name: Deploy to Cloud Run (Staging)
+        id: deploy
         if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d
         with:
@@ -225,8 +234,17 @@ jobs:
           source: .
           env_vars: |
             NODE_ENV=production
+            FIREBASE_DATABASE_ID=(default)
           secrets: |
             CSRF_SECRET=CSRF_SECRET:latest
+
+      - name: Smoke Test Staging (Health Check)
+        if: steps.check_creds.outputs.configured == 'true'
+        run: |
+          echo "Verifying Staging live endpoint at ${{ steps.deploy.outputs.url }}/api/v1/health/live"
+          curl --fail --retry 5 --retry-delay 5 --retry-connrefused -s -i "${{ steps.deploy.outputs.url }}/api/v1/health/live" || exit 1
+          echo "Verifying Staging readiness endpoint at ${{ steps.deploy.outputs.url }}/api/v1/health"
+          curl --fail --retry 3 --retry-delay 3 --retry-connrefused -s -i "${{ steps.deploy.outputs.url }}/api/v1/health" || exit 1
 
   deploy-production:
     name: Deploy to Production (Cloud Run)
@@ -257,6 +275,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS_PRODUCTION }}
       - name: Deploy to Cloud Run (Production)
+        id: deploy
         if: steps.check_creds.outputs.configured == 'true'
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d
         with:
@@ -265,5 +284,14 @@ jobs:
           source: .
           env_vars: |
             NODE_ENV=production
+            FIREBASE_DATABASE_ID=(default)
           secrets: |
             CSRF_SECRET=CSRF_SECRET:latest
+
+      - name: Smoke Test Production (Health Check)
+        if: steps.check_creds.outputs.configured == 'true'
+        run: |
+          echo "Verifying Production live endpoint at ${{ steps.deploy.outputs.url }}/api/v1/health/live"
+          curl --fail --retry 5 --retry-delay 5 --retry-connrefused -s -i "${{ steps.deploy.outputs.url }}/api/v1/health/live" || exit 1
+          echo "Verifying Production readiness endpoint at ${{ steps.deploy.outputs.url }}/api/v1/health"
+          curl --fail --retry 3 --retry-delay 3 --retry-connrefused -s -i "${{ steps.deploy.outputs.url }}/api/v1/health" || exit 1

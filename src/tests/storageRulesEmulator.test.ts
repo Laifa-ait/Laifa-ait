@@ -13,6 +13,7 @@ describe.skipIf(!hasEmulator)('Firebase Storage Security Rules - Real Emulator S
   let testEnv: RulesTestEnvironment;
 
   beforeAll(async () => {
+    if (!hasEmulator) return;
     testEnv = await initializeTestEnvironment({
       projectId: process.env.FIREBASE_PROJECT_ID || 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
       storage: {
@@ -35,6 +36,7 @@ describe.skipIf(!hasEmulator)('Firebase Storage Security Rules - Real Emulator S
   });
 
   beforeEach(async () => {
+    if (!hasEmulator || !testEnv) return;
     await testEnv.clearFirestore();
     await testEnv.clearStorage();
 

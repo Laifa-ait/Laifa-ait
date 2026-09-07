@@ -57,7 +57,7 @@ export const shutdown = (signal: string): void => {
     });
 
     const forceTimer = setTimeout(() => {
-      safeLogger.error("[Olmar Gateway] ❌ Forcefully shutting down after 10s timeout.");
+      safeLogger.error("[Olmart Gateway] ❌ Forcefully shutting down after 10s timeout.");
       process.exit(1);
     }, 10000);
     if (forceTimer.unref) {
@@ -86,7 +86,7 @@ export function startServer(): Promise<http.Server> {
       await setupViteAndStaticServing(app);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      safeLogger.error("[Olmar Gateway] ❌ Failed to initialize Vite/static serving pipeline", { err: errorMsg });
+      safeLogger.error("[Olmart Gateway] ❌ Failed to initialize Vite/static serving pipeline", { err: errorMsg });
     }
 
     // 2. Start Product SEO cache cleanup timer with rollback guard
@@ -166,7 +166,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("unhandledRejection", (reason: unknown) => {
   const errorMsg = reason instanceof Error ? reason.stack || reason.message : String(reason);
   const errorCode = reason && typeof reason === "object" && "code" in reason ? String((reason as { code: unknown }).code) : "";
-  safeLogger.error("[Olmar Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg, code: errorCode });
+  safeLogger.error("[Olmart Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg, code: errorCode });
 
   // If unhandled rejection indicates a fatal system/driver error with structured error code or critical corruption
   const criticalCodes = ["EADDRINUSE", "EACCES", "MODULE_NOT_FOUND", "ERR_SERVER_ALREADY_LISTEN"];
@@ -174,13 +174,13 @@ process.on("unhandledRejection", (reason: unknown) => {
     criticalCodes.includes(errorCode) ||
     (typeof errorMsg === "string" && errorMsg.includes("FATAL_DB_CORRUPTION"))
   ) {
-    safeLogger.error("[Olmar Gateway] 🚨 Critical unhandled rejection encountered. Initiating emergency shutdown...", { code: errorCode });
+    safeLogger.error("[Olmart Gateway] 🚨 Critical unhandled rejection encountered. Initiating emergency shutdown...", { code: errorCode });
     shutdown("CRITICAL_UNHANDLED_REJECTION");
   }
 });
 
 process.on("uncaughtException", (error: Error) => {
-  safeLogger.error("[Olmar Gateway] ❌ Uncaught Exception at process level", { err: error.stack || error.message });
+  safeLogger.error("[Olmart Gateway] ❌ Uncaught Exception at process level", { err: error.stack || error.message });
   shutdown("UNCAUGHT_EXCEPTION");
 });
 
@@ -188,7 +188,7 @@ process.on("uncaughtException", (error: Error) => {
 if (process.env.NODE_ENV !== "test") {
   startServer().catch((err: unknown) => {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    safeLogger.error("[Olmar Gateway] ❌ Fatal error during server startup", { err: errorMsg });
+    safeLogger.error("[Olmart Gateway] ❌ Fatal error during server startup", { err: errorMsg });
     process.exit(1);
   });
 }
