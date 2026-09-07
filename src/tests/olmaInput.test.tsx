@@ -29,7 +29,7 @@ describe('OlmaInput Primitive Suite', () => {
     root = null;
   });
 
-  it('1. renders input element with default attributes', () => {
+  it('1. renders input element with default attributes (scenario 1: no error, no desc)', () => {
     act(() => {
       root?.render(<OlmaInput id="test-input" placeholder="Entrez votre nom" />);
     });
@@ -41,6 +41,8 @@ describe('OlmaInput Primitive Suite', () => {
     expect(input?.placeholder).toBe('Entrez votre nom');
     expect(input?.disabled).toBe(false);
     expect(input?.required).toBe(false);
+    expect(input?.getAttribute('aria-invalid')).toBeNull();
+    expect(input?.getAttribute('aria-describedby')).toBeNull();
   });
 
   it('2 & 3. renders label and associates label with input via htmlFor/id', () => {
@@ -50,7 +52,6 @@ describe('OlmaInput Primitive Suite', () => {
 
     const label = container?.querySelector('label');
     const input = document.getElementById('custom-user-id');
-    expect(label).not.toBeNull();
     expect(label?.getAttribute('for')).toBe('custom-user-id');
     expect(label?.textContent).toContain('Nom complet');
     expect(input).not.toBeNull();
@@ -63,8 +64,6 @@ describe('OlmaInput Primitive Suite', () => {
 
     const label = container?.querySelector('label');
     const input = container?.querySelector('input');
-    expect(label).not.toBeNull();
-    expect(input).not.toBeNull();
     const generatedId = input?.getAttribute('id');
     expect(generatedId).toBeTruthy();
     expect(label?.getAttribute('for')).toBe(generatedId);
@@ -74,11 +73,7 @@ describe('OlmaInput Primitive Suite', () => {
     const handleChange = vi.fn();
     act(() => {
       root?.render(
-        <OlmaInput
-          id="input-change"
-          defaultValue="Alger Centre"
-          onChange={handleChange}
-        />
+        <OlmaInput id="input-change" defaultValue="Alger Centre" onChange={handleChange} />
       );
     });
 
@@ -87,11 +82,8 @@ describe('OlmaInput Primitive Suite', () => {
 
     act(() => {
       if (input) {
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLInputElement.prototype,
-          'value'
-        )?.set;
-        nativeInputValueSetter?.call(input, 'Hydra');
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+        setter?.call(input, 'Hydra');
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
@@ -126,8 +118,7 @@ describe('OlmaInput Primitive Suite', () => {
 
     const input = document.getElementById('input-req') as HTMLInputElement | null;
     expect(input?.required).toBe(true);
-    const label = container?.querySelector('label');
-    expect(label?.textContent).toContain('*');
+    expect(container?.querySelector('label')?.textContent).toContain('*');
   });
 
   it('9. applies disabled state correctly', () => {
@@ -140,15 +131,9 @@ describe('OlmaInput Primitive Suite', () => {
     expect(input?.className).toContain('disabled:cursor-not-allowed');
   });
 
-  it('10, 11 & 12. handles error state with aria-invalid and aria-describedby', () => {
+  it('10, 11 & 12. handles error state with aria-invalid and aria-describedby (scenario 2: error only)', () => {
     act(() => {
-      root?.render(
-        <OlmaInput
-          id="input-err"
-          label="Prix"
-          error="Le prix doit être supérieur à zéro"
-        />
-      );
+      root?.render(<OlmaInput id="input-err" label="Prix" error="Le prix doit être supérieur à zéro" />);
     });
 
     const input = document.getElementById('input-err') as HTMLInputElement | null;
@@ -159,23 +144,68 @@ describe('OlmaInput Primitive Suite', () => {
     expect(errorMsg).not.toBeNull();
     expect(errorMsg?.getAttribute('role')).toBe('alert');
     expect(errorMsg?.textContent).toContain('Le prix doit être supérieur à zéro');
+    // Ensure no dangling desc element exists
+    expect(document.getElementById('input-err-desc')).toBeNull();
   });
 
-  it('13. renders description and links via aria-describedby when no error', () => {
+  it('13. renders description and links via aria-describedby (scenario 3: description only)', () => {
     act(() => {
       root?.render(
-        <OlmaInput
-          id="input-desc"
-          label="Superficie"
-          description="Indiquez la surface utile en mètres carrés (m²)"
-        />
+        <OlmaInput id="input-desc" label="Superficie" description="Indiquez la surface utile en mètres carrés (m²)" />
       );
     });
 
     const input = document.getElementById('input-desc') as HTMLInputElement | null;
+    expect(input?.getAttribute('aria-invalid')).toBeNull();
     expect(input?.getAttribute('aria-describedby')).toBe('input-desc-desc');
     const desc = document.getElementById('input-desc-desc');
     expect(desc?.textContent).toContain('Indiquez la surface utile en mètres carrés (m²)');
+    // Ensure no error element exists
+    expect(document.getElementById('input-desc-error')).toBeNull();
+  });
+
+  it('handles error and description together without dangling aria-describedby references (scenario 4)', () => {
+    act(() => {
+      root?.render(
+        <OlmaInput
+          id="input-combined"
+          label="Prix"
+          error="Le prix est invalide"
+          description="Indiquez un montant en DZD"
+        />
+      );
+    });
+
+    const input = document.getElementById('input-combined') as HTMLInputElement | null;
+    expect(input).not.toBeNull();
+    expect(input?.getAttribute('aria-invalid')).toBe('true');
+
+    const ariaDescribedBy = input?.getAttribute('aria-describedby');
+    expect(ariaDescribedBy).toBeTruthy();
+
+    const referencedIds = ariaDescribedBy ? ariaDescribedBy.split(/\s+/) : [];
+    expect(referencedIds.length).toBe(2);
+
+    // Verify all referenced IDs genuinely exist in the DOM
+    for (const refId of referencedIds) {
+      const referencedElement = document.getElementById(refId);
+      expect(referencedElement).not.toBeNull();
+    }
+
+    // Verify error node exists with role="alert"
+    const errorNode = document.getElementById('input-combined-error');
+    expect(errorNode).not.toBeNull();
+    expect(errorNode?.getAttribute('role')).toBe('alert');
+    expect(errorNode?.textContent).toContain('Le prix est invalide');
+
+    // Verify description node exists and is in the DOM
+    const descNode = document.getElementById('input-combined-desc');
+    expect(descNode).not.toBeNull();
+    expect(descNode?.textContent).toContain('Indiquez un montant en DZD');
+
+    // Verify logical order: error first, description second
+    expect(referencedIds[0]).toBe('input-combined-error');
+    expect(referencedIds[1]).toBe('input-combined-desc');
   });
 
   it('14. supports sm, md, and lg sizes', () => {
@@ -189,34 +219,23 @@ describe('OlmaInput Primitive Suite', () => {
       );
     });
 
-    const sm = document.getElementById('input-sm');
-    const md = document.getElementById('input-md');
-    const lg = document.getElementById('input-lg');
-
-    expect(sm?.className).toContain('min-h-[36px]');
-    expect(md?.className).toContain('min-h-[42px]');
-    expect(lg?.className).toContain('min-h-[48px]');
+    expect(document.getElementById('input-sm')?.className).toContain('min-h-[36px]');
+    expect(document.getElementById('input-md')?.className).toContain('min-h-[42px]');
+    expect(document.getElementById('input-lg')?.className).toContain('min-h-[48px]');
   });
 
   it('15. supports fullWidth prop', () => {
     act(() => {
       root?.render(
         <div>
-          <div data-testid="wrapper-full">
-            <OlmaInput id="input-full" fullWidth />
-          </div>
-          <div data-testid="wrapper-auto">
-            <OlmaInput id="input-auto" fullWidth={false} />
-          </div>
+          <div data-testid="wrapper-full"><OlmaInput id="input-full" fullWidth /></div>
+          <div data-testid="wrapper-auto"><OlmaInput id="input-auto" fullWidth={false} /></div>
         </div>
       );
     });
 
-    const fullWrapper = container?.querySelector('[data-testid="wrapper-full"] > div');
-    const autoWrapper = container?.querySelector('[data-testid="wrapper-auto"] > div');
-
-    expect(fullWrapper?.className).toContain('w-full');
-    expect(autoWrapper?.className).toContain('w-auto');
+    expect(container?.querySelector('[data-testid="wrapper-full"] > div')?.className).toContain('w-full');
+    expect(container?.querySelector('[data-testid="wrapper-auto"] > div')?.className).toContain('w-auto');
   });
 
   it('16. renders leftIcon and rightIcon properly', () => {
@@ -230,10 +249,8 @@ describe('OlmaInput Primitive Suite', () => {
       );
     });
 
-    const left = container?.querySelector('[data-testid="left-search"]');
-    const right = container?.querySelector('[data-testid="right-clear"]');
-    expect(left).not.toBeNull();
-    expect(right).not.toBeNull();
+    expect(container?.querySelector('[data-testid="left-search"]')).not.toBeNull();
+    expect(container?.querySelector('[data-testid="right-clear"]')).not.toBeNull();
     const input = document.getElementById('input-icons');
     expect(input?.className).toContain('ps-10');
     expect(input?.className).toContain('pe-10');
@@ -241,16 +258,9 @@ describe('OlmaInput Primitive Suite', () => {
 
   it('17. forwards ref correctly to HTMLInputElement', () => {
     let inputRef: HTMLInputElement | null = null;
-
     act(() => {
       root?.render(
-        <OlmaInput
-          ref={(node) => {
-            inputRef = node;
-          }}
-          id="input-ref"
-          defaultValue="Initial Focus"
-        />
+        <OlmaInput ref={(node) => { inputRef = node; }} id="input-ref" defaultValue="Initial Focus" />
       );
     });
 

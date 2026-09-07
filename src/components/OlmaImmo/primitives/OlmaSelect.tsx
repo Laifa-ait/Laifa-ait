@@ -160,7 +160,7 @@ export const OlmaSelect = React.forwardRef<HTMLSelectElement, OlmaSelectProps>(
           </p>
         )}
 
-        {!error && description && (
+        {description && (
           <p id={descId} className="text-xs text-[var(--olma-text-muted)] mt-0.5">
             {description}
           </p>

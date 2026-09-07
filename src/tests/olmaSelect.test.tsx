@@ -29,7 +29,7 @@ describe('OlmaSelect Primitive Suite', () => {
     root = null;
   });
 
-  it('1. renders select with options children', () => {
+  it('1. renders select with options children (scenario 1: no error, no desc)', () => {
     act(() => {
       root?.render(
         <OlmaSelect id="select-test" defaultValue="sale">
@@ -44,6 +44,8 @@ describe('OlmaSelect Primitive Suite', () => {
     expect(select?.tagName.toLowerCase()).toBe('select');
     expect(select?.value).toBe('sale');
     expect(select?.options.length).toBe(2);
+    expect(select?.getAttribute('aria-invalid')).toBeNull();
+    expect(select?.getAttribute('aria-describedby')).toBeNull();
   });
 
   it('2. renders label and associates with select', () => {
@@ -96,18 +98,13 @@ describe('OlmaSelect Primitive Suite', () => {
     const select = document.getElementById('select-dis-req') as HTMLSelectElement | null;
     expect(select?.disabled).toBe(true);
     expect(select?.required).toBe(true);
-    const label = container?.querySelector('label');
-    expect(label?.textContent).toContain('*');
+    expect(container?.querySelector('label')?.textContent).toContain('*');
   });
 
-  it('5. handles error state with aria-invalid and aria-describedby', () => {
+  it('5. handles error state with aria-invalid and aria-describedby (scenario 2: error only)', () => {
     act(() => {
       root?.render(
-        <OlmaSelect
-          id="select-err"
-          label="Wilaya"
-          error="Veuillez choisir une wilaya"
-        >
+        <OlmaSelect id="select-err" label="Wilaya" error="Veuillez choisir une wilaya">
           <option value="">Sélectionner</option>
           <option value="16">Alger</option>
         </OlmaSelect>
@@ -119,25 +116,72 @@ describe('OlmaSelect Primitive Suite', () => {
     expect(select?.getAttribute('aria-describedby')).toBe('select-err-error');
     const errorMsg = document.getElementById('select-err-error');
     expect(errorMsg?.textContent).toContain('Veuillez choisir une wilaya');
+    expect(document.getElementById('select-err-desc')).toBeNull();
   });
 
-  it('6. renders description with aria-describedby', () => {
+  it('6. renders description with aria-describedby (scenario 3: description only)', () => {
     act(() => {
       root?.render(
-        <OlmaSelect
-          id="select-desc"
-          label="Papiers fonciers"
-          description="Sélectionnez le statut légal du bien"
-        >
+        <OlmaSelect id="select-desc" label="Papiers fonciers" description="Sélectionnez le statut légal du bien">
           <option value="acte">Acte notarié</option>
         </OlmaSelect>
       );
     });
 
     const select = document.getElementById('select-desc') as HTMLSelectElement | null;
+    expect(select?.getAttribute('aria-invalid')).toBeNull();
     expect(select?.getAttribute('aria-describedby')).toBe('select-desc-desc');
     const desc = document.getElementById('select-desc-desc');
     expect(desc?.textContent).toContain('Sélectionnez le statut légal du bien');
+    expect(document.getElementById('select-desc-error')).toBeNull();
+  });
+
+  it('handles error and description together without dangling aria-describedby references (scenario 4)', () => {
+    act(() => {
+      root?.render(
+        <OlmaSelect
+          id="select-combined"
+          label="Wilaya"
+          error="Veuillez choisir une wilaya"
+          description="Sélectionnez la wilaya du bien"
+        >
+          <option value="">Sélectionner</option>
+          <option value="16">16 - Alger</option>
+          <option value="31">31 - Oran</option>
+        </OlmaSelect>
+      );
+    });
+
+    const select = document.getElementById('select-combined') as HTMLSelectElement | null;
+    expect(select).not.toBeNull();
+    expect(select?.getAttribute('aria-invalid')).toBe('true');
+
+    const ariaDescribedBy = select?.getAttribute('aria-describedby');
+    expect(ariaDescribedBy).toBeTruthy();
+
+    const referencedIds = ariaDescribedBy ? ariaDescribedBy.split(/\s+/) : [];
+    expect(referencedIds.length).toBe(2);
+
+    // Verify all referenced IDs genuinely exist in the DOM
+    for (const refId of referencedIds) {
+      const referencedElement = document.getElementById(refId);
+      expect(referencedElement).not.toBeNull();
+    }
+
+    // Verify error node exists with role="alert"
+    const errorNode = document.getElementById('select-combined-error');
+    expect(errorNode).not.toBeNull();
+    expect(errorNode?.getAttribute('role')).toBe('alert');
+    expect(errorNode?.textContent).toContain('Veuillez choisir une wilaya');
+
+    // Verify description node exists and is in the DOM
+    const descNode = document.getElementById('select-combined-desc');
+    expect(descNode).not.toBeNull();
+    expect(descNode?.textContent).toContain('Sélectionnez la wilaya du bien');
+
+    // Verify logical order: error first, description second
+    expect(referencedIds[0]).toBe('select-combined-error');
+    expect(referencedIds[1]).toBe('select-combined-desc');
   });
 
   it('7. supports sm, md, and lg sizes', () => {
@@ -151,48 +195,30 @@ describe('OlmaSelect Primitive Suite', () => {
       );
     });
 
-    const sm = document.getElementById('sel-sm');
-    const md = document.getElementById('sel-md');
-    const lg = document.getElementById('sel-lg');
-
-    expect(sm?.className).toContain('min-h-[36px]');
-    expect(md?.className).toContain('min-h-[42px]');
-    expect(lg?.className).toContain('min-h-[48px]');
+    expect(document.getElementById('sel-sm')?.className).toContain('min-h-[36px]');
+    expect(document.getElementById('sel-md')?.className).toContain('min-h-[42px]');
+    expect(document.getElementById('sel-lg')?.className).toContain('min-h-[48px]');
   });
 
   it('8. supports fullWidth prop on select container', () => {
     act(() => {
       root?.render(
         <div>
-          <div data-testid="sel-wrapper-full">
-            <OlmaSelect id="sel-full" fullWidth><option>1</option></OlmaSelect>
-          </div>
-          <div data-testid="sel-wrapper-auto">
-            <OlmaSelect id="sel-auto" fullWidth={false}><option>2</option></OlmaSelect>
-          </div>
+          <div data-testid="sel-wrapper-full"><OlmaSelect id="sel-full" fullWidth><option>1</option></OlmaSelect></div>
+          <div data-testid="sel-wrapper-auto"><OlmaSelect id="sel-auto" fullWidth={false}><option>2</option></OlmaSelect></div>
         </div>
       );
     });
 
-    const fullWrapper = container?.querySelector('[data-testid="sel-wrapper-full"] > div');
-    const autoWrapper = container?.querySelector('[data-testid="sel-wrapper-auto"] > div');
-
-    expect(fullWrapper?.className).toContain('w-full');
-    expect(autoWrapper?.className).toContain('w-auto');
+    expect(container?.querySelector('[data-testid="sel-wrapper-full"] > div')?.className).toContain('w-full');
+    expect(container?.querySelector('[data-testid="sel-wrapper-auto"] > div')?.className).toContain('w-auto');
   });
 
   it('9. forwards ref to HTMLSelectElement', () => {
     let selectRef: HTMLSelectElement | null = null;
-
     act(() => {
       root?.render(
-        <OlmaSelect
-          ref={(node) => {
-            selectRef = node;
-          }}
-          id="sel-ref"
-          defaultValue="hydra"
-        >
+        <OlmaSelect ref={(node) => { selectRef = node; }} id="sel-ref" defaultValue="hydra">
           <option value="hydra">Hydra</option>
           <option value="kuba">Kouba</option>
         </OlmaSelect>
@@ -220,18 +246,13 @@ describe('OlmaSelect Primitive Suite', () => {
   it('11. renders leftIcon and adds appropriate padding', () => {
     act(() => {
       root?.render(
-        <OlmaSelect
-          id="sel-icon"
-          leftIcon={<span data-testid="select-icon">📍</span>}
-        >
+        <OlmaSelect id="sel-icon" leftIcon={<span data-testid="select-icon">📍</span>}>
           <option value="16">Alger</option>
         </OlmaSelect>
       );
     });
 
-    const icon = container?.querySelector('[data-testid="select-icon"]');
-    expect(icon).not.toBeNull();
-    const select = document.getElementById('sel-icon');
-    expect(select?.className).toContain('ps-10');
+    expect(container?.querySelector('[data-testid="select-icon"]')).not.toBeNull();
+    expect(document.getElementById('sel-icon')?.className).toContain('ps-10');
   });
 });

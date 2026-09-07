@@ -162,7 +162,7 @@ export const OlmaInput = React.forwardRef<HTMLInputElement, OlmaInputProps>(
           </p>
         )}
 
-        {!error && description && (
+        {description && (
           <p id={descId} className="text-xs text-[var(--olma-text-muted)] mt-0.5">
             {description}
           </p>
