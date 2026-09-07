@@ -9,18 +9,21 @@ import {
   PauseCircle,
   PlayCircle,
   MapPin,
+  Trash2,
 } from 'lucide-react';
 
 interface OwnerPropertiesListProps {
   properties: Property[];
   isLoading: boolean;
   onUpdateStatus: (propertyId: string, status: PropertyStatus) => void;
+  onDeleteProperty?: (propertyId: string, title: string) => void;
 }
 
 export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
   properties,
   isLoading,
   onUpdateStatus,
+  onDeleteProperty,
 }) => {
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('all');
 
@@ -162,6 +165,17 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
                       title="Activer"
                     >
                       <PlayCircle className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {onDeleteProperty && (
+                    <button
+                      type="button"
+                      onClick={() => onDeleteProperty(property.id, property.title)}
+                      className="p-2 bg-white border border-rose-200 rounded-xl text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition cursor-pointer"
+                      title="Supprimer l'annonce"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>

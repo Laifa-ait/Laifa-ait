@@ -15,7 +15,7 @@ Ce document décrit l'architecture système globale de la plateforme de commerce
 │   ┌────────────────────────────────────────────────────────────────┐   │
 │   │               IFRAME SANDBOX (AI Studio Preview)               │   │
 │   │                                                                │   │
-│   │   [ Interface React 18 / Tailwind ]                            │   │
+│   │   [ Interface React 19 / Tailwind 4 ]                          │   │
 │   │   │                                                            │   │
 │   │   │ 1. Demande OTP / Verrouillage Session                      │   │
 │   │   ▼                                                            │   │
@@ -160,8 +160,8 @@ Un démarrage nominal parfait se matérialise par les traces de console standard
 
 ```text
 🟢 [Olmart Gateway] 🚀 Booting HTTP Server on Port 3000...
-🟢 [Firebase Admin] 🔐 Admin SDK Initialized for Project: olmart-prod-77a
-🟢 [Firestore Core] 🟢 Connected and mapped Named Database: olmart-db-core
+🟢 [Firebase Admin] 🔐 Admin SDK Initialized for Project: [PROJECT_ID]
+🟢 [Firestore Core] 🟢 Connected and mapped Named Database: (default)
 ⚙️ [Olmart Workers] ⚡ Product Publisher Worker active (Ventes Flash check interval: 60s).
 ```
 

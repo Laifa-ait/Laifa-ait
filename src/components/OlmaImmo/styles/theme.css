@@ -1,0 +1,68 @@
+/**
+ * OLMART — Olma Immo & Location Scoped CSS Variables
+ * 
+ * Injecté sous le sélecteur .olma-immo-scope pour garantir une isolation
+ * totale vis-à-vis du Marketplace Olmart et de ses tokens e-commerce.
+ */
+
+.olma-immo-scope {
+  /* Brand colors */
+  --olma-brand-primary: #1A3831;
+  --olma-brand-primary-dark: #0D281E;
+  --olma-brand-primary-light: #2A4D45;
+  --olma-brand-accent: #C97A40;
+  --olma-brand-accent-soft: #E8A87C;
+  --olma-brand-highlight: #EBDCB8;
+  --olma-brand-highlight-light: #F4ECD8;
+
+  /* Backgrounds */
+  --olma-bg-base: #FAF8F5;
+  --olma-bg-subtle: #F7F4ED;
+  --olma-bg-muted: #F2EEE5;
+  --olma-bg-dark: #0D281E;
+
+  /* Surfaces */
+  --olma-surface-default: #FFFFFF;
+  --olma-surface-subtle: #FAF8F5;
+  --olma-surface-raised: #FFFFFF;
+  --olma-surface-muted: #F7F4ED;
+  --olma-surface-dark: #1A3831;
+
+  /* Borders */
+  --olma-border-subtle: #F2EEE5;
+  --olma-border-default: #E8E2D4;
+  --olma-border-strong: #D8D2C4;
+  --olma-border-focus: #1A3831;
+  --olma-border-accent: #EBDCB8;
+
+  /* Text & Typography */
+  --olma-text-primary: #1C211E;
+  --olma-text-secondary: #4A5550;
+  --olma-text-muted: #738079;
+  --olma-text-subtle: #9CA8A1;
+  --olma-text-inverse: #FAF8F5;
+  --olma-text-highlight: #EBDCB8;
+  --olma-text-accent: #C97A40;
+
+  --olma-font-display: "Playfair Display", Georgia, serif;
+  --olma-font-sans: "Inter", "Cairo", system-ui, -apple-system, sans-serif;
+
+  /* Shadows avec dominante chaleureuse (Forest/Warm) */
+  --olma-shadow-subtle: 0 1px 2px rgba(26, 56, 49, 0.04), 0 2px 6px rgba(26, 56, 49, 0.02);
+  --olma-shadow-card: 0 4px 16px -2px rgba(26, 56, 49, 0.05), 0 1px 3px rgba(26, 56, 49, 0.03);
+  --olma-shadow-floating: 0 12px 32px -4px rgba(26, 56, 49, 0.12), 0 4px 12px rgba(26, 56, 49, 0.06);
+
+  /* Semantic feedback */
+  --olma-semantic-success: #059669;
+  --olma-semantic-success-light: #ECFDF5;
+  --olma-semantic-warning: #D97706;
+  --olma-semantic-warning-light: #FEF3C7;
+  --olma-semantic-danger: #E11D48;
+  --olma-semantic-danger-light: #FFF1F2;
+  --olma-semantic-info: #0284C7;
+  --olma-semantic-info-light: #F0F9FF;
+
+  /* Accessibility Focus Ring */
+  --olma-focus-ring: 2px solid #1A3831;
+  --olma-focus-offset: 2px;
+}

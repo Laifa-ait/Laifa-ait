@@ -3,6 +3,9 @@ import { X, Calendar, Clock, Phone, User, CheckCircle2 } from 'lucide-react';
 import { apiPost } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { OlmaInput } from './primitives/OlmaInput';
+import { OlmaSelect } from './primitives/OlmaSelect';
+import { OlmaButton } from './primitives/OlmaButton';
 
 interface VisitRequestModalProps {
   isOpen: boolean;
@@ -101,67 +104,50 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
               <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{propertyTitle}</p>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Votre nom complet</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  value={visitorName}
-                  onChange={(e) => setVisitorName(e.target.value)}
-                  placeholder="Nom et Prénom"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 ps-9 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
-                />
-                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              </div>
-            </div>
+            <OlmaInput
+              fullWidth
+              required
+              label="Votre nom complet"
+              placeholder="Nom et Prénom"
+              value={visitorName}
+              onChange={(e) => setVisitorName(e.target.value)}
+              leftIcon={<User className="w-4 h-4" />}
+            />
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de téléphone</label>
-              <div className="relative">
-                <input
-                  type="tel"
-                  required
-                  value={visitorPhone}
-                  onChange={(e) => setVisitorPhone(e.target.value)}
-                  placeholder="06XX XX XX XX"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 ps-9 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
-                />
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              </div>
-            </div>
+            <OlmaInput
+              fullWidth
+              required
+              type="tel"
+              label="Numéro de téléphone"
+              placeholder="06XX XX XX XX"
+              value={visitorPhone}
+              onChange={(e) => setVisitorPhone(e.target.value)}
+              leftIcon={<Phone className="w-4 h-4" />}
+            />
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Date souhaitée</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  required
-                  min={new Date().toISOString().split('T')[0]}
-                  value={preferredDate}
-                  onChange={(e) => setPreferredDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 ps-9 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
-                />
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              </div>
-            </div>
+            <OlmaInput
+              fullWidth
+              required
+              type="date"
+              label="Date souhaitée"
+              min={new Date().toISOString().split('T')[0]}
+              value={preferredDate}
+              onChange={(e) => setPreferredDate(e.target.value)}
+              leftIcon={<Calendar className="w-4 h-4" />}
+            />
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Créneau horaire</label>
-              <div className="relative">
-                <select
-                  value={timeSlot}
-                  onChange={(e) => setTimeSlot(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 ps-9 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
-                >
-                  <option value="09:00 - 11:00">09:00 - 11:00 (Matin)</option>
-                  <option value="11:00 - 13:00">11:00 - 13:00 (Midi)</option>
-                  <option value="14:00 - 16:00">14:00 - 16:00 (Après-midi)</option>
-                  <option value="16:00 - 18:00">16:00 - 18:00 (Fin de journée)</option>
-                </select>
-                <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              </div>
-            </div>
+            <OlmaSelect
+              fullWidth
+              label="Créneau horaire"
+              value={timeSlot}
+              onChange={(e) => setTimeSlot(e.target.value)}
+              leftIcon={<Clock className="w-4 h-4" />}
+            >
+              <option value="09:00 - 11:00">09:00 - 11:00 (Matin)</option>
+              <option value="11:00 - 13:00">11:00 - 13:00 (Midi)</option>
+              <option value="14:00 - 16:00">14:00 - 16:00 (Après-midi)</option>
+              <option value="16:00 - 18:00">16:00 - 18:00 (Fin de journée)</option>
+            </OlmaSelect>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Type de visite</label>
@@ -202,13 +188,16 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
               />
             </div>
 
-            <button
+            <OlmaButton
               type="submit"
+              variant="primary"
+              size="md"
+              fullWidth
+              loading={isSubmitting}
               disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-700/20 transition-all cursor-pointer disabled:opacity-50 min-h-[44px]"
             >
-              {isSubmitting ? 'Transmission...' : 'Confirmer la demande de visite'}
-            </button>
+              Confirmer la demande de visite
+            </OlmaButton>
           </form>
         )}
       </div>

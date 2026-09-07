@@ -185,3 +185,6 @@ html[dir="rtl"], [dir="rtl"] {
   }
 }
 
+/* Scoped Olma Immo Theme Tokens */
+@import "./components/OlmaImmo/styles/theme.css";
+

@@ -267,6 +267,68 @@ realEstateBookingRouter.get('/bookings', authenticateToken, async (req: Authenti
   }
 });
 
+// GET /my-bookings (Dedicated direct alias for tenants)
+realEstateBookingRouter.get('/my-bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  const callerUid = req.user?.uid;
+  if (!callerUid) {
+    return res.status(401).json({ success: false, error: 'Authentification requise.' });
+  }
+
+  try {
+    if (!db) {
+      return res.status(500).json({ success: false, error: 'Base de données indisponible.' });
+    }
+
+    const snap = await db
+      .collection('real_estate_bookings')
+      .where('tenantId', '==', callerUid)
+      .get();
+
+    const bookings = snap.docs.map((doc) => doc.data() as BookingShort);
+    bookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return res.json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    safeLogger.error('Error listing tenant my-bookings', { callerUid, err: errorMsg });
+    return res.status(500).json({ success: false, error: 'Erreur lors de la récupération de vos réservations.' });
+  }
+});
+
+// GET /my-visits (Dedicated direct route for visitor/tenant visits)
+realEstateBookingRouter.get('/my-visits', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  const callerUid = req.user?.uid;
+  if (!callerUid) {
+    return res.status(401).json({ success: false, error: 'Authentification requise.' });
+  }
+
+  try {
+    if (!db) {
+      return res.status(500).json({ success: false, error: 'Base de données indisponible.' });
+    }
+
+    const snap = await db
+      .collection('real_estate_visits')
+      .where('visitorId', '==', callerUid)
+      .get();
+
+    const visits = snap.docs.map((doc) => ({ ...(doc.data() as PropertyVisit), id: doc.id }));
+    visits.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return res.json({
+      success: true,
+      data: visits,
+    });
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    safeLogger.error('Error listing tenant my-visits', { callerUid, err: errorMsg });
+    return res.status(500).json({ success: false, error: 'Erreur lors de la récupération de vos demandes de visite.' });
+  }
+});
+
 // GET /bookings/:id
 realEstateBookingRouter.get('/bookings/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const bookingId = req.params.id;

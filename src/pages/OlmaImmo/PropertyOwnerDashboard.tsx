@@ -4,7 +4,7 @@ import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
 import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
 import { InitiateConversationDTO } from '../../types/messaging';
-import { apiGet, apiPut } from '../../lib/api';
+import { apiGet, apiPut, apiDelete } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -71,6 +71,26 @@ export const PropertyOwnerDashboard: React.FC = () => {
       }
     } catch {
       toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleDeleteProperty = async (propertyId: string, title: string) => {
+    if (!window.confirm(`Confirmez-vous la suppression définitive de l'annonce "${title}" ?`)) {
+      return;
+    }
+
+    try {
+      const res = await apiDelete<{ success: boolean; message?: string; error?: string }>(
+        `/api/v1/real-estate/properties/${propertyId}`
+      );
+      if (res.success) {
+        toast.success('Annonce supprimée avec succès');
+        setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+      } else {
+        toast.error(res.error || 'Erreur lors de la suppression');
+      }
+    } catch {
+      toast.error("Erreur lors de la suppression de l'annonce");
     }
   };
 
@@ -146,6 +166,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
             properties={properties}
             isLoading={isLoading}
             onUpdateStatus={handleUpdatePropertyStatus}
+            onDeleteProperty={handleDeleteProperty}
           />
         )}
 

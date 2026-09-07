@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-07
+
+### 🔒 Sécurité & Durcissement CI/CD
+- **Isolation Stricte des Variables d'Environnement** : Confinement des variables simulées `olmart-ci-demo` au sein des seuls jobs de tests CI (`build-and-test` et `e2e`), éliminant tout risque de fuite vers les artefacts de build de staging et production.
+- **Normalisation de l'Identifiant de Base Firestore** : Alignement universel sur la base racine `(default)` dans `firebase.json`, `src/tests/setup.ts`, `Dockerfile` et les scripts de vérification de sécurité.
+- **Protection Anti-CSRF Renforcée** : Validation obligatoire en production d'une clé secrète `CSRF_SECRET` robuste (>= 32 caractères) issue de GCP Secret Manager avec rejet strict au boot en cas de manquement.
+
+### 🚀 DevOps, Build & Pipeline Cloud Run
+- **Smoke Tests Automatisés Post-Déploiement** : Ajout d'une validation HTTP synchrone systématique sur `/api/v1/health/live` et `/api/v1/health` avec politique de retries et fail-fast immédiat en cas d'échec sur Cloud Run.
+- **Optimisation des Archives de Déploiement (`.gcloudignore`)** : Exclusion rigoureuse des dossiers de couverture (`coverage`), rapports de tests Playwright (`playwright-report`, `test-results`), logs et artefacts TypeScript pour accélérer le transfert Cloud Build.
+- **Conteneurisation Docker Fiabilisée** : Définition de valeurs par défaut sur les arguments de compilation multi-stage (`ARG VITE_FIREBASE_DATABASE_ID=(default)`) pour prévenir toute initialisation dégradée du client web.
+
+### 🧪 Tests & Résilience
+- **Détection Dynamique de l'Émulateur Firebase** : Inspection synchrone des sockets `/proc/net/tcp` dans `src/tests/setup.ts` évitant les timeouts bloquants de 30 secondes en environnement sans émulateur.
+- **Harmonisation des Standards de Logging** : Alignement complet des gestionnaires de signaux et d'exceptions sur le standard unifié `[Olmart Gateway]`.
+
 ## [1.2.0] - 2026-08-27
 
 ### ♿ Accessibilité (A11y) & Expérience Utilisateur (UX)

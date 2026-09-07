@@ -4,6 +4,7 @@ import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
 import { OlmaImmoHero } from '../../components/OlmaImmo/OlmaImmoHero';
 import { OlmaCategoryBar } from '../../components/OlmaImmo/OlmaCategoryBar';
 import { OlmaImmoPropertiesSection } from '../../components/OlmaImmo/OlmaImmoPropertiesSection';
+import { OlmaSection } from '../../components/OlmaImmo/primitives/OlmaSection';
 import { PropertyType } from '../../types/realEstate';
 import { useOlmaImmoProperties } from '../../hooks/useOlmaImmoProperties';
 
@@ -32,7 +33,7 @@ export const OlmaImmoHome: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans pb-20 md:pb-8 selection:bg-orange-500/20 selection:text-orange-900">
+    <div className="olma-immo-scope min-h-screen bg-[var(--olma-bg-base)] text-[var(--olma-text-primary)] flex flex-col font-sans pb-20 md:pb-8 selection:bg-[#1A3831]/20 selection:text-[#0D281E]">
       <OlmaImmoNavbar />
 
       <OlmaImmoHero
@@ -41,7 +42,7 @@ export const OlmaImmoHome: React.FC = () => {
         onSearchSubmit={fetchProperties}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-12 flex-1 w-full">
+      <OlmaSection as="main" spacing="none" className="pt-2 pb-12 flex-1 w-full">
         {/* Category Bar with golden hour pills & tactile motion */}
         <OlmaCategoryBar
           activeCategory={filters.propertyType || 'all'}
@@ -61,7 +62,7 @@ export const OlmaImmoHome: React.FC = () => {
           onBoundsChange={(bbox) => setMapBounds(bbox)}
           onResetFilters={resetAllFilters}
         />
-      </main>
+      </OlmaSection>
 
       <OlmaImmoBottomNav />
     </div>

@@ -4,6 +4,7 @@ import { Property, PropertyMapResult } from '../../types/realEstate';
 import { PropertyCard, PropertyCardSkeleton } from './PropertyCard';
 import { InteractiveMap } from './InteractiveMap';
 import { PropertyMapDeck } from './PropertyMapDeck';
+import { OlmaSurface } from './primitives/OlmaSurface';
 import { Sparkles, Map as MapIcon, LayoutGrid, Columns2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface OlmaImmoPropertiesSectionProps {
@@ -66,7 +67,15 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
 
   if (properties.length === 0) {
     return (
-      <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-[#E6E0D4] shadow-[0_4px_24px_rgba(26,56,49,0.04)] space-y-4 my-6 flex flex-col items-center">
+      <OlmaSurface
+        variant="default"
+        elevation="card"
+        radius="3xl"
+        padding="xl"
+        bordered
+        borderVariant="default"
+        className="text-center space-y-4 my-6 flex flex-col items-center"
+      >
         <div className="w-14 h-14 bg-[#0D281E] text-[#EBDCB8] rounded-2xl flex items-center justify-center mx-auto shadow-md">
           <Sparkles className="w-7 h-7 text-amber-400" />
         </div>
@@ -79,7 +88,7 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Réinitialiser les filtres</span>
         </button>
-      </div>
+      </OlmaSurface>
     );
   }
 

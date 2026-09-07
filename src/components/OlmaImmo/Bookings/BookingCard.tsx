@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Booking, BookingStatus } from '../../../types/realEstate';
 import { Calendar, MapPin, Users, MessageSquare, ChevronRight, Ban } from 'lucide-react';
+import { OlmaCard } from '../primitives/OlmaCard';
+import { OlmaPill } from '../primitives/OlmaPill';
+import { OlmaButton } from '../primitives/OlmaButton';
 
 interface BookingCardProps {
   booking: Booking;
@@ -18,39 +21,39 @@ export const BookingCard: React.FC<BookingCardProps> = ({
     switch (status) {
       case 'confirmed':
         return (
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
+          <OlmaPill variant="success" size="md" dot>
             Séjour Confirmé
-          </span>
+          </OlmaPill>
         );
       case 'pending':
         return (
-          <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-bold">
+          <OlmaPill variant="warning" size="md" dot>
             En attente de l'hôte
-          </span>
+          </OlmaPill>
         );
       case 'cancelled':
         return (
-          <span className="px-3 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-full text-xs font-bold">
+          <OlmaPill variant="danger" size="md">
             Annulée
-          </span>
+          </OlmaPill>
         );
       case 'rejected':
         return (
-          <span className="px-3 py-1 bg-zinc-100 text-zinc-700 border border-zinc-200 rounded-full text-xs font-bold">
+          <OlmaPill variant="neutral" size="md">
             Non acceptée
-          </span>
+          </OlmaPill>
         );
       case 'completed':
         return (
-          <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-full text-xs font-bold">
+          <OlmaPill variant="info" size="md">
             Séjour Terminé
-          </span>
+          </OlmaPill>
         );
       default:
         return (
-          <span className="px-3 py-1 bg-zinc-100 text-zinc-700 rounded-full text-xs font-bold capitalize">
+          <OlmaPill variant="neutral" size="md" className="capitalize">
             {status}
-          </span>
+          </OlmaPill>
         );
     }
   };
@@ -66,7 +69,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e8e2d4] overflow-hidden shadow-xs hover:shadow-md transition flex flex-col md:flex-row group">
+    <OlmaCard
+      variant="default"
+      radius="2xl"
+      elevation="subtle"
+      bordered
+      borderVariant="default"
+      className="flex flex-col md:flex-row group transition-all duration-300 hover:shadow-[var(--olma-shadow-card)]"
+    >
       {/* Property Photo */}
       <div className="md:w-72 h-52 md:h-auto relative bg-zinc-900 overflow-hidden shrink-0">
         <img loading="lazy" decoding="async" src={booking.propertyImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
@@ -127,37 +137,39 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#e8e2d4]">
-          <button
-            type="button"
+          <OlmaButton
+            variant="secondary"
+            size="sm"
             onClick={() => onOpenChat(booking)}
-            className="px-4 py-2 bg-white hover:bg-zinc-50 border border-[#e8e2d4] text-[#1a3831] rounded-2xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+            leftIcon={<MessageSquare className="w-3.5 h-3.5 text-[#1a3831]" />}
           >
-            <MessageSquare className="w-3.5 h-3.5 text-[#1a3831]" />
-            <span>Contacter l'hôte</span>
-          </button>
+            Contacter l'hôte
+          </OlmaButton>
 
           <div className="flex items-center gap-2">
             {(booking.status === 'pending' || booking.status === 'confirmed') && (
-              <button
-                type="button"
+              <OlmaButton
+                variant="danger"
+                size="sm"
                 onClick={() => onCancelBooking(booking.id)}
-                className="px-3.5 py-2 text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-2xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                leftIcon={<Ban className="w-3.5 h-3.5" />}
               >
-                <Ban className="w-3.5 h-3.5" />
-                <span>Annuler</span>
-              </button>
+                Annuler
+              </OlmaButton>
             )}
 
-            <Link
+            <OlmaButton
+              as={Link}
               to={`/immo/property/${booking.propertyId}`}
-              className="px-4 py-2 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-2xl text-xs font-bold transition flex items-center gap-1 shadow-xs"
+              variant="primary"
+              size="sm"
+              rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
             >
-              <span>Voir l'annonce</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+              Voir l'annonce
+            </OlmaButton>
           </div>
         </div>
       </div>
-    </div>
+    </OlmaCard>
   );
 };

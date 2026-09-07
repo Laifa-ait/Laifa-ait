@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Edit, Eye, MapPin, Trash2 } from 'lucide-react';
 import { RealEstateProperty } from '../../types/realEstate';
+import { OlmaCard } from './primitives/OlmaCard';
+import { OlmaPill } from './primitives/OlmaPill';
+import { OlmaButton } from './primitives/OlmaButton';
 
 interface OwnerPropertyCardProps {
   property: RealEstateProperty;
@@ -17,19 +20,19 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Publiée</span>;
+        return <OlmaPill variant="success" size="sm" dot>Publiée</OlmaPill>;
       case 'pending':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">En attente</span>;
+        return <OlmaPill variant="warning" size="sm" dot>En attente</OlmaPill>;
       case 'draft':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">Brouillon</span>;
+        return <OlmaPill variant="neutral" size="sm">Brouillon</OlmaPill>;
       case 'rented':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">Loué</span>;
+        return <OlmaPill variant="info" size="sm">Loué</OlmaPill>;
       case 'sold':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">Vendu</span>;
+        return <OlmaPill variant="accent" size="sm">Vendu</OlmaPill>;
       case 'archived':
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-600">Archivée</span>;
+        return <OlmaPill variant="neutral" size="sm">Archivée</OlmaPill>;
       default:
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">{status}</span>;
+        return <OlmaPill variant="neutral" size="sm">{status}</OlmaPill>;
     }
   };
 
@@ -38,7 +41,14 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
     : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row">
+    <OlmaCard
+      variant="default"
+      radius="2xl"
+      elevation="subtle"
+      bordered
+      borderVariant="default"
+      className="transition-all hover:shadow-[var(--olma-shadow-card)] flex flex-col sm:flex-row"
+    >
       {/* Thumbnail */}
       <div className="sm:w-56 h-48 sm:h-auto relative shrink-0 bg-slate-100">
         <img loading="lazy" decoding="async" src={imageSrc} alt={property.title} className="w-full h-full object-cover" />
@@ -84,31 +94,42 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
+            <OlmaButton
+              as={Link}
               to={`/immo/property/${property.id}`}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              variant="ghost"
+              size="icon"
+              radius="lg"
+              aria-label="Voir l'annonce publique"
               title="Voir l'annonce publique"
             >
-              <Eye className="w-4 h-4" />
-            </Link>
-            <Link
+              <Eye className="w-4 h-4 text-slate-600" />
+            </OlmaButton>
+            <OlmaButton
+              as={Link}
               to={`/immo/edit/${property.id}`}
-              className="p-2 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors"
+              variant="ghost"
+              size="icon"
+              radius="lg"
+              aria-label="Modifier l'annonce"
               title="Modifier l'annonce"
             >
-              <Edit className="w-4 h-4" />
-            </Link>
-            <button
-              type="button"
+              <Edit className="w-4 h-4 text-emerald-700" />
+            </OlmaButton>
+            <OlmaButton
+              variant="ghost"
+              size="icon"
+              radius="lg"
               onClick={() => onDelete(property.id, property.title)}
-              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+              aria-label="Supprimer l'annonce"
               title="Supprimer l'annonce"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </OlmaButton>
           </div>
         </div>
       </div>
-    </div>
+    </OlmaCard>
   );
 };

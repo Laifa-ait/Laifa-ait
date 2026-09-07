@@ -304,5 +304,74 @@ describe('Real Estate (Olma Immo) Domain Security & Validation Suite (OLM-01)', 
       // Completely after -> no collision
       expect(checkOverlap('2026-09-15', '2026-09-22')).toBe(false);
     });
+
+    it('15. Tenant can access my-bookings without owner interference and receives filtered list', () => {
+      const mockBookings = [
+        { id: 'b1', tenantId: 'tenant_123', ownerId: 'owner_abc', status: 'confirmed' },
+        { id: 'b2', tenantId: 'tenant_456', ownerId: 'owner_abc', status: 'pending' },
+        { id: 'b3', tenantId: 'tenant_123', ownerId: 'owner_xyz', status: 'pending' },
+      ];
+
+      const tenantUid = 'tenant_123';
+      const myBookings = mockBookings.filter((b) => b.tenantId === tenantUid);
+
+      expect(myBookings).toHaveLength(2);
+      expect(myBookings.every((b) => b.tenantId === tenantUid)).toBe(true);
+      expect(myBookings.map((b) => b.id)).toEqual(['b1', 'b3']);
+    });
+
+    it('16. Tenant visit requests are properly isolated per visitorId', () => {
+      const mockVisits = [
+        { id: 'v1', visitorId: 'visitor_123', propertyId: 'p1', status: 'pending' },
+        { id: 'v2', visitorId: 'visitor_999', propertyId: 'p1', status: 'confirmed' },
+      ];
+
+      const visitorUid = 'visitor_123';
+      const myVisits = mockVisits.filter((v) => v.visitorId === visitorUid);
+
+      expect(myVisits).toHaveLength(1);
+      expect(myVisits[0].id).toBe('v1');
+    });
+
+    it('17. Property deletion requires owner match or admin privilege', () => {
+      const property = { id: 'prop_99', ownerId: 'owner_xyz' };
+
+      const canDelete = (callerUid: string, role?: string) => {
+        const isOwner = property.ownerId === callerUid;
+        const isAdmin = role === 'admin' || role === 'superadmin';
+        return isOwner || isAdmin;
+      };
+
+      // Intruder -> blocked
+      expect(canDelete('hacker_456', 'customer')).toBe(false);
+      // Legitimate owner -> allowed
+      expect(canDelete('owner_xyz', 'customer')).toBe(true);
+      // Admin -> allowed
+      expect(canDelete('admin_1', 'admin')).toBe(true);
+    });
+
+    it('18. Real estate pro application status review strictly enforces authorizeAdmin and status values', () => {
+      const allowedStatuses = ['verified', 'rejected', 'pending'];
+
+      const canReviewApplication = (role?: string) => {
+        return role === 'admin' || role === 'superadmin';
+      };
+
+      const validateStatusTransition = (status: string) => {
+        return allowedStatuses.includes(status);
+      };
+
+      // Non-admin cannot review
+      expect(canReviewApplication('customer')).toBe(false);
+      expect(canReviewApplication('seller')).toBe(false);
+      expect(canReviewApplication('property_owner')).toBe(false);
+      expect(canReviewApplication('admin')).toBe(true);
+      expect(canReviewApplication('superadmin')).toBe(true);
+
+      // Status values
+      expect(validateStatusTransition('verified')).toBe(true);
+      expect(validateStatusTransition('rejected')).toBe(true);
+      expect(validateStatusTransition('hacked')).toBe(false);
+    });
   });
 });

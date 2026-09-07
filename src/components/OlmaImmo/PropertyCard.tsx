@@ -5,6 +5,8 @@ import { motion } from 'motion/react';
 import { Property, PropertyMapResult, LegalPaperType } from '../../types/realEstate';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
 import { getLegalPaperInfo } from '../../constants/legalPapers';
+import { OlmaPill } from './primitives/OlmaPill';
+import { OlmaButton } from './primitives/OlmaButton';
 
 interface PropertyCardProps {
   property: Property | PropertyMapResult;
@@ -66,10 +68,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const currentImage = imagesList[activeImageIdx] || imagesList[0];
 
   const getListingBadge = (type: string) => {
-    if (type === 'sale') return { label: 'Vente', bg: 'bg-[#0D281E] text-[#EBDCB8] border-[#EBDCB8]/30' };
-    if (type === 'rent_long') return { label: 'Location', bg: 'bg-emerald-800 text-white border-white/20' };
-    if (type === 'rent_short') return { label: 'Séjour & Vacances', bg: 'bg-gradient-to-r from-amber-600 to-orange-600 text-white border-white/20' };
-    return { label: 'Immobilier', bg: 'bg-stone-800 text-white border-white/20' };
+    if (type === 'sale') return { label: 'Vente', variant: 'brand' as const };
+    if (type === 'rent_long') return { label: 'Location', variant: 'success' as const };
+    if (type === 'rent_short') return { label: 'Séjour & Vacances', variant: 'accent' as const };
+    return { label: 'Immobilier', variant: 'dark' as const };
   };
 
   const formatPrice = (price: number, period?: string) => {
@@ -113,20 +115,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
         {/* Top-Left: High-Grade Badges (Type, Financials, Legal) */}
         <div className="absolute top-3 left-3 pointer-events-none flex flex-wrap gap-1.5 max-w-[78%]">
-          <span className={`backdrop-blur-md font-extrabold text-[11px] px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border ${badge.bg}`}>
+          <OlmaPill variant={badge.variant} size="sm" className="shadow-sm uppercase tracking-wider font-extrabold">
             {badge.label}
-          </span>
+          </OlmaPill>
 
           {'isPriceNegotiable' in property && property.isPriceNegotiable && (
-            <span className="bg-[#B45309]/95 backdrop-blur-md text-amber-100 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm border border-amber-300/30">
+            <OlmaPill variant="warning" size="sm" className="shadow-sm uppercase tracking-wider font-extrabold text-[10px]">
               Négociable 🤝
-            </span>
+            </OlmaPill>
           )}
 
           {'paymentAdvanceMonths' in property && property.paymentAdvanceMonths && property.listingType === 'rent_long' && (
-            <span className="bg-[#0D281E]/95 backdrop-blur-md text-[#EBDCB8] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm border border-[#EBDCB8]/30">
+            <OlmaPill variant="brand" size="sm" className="shadow-sm uppercase tracking-wider font-extrabold text-[10px]">
               Avance {property.paymentAdvanceMonths}M
-            </span>
+            </OlmaPill>
           )}
 
           {legalPapersList.slice(0, 2).map((paperType) => {
@@ -234,14 +236,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           </span>
         </div>
 
-        {/* Revolutionary Tactile CTA Button */}
-        <Link to={`/immo/property/${property.id}`} className="w-full py-3 rounded-2xl bg-[#0D281E] hover:bg-[#153e31] text-[#EBDCB8] font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(13,40,30,0.2)] border border-[#EBDCB8]/20 transition-all duration-300 active:scale-[0.98]">
-          <span>Consulter le bien</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-amber-400" />
-        </Link>
+        {/* Tactile CTA Button */}
+        <OlmaButton as={Link} to={`/immo/property/${property.id}`} variant="dark" size="md" fullWidth rightIcon={<ArrowRight className="w-4 h-4 text-[var(--olma-brand-highlight)] transition-transform group-hover:translate-x-1" />}>
+          Consulter le bien
+        </OlmaButton>
       </div>
     </motion.div>
   );
 };
-
-
