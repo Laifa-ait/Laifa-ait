@@ -3,6 +3,8 @@ import { X, Calendar, Clock, Phone, User, CheckCircle2 } from 'lucide-react';
 import { apiPost } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { OlmaSurface } from './primitives/OlmaSurface';
+import { OlmaPill } from './primitives/OlmaPill';
 import { OlmaInput } from './primitives/OlmaInput';
 import { OlmaSelect } from './primitives/OlmaSelect';
 import { OlmaButton } from './primitives/OlmaButton';
@@ -23,10 +25,8 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
   const { userProfile } = useAuth();
   const [visitorName, setVisitorName] = useState(userProfile?.displayName || '');
   const [visitorPhone, setVisitorPhone] = useState(userProfile?.phone || '');
-  const [preferredDate, setPreferredDate] = useState(
-    new Date(Date.now() + 86400000).toISOString().split('T')[0]
-  );
-  const [timeSlot, setTimeSlot] = useState('10:00 - 12:00');
+  const [preferredDate, setPreferredDate] = useState(() => new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+  const [timeSlot, setTimeSlot] = useState('09:00 - 11:00');
   const [visitType, setVisitType] = useState<'in_person' | 'virtual'>('in_person');
   const [visitorNotes, setVisitorNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,42 +71,68 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative animate-scale-up">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 olma-immo-scope">
+      <OlmaSurface
+        variant="default"
+        elevation="floating"
+        radius="3xl"
+        bordered
+        borderVariant="subtle"
+        padding="lg"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="visit-modal-title"
+        className="max-w-md w-full relative animate-scale-up max-h-[90vh] overflow-y-auto"
+      >
+        <div className="absolute top-4 right-4 z-10">
+          <OlmaButton
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Fermer la boîte de dialogue"
+            className="rounded-full"
+          >
+            <X className="w-5 h-5" aria-hidden="true" />
+          </OlmaButton>
+        </div>
 
         {isSuccess ? (
           <div className="text-center py-6 space-y-4">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-16 h-16 bg-[var(--olma-semantic-success-light)] text-[var(--olma-semantic-success)] rounded-full flex items-center justify-center mx-auto shadow-2xs">
+              <CheckCircle2 className="w-10 h-10" aria-hidden="true" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">Demande envoyée avec succès</h3>
-            <p className="text-xs text-slate-600">
-              Le propriétaire a bien reçu votre demande de visite pour{' '}
-              <strong className="text-slate-800">{propertyTitle}</strong>. Il vous recontactera très prochainement.
-            </p>
-            <button
-              onClick={onClose}
-              className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-sm transition-colors cursor-pointer"
-            >
+            <div>
+              <div className="inline-flex mb-2">
+                <OlmaPill variant="success" size="sm" dot>Demande transmise</OlmaPill>
+              </div>
+              <h3 id="visit-modal-title" className="text-xl font-bold text-[var(--olma-text-primary)]">
+                Demande envoyée avec succès
+              </h3>
+              <p className="text-xs text-[var(--olma-text-secondary)] mt-2 leading-relaxed">
+                Le propriétaire a bien reçu votre demande de visite pour{' '}
+                <strong className="text-[var(--olma-text-primary)] font-semibold">{propertyTitle}</strong>. Il vous recontactera très prochainement.
+              </p>
+            </div>
+            <OlmaButton variant="primary" size="md" fullWidth onClick={onClose}>
               Fermer
-            </button>
+            </OlmaButton>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Demander une visite</h3>
-              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{propertyTitle}</p>
+              <div className="inline-flex mb-1.5">
+                <OlmaPill variant="brand" size="sm">Immobilier Olma</OlmaPill>
+              </div>
+              <h3 id="visit-modal-title" className="text-lg font-bold text-[var(--olma-text-primary)]">
+                Demander une visite
+              </h3>
+              <p className="text-xs text-[var(--olma-text-muted)] line-clamp-1 mt-0.5">{propertyTitle}</p>
             </div>
 
             <OlmaInput
               fullWidth
               required
+              id="visitor-name-input"
               label="Votre nom complet"
               placeholder="Nom et Prénom"
               value={visitorName}
@@ -118,6 +144,7 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
               fullWidth
               required
               type="tel"
+              id="visitor-phone-input"
               label="Numéro de téléphone"
               placeholder="06XX XX XX XX"
               value={visitorPhone}
@@ -129,6 +156,7 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
               fullWidth
               required
               type="date"
+              id="visitor-date-input"
               label="Date souhaitée"
               min={new Date().toISOString().split('T')[0]}
               value={preferredDate}
@@ -138,6 +166,7 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
 
             <OlmaSelect
               fullWidth
+              id="visitor-timeslot-select"
               label="Créneau horaire"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
@@ -150,57 +179,59 @@ export const VisitRequestModal: React.FC<VisitRequestModalProps> = ({
             </OlmaSelect>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Type de visite</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="block text-xs font-semibold text-[var(--olma-text-primary)] mb-1.5">
+                Type de visite
+              </label>
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Type de visite souhaité">
                 <button
                   type="button"
                   onClick={() => setVisitType('in_person')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  aria-pressed={visitType === 'in_person'}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer min-h-[42px] flex items-center justify-center gap-1.5 ${
                     visitType === 'in_person'
-                      ? 'bg-emerald-800 text-white border-emerald-800 shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[var(--olma-brand-primary)] text-[var(--olma-brand-highlight)] border-[var(--olma-brand-primary)] shadow-xs'
+                      : 'bg-[var(--olma-surface-muted)] text-[var(--olma-text-secondary)] border-[var(--olma-border-default)] hover:bg-[var(--olma-surface-subtle)] hover:text-[var(--olma-text-primary)]'
                   }`}
                 >
-                  📍 Sur place
+                  <span aria-hidden="true">📍</span>
+                  <span>Sur place</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setVisitType('virtual')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  aria-pressed={visitType === 'virtual'}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer min-h-[42px] flex items-center justify-center gap-1.5 ${
                     visitType === 'virtual'
-                      ? 'bg-emerald-800 text-white border-emerald-800 shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[var(--olma-brand-primary)] text-[var(--olma-brand-highlight)] border-[var(--olma-brand-primary)] shadow-xs'
+                      : 'bg-[var(--olma-surface-muted)] text-[var(--olma-text-secondary)] border-[var(--olma-border-default)] hover:bg-[var(--olma-surface-subtle)] hover:text-[var(--olma-text-primary)]'
                   }`}
                 >
-                  💻 Visite virtuelle
+                  <span aria-hidden="true">💻</span>
+                  <span>Visite virtuelle</span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Message pour le propriétaire (optionnel)</label>
+              <label htmlFor="visitor-notes" className="block text-xs font-semibold text-[var(--olma-text-primary)] mb-1">
+                Message pour le propriétaire (optionnel)
+              </label>
               <textarea
+                id="visitor-notes"
                 value={visitorNotes}
                 onChange={(e) => setVisitorNotes(e.target.value)}
                 rows={2}
                 placeholder="Je souhaite visiter ce bien..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-[var(--olma-surface-muted)] border border-[var(--olma-border-default)] text-[var(--olma-text-primary)] placeholder:text-[var(--olma-text-muted)] text-xs rounded-xl p-3 focus:bg-[var(--olma-surface-default)] focus:outline-none focus:ring-2 focus:ring-[var(--olma-brand-primary)] focus:border-transparent transition-all"
               />
             </div>
 
-            <OlmaButton
-              type="submit"
-              variant="primary"
-              size="md"
-              fullWidth
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
+            <OlmaButton type="submit" variant="primary" size="md" fullWidth loading={isSubmitting} disabled={isSubmitting}>
               Confirmer la demande de visite
             </OlmaButton>
           </form>
         )}
-      </div>
+      </OlmaSurface>
     </div>
   );
 };

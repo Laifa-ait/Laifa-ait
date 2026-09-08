@@ -189,6 +189,9 @@ function getFrameAncestorsProd(): string[] {
       "https://ai.studio",
       "https://*.aistudio.google.com",
       "https://*.ai.studio",
+      "https://*.google.com",
+      "https://*.googleusercontent.com",
+      "https://*.run.app",
       ...exactOrigins,
     ])
   );

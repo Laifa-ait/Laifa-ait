@@ -69,6 +69,40 @@ export const shutdown = (signal: string): void => {
   }
 };
 
+/**
+ * Teardown propre pour les tests unitaires et d'intégration Vitest.
+ * Ferme le serveur HTTP, tous les workers et timers sans appeler process.exit().
+ */
+export async function stopServerForTesting(): Promise<void> {
+  try {
+    stopProductCacheCleanupTimer();
+  } catch {
+    // Safe no-op in test teardown
+  }
+  try {
+    stopProductPublisherWorker();
+  } catch {
+    // Safe no-op in test teardown
+  }
+  try {
+    stopVelocityWorker();
+  } catch {
+    // Safe no-op in test teardown
+  }
+
+  if (httpServer && httpServer.listening) {
+    if (typeof httpServer.closeAllConnections === "function") {
+      httpServer.closeAllConnections();
+    }
+    await new Promise<void>((resolve) => {
+      httpServer.close(() => resolve());
+    });
+  }
+
+  startServerPromise = null;
+  isShuttingDown = false;
+}
+
 export function startServer(): Promise<http.Server> {
   if (startServerPromise) {
     return startServerPromise;

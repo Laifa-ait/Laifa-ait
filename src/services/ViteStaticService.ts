@@ -55,7 +55,7 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     try {
       const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
-        server: { middlewareMode: true, hmr: false, ws: false },
+        server: { middlewareMode: true },
         appType: "spa",
       });
       app.use(vite.middlewares);

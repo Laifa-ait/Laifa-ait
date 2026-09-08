@@ -76,6 +76,9 @@ describe("Search API Contract & GlobalSearchModal Integration Suite", () => {
   afterAll(async () => {
     globalThis.fetch = originalFetch;
     if (server) {
+      if (typeof server.closeAllConnections === "function") {
+        server.closeAllConnections();
+      }
       await new Promise<void>((resolve, reject) => {
         server.close((err) => (err ? reject(err) : resolve()));
       });

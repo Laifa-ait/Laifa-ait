@@ -23,6 +23,8 @@ export interface BookingShort {
   propertyId: string;
   propertyTitle?: string;
   propertyLocation?: string;
+  propertyWilaya?: string;
+  propertyCommune?: string;
   propertyImage?: string;
   ownerId: string;
   tenantId: string; // guestId

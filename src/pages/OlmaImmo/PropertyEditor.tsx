@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
+import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { useAuth } from '../../context/AuthContext';
 import {
   Property,
@@ -199,20 +199,16 @@ export const PropertyEditor: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] flex flex-col">
-        <OlmaImmoNavbar />
+      <OlmaImmoShell showBottomNav={false}>
         <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-pulse text-xs font-bold text-slate-500">
           Chargement de l'annonce...
         </div>
-      </div>
+      </OlmaImmoShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-slate-900 flex flex-col font-sans pb-24 md:pb-12">
-      <OlmaImmoNavbar />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+    <OlmaImmoShell showBottomNav={false} className="max-w-4xl py-8 space-y-6">
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link
@@ -345,7 +341,6 @@ export const PropertyEditor: React.FC = () => {
             </button>
           )}
         </div>
-      </main>
-    </div>
+    </OlmaImmoShell>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
-import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
+import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { ImageGalleryLightbox } from '../../components/OlmaImmo/ImageGalleryLightbox';
 import { VisitRequestModal } from '../../components/OlmaImmo/VisitRequestModal';
 import { BookingRequestModal } from '../../components/OlmaImmo/BookingRequestModal';
@@ -93,21 +92,19 @@ export const PropertyDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] flex flex-col font-sans">
-        <OlmaImmoNavbar />
-        <div className="max-w-7xl mx-auto px-4 py-12 flex-1 w-full animate-pulse space-y-6">
+      <OlmaImmoShell showBottomNav={false}>
+        <div className="py-12 flex-1 w-full animate-pulse space-y-6">
           <div className="h-10 bg-slate-200/80 rounded-2xl w-1/4" />
           <div className="h-96 bg-slate-200/80 rounded-3xl" />
         </div>
-      </div>
+      </OlmaImmoShell>
     );
   }
 
   if (!property) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] flex flex-col font-sans">
-        <OlmaImmoNavbar />
-        <div className="max-w-md mx-auto px-4 py-24 text-center space-y-4 flex-1 flex flex-col items-center justify-center">
+      <OlmaImmoShell showBottomNav={false}>
+        <div className="max-w-md mx-auto py-24 text-center space-y-4 flex-1 flex flex-col items-center justify-center">
           <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mb-2 border border-[#e8e2d4]">
             <Building2 className="w-8 h-8" />
           </div>
@@ -118,7 +115,7 @@ export const PropertyDetail: React.FC = () => {
             <span>Explorer les annonces</span>
           </Link>
         </div>
-      </div>
+      </OlmaImmoShell>
     );
   }
 
@@ -138,58 +135,52 @@ export const PropertyDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-slate-900 flex flex-col font-sans pb-24 md:pb-12">
-      <OlmaImmoNavbar />
+    <OlmaImmoShell className="py-6 space-y-8">
+      <DetailHeader
+        property={property}
+        isFav={isFav}
+        onFavoriteClick={handleFavoriteClick}
+        onShare={handleShare}
+      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
-        <DetailHeader
-          property={property}
-          isFav={isFav}
-          onFavoriteClick={handleFavoriteClick}
-          onShare={handleShare}
-        />
+      <DetailGallery
+        images={property.images || []}
+        title={property.title}
+        selectedImageIndex={selectedImageIndex}
+        onSelectImage={setSelectedImageIndex}
+        onOpenLightbox={() => setIsLightboxOpen(true)}
+      />
 
-        <DetailGallery
-          images={property.images || []}
-          title={property.title}
-          selectedImageIndex={selectedImageIndex}
-          onSelectImage={setSelectedImageIndex}
-          onOpenLightbox={() => setIsLightboxOpen(true)}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-6">
-            <DetailSpecs property={property} />
-            <DetailLegalStatus property={property} />
-            <DetailFinancialTerms property={property} />
-            <DetailDescription property={property} />
-            <DetailLocation
-              location={property.location}
-              title={property.title}
-              price={property.price}
-              currentPropertyId={property.id}
-              similarProperties={similarProperties}
-            />
-          </div>
-
-          <div className="lg:col-span-4">
-            <DetailSidebar
-              property={property}
-              ownerProfile={ownerProfile}
-              isOwnerLoading={isOwnerLoading}
-              ownerError={ownerError}
-              onOpenVisitModal={() => setIsVisitModalOpen(true)}
-              onOpenBookingModal={() => setIsBookingModalOpen(true)}
-              onOpenDirectChat={() => setIsDirectChatOpen(true)}
-              onBookingSummaryChange={setBookingSummary}
-            />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-6">
+          <DetailSpecs property={property} />
+          <DetailLegalStatus property={property} />
+          <DetailFinancialTerms property={property} />
+          <DetailDescription property={property} />
+          <DetailLocation
+            location={property.location}
+            title={property.title}
+            price={property.price}
+            currentPropertyId={property.id}
+            similarProperties={similarProperties}
+          />
         </div>
 
-        <DetailSimilar similarProperties={similarProperties} />
-      </main>
+        <div className="lg:col-span-4">
+          <DetailSidebar
+            property={property}
+            ownerProfile={ownerProfile}
+            isOwnerLoading={isOwnerLoading}
+            ownerError={ownerError}
+            onOpenVisitModal={() => setIsVisitModalOpen(true)}
+            onOpenBookingModal={() => setIsBookingModalOpen(true)}
+            onOpenDirectChat={() => setIsDirectChatOpen(true)}
+            onBookingSummaryChange={setBookingSummary}
+          />
+        </div>
+      </div>
 
-      <OlmaImmoBottomNav />
+      <DetailSimilar similarProperties={similarProperties} />
 
       {/* Lightbox Modal */}
       <ImageGalleryLightbox
@@ -239,6 +230,6 @@ export const PropertyDetail: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </OlmaImmoShell>
   );
 };

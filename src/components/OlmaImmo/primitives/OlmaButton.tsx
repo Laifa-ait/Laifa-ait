@@ -62,8 +62,11 @@ const radiusStyles: Record<OlmaButtonRadius, string> = {
   full: 'rounded-full',
 };
 
-export const OlmaButton = React.forwardRef(
-  <E extends React.ElementType = 'button'>(
+export const OlmaButton = React.forwardRef<
+  HTMLButtonElement,
+  OlmaButtonProps<'button'>
+>(
+  (
     {
       as,
       variant = 'primary',
@@ -79,10 +82,10 @@ export const OlmaButton = React.forwardRef(
       children,
       type,
       ...props
-    }: OlmaButtonProps<E>,
-    ref: React.Ref<HTMLElement>
+    },
+    ref
   ) => {
-    const Component = as || 'button';
+    const Component = (as || 'button') as React.ElementType;
     const isButtonTag = Component === 'button';
     const isDisabled = disabled || loading;
 

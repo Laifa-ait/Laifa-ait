@@ -91,15 +91,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       className={`min-h-screen overflow-x-clip w-full max-w-full text-zinc-900 font-sans selection:bg-rose-200 pb-0 sm:pb-0 ${i18n.language === "ar" ? "rtl" : "ltr"}`}
       dir={i18n.language === "ar" ? "rtl" : "ltr"}
     >
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] bg-white text-zinc-900 px-4 py-2 font-medium rounded-lg shadow-lg border border-zinc-200 outline-none focus:ring-2 focus:ring-teal-500">
-        Aller au contenu principal
-      </a>
+      {!isImmoPage && (
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] bg-white text-zinc-900 px-4 py-2 font-medium rounded-lg shadow-lg border border-zinc-200 outline-none focus:ring-2 focus:ring-teal-500">
+          Aller au contenu principal
+        </a>
+      )}
 
       {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && <Navbar />}
 
-      <main id="main-content" className={`min-h-[calc(100vh-200px)] relative ${isBricolagePage ? 'pb-16 md:pb-0' : ''}`}>
-        {children}
-      </main>
+      {isImmoPage ? (
+        <div id="main-content" className="min-h-screen relative">
+          {children}
+        </div>
+      ) : (
+        <main id="main-content" className={`min-h-[calc(100vh-200px)] relative ${isBricolagePage ? 'pb-16 md:pb-0' : ''}`}>
+          {children}
+        </main>
+      )}
 
       {isBricolagePage && <ArtisanMobileBottomNav />}
 

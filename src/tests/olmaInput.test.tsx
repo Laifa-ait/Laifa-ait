@@ -257,15 +257,15 @@ describe('OlmaInput Primitive Suite', () => {
   });
 
   it('17. forwards ref correctly to HTMLInputElement', () => {
-    let inputRef: HTMLInputElement | null = null;
+    const inputRef = React.createRef<HTMLInputElement>();
     act(() => {
       root?.render(
-        <OlmaInput ref={(node) => { inputRef = node; }} id="input-ref" defaultValue="Initial Focus" />
+        <OlmaInput ref={inputRef} id="input-ref" defaultValue="Initial Focus" />
       );
     });
 
-    expect(inputRef).not.toBeNull();
-    expect(inputRef?.id).toBe('input-ref');
-    expect(inputRef?.value).toBe('Initial Focus');
+    expect(inputRef.current).not.toBeNull();
+    expect(inputRef.current?.id).toBe('input-ref');
+    expect(inputRef.current?.value).toBe('Initial Focus');
   });
 });

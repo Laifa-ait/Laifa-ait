@@ -215,18 +215,18 @@ describe('OlmaSelect Primitive Suite', () => {
   });
 
   it('9. forwards ref to HTMLSelectElement', () => {
-    let selectRef: HTMLSelectElement | null = null;
+    const selectRef = React.createRef<HTMLSelectElement>();
     act(() => {
       root?.render(
-        <OlmaSelect ref={(node) => { selectRef = node; }} id="sel-ref" defaultValue="hydra">
+        <OlmaSelect ref={selectRef} id="sel-ref" defaultValue="hydra">
           <option value="hydra">Hydra</option>
           <option value="kuba">Kouba</option>
         </OlmaSelect>
       );
     });
 
-    expect(selectRef).not.toBeNull();
-    expect(selectRef?.value).toBe('hydra');
+    expect(selectRef.current).not.toBeNull();
+    expect(selectRef.current?.value).toBe('hydra');
   });
 
   it('10. renders placeholder option correctly', () => {

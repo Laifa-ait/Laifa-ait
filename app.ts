@@ -47,11 +47,10 @@ if (process.env.SENTRY_DSN) {
 export const app = express();
 
 // Express running behind Cloud Run / Nginx reverse proxy (1 hop).
-// Setting trust proxy to 1 trusts the immediate fronting proxy, allowing Express to:
-// 1. Correctly populate `req.ip` from the rightmost client IP in `X-Forwarded-For` (preventing IP spoofing).
-// 2. Derive `req.protocol` from `X-Forwarded-Proto` (for accurate HTTPS detection).
-// 3. Ensure rate-limiting middleware operates on real client IPs rather than proxy IPs.
 app.set("trust proxy", 1);
+
+// Health Probes (Live & Ready) - Mounted FIRST for immediate, non-blocking Cloud Run health checks
+app.use(healthRouter);
 
 // Security & Rate Limiting Middlewares (Active by default across all environments)
 // SKIP_RATE_LIMITS is strictly ignored in production and development to ensure fail-safe operation.
@@ -85,14 +84,20 @@ app.use(optionalAuthenticateToken);
 app.get("/api/v1/csrf-token", getCsrfTokenHandler);
 app.use("/api", csrfProtection);
 
-// Health & Swagger Documentation
-app.use(healthRouter);
-const openApiDoc = generateOpenApiSpec();
-app.use(
-  "/api-docs",
-  ...(swaggerUi.serve as unknown as express.RequestHandler[]),
-  swaggerUi.setup(openApiDoc) as unknown as express.RequestHandler
-);
+// Swagger Documentation (Lazy Loaded)
+let swaggerMiddleware: express.RequestHandler | null = null;
+app.use("/api-docs", (req: Request, res: Response, next: NextFunction) => {
+  if (!swaggerMiddleware) {
+    const openApiDoc = generateOpenApiSpec();
+    swaggerMiddleware = swaggerUi.setup(openApiDoc) as unknown as express.RequestHandler;
+  }
+  return (swaggerUi.serve as unknown as express.RequestHandler)(req, res, () => {
+    if (swaggerMiddleware) {
+      return swaggerMiddleware(req, res, next);
+    }
+    return next();
+  });
+});
 
 // -----------------------------------------------------------------------------
 // OLMART API GATEWAY ROUTER PIPELINE

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { OlmaImmoNavbar } from '../../components/OlmaImmo/OlmaImmoNavbar';
-import { OlmaImmoBottomNav } from '../../components/OlmaImmo/OlmaImmoBottomNav';
+import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
 import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
 import { InitiateConversationDTO } from '../../types/messaging';
@@ -124,17 +123,14 @@ export const PropertyOwnerDashboard: React.FC = () => {
     .reduce((acc, b) => acc + (b.totalPriceDZD || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-slate-900 flex flex-col font-sans pb-24 md:pb-12">
-      <OlmaImmoNavbar />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-        <OwnerHeaderStats
-          propertiesCount={properties.length}
-          totalViews={totalViews}
-          visitsCount={visits.length}
-          bookingsCount={bookings.length}
-          totalRevenueDZD={totalRevenue}
-        />
+    <OlmaImmoShell className="py-8 space-y-8">
+      <OwnerHeaderStats
+        propertiesCount={properties.length}
+        totalViews={totalViews}
+        visitsCount={visits.length}
+        bookingsCount={bookings.length}
+        totalRevenueDZD={totalRevenue}
+      />
 
         <OwnerProBadge />
 
@@ -215,17 +211,14 @@ export const PropertyOwnerDashboard: React.FC = () => {
             }}
           />
         )}
-      </main>
 
-      <OlmaImmoBottomNav />
-
-      {isChatOpen && (
-        <UnifiedMessagingDrawer
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          initialContext={chatContext}
-        />
-      )}
-    </div>
-  );
-};
+        {isChatOpen && (
+          <UnifiedMessagingDrawer
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            initialContext={chatContext}
+          />
+        )}
+      </OlmaImmoShell>
+    );
+  };

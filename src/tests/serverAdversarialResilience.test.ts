@@ -8,6 +8,7 @@ import { app } from "../../app";
 import { isFrontendReady, setStaticStateForTesting, validateProductionHtmlTemplate } from "../services/ViteStaticService";
 import { stopProductPublisherWorker } from "../workers/productPublisher";
 import { stopProductCacheCleanupTimer } from "../services/ProductSeoService";
+import { stopServerForTesting } from "../../server";
 
 describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resilience & Node Lifecycle", () => {
   const originalEnv = process.env.NODE_ENV;
@@ -16,11 +17,12 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     process.env.NODE_ENV = originalEnv;
     setStaticStateForTesting(false, "");
     stopProductPublisherWorker();
     stopProductCacheCleanupTimer();
+    await stopServerForTesting();
   });
 
   describe("1. Pure Express App Isolation & Import Safety (Bootstrap Test 1)", () => {

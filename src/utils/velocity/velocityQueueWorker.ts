@@ -75,12 +75,14 @@ export async function reconcileVelocityJobs(): Promise<void> {
 }
 
 export function startVelocityWorker(intervalMs = 300000): void {
-  // Run initial reconciliation on boot
-  reconcileVelocityJobs().catch((err) => {
-    safeLogger.error("Failed to run initial velocity reconciliation on boot", {
-      err: err instanceof Error ? err.message : String(err)
+  // Run initial reconciliation on boot (skip in unit test environment)
+  if (process.env.NODE_ENV !== "test") {
+    reconcileVelocityJobs().catch((err) => {
+      safeLogger.error("Failed to run initial velocity reconciliation on boot", {
+        err: err instanceof Error ? err.message : String(err)
+      });
     });
-  });
+  }
 
   if (velocityWorkerInterval) return;
   velocityWorkerInterval = setInterval(() => {
