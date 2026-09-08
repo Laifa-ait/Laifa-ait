@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Search, MapPin, SlidersHorizontal, X, Compass } from 'lucide-react';
 import { PropertyType, ListingType } from '../../types/realEstate';
 import { FilterState } from './SearchFilters';
-import { AdvancedFiltersPanel } from './AdvancedFiltersPanel';
 import { HeroPopularDestinations } from './HeroPopularDestinations';
 import { HeroListingTabs } from './HeroListingTabs';
+import { OlmaImmoFilterModal } from './filters/OlmaImmoFilterModal';
 
 interface OlmaImmoHeroProps {
   filters: FilterState;
@@ -28,7 +28,7 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
   onFilterChange,
   onSearchSubmit,
 }) => {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(filters.wilaya || filters.commune || '');
 
   const handleSearchChange = (val: string) => {
@@ -64,6 +64,20 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
       listingType: type,
     });
   };
+
+  const activeFiltersCount = [
+    filters.listingType,
+    filters.propertyType,
+    filters.wilaya,
+    filters.commune,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minRooms,
+    filters.minArea,
+    filters.hasActeNotarie,
+    filters.hasLivretFoncier,
+    filters.legalPaperType,
+  ].filter(Boolean).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-4 pb-2">
@@ -105,7 +119,7 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Wilaya, commune (ex: Alger, Oran, Hydra, Bir Mourad Raïs)..."
+                  placeholder="Wilaya, commune (ex: Alger, Oran, Hydra)..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -152,15 +166,22 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
             <div className="flex items-center gap-2 justify-end shrink-0 pt-1 sm:pt-0">
               <button
                 type="button"
-                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                className={`p-3 rounded-xl sm:rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all duration-200 shrink-0 active:scale-95 ${
-                  isFiltersOpen
-                    ? 'bg-[#0D281E] text-[#EBDCB8] shadow-md'
+                onClick={() => setIsFilterModalOpen(true)}
+                className={`px-3 py-2.5 rounded-xl sm:rounded-full text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 shrink-0 active:scale-95 ${
+                  activeFiltersCount > 0
+                    ? 'bg-[#0D281E] text-[#EBDCB8] shadow-md border border-[#EBDCB8]/30'
                     : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border border-[#E6E0D4]'
                 }`}
                 title="Filtres avancés"
+                aria-label="Ouvrir les filtres avancés"
               >
                 <SlidersHorizontal className="w-4 h-4" />
+                <span>Filtres</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-amber-400 text-[#0D281E] text-[10px] font-extrabold flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </button>
 
               <button
@@ -180,56 +201,19 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
             onSelectDestination={handleQuickDestination}
           />
 
-          {isFiltersOpen && (
-            <div className="mt-4 bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-[#E6E0D4] text-stone-800 animate-in fade-in slide-in-from-top-3 duration-200">
-              <AdvancedFiltersPanel
-                roomsFilter={filters.minRooms || 'all'}
-                setRoomsFilter={(r) => onFilterChange({ ...filters, minRooms: r === 'all' ? undefined : r })}
-                selectedAmenities={filters.features || []}
-                toggleAmenity={(a) => {
-                  const feats = filters.features || [];
-                  onFilterChange({
-                    ...filters,
-                    features: feats.includes(a) ? feats.filter((f) => f !== a) : [...feats, a],
-                  });
-                }}
-                areaRange={[filters.minArea || 0, 500]}
-                setAreaRange={([min]) => onFilterChange({ ...filters, minArea: min === 0 ? undefined : min })}
-                legalPaperFilter={filters.legalPaperType || 'all'}
-                setLegalPaperFilter={(paper) =>
-                  onFilterChange({
-                    ...filters,
-                    legalPaperType: paper === 'all' ? undefined : paper,
-                  })
-                }
-                hasActeNotarie={filters.hasActeNotarie}
-                hasLivretFoncier={filters.hasLivretFoncier}
-                onToggleActeNotarie={(checked) =>
-                  onFilterChange({
-                    ...filters,
-                    hasActeNotarie: checked ? true : undefined,
-                  })
-                }
-                onToggleLivretFoncier={(checked) =>
-                  onFilterChange({
-                    ...filters,
-                    hasLivretFoncier: checked ? true : undefined,
-                  })
-                }
-                onReset={() =>
-                  onFilterChange({
-                    ...filters,
-                    minRooms: undefined,
-                    features: undefined,
-                    minArea: undefined,
-                    legalPaperType: undefined,
-                    hasActeNotarie: undefined,
-                    hasLivretFoncier: undefined,
-                  })
-                }
-              />
-            </div>
-          )}
+          <OlmaImmoFilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            filters={filters}
+            onApplyFilters={(newFilters) => {
+              onFilterChange(newFilters);
+              setTimeout(() => onSearchSubmit(), 50);
+            }}
+            onResetFilters={() => {
+              onFilterChange({ sort: 'recent' });
+              setTimeout(() => onSearchSubmit(), 50);
+            }}
+          />
         </div>
       </div>
     </div>

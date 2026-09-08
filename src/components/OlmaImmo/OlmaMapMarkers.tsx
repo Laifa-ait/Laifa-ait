@@ -47,6 +47,9 @@ export const OlmaMapMarkers: React.FC<OlmaMapMarkersProps> = ({
           <div
             key={p.id}
             style={{ left: `${Math.round(screenX)}px`, top: `${Math.round(screenY)}px` }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+            }}
             onClick={(e) => {
               e.stopPropagation();
               if (onSelectProperty) onSelectProperty(p.id);

@@ -144,3 +144,93 @@ export function formatPriceShort(price: number, period?: string): string {
   }
   return `${price} DZD${suffix}`;
 }
+
+/**
+ * Calculates new center GPS when zooming around a specific screen coordinate (e.g. mouse cursor or pinch center).
+ */
+export function calculateZoomAnchorCenter(
+  centerLat: number,
+  centerLng: number,
+  currentZoom: number,
+  targetZoom: number,
+  screenX: number,
+  screenY: number,
+  containerWidth: number,
+  containerHeight: number
+): GpsCoord {
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    return { lat: centerLat, lng: centerLng };
+  }
+
+  const offsetX = screenX - containerWidth / 2;
+  const offsetY = screenY - containerHeight / 2;
+
+  const currentCenterProj = project(centerLat, centerLng, currentZoom);
+  const anchorWorldX = currentCenterProj.x + offsetX;
+  const anchorWorldY = currentCenterProj.y + offsetY;
+  const anchorGps = unproject(anchorWorldX, anchorWorldY, currentZoom);
+
+  const newAnchorProj = project(anchorGps.lat, anchorGps.lng, targetZoom);
+  const newCenterWorldX = newAnchorProj.x - offsetX;
+  const newCenterWorldY = newAnchorProj.y - offsetY;
+
+  return unproject(newCenterWorldX, newCenterWorldY, targetZoom);
+}
+
+/**
+ * Automatically fits map center and zoom level to encompass all provided GPS coordinates.
+ */
+export function fitBoundsToCoordinates(
+  coords: Array<{ lat: number; lng: number }>,
+  width: number,
+  height: number,
+  padding: number = 70
+): { centerLat: number; centerLng: number; zoom: number } {
+  const validCoords = coords.filter(
+    (c) => typeof c.lat === 'number' && typeof c.lng === 'number' && !isNaN(c.lat) && !isNaN(c.lng) && (c.lat !== 0 || c.lng !== 0)
+  );
+
+  if (validCoords.length === 0) {
+    return { centerLat: 36.7538, centerLng: 3.0588, zoom: 12 };
+  }
+  if (validCoords.length === 1) {
+    return { centerLat: validCoords[0].lat, centerLng: validCoords[0].lng, zoom: 14 };
+  }
+
+  let minLat = 90;
+  let maxLat = -90;
+  let minLng = 180;
+  let maxLng = -180;
+
+  for (const c of validCoords) {
+    if (c.lat < minLat) minLat = c.lat;
+    if (c.lat > maxLat) maxLat = c.lat;
+    if (c.lng < minLng) minLng = c.lng;
+    if (c.lng > maxLng) maxLng = c.lng;
+  }
+
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+
+  const availW = Math.max(80, width - padding * 2);
+  const availH = Math.max(80, height - padding * 2);
+
+  const pMin = project(minLat, minLng, 0);
+  const pMax = project(maxLat, maxLng, 0);
+
+  const deltaX = Math.max(Math.abs(pMax.x - pMin.x), 0.001);
+  const deltaY = Math.max(Math.abs(pMax.y - pMin.y), 0.001);
+
+  const zoomX = Math.log2(availW / deltaX);
+  const zoomY = Math.log2(availH / deltaY);
+
+  const calculatedZoom = Math.min(zoomX, zoomY);
+  const clampedZoom = Math.max(5, Math.min(15, Math.floor(calculatedZoom * 10) / 10));
+
+  return {
+    centerLat,
+    centerLng,
+    zoom: clampedZoom,
+  };
+}
+

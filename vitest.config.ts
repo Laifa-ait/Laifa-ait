@@ -17,14 +17,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        isolate: true,
-        singleFork: false,
-      },
-    },
     maxWorkers: 1,
     fileParallelism: false,
+    isolate: false,
     coverage: {
       provider: 'v8',
       all: false,

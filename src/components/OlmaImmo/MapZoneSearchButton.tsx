@@ -9,6 +9,7 @@ export const MapZoneSearchButton: React.FC<MapZoneSearchButtonProps> = ({ onSear
   return (
     <button
       type="button"
+      onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
         onSearchZone();

@@ -1,10 +1,15 @@
 import React from 'react';
-import { DollarSign, Droplets, Zap, Building, Handshake, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { DollarSign, Droplets, Zap, Building, Handshake, CheckCircle2, AlertCircle, Sparkles, Shield } from 'lucide-react';
 import { Property } from '../../../types/realEstate';
 
 interface DetailFinancialTermsProps {
   property: Property;
 }
+
+const formatDZD = (amount: number): string => {
+  if (typeof amount !== 'number' || isNaN(amount)) return '0';
+  return new Intl.NumberFormat('fr-DZ', { maximumFractionDigits: 0 }).format(amount);
+};
 
 export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ property }) => {
   const isRentLong = property.listingType === 'rent_long';
@@ -29,7 +34,7 @@ export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ prop
               Conditions Financières & Commerciales
             </h3>
             <p className="text-[11px] text-slate-500">
-              Modalités de paiement et charges incluses
+              Modalités indicatives de paiement et charges incluses
             </p>
           </div>
         </div>
@@ -38,7 +43,7 @@ export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ prop
         {isNegotiable ? (
           <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-full text-xs font-bold flex items-center gap-1">
             <Handshake className="w-3.5 h-3.5" />
-            <span>Négociable (Khasem 🤝)</span>
+            <span>Négociable</span>
           </span>
         ) : (
           <span className="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-semibold">
@@ -63,21 +68,21 @@ export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ prop
             <div className="p-2.5 bg-white rounded-xl border border-[#e8e2d4]">
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Loyer Mensuel</span>
               <span className="text-xs sm:text-sm font-black text-[#1a3831]">
-                {new Intl.NumberFormat('fr-DZ').format(property.price)} DA
+                {formatDZD(property.price)} DA
               </span>
             </div>
 
             <div className="p-2.5 bg-white rounded-xl border border-[#e8e2d4]">
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Montant Avance ({advanceMonths}M)</span>
               <span className="text-xs sm:text-sm font-black text-emerald-800">
-                {new Intl.NumberFormat('fr-DZ').format(advanceTotal)} DA
+                {formatDZD(advanceTotal)} DA
               </span>
             </div>
 
             <div className="p-2.5 bg-white rounded-xl border border-[#e8e2d4] col-span-2 sm:col-span-1">
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Caution ({depositMonths}M)</span>
               <span className="text-xs sm:text-sm font-black text-amber-800">
-                {new Intl.NumberFormat('fr-DZ').format(depositTotal)} DA
+                {formatDZD(depositTotal)} DA
               </span>
             </div>
           </div>
@@ -89,7 +94,7 @@ export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ prop
                 <span>Total exigé à la remise des clés :</span>
               </span>
               <span className="text-sm font-black text-emerald-900">
-                {new Intl.NumberFormat('fr-DZ').format(signatureTotal)} DA
+                {formatDZD(signatureTotal)} DA
               </span>
             </div>
           )}
@@ -157,6 +162,14 @@ export const DetailFinancialTerms: React.FC<DetailFinancialTermsProps> = ({ prop
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reassurance no online payment */}
+      <div className="p-3.5 rounded-2xl bg-[#faf8f5] border border-[#e8e2d4] flex items-center gap-2.5 text-xs text-stone-600">
+        <Shield className="w-4 h-4 text-emerald-700 shrink-0" />
+        <span>
+          Règlement de gré à gré ou par chèque de banque certifié lors de la signature chez le notaire. Aucun acompte n'est perçu en ligne.
+        </span>
       </div>
     </div>
   );

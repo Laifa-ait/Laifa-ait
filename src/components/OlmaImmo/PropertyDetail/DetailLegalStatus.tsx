@@ -14,24 +14,31 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-5">
-      {/* Header with Title & Certified Badge */}
+      {/* Header with Title & Verification status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#f0eae0]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
             <ShieldCheck className="w-5 h-5 text-emerald-700" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
-                Statut Juridique du Bien
+                Documents & Statut Foncier
               </h2>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-2xs">
-                <CheckCircle2 className="w-3 h-3 text-emerald-100" />
-                Certifié DZ
-              </span>
+              {property.isLegalVerified ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-2xs">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-100" />
+                  Vérifié par Olmart
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-stone-100 text-stone-700 border border-stone-200 shadow-2xs">
+                  <FileCheck className="w-3 h-3 text-stone-500" />
+                  Déclaratif
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Transparence administrative et conformité cadastrale selon la législation algérienne.
+              Transparence administrative et titres déclarés selon le droit foncier algérien.
             </p>
           </div>
         </div>
@@ -39,7 +46,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
         {property.isLegalVerified && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold self-start sm:self-auto">
             <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-            <span>Documents validés par Olmart</span>
+            <span>Documents vérifiés par l'équipe</span>
           </div>
         )}
       </div>
@@ -77,11 +84,18 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
                       </div>
                     </div>
 
-                    {/* Certified Green Badge */}
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-2xs shrink-0">
-                      <ShieldCheck className="w-3 h-3 text-emerald-200" />
-                      Certifié
-                    </span>
+                    {/* Declared vs Verified Badge */}
+                    {property.isLegalVerified ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-2xs shrink-0">
+                        <ShieldCheck className="w-3 h-3 text-emerald-200" />
+                        Vérifié
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-300 shrink-0">
+                        <FileCheck className="w-3 h-3 text-stone-500" />
+                        Déclaré
+                      </span>
+                    )}
                   </div>
 
                   {/* Legal Scope & Advice */}
@@ -91,7 +105,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
                       {info.legalScope}
                     </p>
                     <p className="text-emerald-900 bg-emerald-50/70 p-2 rounded-xl border border-emerald-200/60 leading-snug">
-                      <strong className="text-emerald-950 font-semibold">Recommandation Olmart : </strong>
+                      <strong className="text-emerald-950 font-semibold">Conseil aux acquéreurs : </strong>
                       {info.buyerAdvice}
                     </p>
                   </div>
@@ -104,7 +118,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
         <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-start gap-3 text-xs text-amber-900">
           <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
           <p>
-            Aucun document spécifique n&apos;a été déclaré pour ce bien. Nous vous recommandons de demander au propriétaire la consultation des actes lors de la visite.
+            Aucun document spécifique n'a été déclaré pour ce bien. Nous vous recommandons d'examiner les titres originaux lors de la visite.
           </p>
         </div>
       )}
@@ -114,10 +128,10 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }
         <Scale className="w-5 h-5 text-[#1a3831] shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs text-slate-700">
           <h5 className="font-bold text-[#1a3831]">
-            Garantie Notariale & Sécurité Transactionnelle Algérienne
+            Cadre Légal Notarié & Information Juridique
           </h5>
           <p className="text-slate-600 leading-relaxed text-[11px]">
-            Conformément à l&apos;article 324 bis 1 du Code civil algérien, tout transfert de propriété immobilière doit obligatoirement être dressé en la forme notariée et publié à la Conservation Foncière pour être opposable aux tiers. Olmart encourage systématiquement la vérification notariale avant tout versement d&apos;acompte.
+            Conformément à l'article 324 bis 1 du Code civil algérien, tout transfert de propriété immobilière doit obligatoirement être dressé en la forme notariée et publié à la Conservation Foncière pour être opposable aux tiers. Les informations présentées ci-dessus ont une valeur déclarative et ne constituent pas un avis juridique. Olma Immo recommande systématiquement la consultation d'une étude notariale avant tout engagement financier.
           </p>
         </div>
       </div>

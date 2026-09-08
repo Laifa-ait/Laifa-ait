@@ -26,13 +26,26 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
       <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xs border border-[#e8e2d4]">
         {/* Main Big Photo (Left - 2 Cols) */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-label={`Agrandir la photo principale : ${title}`}
           onClick={() => {
             onSelectImage(0);
             onOpenLightbox();
           }}
-          className="col-span-2 relative h-full bg-slate-900 group cursor-pointer overflow-hidden"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelectImage(0);
+              onOpenLightbox();
+            }
+          }}
+          className="col-span-2 relative h-full bg-slate-900 group cursor-pointer overflow-hidden focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
         >
-          <img loading="lazy" decoding="async" src={safeImages[0]}
+          <img
+            loading="lazy"
+            decoding="async"
+            src={safeImages[0]}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -49,13 +62,26 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
             return (
               <div
                 key={idx}
+                role="button"
+                tabIndex={0}
+                aria-label={`Agrandir la photo ${idx + 1}`}
                 onClick={() => {
                   onSelectImage(idx < safeImages.length ? idx : 0);
                   onOpenLightbox();
                 }}
-                className="relative h-full bg-slate-900 group cursor-pointer overflow-hidden rounded-xl"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectImage(idx < safeImages.length ? idx : 0);
+                    onOpenLightbox();
+                  }
+                }}
+                className="relative h-full bg-slate-900 group cursor-pointer overflow-hidden rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
               >
-                <img loading="lazy" decoding="async" src={img}
+                <img
+                  loading="lazy"
+                  decoding="async"
+                  src={img}
                   alt={`${title} photo ${idx + 1}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />

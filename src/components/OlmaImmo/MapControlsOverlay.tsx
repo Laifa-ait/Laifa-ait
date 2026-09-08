@@ -25,7 +25,10 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
   recenterTitle = 'Recentrer sur le bien',
 }) => {
   return (
-    <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2 pointer-events-none">
+    <div
+      className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2 pointer-events-none"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       {/* Top action row */}
       <div className="flex items-center gap-1.5 pointer-events-auto">
         {onRecenter && (

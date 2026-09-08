@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
 import { Property, PropertyMapResult } from '../../types/realEstate';
 import { OlmaVectorMap } from './OlmaVectorMap';
 import { MapFilterCategory } from './MapCategoryFilterBar';
@@ -47,19 +46,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   return (
     <div className={containerClasses}>
-      {allowFullscreenToggle && (
-        <div className="absolute top-3 right-3 z-30 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-full bg-[#0D281E] text-[#EBDCB8] shadow-md hover:bg-[#153e31] transition cursor-pointer"
-            title={isFullscreen ? 'Quitter le plein écran' : 'Agrandir en plein écran'}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-        </div>
-      )}
-
       <OlmaVectorMap
         properties={properties}
         selectedPropertyId={selectedPropertyId}
@@ -74,6 +60,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         onFilterChange={onFilterChange}
         showFilters={showFilters}
         showPreviewCard={showPreviewCard}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        allowFullscreenToggle={allowFullscreenToggle}
       />
     </div>
   );

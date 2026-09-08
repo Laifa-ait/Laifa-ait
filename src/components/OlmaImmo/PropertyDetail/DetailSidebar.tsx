@@ -3,6 +3,7 @@ import { Calendar, Phone, MessageSquare } from 'lucide-react';
 import { Property, PublicOwnerProfile } from '../../../types/realEstate';
 import { OwnerTrustCard } from '../OwnerTrustCard';
 import { ShortTermBookingCalendar } from '../ShortTermBookingCalendar';
+import { PropertyPrice } from '../primitives/PropertyPrice';
 
 export interface BookingSummaryData {
   startDate: string;
@@ -37,7 +38,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
   onOpenDirectChat,
   onBookingSummaryChange,
 }) => {
-  const isShortTerm = property.listingType === 'rent_short';
+  const isShortTerm = property.listingType === 'rent_short' || (property.listingType as string) === 'short_term';
 
   return (
     <div className="space-y-6 sticky top-24">
@@ -45,14 +46,15 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
       {isShortTerm ? (
         <div className="bg-white rounded-3xl p-6 border border-[#e8e2d4] shadow-md space-y-5">
           <div className="flex items-center justify-between pb-4 border-b border-[#f0eae0]">
-            <div>
-              <span className="text-2xl font-black text-[#1a3831]">
-                {new Intl.NumberFormat('fr-DZ').format(property.price)} DA
-              </span>
-              <span className="text-xs text-slate-500 font-medium"> / nuit</span>
-            </div>
+            <PropertyPrice
+              price={property.price}
+              period="night"
+              listingType={property.listingType}
+              size="lg"
+              variant="mineral"
+            />
             <span className="px-3 py-1 bg-emerald-50 text-emerald-800 font-bold text-xs rounded-full border border-emerald-200">
-              Réservation instantanée
+              Réservation directe
             </span>
           </div>
 
@@ -70,21 +72,28 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
             className="w-full py-4 px-6 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
             <Calendar className="w-4 h-4 text-[#ebdcb8]" />
-            <span>Réserver ce séjour</span>
+            <span>Demande de réservation</span>
           </button>
+
+          <p className="text-[11px] text-stone-500 text-center font-medium">
+            Règlement direct lors de l'arrivée ou selon accord avec l'hôte. Aucun prélèvement bancaire en ligne sur Olmart.
+          </p>
         </div>
       ) : (
         /* Buy / Long Rent Action Card */
         <div className="bg-white rounded-3xl p-6 border border-[#e8e2d4] shadow-md space-y-4">
           <div className="space-y-1 pb-4 border-b border-[#f0eae0]">
             <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
-              Transaction sécurisée
+              Mise en relation directe
             </span>
-            <div className="text-2xl font-black text-[#1a3831]">
-              {new Intl.NumberFormat('fr-DZ').format(property.price)} DA
-              {property.pricePeriod === 'month' && (
-                <span className="text-xs text-slate-500 font-medium"> / mois</span>
-              )}
+            <div>
+              <PropertyPrice
+                price={property.price}
+                period={property.pricePeriod}
+                listingType={property.listingType}
+                size="lg"
+                variant="mineral"
+              />
             </div>
           </div>
 
@@ -123,9 +132,13 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
               className="py-3 px-3 bg-[#faf8f5] hover:bg-[#f0eae0] text-[#1a3831] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-[#e8e2d4] transition cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Contacter l'annonceur</span>
+              <span>Message Olmart</span>
             </button>
           </div>
+
+          <p className="text-[11px] text-stone-500 text-center font-medium pt-1">
+            Les transactions immobilières s'effectuent par acte notarié ou bail légal. Olmart ne perçoit aucun paiement de loyer ou de vente en ligne.
+          </p>
         </div>
       )}
 

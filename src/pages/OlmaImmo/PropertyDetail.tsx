@@ -20,6 +20,7 @@ import { DetailDescription } from '../../components/OlmaImmo/PropertyDetail/Deta
 import { DetailLocation } from '../../components/OlmaImmo/PropertyDetail/DetailLocation';
 import { DetailSidebar } from '../../components/OlmaImmo/PropertyDetail/DetailSidebar';
 import { DetailSimilar } from '../../components/OlmaImmo/PropertyDetail/DetailSimilar';
+import { DetailMobileActionBar } from '../../components/OlmaImmo/PropertyDetail/DetailMobileActionBar';
 
 export const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -135,7 +136,18 @@ export const PropertyDetail: React.FC = () => {
   };
 
   return (
-    <OlmaImmoShell className="py-6 space-y-8">
+    <OlmaImmoShell
+      className="py-6 space-y-8 pb-24 lg:pb-8"
+      bottomNav={
+        <DetailMobileActionBar
+          property={property}
+          ownerProfile={ownerProfile}
+          onOpenVisitModal={() => setIsVisitModalOpen(true)}
+          onOpenBookingModal={() => setIsBookingModalOpen(true)}
+          onOpenDirectChat={() => setIsDirectChatOpen(true)}
+        />
+      }
+    >
       <DetailHeader
         property={property}
         isFav={isFav}

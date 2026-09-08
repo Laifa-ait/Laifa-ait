@@ -15,6 +15,7 @@ interface OlmaImmoPropertiesSectionProps {
   viewMode: 'split' | 'grid' | 'list' | 'map';
   onViewModeChange?: (mode: 'split' | 'grid' | 'list' | 'map') => void;
   isLoading: boolean;
+  isSearchingMap?: boolean;
   cardRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   onBoundsChange: (bbox: string | null) => void;
   onResetFilters: () => void;
@@ -28,6 +29,7 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
   viewMode = 'split',
   onViewModeChange,
   isLoading,
+  isSearchingMap = false,
   cardRefs,
   onBoundsChange,
   onResetFilters,
@@ -51,7 +53,8 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
     }
   };
 
-  if (isLoading) {
+  // Only replace the whole screen with skeleton if we are in Grid mode on initial load
+  if (isLoading && activeView === 'grid') {
     return (
       <div className="space-y-6 my-6">
         <div className="flex items-center justify-between">
@@ -65,7 +68,8 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
     );
   }
 
-  if (properties.length === 0) {
+  // Only show the full screen empty state if we are in pure grid mode
+  if (properties.length === 0 && activeView === 'grid') {
     return (
       <OlmaSurface
         variant="default"
@@ -143,6 +147,28 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
               )}
             </button>
           </div>
+
+          {/* Searching / Updating indicator badge */}
+          {isSearchingMap && (
+            <div className="absolute top-4 right-16 z-30 bg-[#0D281E]/95 backdrop-blur-md text-[#EBDCB8] text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md border border-[#EBDCB8]/30 flex items-center gap-2 pointer-events-none animate-pulse">
+              <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
+              <span>Recherche en cours...</span>
+            </div>
+          )}
+
+          {/* Empty zone notification */}
+          {properties.length === 0 && !isLoading && !isSearchingMap && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-[#0D281E]/95 text-[#EBDCB8] backdrop-blur-md px-4 py-2 rounded-full text-xs font-medium shadow-xl border border-amber-400/40 flex items-center gap-2.5 pointer-events-auto">
+              <span>Aucun bien dans cette zone</span>
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="font-bold underline text-amber-300 hover:text-white transition cursor-pointer"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          )}
 
           <div className="w-full h-full relative">
             <InteractiveMap

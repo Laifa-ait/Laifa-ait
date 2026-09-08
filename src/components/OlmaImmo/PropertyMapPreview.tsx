@@ -61,6 +61,7 @@ export const PropertyMapPreview: React.FC<PropertyMapPreviewProps> = ({
 
   return (
     <div
+      onPointerDown={(e) => e.stopPropagation()}
       className={`bg-white rounded-2xl shadow-2xl border border-[#d8d2c4] overflow-hidden flex flex-col sm:flex-row w-full backdrop-blur-md bg-white/98 transition-all animate-in fade-in slide-in-from-bottom-2 duration-300 ${className}`}
     >
       {/* Thumbnail Container */}

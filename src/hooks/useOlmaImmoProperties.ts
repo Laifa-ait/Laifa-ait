@@ -1,38 +1,41 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Property, PropertyMapResult, ListingType } from '../types/realEstate';
+import { Property, PropertyMapResult } from '../types/realEstate';
 import { FilterState } from '../components/OlmaImmo/SearchFilters';
 import { apiGet } from '../lib/api';
 import { getFavoritePropertyIds } from '../utils/realEstateFavorites';
 import { safeLogger } from '../utils/logger';
+import { searchParamsToFilters, filtersToSearchParams } from '../utils/realEstateUrlParams';
 
 export function useOlmaImmoProperties() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const typeParam = searchParams.get('type') as ListingType | null;
-  const favsParam = searchParams.get('favorites') === 'true';
+  const parsedInitial = searchParamsToFilters(searchParams);
+  const [filters, setFiltersState] = useState<FilterState>(parsedInitial.filters);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(parsedInitial.showFavoritesOnly);
 
-  const [filters, setFilters] = useState<FilterState>({
-    sort: 'recent',
-    listingType: typeParam || undefined,
-  });
   const [properties, setProperties] = useState<Property[]>([]);
   const [mapResults, setMapResults] = useState<PropertyMapResult[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearchingMap, setIsSearchingMap] = useState(false);
   const [viewMode, setViewMode] = useState<'split' | 'grid' | 'list' | 'map'>('split');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(favsParam);
   const [favoritesList, setFavoritesList] = useState<string[]>(getFavoritePropertyIds());
   const [mapBounds, setMapBounds] = useState<string | null>(null);
 
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const isFirstLoadRef = useRef(true);
+  const prevMapBoundsRef = useRef(mapBounds);
+  const currentRequestIdRef = useRef(0);
 
+  // Sync state when URL searchParams change (browser back/forward button)
   useEffect(() => {
-    const t = searchParams.get('type') as ListingType | null;
-    const f = searchParams.get('favorites') === 'true';
-
-    setFilters((prev) => (prev.listingType !== (t || undefined) ? { ...prev, listingType: t || undefined } : prev));
-    setShowFavoritesOnly(f);
+    const { filters: nextFilters, showFavoritesOnly: nextFavs } = searchParamsToFilters(searchParams);
+    setFiltersState((prev) => {
+      const isDiff = JSON.stringify(prev) !== JSON.stringify(nextFilters);
+      return isDiff ? nextFilters : prev;
+    });
+    setShowFavoritesOnly(nextFavs);
   }, [searchParams]);
 
   useEffect(() => {
@@ -41,49 +44,115 @@ export function useOlmaImmoProperties() {
     return () => window.removeEventListener('olma_immo:favorites_updated', handleFavsUpdate);
   }, []);
 
-  const fetchProperties = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const queryParams = new URLSearchParams();
-      if (filters.listingType) queryParams.set('listingType', filters.listingType);
-      if (filters.propertyType) queryParams.set('propertyType', filters.propertyType);
-      if (filters.legalPaperType) queryParams.set('legalPaperType', filters.legalPaperType);
-      if (filters.hasActeNotarie) queryParams.set('hasActeNotarie', 'true');
-      if (filters.hasLivretFoncier) queryParams.set('hasLivretFoncier', 'true');
-      if (filters.wilaya) queryParams.set('wilaya', filters.wilaya);
-      if (filters.commune) queryParams.set('commune', filters.commune);
-      if (filters.minPrice !== undefined) queryParams.set('minPrice', String(filters.minPrice));
-      if (filters.maxPrice !== undefined) queryParams.set('maxPrice', String(filters.maxPrice));
-      if (filters.minRooms !== undefined) queryParams.set('minRooms', String(filters.minRooms));
-      if (filters.minArea !== undefined) queryParams.set('minArea', String(filters.minArea));
-      if (filters.sort) queryParams.set('sort', filters.sort);
-      if (mapBounds) queryParams.set('bbox', mapBounds);
-      queryParams.set('limit', '50');
+  const setFilters = useCallback(
+    (newFilters: FilterState) => {
+      setFiltersState(newFilters);
+      const nextParams = filtersToSearchParams(newFilters, showFavoritesOnly);
+      setSearchParams(nextParams, { replace: true });
+    },
+    [setSearchParams, showFavoritesOnly]
+  );
 
-      const [listRes, mapRes] = await Promise.all([
-        apiGet<{ success: boolean; data?: Property[] }>(`/api/v1/real-estate/properties?${queryParams.toString()}`),
-        apiGet<{ success: boolean; data?: PropertyMapResult[] }>(`/api/v1/real-estate/properties/map?${queryParams.toString()}`),
-      ]);
+  const removeFilter = useCallback(
+    (key: keyof FilterState) => {
+      const nextFilters = { ...filters };
+      delete nextFilters[key];
+      if (key === 'wilaya') {
+        delete nextFilters.commune;
+      }
+      setFilters(nextFilters);
+    },
+    [filters, setFilters]
+  );
 
-      if (listRes.success && listRes.data) {
-        setProperties(listRes.data);
+  const resetAllFilters = useCallback(() => {
+    const clean: FilterState = { sort: 'recent' };
+    setFiltersState(clean);
+    setShowFavoritesOnly(false);
+    setMapBounds(null);
+    const nextParams = filtersToSearchParams(clean, false);
+    setSearchParams(nextParams, { replace: true });
+  }, [setSearchParams]);
+
+  const fetchProperties = useCallback(
+    async (isMapBoundsUpdate = false) => {
+      const requestId = ++currentRequestIdRef.current;
+      if (isMapBoundsUpdate) {
+        setIsSearchingMap(true);
+      } else {
+        setIsLoading(true);
       }
-      if (mapRes.success && mapRes.data) {
-        setMapResults(mapRes.data);
+
+      try {
+        const queryParams = new URLSearchParams();
+        if (filters.listingType) queryParams.set('listingType', filters.listingType);
+        if (filters.propertyType) queryParams.set('propertyType', filters.propertyType);
+        if (filters.legalPaperType) queryParams.set('legalPaperType', filters.legalPaperType);
+        if (filters.hasActeNotarie) queryParams.set('hasActeNotarie', 'true');
+        if (filters.hasLivretFoncier) queryParams.set('hasLivretFoncier', 'true');
+        if (filters.wilaya) queryParams.set('wilaya', filters.wilaya);
+        if (filters.commune) queryParams.set('commune', filters.commune);
+        if (filters.minPrice !== undefined && filters.minPrice > 0) {
+          queryParams.set('minPrice', String(filters.minPrice));
+        }
+        if (filters.maxPrice !== undefined && filters.maxPrice > 0) {
+          queryParams.set('maxPrice', String(filters.maxPrice));
+        }
+        if (filters.minRooms !== undefined && filters.minRooms > 0) {
+          queryParams.set('minRooms', String(filters.minRooms));
+        }
+        if (filters.minArea !== undefined && filters.minArea > 0) {
+          queryParams.set('minArea', String(filters.minArea));
+        }
+        if (filters.sort) queryParams.set('sort', filters.sort);
+        if (mapBounds) queryParams.set('bbox', mapBounds);
+        queryParams.set('limit', '50');
+
+        const [listRes, mapRes] = await Promise.all([
+          apiGet<{ success: boolean; data?: Property[] }>(
+            `/api/v1/real-estate/properties?${queryParams.toString()}`
+          ),
+          apiGet<{ success: boolean; data?: PropertyMapResult[] }>(
+            `/api/v1/real-estate/properties/map?${queryParams.toString()}`
+          ),
+        ]);
+
+        // Discard stale responses to avoid race conditions
+        if (requestId !== currentRequestIdRef.current) return;
+
+        if (listRes.success && listRes.data) {
+          setProperties(listRes.data);
+        }
+        if (mapRes.success && mapRes.data) {
+          setMapResults(mapRes.data);
+        }
+      } catch (err) {
+        safeLogger.error('Failed to fetch real estate properties', {
+          err: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        if (requestId === currentRequestIdRef.current) {
+          setIsLoading(false);
+          setIsSearchingMap(false);
+          isFirstLoadRef.current = false;
+        }
       }
-    } catch (err) {
-      safeLogger.error('Failed to fetch real estate properties', { err: err instanceof Error ? err.message : String(err) });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, mapBounds]);
+    },
+    [filters, mapBounds]
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchProperties();
-    }, 300);
+    const isMapBoundsUpdate = prevMapBoundsRef.current !== mapBounds && !isFirstLoadRef.current;
+    prevMapBoundsRef.current = mapBounds;
+
+    const timer = setTimeout(
+      () => {
+        fetchProperties(isMapBoundsUpdate);
+      },
+      isMapBoundsUpdate ? 150 : 300
+    );
     return () => clearTimeout(timer);
-  }, [fetchProperties]);
+  }, [fetchProperties, mapBounds]);
 
   const handleSelectProperty = (id: string) => {
     setSelectedPropertyId(id);
@@ -99,20 +168,16 @@ export function useOlmaImmoProperties() {
     ? properties.filter((p) => favoritesList.includes(p.id))
     : properties;
 
-  const resetAllFilters = () => {
-    setFilters({ sort: 'recent' });
-    setShowFavoritesOnly(false);
-    setMapBounds(null);
-  };
-
   return {
     filters,
     setFilters,
+    removeFilter,
     displayedProperties,
     mapResults,
     selectedPropertyId,
     setSelectedPropertyId,
     isLoading,
+    isSearchingMap,
     viewMode,
     setViewMode,
     cardRefs,

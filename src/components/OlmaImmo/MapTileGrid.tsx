@@ -37,8 +37,10 @@ export const MapTileGrid: React.FC<MapTileGridProps> = ({
           alt=""
           loading="eager"
           decoding="async"
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
           referrerPolicy="no-referrer"
-          className="absolute pointer-events-none transition-opacity duration-150"
+          className="absolute pointer-events-none select-none transition-opacity duration-150 will-change-transform"
           style={{
             left: `${Math.round(t.screenX)}px`,
             top: `${Math.round(t.screenY)}px`,

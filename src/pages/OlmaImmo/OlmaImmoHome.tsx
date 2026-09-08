@@ -4,6 +4,7 @@ import { OlmaImmoHero } from '../../components/OlmaImmo/OlmaImmoHero';
 import { OlmaCategoryBar } from '../../components/OlmaImmo/OlmaCategoryBar';
 import { OlmaImmoPropertiesSection } from '../../components/OlmaImmo/OlmaImmoPropertiesSection';
 import { OlmaSection } from '../../components/OlmaImmo/primitives/OlmaSection';
+import { ActiveFilterPills } from '../../components/OlmaImmo/filters/ActiveFilterPills';
 import { PropertyType } from '../../types/realEstate';
 import { useOlmaImmoProperties } from '../../hooks/useOlmaImmoProperties';
 
@@ -11,10 +12,12 @@ export const OlmaImmoHome: React.FC = () => {
   const {
     filters,
     setFilters,
+    removeFilter,
     displayedProperties,
     mapResults,
     selectedPropertyId,
     isLoading,
+    isSearchingMap,
     viewMode,
     setViewMode,
     cardRefs,
@@ -46,6 +49,15 @@ export const OlmaImmoHome: React.FC = () => {
           onCategorySelect={handleCategorySelect}
         />
 
+        {/* Active Filter Pills Dismissible Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <ActiveFilterPills
+            filters={filters}
+            onRemoveFilter={removeFilter}
+            onResetAll={resetAllFilters}
+          />
+        </div>
+
         {/* Properties View Container */}
         <OlmaImmoPropertiesSection
           properties={displayedProperties}
@@ -55,6 +67,7 @@ export const OlmaImmoHome: React.FC = () => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           isLoading={isLoading}
+          isSearchingMap={isSearchingMap}
           cardRefs={cardRefs}
           onBoundsChange={(bbox) => setMapBounds(bbox)}
           onResetFilters={resetAllFilters}
@@ -63,5 +76,3 @@ export const OlmaImmoHome: React.FC = () => {
     </OlmaImmoShell>
   );
 };
-
-

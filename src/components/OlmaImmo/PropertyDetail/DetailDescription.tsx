@@ -48,18 +48,26 @@ export const DetailDescription: React.FC<DetailDescriptionProps> = ({ property }
         </h2>
 
         <div className="relative">
-          <p
-            className={`text-slate-700 leading-relaxed text-sm sm:text-base whitespace-pre-line ${
-              !isExpanded && property.description.length > 300 ? 'line-clamp-4' : ''
-            }`}
-          >
-            {property.description}
-          </p>
+          {property.description?.trim() ? (
+            <p
+              className={`text-slate-700 leading-relaxed text-sm sm:text-base whitespace-pre-line ${
+                !isExpanded && property.description.length > 300 ? 'line-clamp-4' : ''
+              }`}
+            >
+              {property.description}
+            </p>
+          ) : (
+            <p className="text-stone-400 italic text-sm">
+              Aucune description détaillée n'a été rédigée pour cette annonce.
+            </p>
+          )}
 
-          {property.description.length > 300 && (
+          {property.description && property.description.length > 300 && (
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Réduire la description' : 'Lire toute la description'}
               className="mt-3 text-xs font-bold text-[#1a3831] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>{isExpanded ? 'Réduire' : 'Lire la suite'}</span>
@@ -95,6 +103,8 @@ export const DetailDescription: React.FC<DetailDescriptionProps> = ({ property }
             <button
               type="button"
               onClick={() => setShowAllFeatures(!showAllFeatures)}
+              aria-expanded={showAllFeatures}
+              aria-label={showAllFeatures ? 'Afficher moins d\'équipements' : `Afficher l'ensemble des ${features.length} équipements`}
               className="mt-2 text-xs font-bold text-[#1a3831] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>{showAllFeatures ? 'Afficher moins' : `Afficher les ${features.length} équipements`}</span>
