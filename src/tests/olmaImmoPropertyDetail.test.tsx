@@ -28,9 +28,9 @@ const mockProperty: Property = {
   legalPaperType: 'acte_notarie',
   legalPapers: ['acte_notarie', 'livret_foncier'],
   isLegalVerified: true,
-  legalStatus: 'valid',
   status: 'active',
   ownerId: 'owner_dz_1',
+  contactPhone: '0555000000',
   viewsCount: 142,
   location: {
     address: '15 Boulevard Colonel Amirouche',
@@ -39,7 +39,7 @@ const mockProperty: Property = {
     lat: 36.7725,
     lng: 3.0594,
   },
-  amenities: ['ascenseur', 'climatisation', 'chauffage_central', 'stationnement'],
+  features: ['ascenseur', 'climatisation', 'chauffage_central', 'stationnement'],
   images: [
     'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00',
     'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
@@ -83,8 +83,8 @@ describe('Olma Immo — Property Detail Components Suite', () => {
       expect(container?.textContent).toContain('2');
     });
 
-    it('handles undefined bathrooms gracefully without displaying defaulting values', () => {
-      const propWithoutBath = { ...mockProperty, bathrooms: undefined };
+    it('handles zero bathrooms gracefully without displaying defaulting values', () => {
+      const propWithoutBath = { ...mockProperty, bathrooms: 0 };
       act(() => {
         root?.render(<DetailSpecs property={propWithoutBath} />);
       });
@@ -199,14 +199,12 @@ describe('Olma Immo — Property Detail Components Suite', () => {
           <DetailMobileActionBar
             property={mockProperty}
             ownerProfile={{
-              id: 'owner_1',
+              uid: 'owner_1',
               displayName: 'Karim Immo',
+              role: 'seller',
               verificationStatus: 'approved',
-              phoneNumber: '0555000000',
-              propertiesCount: 5,
-              rating: 4.8,
-              reviewsCount: 12,
-              createdAt: '2025-01-01',
+              shopName: 'Karim Immo',
+              joinedAt: '2025-01-01',
             }}
             onOpenVisitModal={onVisit}
             onOpenBookingModal={onBooking}

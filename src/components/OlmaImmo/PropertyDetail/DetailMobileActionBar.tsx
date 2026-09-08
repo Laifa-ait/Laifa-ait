@@ -13,13 +13,13 @@ interface DetailMobileActionBarProps {
 
 export const DetailMobileActionBar: React.FC<DetailMobileActionBarProps> = ({
   property,
-  ownerProfile,
+  ownerProfile: _ownerProfile,
   onOpenVisitModal,
   onOpenBookingModal,
   onOpenDirectChat,
 }) => {
-  const isShortTerm = property.listingType === 'short_term';
-  const ownerPhone = ownerProfile?.phoneNumber;
+  const isShortTerm = property.listingType === 'rent_short';
+  const contactPhone = property.contactPhone;
 
   return (
     <aside
@@ -36,17 +36,17 @@ export const DetailMobileActionBar: React.FC<DetailMobileActionBarProps> = ({
           </span>
           {property.pricePeriod && (
             <span className="text-[10px] text-stone-500 font-medium">
-              /{property.pricePeriod === 'month' ? 'mois' : property.pricePeriod === 'day' ? 'nuit' : property.pricePeriod}
+              /{property.pricePeriod === 'month' ? 'mois' : property.pricePeriod === 'night' ? 'nuit' : property.pricePeriod}
             </span>
           )}
         </div>
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {ownerPhone && (
+        {contactPhone && (
           <a
-            href={`tel:${ownerPhone}`}
-            aria-label={`Appeler le propriétaire au ${ownerPhone}`}
+            href={`tel:${contactPhone}`}
+            aria-label={`Appeler le contact au ${contactPhone}`}
             className="p-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 transition active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
           >
             <Phone className="w-4 h-4 text-[#1A3831]" />
