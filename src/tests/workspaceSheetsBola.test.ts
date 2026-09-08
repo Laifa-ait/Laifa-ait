@@ -1,104 +1,8 @@
 import express from "express";
 import request from "supertest";
-import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
-
-// In-Memory Firebase Store
-const { memoryStore, mockAuth } = vi.hoisted(() => {
-  const memStore = new Map<string, Record<string, unknown>>();
-  const verifyFn = vi.fn();
-  const authObj = {
-    verifyIdToken: verifyFn,
-  };
-  return { memoryStore: memStore, mockAuth: authObj };
-});
-
-vi.mock("../config/firebase-admin", () => {
-  const mockDb = {
-    collection: (colName: string) => {
-      let filteredDocs: Array<{ id: string; data: Record<string, unknown> }> = [];
-      const getColDocs = () => {
-        const results: Array<{ id: string; data: Record<string, unknown> }> = [];
-        for (const [k, v] of memoryStore.entries()) {
-          if (k.startsWith(`${colName}/`)) {
-            const id = k.slice(colName.length + 1);
-            results.push({ id, data: v });
-          }
-        }
-        return results;
-      };
-
-      const chain = {
-        doc: (docId: string) => {
-          const key = `${colName}/${docId}`;
-          return {
-            id: docId,
-            get: vi.fn(async () => {
-              const data = memoryStore.get(key);
-              return {
-                id: docId,
-                exists: !!data,
-                data: () => data,
-              };
-            }),
-            set: vi.fn(async (data: Record<string, unknown>) => {
-              memoryStore.set(key, data);
-            }),
-            delete: vi.fn(async () => {
-              memoryStore.delete(key);
-            }),
-          };
-        },
-        where: vi.fn((field: string, op: string, val: unknown) => {
-          const docs = getColDocs();
-          filteredDocs = docs.filter((d) => {
-            const fieldVal = d.data[field];
-            if (op === "==") return fieldVal === val;
-            if (op === "array-contains") return Array.isArray(fieldVal) && fieldVal.includes(val);
-            if (op === "array-contains-any") return Array.isArray(fieldVal) && Array.isArray(val) && val.some((x) => fieldVal.includes(x));
-            return true;
-          });
-          return chain;
-        }),
-        orderBy: vi.fn(() => chain),
-        limit: vi.fn(() => chain),
-        get: vi.fn(async () => {
-          const docs = filteredDocs.length > 0 ? filteredDocs : getColDocs();
-          return {
-            empty: docs.length === 0,
-            size: docs.length,
-            docs: docs.map((d) => ({
-              id: d.id,
-              data: () => d.data,
-            })),
-          };
-        }),
-      };
-      return chain;
-    },
-    runTransaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb({
-      get: vi.fn(async (ref: { get: () => Promise<unknown> }) => ref.get()),
-      set: vi.fn(async (ref: { set: (d: unknown) => Promise<unknown> }, data: unknown) => ref.set(data)),
-      update: vi.fn(),
-      delete: vi.fn(),
-    })),
-  };
-
-  return {
-    admin: {
-      auth: () => mockAuth,
-      firestore: {
-        FieldValue: {
-          serverTimestamp: vi.fn(() => new Date().toISOString()),
-          increment: vi.fn((n: number) => n),
-        },
-      },
-    },
-    db: mockDb,
-    auth: mockAuth,
-  };
-});
-
-import { admin, db } from "../config/firebase-admin";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { db } from "../config/firebase-admin";
+import { getTestAuthHeader } from "./helpers/firebaseAuthHelper";
 import workspaceRouter from "../domains/workspace/workspace.routes";
 import adminWorkspaceRouter from "../domains/workspace/controllers/adminWorkspace.controller";
 
@@ -164,7 +68,8 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
   const sellerBUid = "seller_b_sheets_uid_202";
   const adminUid = "admin_sheets_uid_999";
 
-  let verifyTokenSpy: MockInstance;
+  let sellerAAuthHeader: string;
+  let adminAuthHeader: string;
 
   beforeAll(async () => {
     // Seed users in Firestore so auth & role checks succeed
@@ -194,7 +99,17 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
       });
     }
 
-    verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
+    sellerAAuthHeader = await getTestAuthHeader({
+      uid: sellerAUid,
+      email: "sellerA_sheets@olmart.dz",
+      role: "seller",
+    });
+
+    adminAuthHeader = await getTestAuthHeader({
+      uid: adminUid,
+      email: "admin_sheets@olmart.dz",
+      role: "admin",
+    });
   });
 
   afterAll(async () => {
@@ -204,21 +119,14 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
       await db.collection("users").doc(adminUid).delete();
       await db.collection("orders").doc("order_seller_b_100").delete();
     }
-    vi.restoreAllMocks();
   });
 
   // A. ATTAQUE INTER-VENDEURS (BOLA / IDOR)
   it("A. ADVERSARIAL BOLA ATTACK: sellerA attempts to query sellerB's workspace orders -> HTTP 403 Forbidden", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerAUid,
-      email: "sellerA@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .get("/api/v1/admin/workspace/orders")
       .query({ targetSeller: sellerBUid })
-      .set("Authorization", "Bearer token-seller-a")
+      .set("Authorization", sellerAAuthHeader)
       .set("x-google-token", "valid-google-token-seller-a");
 
     expect(res.status).toBe(403);
@@ -229,12 +137,6 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
 
   // B. PROPRETÉ D'OWNERSHIP (Legitimate Seller Export)
   it("B. LEGITIMATE SELLER EXPORT: sellerA exports their own report -> HTTP 200 OK & Data Masking applied", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerAUid,
-      email: "sellerA@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     mockSpreadsheetCreate.mockClear();
     mockValuesUpdate.mockClear();
 
@@ -253,7 +155,7 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
 
     const res = await request(app)
       .post("/api/v1/workspace/sheets/export-premium")
-      .set("Authorization", "Bearer token-seller-a")
+      .set("Authorization", sellerAAuthHeader)
       .set("x-google-token", "mock-google-token-seller-a")
       .send(payload);
 
@@ -278,19 +180,13 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
 
   // C. ADMIN LÉGITIME (Admin Exception)
   it("C. LEGITIMATE ADMIN EXPORT: admin fetches sellerB workspace data & exports -> HTTP 200 OK", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: adminUid,
-      email: "admin@olmart.dz",
-      role: "admin",
-    } as unknown as admin.auth.DecodedIdToken);
-
     mockSpreadsheetCreate.mockClear();
 
     // 1. Admin queries workspace orders for target sellerB
     const getRes = await request(app)
       .get("/api/v1/admin/workspace/orders")
       .query({ targetSeller: sellerBUid })
-      .set("Authorization", "Bearer token-admin");
+      .set("Authorization", adminAuthHeader);
 
     expect(getRes.status).toBe(200);
     expect(getRes.body.rawOrders).toBeDefined();
@@ -298,7 +194,7 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
     // 2. Admin exports report to Google Sheets
     const exportRes = await request(app)
       .post("/api/v1/workspace/sheets/export-premium")
-      .set("Authorization", "Bearer token-admin")
+      .set("Authorization", adminAuthHeader)
       .set("x-google-token", "mock-google-token-admin")
       .send({
         title: "ADMIN_EXPORT_SELLER_B",
@@ -324,15 +220,9 @@ describe("Workspace Google Sheets Export Premium Adversarial BOLA/IDOR Security 
   });
 
   it("D2. GOOGLE TOKEN REJECTION: call with Bearer token but missing x-google-token -> HTTP 401 Unauthorized", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerAUid,
-      email: "sellerA@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/api/v1/workspace/sheets/export-premium")
-      .set("Authorization", "Bearer token-seller-a")
+      .set("Authorization", sellerAAuthHeader)
       .send({ title: "TEST" });
 
     expect(res.status).toBe(401);

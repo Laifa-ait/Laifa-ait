@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Phone } from 'lucide-react';
+import { Eye, Phone, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { PropertyType, ListingType, GeoPointLocation, LegalPaperType } from '../../../types/realEstate';
 import {
   PropertyMedia,
@@ -51,8 +51,19 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
           <span>Aperçu avant publication</span>
         </h3>
         <p className="text-xs text-stone-500 mt-0.5">
-          Vérifiez l'ensemble des informations de votre annonce.
+          Vérifiez l'ensemble des informations de votre annonce avant mise en ligne.
         </p>
+      </div>
+
+      {/* Publication Status Banner */}
+      <div className="p-4 bg-[#F4ECD8]/70 border border-[#EBDCB8] rounded-2xl flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 text-[#1A3831] shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="text-xs text-[#1A3831] space-y-0.5">
+          <p className="font-bold">Publication immédiate avec statut actif</p>
+          <p className="text-stone-600 leading-relaxed">
+            Votre annonce sera mise en ligne instantanément. Notre équipe modèrera vos pièces justificatives pour vous attribuer le badge de confiance <strong>Dossier Vérifié</strong>.
+          </p>
+        </div>
       </div>
 
       <div className="bg-[#FAF8F5] rounded-3xl border border-[#E8E2D4] overflow-hidden">
@@ -125,9 +136,10 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
               {features.map((f, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-white border border-[#E8E2D4] text-[#1A3831] rounded-lg text-[11px] font-semibold"
+                  className="px-2.5 py-1 bg-white border border-[#E8E2D4] text-[#1A3831] rounded-lg text-[11px] font-semibold flex items-center gap-1"
                 >
-                  ✓ {f}
+                  <CheckCircle2 className="w-3 h-3 text-[#1A3831]" />
+                  <span>{f}</span>
                 </span>
               ))}
             </div>
@@ -137,3 +149,4 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
     </div>
   );
 };
+

@@ -53,8 +53,12 @@ export default defineConfig({
     env: {
       VITE_FIREBASE_API_KEY: 'test-api-key',
       VITE_FIREBASE_AUTH_DOMAIN: 'localhost',
-      VITE_FIREBASE_PROJECT_ID: 'test-project',
-      VITE_FIREBASE_STORAGE_BUCKET: 'test-project.appspot.com',
+      VITE_FIREBASE_PROJECT_ID: 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
+      VITE_FIREBASE_STORAGE_BUCKET: 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebasestorage.app',
+      FIREBASE_PROJECT_ID: 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
+      GCLOUD_PROJECT: 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
+      GOOGLE_CLOUD_PROJECT: 'ai-studio-217f6d79-c758-4e14-845d-737228cd3915',
+      FIREBASE_DATABASE_ID: '(default)',
     },
   },
 });

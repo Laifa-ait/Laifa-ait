@@ -1,5 +1,5 @@
 import React from 'react';
-import { BedDouble, Bath, Maximize2, Building2 } from 'lucide-react';
+import { BedDouble, Bath, Maximize2, Building2, Eye } from 'lucide-react';
 
 export type PropertyMetaLayout = 'bar' | 'grid' | 'inline';
 export type PropertyMetaSize = 'sm' | 'md' | 'lg';
@@ -9,6 +9,7 @@ export interface PropertyMetaProps {
   bathrooms?: number;
   areaSquareMeters?: number;
   propertyType?: string;
+  viewsCount?: number;
   layout?: PropertyMetaLayout;
   size?: PropertyMetaSize;
   className?: string;
@@ -34,6 +35,7 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
   bathrooms,
   areaSquareMeters,
   propertyType,
+  viewsCount,
   layout = 'bar',
   size = 'sm',
   className = '',
@@ -96,6 +98,9 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
     }
     if (typeof bathrooms === 'number' && bathrooms > 0) {
       items.push({ key: 'baths', icon: <Bath className="w-3.5 h-3.5" />, text: `${bathrooms} sdb` });
+    }
+    if (typeof viewsCount === 'number') {
+      items.push({ key: 'views', icon: <Eye className="w-3.5 h-3.5" />, text: `${viewsCount} vues` });
     }
 
     return (

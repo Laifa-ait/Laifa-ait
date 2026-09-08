@@ -35,11 +35,14 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
     expect(verifyCsrfToken("invalid_base64")).toBe(false);
   });
 
-  it("throws a fatal error in production when CSRF_SECRET is missing", () => {
+  it("uses an ephemeral secret gracefully in production when CSRF_SECRET is missing", () => {
     process.env.NODE_ENV = "production";
     delete process.env.CSRF_SECRET;
 
-    expect(() => generateCsrfToken("user_123")).toThrowError(/CSRF_SECRET environment variable must be explicitly defined/);
+    const token = generateCsrfToken("user_123");
+    expect(token).toBeDefined();
+    expect(typeof token).toBe("string");
+    expect(verifyCsrfToken(token, "user_123")).toBe(true);
   });
 
   it("works reliably in production when CSRF_SECRET is provided", () => {

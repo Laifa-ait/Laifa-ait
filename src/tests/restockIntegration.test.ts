@@ -1,7 +1,8 @@
 import express from "express";
 import request from "supertest";
-import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
-import { admin, db } from "../config/firebase-admin";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { db } from "../config/firebase-admin";
+import { getTestAuthHeader } from "./helpers/firebaseAuthHelper";
 import router from "../domains/order/controllers/OrderStatusController";
 import { ProductVariant } from "../domains/product/product.types";
 
@@ -22,15 +23,27 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
   const variantProdId = "test_integration_prod_variant";
   const zeroStockProdId = "test_integration_prod_zero";
 
-  let verifyTokenSpy: MockInstance;
+  let sellerHeader: string;
+  let buyerHeader: string;
 
   beforeAll(async () => {
     if (!hasEmulator) {
-      verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
       return;
     }
 
     try {
+      sellerHeader = await getTestAuthHeader({
+        uid: sellerUid,
+        email: "seller@olmart.dz",
+        role: "seller",
+      });
+
+      buyerHeader = await getTestAuthHeader({
+        uid: buyerUid,
+        email: "buyer@olmart.dz",
+        role: "buyer",
+      });
+
       // 1. Seed base commission settings to prevent warnings
       await db.collection("settings").doc("commission").set({
         globalRate: 15,
@@ -48,8 +61,10 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
         email: "buyer@olmart.dz",
       });
 
-      // 3. Spy on decode token middleware
-      verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
+      await db.collection("users").doc(otherSellerUid).set({
+        role: "seller",
+        email: "otherseller@olmart.dz",
+      });
     } catch (err) {
       console.warn("Skipping restock integration Firestore seeding:", err);
     }
@@ -64,6 +79,7 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
     const documentsToClean = [
       `users/${sellerUid}`,
       `users/${buyerUid}`,
+      `users/${otherSellerUid}`,
       `settings/commission`,
       `products/${simpleProdId}`,
       `products/${multiProdId1}`,
@@ -87,8 +103,6 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
         await doc.ref.delete();
       }
     }
-
-    vi.restoreAllMocks();
   });
 
   it("TEST 1: Restores stock for simple products through the real controller (returned status)", async () => {
@@ -111,17 +125,10 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    // Mock authenticated seller session
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     // Call actual production route
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -163,15 +170,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -205,15 +206,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -248,15 +243,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -280,15 +269,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     // The route must complete with success, bypassing the missing product document safely
@@ -314,15 +297,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -357,15 +334,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -393,15 +364,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: true, // Already restocked flag
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(200);
@@ -428,16 +393,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    // Requesting seller is sellerUid
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     expect(res.status).toBe(403);
@@ -466,16 +424,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    // Mock buyer authenticated session
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/buyer/orders/cancel")
-      .set("Authorization", "Bearer mock-buyer-token")
+      .set("Authorization", buyerHeader)
       .send({ orderId });
 
     expect(res.status).toBe(200);
@@ -506,15 +457,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "canceled" });
 
     expect(res.status).toBe(200);
@@ -543,21 +488,15 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     // 3. Dispatch two concurrent status updates to the same order to trigger a collision retry in Firestore
     const req1 = request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     const req2 = request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "returned" });
 
     const [res1, res2] = await Promise.all([req1, req2]);
@@ -588,15 +527,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "processing" });
 
     expect(res.status).toBe(400);
@@ -615,15 +548,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "dispute_resolved" }); // not in seller allowed list
 
     expect(res.status).toBe(403);
@@ -631,15 +558,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
   });
 
   it("TEST 15: Fails buyer cancellation when the order does not exist (404)", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/buyer/orders/cancel")
-      .set("Authorization", "Bearer mock-buyer-token")
+      .set("Authorization", buyerHeader)
       .send({ orderId: "test_integration_order_ghost_does_not_exist" });
 
     expect(res.status).toBe(404);
@@ -658,15 +579,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/buyer/orders/cancel")
-      .set("Authorization", "Bearer mock-buyer-token")
+      .set("Authorization", buyerHeader)
       .send({ orderId });
 
     expect(res.status).toBe(400);
@@ -685,15 +600,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/buyer/orders/cancel")
-      .set("Authorization", "Bearer mock-buyer-token")
+      .set("Authorization", buyerHeader)
       .send({ orderId });
 
     expect(res.status).toBe(403);
@@ -712,15 +621,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "delivered", deliveryPin: "123456" });
 
     expect(res.status).toBe(400);
@@ -740,15 +643,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       deliveryPin: "789012",
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res1 = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "delivered", deliveryPin: "123456" });
 
     expect(res1.status).toBe(400);
@@ -756,7 +653,7 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
 
     const res2 = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [orderId], status: "delivered", deliveryPin: "789012" });
 
     expect(res2.status).toBe(200);
@@ -792,15 +689,9 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       restocked: false,
     });
 
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller",
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/seller/orders/status")
-      .set("Authorization", "Bearer mock-seller-token")
+      .set("Authorization", sellerHeader)
       .send({ orderIds: [validOrderId, unauthorizedOrderId], status: "returned" });
 
     expect(res.status).toBe(403);
@@ -814,3 +705,4 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
     expect(prod.data()?.stock).toBe(50);
   });
 });
+

@@ -1,7 +1,8 @@
 import express from "express";
 import request from "supertest";
-import { describe, it, expect, beforeAll, afterAll, vi, MockInstance } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { admin, db } from "../config/firebase-admin";
+import { getTestAuthHeader } from "./helpers/firebaseAuthHelper";
 import { Readable } from "stream";
 import router, { validateSecureDisputeFilePath } from "../domains/dispute/controllers/DisputeController";
 
@@ -17,6 +18,11 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   const otherUserUid = "test_dispute_intruder_101";
   const adminUid = "test_dispute_admin_101";
 
+  let buyerAuthHeader: string;
+  let sellerAuthHeader: string;
+  let intruderAuthHeader: string;
+  let adminAuthHeader: string;
+
   const disputeId = "dispute_test_sec_101";
   const otherDisputeId = "dispute_test_sec_other_102";
 
@@ -25,30 +31,54 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // Valid PDF magic bytes (%PDF-1.4 ...)
   const validPdfBase64 = Buffer.from("%PDF-1.4\n%âãÏÓ\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF").toString("base64");
 
-  let verifyTokenSpy: MockInstance;
   let savedFiles: Record<string, { buffer: Buffer; options: Record<string, unknown> }> = {};
 
   beforeAll(async () => {
     if (!hasEmulator) return;
-    // 1. Seed users
+
+    buyerAuthHeader = await getTestAuthHeader({
+      uid: buyerUid,
+      email: "buyer_dispute@olmart.dz",
+      role: "buyer"
+    });
+
+    sellerAuthHeader = await getTestAuthHeader({
+      uid: sellerUid,
+      email: "seller_dispute@olmart.dz",
+      role: "seller"
+    });
+
+    intruderAuthHeader = await getTestAuthHeader({
+      uid: otherUserUid,
+      email: "intruder_dispute@olmart.dz",
+      role: "buyer"
+    });
+
+    adminAuthHeader = await getTestAuthHeader({
+      uid: adminUid,
+      email: "admin_dispute@olmart.dz",
+      role: "admin"
+    });
+
+    // 1. Seed users in Firestore
     await db.collection("users").doc(buyerUid).set({
       role: "buyer",
-      email: "buyer@olmart.dz"
+      email: "buyer_dispute@olmart.dz"
     });
 
     await db.collection("users").doc(sellerUid).set({
       role: "seller",
-      email: "seller@olmart.dz"
+      email: "seller_dispute@olmart.dz"
     });
 
     await db.collection("users").doc(otherUserUid).set({
       role: "buyer",
-      email: "intruder@olmart.dz"
+      email: "intruder_dispute@olmart.dz"
     });
 
     await db.collection("users").doc(adminUid).set({
       role: "admin",
-      email: "admin@olmart.dz"
+      email: "admin_dispute@olmart.dz"
     });
 
     // 2. Seed main dispute
@@ -77,10 +107,7 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
       updatedAt: new Date().toISOString()
     });
 
-    // 4. Spy on token verification
-    verifyTokenSpy = vi.spyOn(admin.auth(), "verifyIdToken");
-
-    // 5. Mock Storage
+    // 4. Mock Storage
     savedFiles = {};
     const storageMock = {
       bucket: vi.fn().mockReturnValue({
@@ -153,15 +180,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-02: Upload to non-existent dispute
   // ==========================================
   it("DISPUTE-ATT-02: Upload to non-existent dispute returns 404", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post("/api/v1/disputes/non_existent_dispute_999/upload")
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "evidence.png",
         mimeType: "image/png",
@@ -176,15 +197,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-03: Upload IDOR check
   // ==========================================
   it("DISPUTE-ATT-03: Upload to dispute by unauthorized user (intruder) returns 403", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: otherUserUid,
-      email: "intruder@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", intruderAuthHeader)
       .send({
         fileName: "evidence.png",
         mimeType: "image/png",
@@ -199,15 +214,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-04: Upload missing fields
   // ==========================================
   it("DISPUTE-ATT-04: Upload with missing fileName or mimeType returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "",
         mimeType: "image/png",
@@ -222,15 +231,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-05: Upload invalid base64 data
   // ==========================================
   it("DISPUTE-ATT-05: Upload with invalid base64 format returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "corrupt.png",
         mimeType: "image/png",
@@ -244,19 +247,13 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-06: Upload exceeding size limit (1MB)
   // ==========================================
   it("DISPUTE-ATT-06: Upload file exceeding 1MB returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     // Create 1.2MB payload
     const oversizedBuffer = Buffer.alloc(1.2 * 1024 * 1024, 0x41);
     const oversizedBase64 = oversizedBuffer.toString("base64");
 
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "huge.png",
         mimeType: "image/png",
@@ -271,15 +268,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-07: Upload forbidden mimeType
   // ==========================================
   it("DISPUTE-ATT-07: Upload forbidden executable MIME type returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "script.sh",
         mimeType: "application/x-sh",
@@ -294,17 +285,11 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-08: Upload magic bytes mismatch
   // ==========================================
   it("DISPUTE-ATT-08: Upload with mimeType mismatch (declared image/png but payload is plaintext) returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const fakePngBase64 = Buffer.from("Hello this is plain text masquerading as PNG").toString("base64");
 
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "fake.png",
         mimeType: "image/png",
@@ -321,15 +306,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   let buyerUploadedFilePath = "";
 
   it("DISPUTE-ATT-09: Buyer uploads valid PNG -> 200, private storage, disputeAttachments doc created", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         fileName: "damage_proof.png",
         mimeType: "image/png",
@@ -365,15 +344,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-10: Upload successful by Seller
   // ==========================================
   it("DISPUTE-ATT-10: Seller uploads valid PDF shipping receipt -> 200", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", sellerAuthHeader)
       .send({
         fileName: "shipping_slip.pdf",
         mimeType: "application/pdf",
@@ -389,16 +362,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-11: Upload successful by Admin
   // ==========================================
   it("DISPUTE-ATT-11: Admin uploads mediation document -> 200", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: adminUid,
-      email: "admin@olmart.dz",
-      role: "admin",
-      customClaims: { admin: true }
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/upload`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", adminAuthHeader)
       .send({
         fileName: "arbitration_notice.pdf",
         mimeType: "application/pdf",
@@ -423,15 +389,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-13: Get attachment with non-existent dispute
   // ==========================================
   it("DISPUTE-ATT-13: Get attachment with non-existent dispute returns 404", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .get(`/api/v1/disputes/non_existent_dispute/attachments/${buyerUploadedAttachmentId}`)
-      .set("Authorization", "Bearer valid-token");
+      .set("Authorization", buyerAuthHeader);
 
     expect(res.status).toBe(404);
   });
@@ -440,15 +400,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-14: Get attachment IDOR
   // ==========================================
   it("DISPUTE-ATT-14: Unauthorized user (intruder) requesting dispute attachment returns 403", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: otherUserUid,
-      email: "intruder@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .get(`/api/v1/disputes/${disputeId}/attachments/${buyerUploadedAttachmentId}`)
-      .set("Authorization", "Bearer valid-token");
+      .set("Authorization", intruderAuthHeader);
 
     expect(res.status).toBe(403);
   });
@@ -457,15 +411,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-15: Get attachment disputeId mismatch
   // ==========================================
   it("DISPUTE-ATT-15: Requesting attachment via mismatched disputeId returns 400", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: otherUserUid, // owner of otherDisputeId
-      email: "intruder@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .get(`/api/v1/disputes/${otherDisputeId}/attachments/${buyerUploadedAttachmentId}`)
-      .set("Authorization", "Bearer valid-token");
+      .set("Authorization", intruderAuthHeader);
 
     expect(res.status).toBe(400);
     expect(res.body.error).toContain("n'appartient pas");
@@ -487,15 +435,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-17: Stream attachment successfully
   // ==========================================
   it("DISPUTE-ATT-17: Buyer or Seller successfully retrieves stream with Content-Type and Disposition", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: sellerUid,
-      email: "seller@olmart.dz",
-      role: "seller"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .get(`/api/v1/disputes/${disputeId}/attachments/${buyerUploadedAttachmentId}`)
-      .set("Authorization", "Bearer valid-token");
+      .set("Authorization", sellerAuthHeader);
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("image/png");
@@ -506,15 +448,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   // DISPUTE-ATT-18: Post message with attachmentId inside transaction
   // ==========================================
   it("DISPUTE-ATT-18: Buyer posts message referencing attachmentId -> 200 with server-verified attachment metadata", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/messages`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         message: "Voici la photo du produit brisé.",
         attachmentId: buyerUploadedAttachmentId,
@@ -538,15 +474,9 @@ describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Inte
   });
 
   it("DISPUTE-ATT-18 (sub-case): Post message with non-existent attachmentId returns 404", async () => {
-    verifyTokenSpy.mockResolvedValue({
-      uid: buyerUid,
-      email: "buyer@olmart.dz",
-      role: "buyer"
-    } as unknown as admin.auth.DecodedIdToken);
-
     const res = await request(app)
       .post(`/api/v1/disputes/${disputeId}/messages`)
-      .set("Authorization", "Bearer valid-token")
+      .set("Authorization", buyerAuthHeader)
       .send({
         message: "Photo jointe",
         attachmentId: "fake_attach_id_404"

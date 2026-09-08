@@ -1,29 +1,36 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Edit, Eye, Trash2 } from 'lucide-react';
-import { RealEstateProperty } from '../../types/realEstate';
+import { Calendar, Edit, Eye, Trash2, PauseCircle, PlayCircle } from 'lucide-react';
+import { Property, PropertyStatus } from '../../types/realEstate';
 import {
   OlmaCard,
   OlmaButton,
   PropertyPrice,
   PropertyLocation,
   PropertyBadge,
+  PropertyMeta,
 } from './primitives';
 
 interface OwnerPropertyCardProps {
-  property: RealEstateProperty;
-  onDelete: (id: string, title: string) => void;
+  property: Property;
+  onDelete?: (id: string, title: string) => void;
+  onUpdateStatus?: (id: string, status: PropertyStatus) => void;
   formatPrice?: (price: number, period?: string, listingType?: string) => string;
 }
 
 export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
   property,
   onDelete,
+  onUpdateStatus,
 }) => {
   const imageSrc =
     property.images && property.images.length > 0
       ? property.images[0]
       : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80';
+
+  const formattedDate = property.updatedAt
+    ? new Date(property.updatedAt).toLocaleDateString('fr-FR')
+    : new Date().toLocaleDateString('fr-FR');
 
   return (
     <OlmaCard
@@ -32,27 +39,30 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
       elevation="subtle"
       bordered
       borderVariant="default"
-      className="transition-all hover:shadow-[var(--olma-shadow-card)] flex flex-col sm:flex-row overflow-hidden"
+      className="transition-all hover:shadow-[var(--olma-shadow-card)] flex flex-col sm:flex-row overflow-hidden group"
     >
-      {/* Thumbnail */}
-      <div className="sm:w-56 h-48 sm:h-auto relative shrink-0 bg-stone-100">
+      {/* Thumbnail & Badges */}
+      <div className="sm:w-56 h-48 sm:h-auto relative shrink-0 bg-stone-100 overflow-hidden">
         <img
           loading="lazy"
           decoding="async"
           src={imageSrc}
           alt={property.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-2 left-2">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
           <PropertyBadge type="status" value={property.status} size="sm" dot />
+          <PropertyBadge type="listingType" value={property.listingType} size="xs" />
         </div>
       </div>
 
       {/* Details */}
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="text-base font-bold text-stone-900 line-clamp-1">{property.title}</h3>
+          <div className="flex items-start justify-between gap-3 mb-1">
+            <h3 className="text-base font-bold text-stone-900 line-clamp-1 font-['Playfair_Display',serif]">
+              {property.title}
+            </h3>
             <PropertyPrice
               price={property.price}
               period={property.pricePeriod}
@@ -70,41 +80,36 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
             className="mb-3"
           />
 
-          <div className="flex flex-wrap gap-2 text-xs text-stone-600 mb-4">
-            <span className="bg-[#FAF8F5] px-2 py-1 rounded-md border border-[#E8E2D4]">
-              {property.areaSquareMeters || property.area} m²
-            </span>
-            {property.rooms && (
-              <span className="bg-[#FAF8F5] px-2 py-1 rounded-md border border-[#E8E2D4]">
-                F{property.rooms} ({property.rooms} pièces)
-              </span>
-            )}
-            <span className="bg-[#FAF8F5] px-2 py-1 rounded-md border border-[#E8E2D4] flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5 text-stone-400" />
-              <span>{property.viewsCount || 0} vues</span>
-            </span>
-          </div>
+          <PropertyMeta
+            rooms={property.rooms}
+            areaSquareMeters={property.areaSquareMeters || property.area}
+            bathrooms={property.bathrooms}
+            viewsCount={property.viewsCount}
+            layout="inline"
+            size="xs"
+          />
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+        <div className="flex items-center justify-between pt-3 border-t border-stone-100 gap-2">
           <div className="text-[11px] text-stone-400 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
-            <span>Modifié le {new Date(property.updatedAt).toLocaleDateString('fr-FR')}</span>
+            <span>Mis à jour le {formattedDate}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <OlmaButton
               as={Link}
               to={`/immo/property/${property.id}`}
               variant="ghost"
               size="icon"
               radius="lg"
-              aria-label="Voir l'annonce publique"
-              title="Voir l'annonce publique"
+              aria-label="Voir l'annonce"
+              title="Voir l'annonce"
             >
               <Eye className="w-4 h-4 text-stone-600" />
             </OlmaButton>
+
             <OlmaButton
               as={Link}
               to={`/immo/edit/${property.id}`}
@@ -116,20 +121,52 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
             >
               <Edit className="w-4 h-4 text-emerald-700" />
             </OlmaButton>
-            <OlmaButton
-              variant="ghost"
-              size="icon"
-              radius="lg"
-              onClick={() => onDelete(property.id, property.title)}
-              className="text-rose-600 hover:text-rose-800 hover:bg-rose-50"
-              aria-label="Supprimer l'annonce"
-              title="Supprimer l'annonce"
-            >
-              <Trash2 className="w-4 h-4" />
-            </OlmaButton>
+
+            {onUpdateStatus && (
+              property.status === 'active' ? (
+                <OlmaButton
+                  variant="ghost"
+                  size="icon"
+                  radius="lg"
+                  onClick={() => onUpdateStatus(property.id, 'paused')}
+                  aria-label="Mettre en pause"
+                  title="Mettre en pause"
+                  className="text-amber-600 hover:bg-amber-50"
+                >
+                  <PauseCircle className="w-4 h-4" />
+                </OlmaButton>
+              ) : (
+                <OlmaButton
+                  variant="ghost"
+                  size="icon"
+                  radius="lg"
+                  onClick={() => onUpdateStatus(property.id, 'active')}
+                  aria-label="Activer l'annonce"
+                  title="Activer l'annonce"
+                  className="text-emerald-600 hover:bg-emerald-50"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                </OlmaButton>
+              )
+            )}
+
+            {onDelete && (
+              <OlmaButton
+                variant="ghost"
+                size="icon"
+                radius="lg"
+                onClick={() => onDelete(property.id, property.title)}
+                className="text-rose-600 hover:text-rose-800 hover:bg-rose-50"
+                aria-label="Supprimer l'annonce"
+                title="Supprimer l'annonce"
+              >
+                <Trash2 className="w-4 h-4" />
+              </OlmaButton>
+            )}
           </div>
         </div>
       </div>
     </OlmaCard>
   );
 };
+

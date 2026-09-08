@@ -22,6 +22,7 @@ import { EditorStepMedia } from '../../components/OlmaImmo/PropertyEditor/Editor
 import { EditorStepSpecs } from '../../components/OlmaImmo/PropertyEditor/EditorStepSpecs';
 import { EditorStepPricing } from '../../components/OlmaImmo/PropertyEditor/EditorStepPricing';
 import { EditorStepPreview } from '../../components/OlmaImmo/PropertyEditor/EditorStepPreview';
+import { OlmaButton } from '../../components/OlmaImmo/primitives';
 
 const STEPS: StepItem[] = [
   { id: 1, title: 'Transaction', short: '01' },
@@ -310,35 +311,49 @@ export const PropertyEditor: React.FC = () => {
 
         {/* Footer Navigation Controls */}
         <div className="flex items-center justify-between pt-4 border-t border-[#e8e2d4]">
-          <button
+          <OlmaButton
             type="button"
             disabled={currentStep === 1}
             onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-            className="px-5 py-3 rounded-xl border border-[#e8e2d4] bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
+            variant="outline"
+            size="md"
+            radius="xl"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 mr-1" />
             <span>Précédent</span>
-          </button>
+          </OlmaButton>
 
           {currentStep < 6 ? (
-            <button
+            <OlmaButton
               type="button"
               onClick={() => setCurrentStep((prev) => Math.min(6, prev + 1))}
-              className="px-6 py-3 rounded-xl bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer"
+              variant="primary"
+              size="md"
+              radius="xl"
+              className="shadow-md"
             >
               <span>Suivant</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </OlmaButton>
           ) : (
-            <button
+            <OlmaButton
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="px-8 py-3.5 rounded-2xl bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg cursor-pointer active:scale-98"
+              variant="primary"
+              size="lg"
+              radius="2xl"
+              className="shadow-lg active:scale-98"
             >
-              <Check className="w-4 h-4 text-[#ebdcb8]" />
-              <span>{isSubmitting ? 'Publication en cours...' : isEditMode ? 'Enregistrer les modifications' : "Publier l'annonce"}</span>
-            </button>
+              <Check className="w-4 h-4 mr-2" />
+              <span>
+                {isSubmitting
+                  ? 'Publication en cours...'
+                  : isEditMode
+                  ? 'Enregistrer les modifications'
+                  : "Publier l'annonce"}
+              </span>
+            </OlmaButton>
           )}
         </div>
     </OlmaImmoShell>
