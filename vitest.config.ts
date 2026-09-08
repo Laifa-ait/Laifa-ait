@@ -16,10 +16,18 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        isolate: true,
+        singleFork: false,
+      },
+    },
     maxWorkers: 1,
     fileParallelism: false,
     coverage: {
       provider: 'v8',
+      all: false,
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['src/**'],

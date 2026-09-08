@@ -130,12 +130,14 @@ describe("P0 Adversarial Stress Test Suite — Server Bootstrap, Vite Crash Resi
       const { startServer } = await import("../../server");
       expect(typeof startServer).toBe("function");
 
-      // Calling startServer concurrently in tests returns the exact same promise
-      const p1 = startServer();
-      const p2 = startServer();
+      // Calling startServer concurrently in tests returns the exact same promise (using ephemeral port 0)
+      const p1 = startServer(0);
+      const p2 = startServer(0);
       expect(p1).toBe(p2);
 
-      await expect(Promise.race([p1, Promise.resolve("running")])).resolves.toBeDefined();
+      const serverInstance = await p1;
+      expect(serverInstance).toBeDefined();
+      expect(serverInstance.listening).toBe(true);
     });
   });
 

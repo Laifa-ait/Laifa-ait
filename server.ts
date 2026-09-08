@@ -53,19 +53,24 @@ export const shutdown = (signal: string): void => {
       if (process.env.NODE_ENV !== "production") {
         safeLogger.info("[Olmart Gateway] 💤 Closed remaining active connections.");
       }
-      process.exit(0);
+      if (process.env.NODE_ENV !== "test") {
+        process.exit(0);
+      }
     });
 
-    const forceTimer = setTimeout(() => {
-      safeLogger.error("[Olmart Gateway] ❌ Forcefully shutting down after 10s timeout.");
-      process.exit(1);
-    }, 10000);
-    if (forceTimer.unref) {
-      forceTimer.unref();
+    if (process.env.NODE_ENV !== "test") {
+      const forceTimer = setTimeout(() => {
+        safeLogger.error("[Olmart Gateway] ❌ Forcefully shutting down after 10s timeout.");
+        process.exit(1);
+      }, 10000);
+      if (forceTimer.unref) {
+        forceTimer.unref();
+      }
     }
   } else {
-    // If server was never listening or already closed, exit immediately
-    process.exit(0);
+    if (process.env.NODE_ENV !== "test") {
+      process.exit(0);
+    }
   }
 };
 
@@ -74,6 +79,15 @@ export const shutdown = (signal: string): void => {
  * Ferme le serveur HTTP, tous les workers et timers sans appeler process.exit().
  */
 export async function stopServerForTesting(): Promise<void> {
+  // Wait for any in-flight startup to settle before shutting down to prevent race condition
+  if (startServerPromise) {
+    try {
+      await startServerPromise;
+    } catch {
+      // Safe no-op if startup threw or rejected (e.g., EADDRINUSE)
+    }
+  }
+
   try {
     stopProductCacheCleanupTimer();
   } catch {
@@ -103,10 +117,12 @@ export async function stopServerForTesting(): Promise<void> {
   isShuttingDown = false;
 }
 
-export function startServer(): Promise<http.Server> {
+export function startServer(portOverride?: number): Promise<http.Server> {
   if (startServerPromise) {
     return startServerPromise;
   }
+
+  const bindPort = typeof portOverride === "number" ? portOverride : PORT;
 
   startServerPromise = (async () => {
     const logDev = (msg: string) => {
@@ -157,7 +173,7 @@ export function startServer(): Promise<http.Server> {
       }
     }
 
-    // 5. Bind and listen on Port 3000 with explicit error rejection and cleanup rollback
+    // 5. Bind and listen with explicit error rejection and cleanup rollback
     safeLogger.info(`[Olmart Gateway] 🚀 Booting Express HTTP Server...`);
     return new Promise<http.Server>((resolve, reject) => {
       const onError = (err: Error) => {
@@ -182,10 +198,10 @@ export function startServer(): Promise<http.Server> {
 
       httpServer.once("error", onError);
 
-      httpServer.listen(PORT, "0.0.0.0", () => {
+      httpServer.listen(bindPort, "0.0.0.0", () => {
         httpServer.off("error", onError);
         const startupDuration = ((Date.now() - bootStartTime) / 1000).toFixed(2);
-        safeLogger.info(`OLMART STARTUP READY - Port: ${PORT}, Environment: ${process.env.NODE_ENV || "development"}, Startup Time: ${startupDuration}s`);
+        safeLogger.info(`OLMART STARTUP READY - Port: ${bindPort}, Environment: ${process.env.NODE_ENV || "development"}, Startup Time: ${startupDuration}s`);
         resolve(httpServer);
       });
     });
@@ -194,13 +210,21 @@ export function startServer(): Promise<http.Server> {
   return startServerPromise;
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => {
+  if (process.env.NODE_ENV !== "test") shutdown("SIGTERM");
+});
+process.on("SIGINT", () => {
+  if (process.env.NODE_ENV !== "test") shutdown("SIGINT");
+});
 
 process.on("unhandledRejection", (reason: unknown) => {
   const errorMsg = reason instanceof Error ? reason.stack || reason.message : String(reason);
   const errorCode = reason && typeof reason === "object" && "code" in reason ? String((reason as { code: unknown }).code) : "";
   safeLogger.error("[Olmart Gateway] ❌ Unhandled Promise Rejection at process level", { err: errorMsg, code: errorCode });
+
+  if (process.env.NODE_ENV === "test") {
+    return;
+  }
 
   // If unhandled rejection indicates a fatal system/driver error with structured error code or critical corruption
   const criticalCodes = ["EADDRINUSE", "EACCES", "MODULE_NOT_FOUND", "ERR_SERVER_ALREADY_LISTEN"];
