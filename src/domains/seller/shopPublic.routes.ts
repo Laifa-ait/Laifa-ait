@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { db } from "../../config/firebase-admin";
 import { safeLogger } from "../../utils/logger";
+import { PublicShopDTO } from "./shop.types";
 
 const router = Router();
 
@@ -101,75 +102,163 @@ router.get("/api/v1/public/shops", async (_req: Request, res: Response) => {
 router.get("/api/v1/public/shops/:sellerId", async (req: Request, res: Response) => {
   const { sellerId } = req.params;
   try {
-    if (!sellerId) {
-      return res.status(400).json({ success: false, error: "Missing sellerId parameter" });
+    if (!sellerId || typeof sellerId !== "string" || !sellerId.trim()) {
+      return res.status(400).json({ success: false, error: "Identifiant vendeur manquant" });
     }
 
     const [pubSnap, userSnap] = await Promise.all([
-      db.collection("publicProfiles").doc(sellerId).get().catch(() => null),
-      db.collection("users").doc(sellerId).get().catch(() => null),
+      db.collection("publicProfiles").doc(sellerId).get(),
+      db.collection("users").doc(sellerId).get(),
     ]);
 
-    if ((pubSnap && pubSnap.exists) || (userSnap && userSnap.exists)) {
-      const pubData = pubSnap && pubSnap.exists ? pubSnap.data() : {};
-      const userData = userSnap && userSnap.exists ? userSnap.data() : {};
-      const merged = { ...userData, ...pubData };
-
-      const logoUrl = pubData?.logoUrl || pubData?.photoURL || pubData?.avatarUrl ||
-                      userData?.logoUrl || userData?.photoURL || userData?.avatarUrl || userData?.photoUrl || "";
-      const bannerUrl = pubData?.bannerUrl || pubData?.coverUrl || pubData?.coverImage ||
-                        userData?.bannerUrl || userData?.coverUrl || userData?.coverImage || userData?.bannerImage || "";
-
-      return res.json({
-        success: true,
-        shop: {
-          id: sellerId,
-          sellerId: sellerId,
-          shopName: merged.shopName || merged.displayName || "Boutique Olmart",
-          slogan: merged.slogan || "",
-          description: merged.description || merged.shopDescription || "Bienvenue dans ma boutique sur Olmart.",
-          shopDescription: merged.shopDescription || merged.description || "Bienvenue dans ma boutique sur Olmart.",
-          wilaya: merged.wilaya || "16 - Alger",
-          category: merged.category || merged.specialty || "Général",
-          rating: merged.rating !== undefined ? merged.rating : null,
-          sellerTrustScore: merged.sellerTrustScore !== undefined ? merged.sellerTrustScore : null,
-          reviewsCount: merged.reviewsCount ?? 0,
-          productsCount: merged.productsCount ?? 0,
-          isVerified: true,
-          status: merged.status || "ACTIVE",
-          avgPreparationTime: merged.avgPreparationTime || "24h",
-          returnPolicy: merged.returnPolicy || "Retours acceptés sous 7 jours.",
-          legalStatus: merged.legalStatus || "Artisan / Commerçant",
-          followersCount: merged.followersCount || 0,
-          ...merged,
-          logoUrl,
-          bannerUrl,
-        },
-      });
+    // Check existence
+    if (!pubSnap.exists && !userSnap.exists) {
+      return res.status(404).json({ success: false, error: "Boutique introuvable" });
     }
 
-    const decodedId = decodeURIComponent(sellerId);
-    const nameFromId = decodedId.replace(/[-_]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    const pubData = pubSnap.exists ? (pubSnap.data() || {}) : {};
+    const userData = userSnap.exists ? (userSnap.data() || {}) : {};
+
+    // Validate account eligibility: non-seller accounts (e.g. buyer/customer) are not public shops
+    if (userSnap.exists) {
+      const userRole = userData.role;
+      if (userRole && userRole !== "seller") {
+        return res.status(404).json({ success: false, error: "Boutique non disponible" });
+      }
+
+      const userStatus = userData.status;
+      if (userStatus && userStatus !== "active" && userStatus !== "ACTIVE") {
+        return res.status(404).json({ success: false, error: "Boutique non disponible" });
+      }
+    } else if (pubSnap.exists) {
+      const pubStatus = pubData.status;
+      if (pubStatus && pubStatus !== "active" && pubStatus !== "ACTIVE") {
+        return res.status(404).json({ success: false, error: "Boutique non disponible" });
+      }
+    }
+
+    // Authoritative verification flag: cannot be forged via client-writable publicProfiles alone
+    const isVerified = userSnap.exists
+      ? Boolean(userData.isVerified === true && (userData.status === "active" || userData.status === "ACTIVE"))
+      : Boolean(pubData.isVerified === true && (pubData.status === "active" || pubData.status === "ACTIVE"));
+
+    // Whitelist extraction for categories
+    let categories: string[] = ["Général"];
+    if (Array.isArray(pubData.categories)) {
+      const filtered = pubData.categories.filter((c: unknown): c is string => typeof c === "string" && Boolean(c.trim()));
+      if (filtered.length > 0) categories = filtered;
+    } else if (Array.isArray(userData.categories)) {
+      const filtered = userData.categories.filter((c: unknown): c is string => typeof c === "string" && Boolean(c.trim()));
+      if (filtered.length > 0) categories = filtered;
+    } else if (typeof pubData.category === "string" && pubData.category.trim()) {
+      categories = [pubData.category.trim()];
+    } else if (typeof userData.category === "string" && userData.category.trim()) {
+      categories = [userData.category.trim()];
+    }
+
+    const shopName =
+      (typeof pubData.shopName === "string" && pubData.shopName.trim()) ||
+      (typeof userData.shopName === "string" && userData.shopName.trim()) ||
+      (typeof pubData.displayName === "string" && pubData.displayName.trim()) ||
+      (typeof userData.displayName === "string" && userData.displayName.trim()) ||
+      "Boutique Olmart";
+
+    const slogan =
+      (typeof pubData.slogan === "string" && pubData.slogan.trim()) ||
+      (typeof userData.slogan === "string" && userData.slogan.trim()) ||
+      "";
+
+    const description =
+      (typeof pubData.description === "string" && pubData.description.trim()) ||
+      (typeof pubData.shopDescription === "string" && pubData.shopDescription.trim()) ||
+      (typeof userData.description === "string" && userData.description.trim()) ||
+      (typeof userData.shopDescription === "string" && userData.shopDescription.trim()) ||
+      "Bienvenue dans ma boutique sur Olmart.";
+
+    const logoUrl =
+      (typeof pubData.logoUrl === "string" && pubData.logoUrl.trim()) ||
+      (typeof pubData.photoURL === "string" && pubData.photoURL.trim()) ||
+      (typeof userData.logoUrl === "string" && userData.logoUrl.trim()) ||
+      (typeof userData.photoURL === "string" && userData.photoURL.trim()) ||
+      "";
+
+    const bannerUrl =
+      (typeof pubData.bannerUrl === "string" && pubData.bannerUrl.trim()) ||
+      (typeof pubData.coverUrl === "string" && pubData.coverUrl.trim()) ||
+      (typeof userData.bannerUrl === "string" && userData.bannerUrl.trim()) ||
+      (typeof userData.coverUrl === "string" && userData.coverUrl.trim()) ||
+      "";
+
+    const wilaya =
+      (typeof pubData.wilaya === "string" && pubData.wilaya.trim()) ||
+      (typeof userData.wilaya === "string" && userData.wilaya.trim()) ||
+      "16 - Alger";
+
+    const commune =
+      (typeof pubData.commune === "string" && pubData.commune.trim()) ||
+      (typeof userData.commune === "string" && userData.commune.trim()) ||
+      "";
+
+    const category =
+      (typeof pubData.category === "string" && pubData.category.trim()) ||
+      (typeof userData.category === "string" && userData.category.trim()) ||
+      categories[0] ||
+      "Général";
+
+    const avgPreparationTime =
+      (typeof pubData.avgPreparationTime === "string" && pubData.avgPreparationTime.trim()) ||
+      (typeof userData.avgPreparationTime === "string" && userData.avgPreparationTime.trim()) ||
+      "24h";
+
+    const returnPolicy =
+      (typeof pubData.returnPolicy === "string" && pubData.returnPolicy.trim()) ||
+      (typeof userData.returnPolicy === "string" && userData.returnPolicy.trim()) ||
+      "Retours acceptés sous 7 jours.";
+
+    const legalStatus =
+      (typeof pubData.legalStatus === "string" && pubData.legalStatus.trim()) ||
+      (typeof userData.legalStatus === "string" && userData.legalStatus.trim()) ||
+      "Artisan / Commerçant";
+
+    // Strictly construct Whitelisted DTO
+    const shop: PublicShopDTO = {
+      id: String(sellerId),
+      sellerId: String(sellerId),
+      shopName,
+      slogan,
+      description,
+      shopDescription: description,
+      logoUrl,
+      bannerUrl,
+      wilaya,
+      commune,
+      category,
+      categories,
+      rating: typeof pubData.rating === "number" ? pubData.rating : (typeof userData.rating === "number" ? userData.rating : null),
+      reviewsCount: typeof pubData.reviewsCount === "number" ? pubData.reviewsCount : (typeof userData.reviewsCount === "number" ? userData.reviewsCount : 0),
+      sellerTrustScore: typeof pubData.sellerTrustScore === "number" ? pubData.sellerTrustScore : (typeof userData.sellerTrustScore === "number" ? userData.sellerTrustScore : null),
+      productsCount: typeof pubData.productsCount === "number" ? pubData.productsCount : (typeof userData.productsCount === "number" ? userData.productsCount : 0),
+      isVerified,
+      status: "ACTIVE",
+      avgPreparationTime,
+      returnPolicy,
+      legalStatus,
+      followersCount: typeof pubData.followersCount === "number" ? pubData.followersCount : (typeof userData.followersCount === "number" ? userData.followersCount : 0),
+      badge: isVerified ? ((typeof pubData.badge === "string" && pubData.badge.trim()) || "Vendeur Vérifié") : "",
+      ...(typeof pubData.supportPhone === "string" && pubData.supportPhone.trim()
+        ? { supportPhone: pubData.supportPhone.trim() }
+        : typeof userData.supportPhone === "string" && userData.supportPhone.trim()
+        ? { supportPhone: userData.supportPhone.trim() }
+        : {}),
+    };
+
     return res.json({
       success: true,
-      shop: {
-        id: sellerId,
-        sellerId: sellerId,
-        shopName: nameFromId || "Boutique Vendeur",
-        shopDescription: "Boutique enregistrée sur la Marketplace Olmart Algérie.",
-        description: "Boutique enregistrée sur la Marketplace Olmart Algérie.",
-        logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(nameFromId)}&background=0F766E&color=fff&bold=true`,
-        bannerUrl: "",
-        wilaya: "16 - Alger",
-        rating: null,
-        sellerTrustScore: null,
-        isVerified: true,
-        status: "ACTIVE",
-      },
+      shop,
     });
   } catch (error: unknown) {
     safeLogger.error("Error fetching single public shop", { sellerId, err: error instanceof Error ? error.message : String(error) });
-    return res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Erreur interne" });
+    return res.status(500).json({ success: false, error: "Erreur lors de la récupération de la boutique" });
   }
 });
 

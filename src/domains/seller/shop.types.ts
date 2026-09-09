@@ -61,3 +61,38 @@ export interface Shop {
 export interface SellerProfile extends Shop {
   uid: string;
 }
+
+export interface PublicShopDTO {
+  id: string;
+  sellerId: string;
+  shopName: string;
+  slogan: string;
+  description: string;
+  shopDescription: string;
+  logoUrl: string;
+  bannerUrl: string;
+  coverImage?: string;
+  wilaya: string;
+  commune: string;
+  category: string;
+  categories: string[];
+  rating: number | null;
+  reviewsCount: number;
+  sellerTrustScore: number | null;
+  productsCount: number;
+  isVerified: boolean;
+  status: string;
+  avgPreparationTime: string;
+  returnPolicy: string;
+  legalStatus: string;
+  followersCount: number;
+  badge: string;
+  supportPhone?: string;
+}
+
+export interface PublicShopResponse {
+  success: boolean;
+  shop?: PublicShopDTO;
+  error?: string;
+}
+
