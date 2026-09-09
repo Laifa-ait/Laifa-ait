@@ -13,7 +13,7 @@ import {
   PropertyVisitCreateSchema,
   PropertyVisitUpdateStatusSchema,
 } from '../../../schemas/realEstate';
-import { Property, BookingShort, PropertyVisit } from '../../../types/realEstate';
+import { StoredProperty, BookingShort, PropertyVisit } from '../../../types/realEstate';
 import { safeLogger } from '../../../utils/logger';
 
 export const realEstateBookingRouter = Router();
@@ -31,7 +31,7 @@ realEstateBookingRouter.get('/properties/:id/availability', async (req: Request,
       return res.status(404).json({ success: false, error: 'Propriété introuvable.' });
     }
 
-    const property = propSnap.data() as Property;
+    const property = propSnap.data() as StoredProperty;
 
     const bookingsSnap = await db
       .collection('real_estate_bookings')
@@ -110,7 +110,7 @@ realEstateBookingRouter.post(
           throw new Error('PROPERTY_NOT_FOUND');
         }
 
-        const propertyData = propSnap.data() as Property;
+        const propertyData = propSnap.data() as StoredProperty;
 
         if (propertyData.ownerId === tenantId) {
           throw new Error('SELF_BOOKING_FORBIDDEN');
@@ -536,7 +536,7 @@ realEstateBookingRouter.post(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const propertyData = propSnap.data() as Property;
+      const propertyData = propSnap.data() as StoredProperty;
       const visitId = `VISIT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
       const now = new Date().toISOString();
 

@@ -67,9 +67,58 @@ export interface UtilityCharges {
   condoFees?: boolean; // Charges de copropriété / Syndic
 }
 
+export interface StoredProperty {
+  id: string;
+  ownerId: string; // Firebase UID du propriétaire (Strictement interne)
+  title: string;
+  description: string;
+  propertyType: PropertyType;
+  listingType: ListingType;
+  legalPapers: LegalPaperType[];
+  isLegalVerified?: boolean;
+  legalPaperType?: LegalPaperType;
+  price: number; // DZD
+  pricePeriod?: 'night' | 'month' | 'total';
+  paymentAdvanceMonths?: 1 | 3 | 6 | 12; // Norme algérienne locative: 6 ou 12 mois
+  securityDepositMonths?: number; // Caution de garantie en mois de loyer
+  isPriceNegotiable?: boolean; // Prix Fixe vs Négociable / Khasem
+  utilityCharges?: UtilityCharges; // Eau (ADE), Électricité/Gaz (Sonelgaz), Copropriété
+  cleaningFee?: number;
+  serviceFee?: number;
+  deposit?: number;
+  contactPhone?: string;
+  areaSquareMeters: number;
+  area?: number;
+  rooms: number;
+  bathrooms: number;
+  floor?: number;
+  totalFloors?: number;
+  features: string[];
+  amenities?: string[];
+  images: string[];
+  location: GeoPointLocation;
+  commune?: string;
+  wilaya?: string;
+  status: PropertyStatus;
+  viewsCount: number;
+  createdAt: string;
+  updatedAt: string;
+  // Internal moderation & administrative fields
+  moderationNotes?: string;
+  rejectionReason?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  ownerEmail?: string;
+  userEmail?: string;
+  ownerPhone?: string;
+  userPhone?: string;
+  kycStatus?: string;
+  internalNotes?: string;
+}
+
 export interface PublicPropertyDTO {
   id: string;
-  ownerId?: string; // Omis dans le DTO public assaini pour préserver la vie privée
+  // ownerId est STRICTEMENT OMIS du DTO public pour préserver la vie privée et la sécurité
   title: string;
   description: string;
   propertyType: PropertyType;
@@ -102,9 +151,9 @@ export interface PublicPropertyDTO {
   updatedAt: string;
 }
 
+export type PublicProperty = PublicPropertyDTO;
 export type Property = PublicPropertyDTO;
-
-export type RealEstateProperty = Property;
+export type RealEstateProperty = PublicPropertyDTO;
 
 export interface PropertyFormData {
   title: string;
@@ -177,13 +226,13 @@ export type PropertySortOption = 'distance' | 'price_asc' | 'price_desc' | 'rece
 
 export interface PropertyResponse {
   success: boolean;
-  data?: Property;
+  data?: PublicPropertyDTO;
   error?: string;
 }
 
 export interface PropertyListResponse {
   success: boolean;
-  data?: Property[];
+  data?: PublicPropertyDTO[];
   total?: number;
   page?: number;
   limit?: number;

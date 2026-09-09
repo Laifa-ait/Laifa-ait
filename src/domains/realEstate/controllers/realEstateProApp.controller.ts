@@ -6,7 +6,7 @@ import {
   AuthenticatedRequest,
 } from '../../../middlewares/auth';
 import { strictLimiter } from '../../../middlewares/rateLimiters';
-import { Property, PropertyVisit } from '../../../types/realEstate';
+import { StoredProperty, PropertyVisit } from '../../../types/realEstate';
 import { safeLogger } from '../../../utils/logger';
 import { SEED_REAL_ESTATE_PROPERTIES } from '../data/realEstateSeed';
 
@@ -33,9 +33,9 @@ realEstateProAppRouter.get(
         .where('ownerId', '==', ownerId)
         .get();
 
-      const ownerProperties: Property[] = [];
+      const ownerProperties: StoredProperty[] = [];
       snapshot.forEach((doc) => {
-        ownerProperties.push({ ...(doc.data() as Property), id: doc.id });
+        ownerProperties.push({ ...(doc.data() as StoredProperty), id: doc.id });
       });
 
       ownerProperties.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

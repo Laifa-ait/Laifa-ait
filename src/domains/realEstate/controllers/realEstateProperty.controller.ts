@@ -14,6 +14,7 @@ import {
   PropertySearchQuerySchema,
 } from '../../../schemas/realEstate';
 import {
+  StoredProperty,
   Property,
   PublicPropertyDTO,
   PropertyMapResult,
@@ -74,7 +75,7 @@ realEstatePropertyRouter.get(
 
       let query: FirebaseFirestore.Query = db.collection('real_estate_properties');
 
-      const nonPublicStatuses = ['draft', 'pending', 'archived'];
+      const nonPublicStatuses = ['draft', 'pending', 'archived', 'rejected'];
       const isNonPublicStatus = typeof status === 'string' && nonPublicStatuses.includes(status);
       const isServerAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
 
@@ -110,7 +111,7 @@ realEstatePropertyRouter.get(
         query = query.where('location.commune', '==', commune.trim());
       }
 
-      const rawResultsMap = new Map<string, Property>();
+      const rawResultsMap = new Map<string, StoredProperty>();
       const hasCoordinates = lat !== undefined && lng !== undefined;
       const hasBbox = typeof bbox === 'string' && bbox.trim().length > 0;
 
@@ -140,7 +141,7 @@ realEstatePropertyRouter.get(
           const snapshots = await Promise.all(queries);
           snapshots.forEach((snap) => {
             snap.forEach((doc) => {
-              const data = doc.data() as Property;
+              const data = doc.data() as StoredProperty;
               rawResultsMap.set(doc.id, { ...data, id: doc.id });
             });
           });
@@ -149,12 +150,12 @@ realEstatePropertyRouter.get(
         const fetchLimit = Math.min(500, Math.max(100, Number(page) * Number(limit) * 2));
         const snapshot = await query.limit(fetchLimit).get();
         snapshot.forEach((doc) => {
-          const data = doc.data() as Property;
+          const data = doc.data() as StoredProperty;
           rawResultsMap.set(doc.id, { ...data, id: doc.id });
         });
       }
 
-      let results: Array<Property & { distanceKm?: number }> = Array.from(rawResultsMap.values());
+      let results: Array<StoredProperty & { distanceKm?: number }> = Array.from(rawResultsMap.values());
 
       if (minPrice !== undefined && !isNaN(Number(minPrice))) {
         results = results.filter((p) => p.price >= Number(minPrice));
@@ -259,7 +260,7 @@ realEstatePropertyRouter.get(
 
       const responseData = map
         ? paginatedResults.map(toPropertyMapResult)
-        : paginatedResults;
+        : paginatedResults.map(toPublicPropertyDTO);
 
       safeLogger.info('RealEstate Properties searched', {
         resultCount: responseData.length,
@@ -320,7 +321,7 @@ realEstatePropertyRouter.get(
 
       let query: FirebaseFirestore.Query = db.collection('real_estate_properties');
 
-      const nonPublicStatuses = ['draft', 'pending', 'archived'];
+      const nonPublicStatuses = ['draft', 'pending', 'archived', 'rejected'];
       const isNonPublicStatus = typeof status === 'string' && nonPublicStatuses.includes(status);
       const isServerAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
 
@@ -348,7 +349,7 @@ realEstatePropertyRouter.get(
       if (wilaya && typeof wilaya === 'string' && wilaya.trim()) query = query.where('location.wilaya', '==', wilaya.trim());
       if (commune && typeof commune === 'string' && commune.trim()) query = query.where('location.commune', '==', commune.trim());
 
-      const rawResultsMap = new Map<string, Property>();
+      const rawResultsMap = new Map<string, StoredProperty>();
       const hasCoordinates = lat !== undefined && lng !== undefined;
       const hasBbox = typeof bbox === 'string' && bbox.trim().length > 0;
 
@@ -378,7 +379,7 @@ realEstatePropertyRouter.get(
           const snapshots = await Promise.all(queries);
           snapshots.forEach((snap) => {
             snap.forEach((doc) => {
-              const data = doc.data() as Property;
+              const data = doc.data() as StoredProperty;
               rawResultsMap.set(doc.id, { ...data, id: doc.id });
             });
           });
@@ -387,12 +388,12 @@ realEstatePropertyRouter.get(
         const fetchLimit = Math.min(500, Math.max(100, Number(limit) * 2));
         const snapshot = await query.limit(fetchLimit).get();
         snapshot.forEach((doc) => {
-          const data = doc.data() as Property;
+          const data = doc.data() as StoredProperty;
           rawResultsMap.set(doc.id, { ...data, id: doc.id });
         });
       }
 
-      let results: Array<Property & { distanceKm?: number }> = Array.from(rawResultsMap.values());
+      let results: Array<StoredProperty & { distanceKm?: number }> = Array.from(rawResultsMap.values());
 
       if (minPrice !== undefined && !isNaN(Number(minPrice))) results = results.filter((p) => p.price >= Number(minPrice));
       if (maxPrice !== undefined && !isNaN(Number(maxPrice))) results = results.filter((p) => p.price <= Number(maxPrice));
@@ -479,6 +480,18 @@ realEstatePropertyRouter.get(
   }
 );
 
+const ALLOWED_LEGAL_PAPERS: ReadonlySet<string> = new Set([
+  'acte_notarie',
+  'acte_notarie_individuel',
+  'acte_dans_indivision',
+  'livret_foncier',
+  'permis_construire',
+  'certificat_conformite',
+  'decision_attribution',
+  'promesse_vente',
+  'papier_timbre',
+]);
+
 /**
  * Sanitizes a Property entity into a strict PublicPropertyDTO.
  * Strips sensitive/internal fields:
@@ -488,7 +501,16 @@ realEstatePropertyRouter.get(
  * - user private account data (email, phone, address)
  * - non-authorized contact details
  */
-export function toPublicPropertyDTO(property: Property): PublicPropertyDTO {
+export function toPublicPropertyDTO(property: StoredProperty | Property): PublicPropertyDTO {
+  const sanitizedLegalPapers: LegalPaperType[] = Array.isArray(property.legalPapers)
+    ? property.legalPapers.filter((item): item is LegalPaperType => typeof item === 'string' && ALLOWED_LEGAL_PAPERS.has(item))
+    : [];
+
+  const sanitizedLegalPaperType: LegalPaperType | undefined =
+    typeof property.legalPaperType === 'string' && ALLOWED_LEGAL_PAPERS.has(property.legalPaperType)
+      ? (property.legalPaperType as LegalPaperType)
+      : undefined;
+
   return {
     id: property.id,
     title: property.title || '',
@@ -516,12 +538,11 @@ export function toPublicPropertyDTO(property: Property): PublicPropertyDTO {
       address: property.location?.address || '',
       commune: property.location?.commune || property.commune || '',
       wilaya: property.location?.wilaya || property.wilaya || '',
-      geohash: property.location?.geohash,
     },
     commune: property.location?.commune || property.commune || '',
     wilaya: property.location?.wilaya || property.wilaya || '',
-    legalPapers: Array.isArray(property.legalPapers) ? property.legalPapers : [],
-    legalPaperType: property.legalPaperType,
+    legalPapers: sanitizedLegalPapers,
+    legalPaperType: sanitizedLegalPaperType,
     isLegalVerified: Boolean(property.isLegalVerified),
     // Contact phone: ONLY if explicitly set in the property listing as authorized public contact
     ...(typeof property.contactPhone === 'string' && property.contactPhone.trim()
@@ -546,13 +567,13 @@ realEstatePropertyRouter.get(
     }
 
     try {
-      let property: Property | null = null;
+      let property: StoredProperty | null = null;
 
       if (db) {
         const docRef = db.collection('real_estate_properties').doc(id);
         const snap = await docRef.get();
         if (snap.exists) {
-          property = snap.data() as Property;
+          property = snap.data() as StoredProperty;
           property.id = snap.id;
 
           if (property.status === 'active' && (!req.user || req.user.uid !== property.ownerId)) {
@@ -623,9 +644,9 @@ realEstatePropertyRouter.get(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const property = snap.data() as Property;
+      const property = snap.data() as StoredProperty;
 
-      const nonPublicStatuses = ['draft', 'archived', 'pending'];
+      const nonPublicStatuses = ['draft', 'archived', 'pending', 'rejected'];
       if (nonPublicStatuses.includes(property.status)) {
         const callerUid = req.user?.uid;
         const isServerAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
@@ -687,6 +708,7 @@ realEstatePropertyRouter.get(
 // GET /properties/:id/similar
 realEstatePropertyRouter.get(
   '/properties/:id/similar',
+  optionalAuthenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.params;
     if (!id) {
@@ -703,10 +725,22 @@ realEstatePropertyRouter.get(
         return res.status(404).json({ success: false, error: 'Annonce introuvable.' });
       }
 
-      const targetProp = snap.data() as Property;
+      const targetProp = snap.data() as StoredProperty;
       targetProp.id = snap.id;
 
-      const candidates: Property[] = [];
+      const nonPublicStatuses = ['draft', 'pending', 'archived', 'rejected'];
+      if (nonPublicStatuses.includes(targetProp.status)) {
+        const callerUid = req.user?.uid;
+        const isServerAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
+        if (!callerUid || (callerUid !== targetProp.ownerId && !isServerAdmin)) {
+          return res.status(403).json({
+            success: false,
+            error: 'Cette annonce n\'est pas accessible au public.',
+          });
+        }
+      }
+
+      const candidates: StoredProperty[] = [];
       let query = db.collection('real_estate_properties').where('status', '==', 'active');
       if (targetProp?.location?.wilaya) {
         query = query.where('location.wilaya', '==', targetProp.location.wilaya);
@@ -714,7 +748,7 @@ realEstatePropertyRouter.get(
       const listSnap = await query.limit(10).get();
       listSnap.forEach((doc) => {
         if (doc.id !== id) {
-          candidates.push({ ...(doc.data() as Property), id: doc.id });
+          candidates.push({ ...(doc.data() as StoredProperty), id: doc.id });
         }
       });
 
@@ -752,7 +786,7 @@ realEstatePropertyRouter.post(
 
     const primaryLegalPaper: LegalPaperType | undefined = cleanBody.legalPaperType || (legalPapersList.length > 0 ? legalPapersList[0] : undefined);
 
-    const newProperty: Property = {
+    const newProperty: StoredProperty = {
       ...cleanBody,
       legalPapers: legalPapersList,
       legalPaperType: primaryLegalPaper,
@@ -829,7 +863,7 @@ realEstatePropertyRouter.put(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const existingProperty = snap.data() as Property;
+      const existingProperty = snap.data() as StoredProperty;
 
       if (existingProperty.ownerId !== callerUid && !isServerAdmin) {
         safeLogger.warn('IDOR attempt blocked on RealEstate Property', { propertyId: id, callerUid });
@@ -857,7 +891,7 @@ realEstatePropertyRouter.put(
 
       const incomingPaperType: LegalPaperType | undefined = updatePayload.legalPaperType || (incomingPapers.length > 0 ? incomingPapers[0] : existingProperty.legalPaperType);
 
-      const updatedProperty: Property = {
+      const updatedProperty: StoredProperty = {
         ...existingProperty,
         ...updatePayload,
         legalPapers: incomingPapers,
@@ -926,7 +960,7 @@ realEstatePropertyRouter.put(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const existingProperty = snap.data() as Property;
+      const existingProperty = snap.data() as StoredProperty;
 
       if (existingProperty.ownerId !== callerUid && !isServerAdmin) {
         return res.status(403).json({
@@ -979,7 +1013,7 @@ realEstatePropertyRouter.delete(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const existingProperty = snap.data() as Property;
+      const existingProperty = snap.data() as StoredProperty;
 
       if (existingProperty.ownerId !== callerUid && !isServerAdmin) {
         safeLogger.warn('IDOR deletion attempt blocked on RealEstate Property', { propertyId: id, callerUid });

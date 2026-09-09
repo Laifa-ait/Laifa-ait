@@ -436,4 +436,63 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
       expect(res.body.data[0].internalNotes).toBeUndefined();
     });
   });
+
+  describe('4. Legal Papers Allowlist Sanitization', () => {
+    it('should only keep recognized legal papers and discard arbitrary or sensitive strings', () => {
+      const propWithBogusLegalPapers = {
+        id: 'prop_legal_test',
+        title: 'Terrain',
+        propertyType: 'land' as const,
+        listingType: 'sale' as const,
+        price: 10000000,
+        legalPapers: ['acte_notarie', 'hacked_document', 'compromis_confidentiel', 'livret_foncier'],
+        legalPaperType: 'internal_secret_cert',
+        status: 'active' as const,
+      };
+
+      const sanitized = toPublicPropertyDTO(propWithBogusLegalPapers as unknown as Property);
+      expect(sanitized.legalPapers).toEqual(['acte_notarie', 'livret_foncier']);
+      expect(sanitized.legalPaperType).toBeUndefined();
+    });
+  });
+
+  describe('5. GET /api/v1/real-estate/properties (List) — DTO Sanitization', () => {
+    it('should return list items sanitized with toPublicPropertyDTO and no ownerId', async () => {
+      const mockRawDoc1 = {
+        id: 'prop_list_1',
+        ownerId: 'owner_uid_private_1',
+        title: 'Studio Alger Centre',
+        status: 'active',
+        price: 45000,
+        propertyType: 'apartment',
+        listingType: 'rent',
+        areaSquareMeters: 40,
+        rooms: 1,
+        bathrooms: 1,
+        features: [],
+        images: [],
+        location: { commune: 'Alger Centre', wilaya: 'Alger' },
+        createdAt: '2026-03-01T00:00:00Z',
+        moderationNotes: 'Note secrète',
+      };
+
+      const mockQuery: Record<string, unknown> = {};
+      mockQuery.where = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.limit = vi.fn().mockReturnValue({
+        get: vi.fn().mockResolvedValue([
+          { id: 'prop_list_1', data: () => ({ ...mockRawDoc1 }) },
+        ]),
+      });
+
+      collectionSpy.mockReturnValue(mockQuery as unknown as ReturnType<typeof db.collection>);
+
+      const res = await request(app).get('/api/v1/real-estate/properties');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.length).toBe(1);
+      expect(res.body.data[0].id).toBe('prop_list_1');
+      expect(res.body.data[0].ownerId).toBeUndefined();
+      expect(res.body.data[0].moderationNotes).toBeUndefined();
+    });
+  });
 });

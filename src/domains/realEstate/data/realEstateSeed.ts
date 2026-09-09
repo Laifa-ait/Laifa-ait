@@ -1,8 +1,8 @@
-import { Property, PropertyMapResult } from '../../../types/realEstate';
+import { StoredProperty, PublicPropertyDTO, PropertyMapResult, LegalPaperType } from '../../../types/realEstate';
 import { encodeGeohash } from '../../../services/realEstateGeo';
 import { safeLogger } from '../../../utils/logger';
 
-export const SEED_REAL_ESTATE_PROPERTIES: Property[] = [
+export const SEED_REAL_ESTATE_PROPERTIES: StoredProperty[] = [
   {
     id: 'PROP-ALG-001',
     ownerId: 'owner_demo_oran_01',
@@ -361,15 +361,35 @@ export async function ensureInitialSeedProperties(firestore: FirebaseFirestore.F
   }
 }
 
-export function toPropertyMapResult(p: Property & { distanceKm?: number }): PropertyMapResult {
+const ALLOWED_LEGAL_PAPERS: ReadonlySet<string> = new Set([
+  'acte_notarie',
+  'acte_notarie_individuel',
+  'acte_dans_indivision',
+  'livret_foncier',
+  'permis_construire',
+  'certificat_conformite',
+  'decision_attribution',
+  'promesse_vente',
+  'papier_timbre',
+]);
+
+export function toPropertyMapResult(p: (StoredProperty | PublicPropertyDTO) & { distanceKm?: number }): PropertyMapResult {
+  const safePapers = Array.isArray(p.legalPapers)
+    ? p.legalPapers.filter((item): item is LegalPaperType => typeof item === 'string' && ALLOWED_LEGAL_PAPERS.has(item))
+    : undefined;
+
+  const safePaperType = typeof p.legalPaperType === 'string' && ALLOWED_LEGAL_PAPERS.has(p.legalPaperType)
+    ? (p.legalPaperType as LegalPaperType)
+    : undefined;
+
   return {
     id: p.id,
     title: p.title,
     propertyType: p.propertyType,
     listingType: p.listingType,
-    legalPapers: p.legalPapers,
+    legalPapers: safePapers,
     isLegalVerified: p.isLegalVerified,
-    legalPaperType: p.legalPaperType,
+    legalPaperType: safePaperType,
     price: p.price,
     pricePeriod: p.pricePeriod,
     lat: p.location.lat,
