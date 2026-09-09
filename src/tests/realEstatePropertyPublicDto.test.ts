@@ -5,7 +5,7 @@ import { realEstateRouter } from '../domains/realEstate/realEstate.routes';
 import { AuthenticatedRequest } from '../middlewares/auth';
 import { db } from '../config/firebase-admin';
 import { toPublicPropertyDTO } from '../domains/realEstate/controllers/realEstateProperty.controller';
-import { Property } from '../types/realEstate';
+import { StoredProperty } from '../types/realEstate';
 
 vi.mock('../config/firebase-admin', () => ({
   db: {
@@ -62,7 +62,7 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
 
   describe('1. toPublicPropertyDTO — Unit Level Data Sanitization', () => {
     it('should cleanly strip ownerId, private emails, phones, moderation notes and KYC docs', () => {
-      const rawPropertyDocument: Property & Record<string, unknown> = {
+      const rawPropertyDocument: StoredProperty & Record<string, unknown> = {
         id: 'prop_sensible_001',
         ownerId: 'secret_firebase_uid_888',
         title: 'Villa Moderne avec Piscine',
@@ -107,7 +107,7 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
         reviewedBy: 'moderator_uid_44',
       };
 
-      const sanitized = toPublicPropertyDTO(rawPropertyDocument as Property);
+      const sanitized = toPublicPropertyDTO(rawPropertyDocument as StoredProperty);
 
       // Public data presence check
       expect(sanitized.id).toBe('prop_sensible_001');
@@ -134,12 +134,13 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
     });
 
     it('should omit contactPhone if empty or whitespace only', () => {
-      const propWithEmptyPhone: Property = {
+      const propWithEmptyPhone: StoredProperty = {
         id: 'prop_no_phone',
+        ownerId: 'owner_123',
         title: 'Appartement F3',
         description: 'Proche métro',
         propertyType: 'apartment',
-        listingType: 'rent',
+        listingType: 'rent_long',
         price: 70000,
         areaSquareMeters: 85,
         rooms: 3,
@@ -150,6 +151,8 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
           address: 'Rue Didouche',
           commune: 'Alger Centre',
           wilaya: 'Alger',
+          lat: 36.77,
+          lng: 3.06,
         },
         legalPapers: [],
         status: 'active',
@@ -450,7 +453,7 @@ describe('Olma Immo — Public Property DTO & Contact Security Suite', () => {
         status: 'active' as const,
       };
 
-      const sanitized = toPublicPropertyDTO(propWithBogusLegalPapers as unknown as Property);
+      const sanitized = toPublicPropertyDTO(propWithBogusLegalPapers as unknown as StoredProperty);
       expect(sanitized.legalPapers).toEqual(['acte_notarie', 'livret_foncier']);
       expect(sanitized.legalPaperType).toBeUndefined();
     });

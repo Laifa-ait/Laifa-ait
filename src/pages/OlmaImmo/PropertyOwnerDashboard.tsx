@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
-import { Property, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
+import { StoredProperty, VisitRequest, Booking, PropertyStatus, VisitStatus, BookingStatus } from '../../types/realEstate';
 import { InitiateConversationDTO } from '../../types/messaging';
 import { apiGet, apiPut, apiDelete } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +17,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
   const { currentUser, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'properties' | 'visits' | 'bookings'>('properties');
 
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<StoredProperty[]>([]);
   const [visits, setVisits] = useState<VisitRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
 
@@ -40,7 +40,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const [propsRes, visitsRes, bookingsRes] = await Promise.allSettled([
-        apiGet<{ success: boolean; data?: Property[] }>('/api/v1/real-estate/owner/properties'),
+        apiGet<{ success: boolean; data?: StoredProperty[] }>('/api/v1/real-estate/owner/properties'),
         apiGet<{ success: boolean; data?: VisitRequest[] }>('/api/v1/real-estate/owner/visits'),
         apiGet<{ success: boolean; data?: Booking[] }>('/api/v1/real-estate/bookings?role=owner'),
       ]);

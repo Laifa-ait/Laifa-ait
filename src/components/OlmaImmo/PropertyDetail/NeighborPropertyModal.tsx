@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Property, PropertyMapResult } from '../../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../../types/realEstate';
 import { X, ExternalLink, BedDouble, Maximize2, Tag, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatPriceAlgeria } from '../mapStyles';
 
 interface NeighborPropertyModalProps {
-  property: Property | PropertyMapResult;
+  property: PublicPropertyDTO | PropertyMapResult;
   referencePrice: number;
   onClose: () => void;
 }

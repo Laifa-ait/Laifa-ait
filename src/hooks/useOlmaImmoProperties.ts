@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Property, PropertyMapResult } from '../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult, PropertyListResponse } from '../types/realEstate';
 import { FilterState } from '../components/OlmaImmo/SearchFilters';
 import { apiGet } from '../lib/api';
 import { getFavoritePropertyIds } from '../utils/realEstateFavorites';
@@ -14,7 +14,7 @@ export function useOlmaImmoProperties() {
   const [filters, setFiltersState] = useState<FilterState>(parsedInitial.filters);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(parsedInitial.showFavoritesOnly);
 
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<PublicPropertyDTO[]>([]);
   const [mapResults, setMapResults] = useState<PropertyMapResult[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,7 +112,7 @@ export function useOlmaImmoProperties() {
         queryParams.set('limit', '50');
 
         const [listRes, mapRes] = await Promise.all([
-          apiGet<{ success: boolean; data?: Property[] }>(
+          apiGet<PropertyListResponse>(
             `/api/v1/real-estate/properties?${queryParams.toString()}`
           ),
           apiGet<{ success: boolean; data?: PropertyMapResult[] }>(

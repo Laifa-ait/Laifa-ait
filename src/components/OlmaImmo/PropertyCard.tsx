@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Property, PropertyMapResult, LegalPaperType } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult, LegalPaperType } from '../../types/realEstate';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
 import {
   OlmaButton,
@@ -16,7 +16,7 @@ import {
 } from './primitives';
 
 export interface PropertyCardProps {
-  property: Property | PropertyMapResult;
+  property: PublicPropertyDTO | PropertyMapResult;
   onFavoriteToggle?: (id: string, isFav: boolean) => void;
   className?: string;
   isCompact?: boolean;

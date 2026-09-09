@@ -8,7 +8,7 @@ import { OwnerPropertyCard } from '../components/OlmaImmo/OwnerPropertyCard';
 import { OwnerPropertiesList } from '../components/OlmaImmo/OwnerDashboard/OwnerPropertiesList';
 import { EditorStepper, StepItem } from '../components/OlmaImmo/PropertyEditor/EditorStepper';
 import { EditorStepPreview } from '../components/OlmaImmo/PropertyEditor/EditorStepPreview';
-import { Property } from '../types/realEstate';
+import { StoredProperty } from '../types/realEstate';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -35,7 +35,7 @@ describe('OLMA IMMO 2.5 — Owner & Publication Experience', () => {
     root = null;
   });
 
-  const sampleProperty: Property = {
+  const sampleProperty: StoredProperty = {
     id: 'prop-owner-1',
     title: 'Appartement F4 Vue Panoramique Bab Ezzouar',
     description: 'Très bel appartement rénové proche commodités.',
@@ -134,7 +134,7 @@ describe('OLMA IMMO 2.5 — Owner & Publication Experience', () => {
 
   describe('OwnerPropertiesList', () => {
     it('filters properties by status tab and displays owner cards', () => {
-      const propertiesList: Property[] = [
+      const propertiesList: StoredProperty[] = [
         sampleProperty,
         {
           ...sampleProperty,

@@ -1,10 +1,10 @@
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { MapFilterCategory } from './MapCategoryFilterBar';
 
 export function filterPropertiesByCategory(
-  properties: (Property | PropertyMapResult)[],
+  properties: (PublicPropertyDTO | PropertyMapResult)[],
   activeFilter: MapFilterCategory
-): (Property | PropertyMapResult)[] {
+): (PublicPropertyDTO | PropertyMapResult)[] {
   if (activeFilter === 'all') return properties;
   return properties.filter((p) => {
     if (activeFilter === 'sale') return p.listingType === 'sale';

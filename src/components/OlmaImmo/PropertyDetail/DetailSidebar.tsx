@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, Phone, MessageSquare } from 'lucide-react';
-import { Property, PublicOwnerProfile } from '../../../types/realEstate';
+import { PublicPropertyDTO, PublicOwnerProfile } from '../../../types/realEstate';
 import { OwnerTrustCard } from '../OwnerTrustCard';
 import { ShortTermBookingCalendar } from '../ShortTermBookingCalendar';
 import { PropertyPrice } from '../primitives/PropertyPrice';
@@ -18,7 +18,7 @@ export interface BookingSummaryData {
 }
 
 interface DetailSidebarProps {
-  property: Property;
+  property: PublicPropertyDTO;
   ownerProfile: PublicOwnerProfile | null;
   isOwnerLoading: boolean;
   ownerError: boolean;

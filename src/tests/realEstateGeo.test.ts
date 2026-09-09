@@ -8,7 +8,7 @@ import {
   isWithinAlgeriaBounds,
 } from '../services/realEstateGeo';
 import { PropertySearchQuerySchema } from '../schemas/realEstate';
-import { PropertyMapResult, Property } from '../types/realEstate';
+import { PropertyMapResult, StoredProperty } from '../types/realEstate';
 
 describe('Real Estate (Olma Immo) Geospatial Engine Suite (OLM-02)', () => {
   describe('Geohash & Distance Calculations (Service Unit Tests)', () => {
@@ -165,7 +165,7 @@ describe('Real Estate (Olma Immo) Geospatial Engine Suite (OLM-02)', () => {
 
   describe('Map DTO Sanitization', () => {
     it('1. Strips sensitive owner fields when mapping Property to PropertyMapResult', () => {
-      const fullProperty: Property = {
+      const fullProperty: StoredProperty = {
         id: 'PROP-999',
         ownerId: 'SECRET_OWNER_UID_123',
         title: 'Villa de Luxe Oran',

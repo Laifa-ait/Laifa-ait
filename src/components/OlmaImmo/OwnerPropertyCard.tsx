@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Edit, Eye, Trash2, PauseCircle, PlayCircle } from 'lucide-react';
-import { Property, PropertyStatus } from '../../types/realEstate';
+import { StoredProperty, PropertyStatus } from '../../types/realEstate';
 import {
   OlmaCard,
   OlmaButton,
@@ -12,7 +12,7 @@ import {
 } from './primitives';
 
 interface OwnerPropertyCardProps {
-  property: Property;
+  property: StoredProperty;
   onDelete?: (id: string, title: string) => void;
   onUpdateStatus?: (id: string, status: PropertyStatus) => void;
   formatPrice?: (price: number, period?: string, listingType?: string) => string;

@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Property } from '../../types/realEstate';
+import { PublicPropertyDTO } from '../../types/realEstate';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface PropertyMapDeckProps {
-  properties: Property[];
+  properties: PublicPropertyDTO[];
   selectedPropertyId?: string;
   onSelectProperty: (id: string) => void;
   show: boolean;

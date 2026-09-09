@@ -8,7 +8,7 @@ import {
   PropertyMedia,
 } from '../components/OlmaImmo/primitives';
 import { PropertyCard } from '../components/OlmaImmo/PropertyCard';
-import { Property } from '../types/realEstate';
+import { PublicPropertyDTO } from '../types/realEstate';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -129,7 +129,7 @@ describe('OLM-IMMO 2.2 — Badge, Media & PropertyCard Integration', () => {
   });
 
   describe('PropertyCard Complete Integration', () => {
-    const sampleProperty: Property = {
+    const sampleProperty: PublicPropertyDTO = {
       id: 'prop-123',
       title: 'Appartement F3 Vue Mer Hydra',
       description: 'Superbe appartement entièrement meublé et sécurisé.',
@@ -151,7 +151,6 @@ describe('OLM-IMMO 2.2 — Badge, Media & PropertyCard Integration', () => {
       images: ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600'],
       legalPapers: ['acte_notarie', 'livret_foncier'],
       isLegalVerified: true,
-      ownerId: 'owner-456',
       status: 'active',
       viewsCount: 142,
       createdAt: '2026-01-01T00:00:00Z',

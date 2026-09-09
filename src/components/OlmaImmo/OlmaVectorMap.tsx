@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { PropertyMapPreview } from './PropertyMapPreview';
 import { MapCategoryFilterBar, MapFilterCategory } from './MapCategoryFilterBar';
 import { MapControlsOverlay } from './MapControlsOverlay';
@@ -13,7 +13,7 @@ import { useMapGestures } from './useMapGestures';
 export type { MapFilterCategory };
 
 interface OlmaVectorMapProps {
-  properties: (Property | PropertyMapResult)[];
+  properties: (PublicPropertyDTO | PropertyMapResult)[];
   selectedPropertyId?: string;
   highlightPropertyId?: string;
   onSelectProperty?: (id: string) => void;

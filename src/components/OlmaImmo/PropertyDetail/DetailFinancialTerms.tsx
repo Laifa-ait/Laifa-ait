@@ -1,9 +1,9 @@
 import React from 'react';
 import { DollarSign, Droplets, Zap, Building, Handshake, CheckCircle2, AlertCircle, Sparkles, Shield } from 'lucide-react';
-import { Property } from '../../../types/realEstate';
+import { PublicPropertyDTO } from '../../../types/realEstate';
 
 interface DetailFinancialTermsProps {
-  property: Property;
+  property: PublicPropertyDTO;
 }
 
 const formatDZD = (amount: number): string => {

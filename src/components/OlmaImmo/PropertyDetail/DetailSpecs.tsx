@@ -1,9 +1,9 @@
 import React from 'react';
-import { Property } from '../../../types/realEstate';
+import { PublicPropertyDTO } from '../../../types/realEstate';
 import { PropertyMeta } from '../primitives/PropertyMeta';
 
 interface DetailSpecsProps {
-  property: Property;
+  property: PublicPropertyDTO;
 }
 
 export const DetailSpecs: React.FC<DetailSpecsProps> = ({ property }) => {

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { project, formatPriceShort } from './webMercator';
 import { formatPriceAlgeria } from './mapStyles';
 
 interface OlmaMapMarkersProps {
-  properties: (Property | PropertyMapResult)[];
+  properties: (PublicPropertyDTO | PropertyMapResult)[];
   selectedPropertyId?: string;
   highlightPropertyId?: string;
   onSelectProperty?: (id: string) => void;

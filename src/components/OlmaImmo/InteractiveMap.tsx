@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { OlmaVectorMap } from './OlmaVectorMap';
 import { MapFilterCategory } from './MapCategoryFilterBar';
 
 interface InteractiveMapProps {
-  properties: (Property | PropertyMapResult)[];
+  properties: (PublicPropertyDTO | PropertyMapResult)[];
   selectedPropertyId?: string;
   highlightPropertyId?: string;
   onSelectProperty?: (id: string) => void;

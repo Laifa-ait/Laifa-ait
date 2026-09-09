@@ -10,7 +10,7 @@ import {
 import { OlmaImmoEmptyState } from '../components/OlmaImmo/OlmaImmoEmptyState';
 import { OlmaImmoHero } from '../components/OlmaImmo/OlmaImmoHero';
 import { OlmaImmoPropertiesSection } from '../components/OlmaImmo/OlmaImmoPropertiesSection';
-import { Property } from '../types/realEstate';
+import { PublicPropertyDTO } from '../types/realEstate';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -202,25 +202,31 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
     });
 
     it('renders properties and displays result count', () => {
-      const sampleProperty: Property = {
+      const sampleProperty: PublicPropertyDTO = {
         id: 'prop-test-1',
         title: 'Superbe Villa Moderne avec Piscine',
         description: 'Magnifique villa R+2 à Alger',
         price: 45000000,
-        wilaya: 'Alger',
-        commune: 'Hydra',
-        address: 'Hydra Paradou',
+        location: {
+          wilaya: 'Alger',
+          commune: 'Hydra',
+          address: 'Hydra Paradou',
+          lat: 36.74,
+          lng: 3.03,
+        },
         propertyType: 'villa',
         listingType: 'sale',
         areaSquareMeters: 350,
         rooms: 6,
+        bathrooms: 3,
+        features: ['piscine'],
         images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        hasActeNotarie: true,
-        hasLivretFoncier: true,
-        legalPaperType: 'acte_livret',
-        ownerId: 'seller-1',
+        legalPapers: ['acte_notarie', 'livret_foncier'],
+        legalPaperType: 'acte_notarie',
+        status: 'active',
+        viewsCount: 15,
       };
 
       const onSelectProperty = vi.fn();

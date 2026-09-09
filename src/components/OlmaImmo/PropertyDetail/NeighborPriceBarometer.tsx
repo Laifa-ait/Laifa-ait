@@ -1,11 +1,11 @@
 import React from 'react';
-import { Property, PropertyMapResult } from '../../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../../types/realEstate';
 import { TrendingUp, BarChart2, Eye, EyeOff } from 'lucide-react';
 import { formatPriceAlgeria } from '../mapStyles';
 
 interface NeighborPriceBarometerProps {
   currentPrice: number;
-  neighbors: (Property | PropertyMapResult)[];
+  neighbors: (PublicPropertyDTO | PropertyMapResult)[];
   commune: string;
   wilaya: string;
   showNeighborsOnMap: boolean;

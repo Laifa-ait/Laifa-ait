@@ -1,10 +1,10 @@
 import React from 'react';
 import { ShieldCheck, CheckCircle2, FileCheck, Scale, AlertCircle } from 'lucide-react';
-import { Property } from '../../../types/realEstate';
+import { PublicPropertyDTO } from '../../../types/realEstate';
 import { getLegalPaperInfo } from '../../../constants/legalPapers';
 
 interface DetailLegalStatusProps {
-  property: Property;
+  property: PublicPropertyDTO;
 }
 
 export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({ property }) => {

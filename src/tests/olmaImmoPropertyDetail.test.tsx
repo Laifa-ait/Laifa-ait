@@ -3,7 +3,7 @@ import React, { act } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { Property } from '../types/realEstate';
+import { PublicPropertyDTO } from '../types/realEstate';
 
 import { DetailSpecs } from '../components/OlmaImmo/PropertyDetail/DetailSpecs';
 import { DetailLegalStatus } from '../components/OlmaImmo/PropertyDetail/DetailLegalStatus';
@@ -14,7 +14,7 @@ import { DetailMobileActionBar } from '../components/OlmaImmo/PropertyDetail/Det
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mockProperty: Property = {
+const mockProperty: PublicPropertyDTO = {
   id: 'prop_test_detail',
   title: 'Bel Appartement F4 Vue Mer',
   description:
@@ -29,7 +29,6 @@ const mockProperty: Property = {
   legalPapers: ['acte_notarie', 'livret_foncier'],
   isLegalVerified: true,
   status: 'active',
-  ownerId: 'owner_dz_1',
   contactPhone: '0555000000',
   viewsCount: 142,
   location: {

@@ -13,10 +13,10 @@ import {
   Sofa,
   CheckCircle2,
 } from 'lucide-react';
-import { Property } from '../../../types/realEstate';
+import { PublicPropertyDTO } from '../../../types/realEstate';
 
 interface DetailDescriptionProps {
-  property: Property;
+  property: PublicPropertyDTO;
 }
 
 export const DetailDescription: React.FC<DetailDescriptionProps> = ({ property }) => {

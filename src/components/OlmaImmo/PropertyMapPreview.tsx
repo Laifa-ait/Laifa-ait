@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Maximize, Bed, Bath, Heart, X, ArrowUpRight } from 'lucide-react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
 
 interface PropertyMapPreviewProps {
-  property: Property | PropertyMapResult;
+  property: PublicPropertyDTO | PropertyMapResult;
   onClose?: () => void;
   className?: string;
 }

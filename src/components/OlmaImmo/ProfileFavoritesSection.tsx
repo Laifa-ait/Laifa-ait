@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Property } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyListResponse } from '../../types/realEstate';
 import { PropertyCard } from './PropertyCard';
 import { getFavoritePropertyIds } from '../../utils/realEstateFavorites';
 import { apiGet } from '../../lib/api';
 
 export const ProfileFavoritesSection: React.FC = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<PublicPropertyDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const ProfileFavoritesSection: React.FC = () => {
     setIsLoading(true);
     try {
       // Fetch public properties to match favorite ids
-      const res = await apiGet<{ success: boolean; data?: Property[] }>('/api/v1/real-estate/properties?limit=50');
+      const res = await apiGet<PropertyListResponse>('/api/v1/real-estate/properties?limit=50');
       if (res.success && res.data) {
         const matched = res.data.filter((p) => ids.includes(p.id));
         setProperties(matched);

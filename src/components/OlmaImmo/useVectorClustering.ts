@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 
 export const GEO_BOUNDS = {
   minLat: 34.2,
@@ -14,12 +14,12 @@ export interface MapCluster {
   count: number;
   lat: number;
   lng: number;
-  properties: (Property | PropertyMapResult)[];
-  mainProperty?: Property | PropertyMapResult;
+  properties: (PublicPropertyDTO | PropertyMapResult)[];
+  mainProperty?: PublicPropertyDTO | PropertyMapResult;
 }
 
 export function useVectorClustering(
-  properties: (Property | PropertyMapResult)[],
+  properties: (PublicPropertyDTO | PropertyMapResult)[],
   zoom: number
 ) {
   const validProperties = useMemo(() => {
@@ -48,7 +48,7 @@ export function useVectorClustering(
       const pLng = 'location' in p ? p.location.lng : p.lng;
       const pos = gpsToPercent(pLat, pLng);
 
-      const clusterGroup: (Property | PropertyMapResult)[] = [p];
+      const clusterGroup: (PublicPropertyDTO | PropertyMapResult)[] = [p];
       processed[idx] = true;
 
       validProperties.forEach((other, oIdx) => {

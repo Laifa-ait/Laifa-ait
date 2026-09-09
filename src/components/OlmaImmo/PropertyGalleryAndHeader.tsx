@@ -1,9 +1,9 @@
 import React from 'react';
 import { Heart, MapPin, Share2 } from 'lucide-react';
-import { RealEstateProperty } from '../../types/realEstate';
+import { PublicPropertyDTO } from '../../types/realEstate';
 
 interface PropertyGalleryAndHeaderProps {
-  property: RealEstateProperty;
+  property: PublicPropertyDTO;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   activeImageIndex: number;

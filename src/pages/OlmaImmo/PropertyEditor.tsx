@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Property,
   PropertyType,
   ListingType,
   LegalPaperType,
   GeoPointLocation,
   PropertyStatus,
   UtilityCharges,
+  PropertyResponse,
 } from '../../types/realEstate';
 import { apiGet, apiPost, apiPut } from '../../lib/api';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check } from 'lucide-react';
@@ -89,7 +89,7 @@ export const PropertyEditor: React.FC = () => {
   useEffect(() => {
     if (isEditMode && id) {
       setIsLoading(true);
-      apiGet<{ success: boolean; data?: Property }>(`/api/v1/real-estate/properties/${id}`)
+      apiGet<PropertyResponse>(`/api/v1/real-estate/properties/${id}`)
         .then((res) => {
           if (res.success && res.data) {
             const p = res.data;
@@ -182,7 +182,7 @@ export const PropertyEditor: React.FC = () => {
           toast.error(res.error || 'Erreur lors de la mise à jour');
         }
       } else {
-        const res = await apiPost<{ success: boolean; data?: Property; error?: string }>('/api/v1/real-estate/properties', payload);
+        const res = await apiPost<PropertyResponse>('/api/v1/real-estate/properties', payload);
         if (res.success) {
           toast.success('Votre annonce a été publiée avec succès !');
           navigate('/immo/owner');

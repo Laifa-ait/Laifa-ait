@@ -5,7 +5,7 @@ import { ImageGalleryLightbox } from '../../components/OlmaImmo/ImageGalleryLigh
 import { VisitRequestModal } from '../../components/OlmaImmo/VisitRequestModal';
 import { BookingRequestModal } from '../../components/OlmaImmo/BookingRequestModal';
 import { UnifiedMessagingDrawer } from '../../components/Chat/UnifiedMessagingDrawer';
-import { Property, PublicOwnerProfile } from '../../types/realEstate';
+import { PublicPropertyDTO, PublicOwnerProfile, PropertyResponse, PropertyListResponse } from '../../types/realEstate';
 import { apiGet } from '../../lib/api';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
 import toast from 'react-hot-toast';
@@ -24,8 +24,8 @@ import { DetailMobileActionBar } from '../../components/OlmaImmo/PropertyDetail/
 
 export const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
+  const [property, setProperty] = useState<PublicPropertyDTO | null>(null);
+  const [similarProperties, setSimilarProperties] = useState<PublicPropertyDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState<PublicOwnerProfile | null>(null);
@@ -49,7 +49,7 @@ export const PropertyDetail: React.FC = () => {
     const fetchPropertyData = async () => {
       setIsLoading(true);
       try {
-        const response = await apiGet<{ success: boolean; data?: Property }>(
+        const response = await apiGet<PropertyResponse>(
           `/api/v1/real-estate/properties/${id}`
         );
 
@@ -68,7 +68,7 @@ export const PropertyDetail: React.FC = () => {
             .finally(() => setIsOwnerLoading(false));
 
           try {
-            const similarRes = await apiGet<{ success: boolean; data?: Property[] }>(
+            const similarRes = await apiGet<PropertyListResponse>(
               `/api/v1/real-estate/properties/${response.data.id}/similar`
             );
             if (similarRes.success && similarRes.data) {
@@ -218,7 +218,6 @@ export const PropertyDetail: React.FC = () => {
         propertyTitle={property.title}
         propertyLocation={`${property.location.commune}, ${property.location.wilaya}`}
         propertyImage={property.images?.[0] || ''}
-        ownerId={property.ownerId}
         bookingSummary={bookingSummary}
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
@@ -231,7 +230,7 @@ export const PropertyDetail: React.FC = () => {
           onClose={() => setIsDirectChatOpen(false)}
           initialContext={{
             type: 'REAL_ESTATE_INQUIRY',
-            recipientId: property.ownerId || property.id,
+            recipientId: property.id,
             context: {
               propertyId: property.id,
               referenceTitle: property.title,

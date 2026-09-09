@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Share2, Eye } from 'lucide-react';
-import { Property, LegalPaperType } from '../../../types/realEstate';
+import { PublicPropertyDTO, LegalPaperType } from '../../../types/realEstate';
 import {
   PropertyBadge,
   PropertyLocation,
@@ -11,7 +11,7 @@ import {
 } from '../primitives';
 
 interface DetailHeaderProps {
-  property: Property;
+  property: PublicPropertyDTO;
   isFav: boolean;
   onFavoriteClick: () => void;
   onShare: () => void;

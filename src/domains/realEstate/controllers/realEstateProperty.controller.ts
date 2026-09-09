@@ -15,7 +15,6 @@ import {
 } from '../../../schemas/realEstate';
 import {
   StoredProperty,
-  Property,
   PublicPropertyDTO,
   PropertyMapResult,
   LegalPaperType,
@@ -501,7 +500,7 @@ const ALLOWED_LEGAL_PAPERS: ReadonlySet<string> = new Set([
  * - user private account data (email, phone, address)
  * - non-authorized contact details
  */
-export function toPublicPropertyDTO(property: StoredProperty | Property): PublicPropertyDTO {
+export function toPublicPropertyDTO(property: StoredProperty): PublicPropertyDTO {
   const sanitizedLegalPapers: LegalPaperType[] = Array.isArray(property.legalPapers)
     ? property.legalPapers.filter((item): item is LegalPaperType => typeof item === 'string' && ALLOWED_LEGAL_PAPERS.has(item))
     : [];

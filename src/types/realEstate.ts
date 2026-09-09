@@ -151,9 +151,8 @@ export interface PublicPropertyDTO {
   updatedAt: string;
 }
 
-export type PublicProperty = PublicPropertyDTO;
-export type Property = PublicPropertyDTO;
-export type RealEstateProperty = PublicPropertyDTO;
+// PublicPropertyDTO represents the sanitized public DTO.
+// StoredProperty represents internal Firestore documents.
 
 export interface PropertyFormData {
   title: string;

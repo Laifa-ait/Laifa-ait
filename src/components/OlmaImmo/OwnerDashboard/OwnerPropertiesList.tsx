@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Property, PropertyStatus } from '../../../types/realEstate';
+import { StoredProperty, PropertyStatus } from '../../../types/realEstate';
 import { Building2, PlusCircle } from 'lucide-react';
 import { OwnerPropertyCard } from '../OwnerPropertyCard';
 import { OlmaButton, OlmaSurface } from '../primitives';
 
 interface OwnerPropertiesListProps {
-  properties: Property[];
+  properties: StoredProperty[];
   isLoading: boolean;
   onUpdateStatus: (propertyId: string, status: PropertyStatus) => void;
   onDeleteProperty?: (propertyId: string, title: string) => void;

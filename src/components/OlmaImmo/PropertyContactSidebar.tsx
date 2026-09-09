@@ -1,9 +1,9 @@
 import React from 'react';
 import { Calendar, CheckCircle2, MessageSquare, Phone, ShieldCheck, User } from 'lucide-react';
-import { RealEstateProperty } from '../../types/realEstate';
+import { PublicPropertyDTO } from '../../types/realEstate';
 
 interface PropertyContactSidebarProps {
-  property: RealEstateProperty;
+  property: PublicPropertyDTO;
   formatPriceDisplay: (price: number, period?: string, listingType?: string) => string;
   onOpenBooking: () => void;
   onOpenVisit: () => void;

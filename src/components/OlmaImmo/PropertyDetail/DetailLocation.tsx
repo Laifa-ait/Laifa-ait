@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Compass, Navigation, ExternalLink, ShieldCheck, Eye } from 'lucide-react';
-import { GeoPointLocation, Property, PropertyMapResult } from '../../../types/realEstate';
+import { GeoPointLocation, PublicPropertyDTO, PropertyMapResult, PropertyListResponse } from '../../../types/realEstate';
 import { InteractiveMap } from '../InteractiveMap';
 import { NeighborPriceBarometer } from './NeighborPriceBarometer';
 import { NeighborPropertyModal } from './NeighborPropertyModal';
@@ -12,7 +12,7 @@ interface DetailLocationProps {
   title: string;
   price: number;
   currentPropertyId?: string;
-  similarProperties?: Property[];
+  similarProperties?: PublicPropertyDTO[];
 }
 
 export const DetailLocation: React.FC<DetailLocationProps> = ({
@@ -24,12 +24,12 @@ export const DetailLocation: React.FC<DetailLocationProps> = ({
 }) => {
   const [showNeighbors, setShowNeighbors] = useState<boolean>(true);
   const [selectedNeighborId, setSelectedNeighborId] = useState<string | null>(null);
-  const [extraNeighbors, setExtraNeighbors] = useState<Property[]>([]);
+  const [extraNeighbors, setExtraNeighbors] = useState<PublicPropertyDTO[]>([]);
 
   // Fetch additional neighboring properties in the same Wilaya if needed
   useEffect(() => {
     if (location.wilaya) {
-      apiGet<{ success: boolean; data?: Property[] }>(
+      apiGet<PropertyListResponse>(
         `/api/v1/real-estate/properties?wilaya=${encodeURIComponent(location.wilaya)}&limit=10`
       )
         .then((res) => {
@@ -46,7 +46,7 @@ export const DetailLocation: React.FC<DetailLocationProps> = ({
 
   // Combine similarProperties and extraNeighbors (deduplicated)
   const allNeighbors = useMemo(() => {
-    const map = new Map<string, Property>();
+    const map = new Map<string, PublicPropertyDTO>();
     similarProperties.forEach((p) => {
       if (p.id !== currentPropertyId) map.set(p.id, p);
     });

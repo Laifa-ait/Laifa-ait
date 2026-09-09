@@ -1,10 +1,10 @@
 import React from 'react';
 import { MessageSquare, Calendar, Phone } from 'lucide-react';
-import { Property, PublicOwnerProfile } from '../../../types/realEstate';
+import { PublicPropertyDTO, PublicOwnerProfile } from '../../../types/realEstate';
 import { formatDZD } from '../../../utils/format';
 
 interface DetailMobileActionBarProps {
-  property: Property;
+  property: PublicPropertyDTO;
   ownerProfile: PublicOwnerProfile | null;
   onOpenVisitModal: () => void;
   onOpenBookingModal: () => void;

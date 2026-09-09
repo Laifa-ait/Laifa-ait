@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Property, PropertyMapResult } from '../../types/realEstate';
+import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { FilterState } from './SearchFilters';
 import { PropertyCard, PropertyCardSkeleton } from './PropertyCard';
 import { InteractiveMap } from './InteractiveMap';
@@ -9,7 +9,7 @@ import { OlmaImmoFloatingToggle } from './OlmaImmoFloatingToggle';
 import { Map as MapIcon, LayoutGrid, Columns2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface OlmaImmoPropertiesSectionProps {
-  properties: Property[];
+  properties: PublicPropertyDTO[];
   mapResults: PropertyMapResult[];
   selectedPropertyId?: string;
   onSelectProperty: (id: string) => void;

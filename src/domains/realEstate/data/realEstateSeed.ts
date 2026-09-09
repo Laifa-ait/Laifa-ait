@@ -1,4 +1,4 @@
-import { StoredProperty, PublicPropertyDTO, PropertyMapResult, LegalPaperType } from '../../../types/realEstate';
+import { StoredProperty, PropertyMapResult, LegalPaperType } from '../../../types/realEstate';
 import { encodeGeohash } from '../../../services/realEstateGeo';
 import { safeLogger } from '../../../utils/logger';
 
@@ -373,7 +373,7 @@ const ALLOWED_LEGAL_PAPERS: ReadonlySet<string> = new Set([
   'papier_timbre',
 ]);
 
-export function toPropertyMapResult(p: (StoredProperty | PublicPropertyDTO) & { distanceKm?: number }): PropertyMapResult {
+export function toPropertyMapResult(p: StoredProperty & { distanceKm?: number }): PropertyMapResult {
   const safePapers = Array.isArray(p.legalPapers)
     ? p.legalPapers.filter((item): item is LegalPaperType => typeof item === 'string' && ALLOWED_LEGAL_PAPERS.has(item))
     : undefined;

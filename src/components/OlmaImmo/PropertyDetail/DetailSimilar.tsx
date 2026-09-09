@@ -1,9 +1,9 @@
 import React from 'react';
-import { Property } from '../../../types/realEstate';
+import { PublicPropertyDTO } from '../../../types/realEstate';
 import { PropertyCard } from '../PropertyCard';
 
 interface DetailSimilarProps {
-  similarProperties: Property[];
+  similarProperties: PublicPropertyDTO[];
 }
 
 export const DetailSimilar: React.FC<DetailSimilarProps> = ({ similarProperties }) => {
