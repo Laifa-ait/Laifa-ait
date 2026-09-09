@@ -47,7 +47,8 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <OlmaSurface
-          variant="card"
+          variant="default"
+          elevation="card"
           padding="md"
           className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
         >
@@ -63,7 +64,8 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
         </OlmaSurface>
 
         <OlmaSurface
-          variant="card"
+          variant="default"
+          elevation="card"
           padding="md"
           className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
         >
@@ -79,7 +81,8 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
         </OlmaSurface>
 
         <OlmaSurface
-          variant="card"
+          variant="default"
+          elevation="card"
           padding="md"
           className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
         >
@@ -95,7 +98,8 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
         </OlmaSurface>
 
         <OlmaSurface
-          variant="card"
+          variant="default"
+          elevation="card"
           padding="md"
           className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
         >

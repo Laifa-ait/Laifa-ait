@@ -27,7 +27,8 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
 
   return (
     <OlmaSurface
-      variant="card"
+      variant="default"
+      elevation="card"
       padding="lg"
       className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-6"
     >

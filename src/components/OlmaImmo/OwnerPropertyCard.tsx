@@ -52,7 +52,7 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
         />
         <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
           <PropertyBadge type="status" value={property.status} size="sm" dot />
-          <PropertyBadge type="listingType" value={property.listingType} size="xs" />
+          <PropertyBadge type="listingType" value={property.listingType} size="sm" />
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export const OwnerPropertyCard: React.FC<OwnerPropertyCardProps> = ({
             bathrooms={property.bathrooms}
             viewsCount={property.viewsCount}
             layout="inline"
-            size="xs"
+            size="sm"
           />
         </div>
 
