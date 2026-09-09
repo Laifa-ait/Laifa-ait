@@ -144,10 +144,44 @@ describe('GET /api/v1/real-estate/properties/:id/owner', () => {
     expect(profile.displayName).toBe('Test Owner');
     expect(profile.verificationStatus).toBe('approved');
     
-    // Check that PII is NOT present
+    // Check that PII and internal IDs are NOT present
     expect(profile).not.toHaveProperty('email');
     expect(profile).not.toHaveProperty('phone');
     expect(profile).not.toHaveProperty('address');
     expect(profile).not.toHaveProperty('idCardUrl');
+    expect(profile).not.toHaveProperty('uid');
+    expect(profile).not.toHaveProperty('ownerId');
+  });
+
+  it('should sanitize internal moderation status (pending, rejected, action_required) to unverified', async () => {
+    const mockPropertyDoc = {
+      exists: true,
+      data: () => ({ status: 'active', ownerId: 'owner456' })
+    };
+    const mockUserDoc = {
+      exists: true,
+      data: () => ({
+        uid: 'owner456',
+        displayName: 'Unverified Owner',
+        verificationStatus: 'action_required',
+      })
+    };
+
+    collectionSpy.mockImplementation(((collName: string) => ({
+      doc: vi.fn().mockReturnValue({
+        get: vi.fn().mockImplementation(() => {
+          if (collName === 'real_estate_properties') return Promise.resolve(mockPropertyDoc);
+          if (collName === 'users') return Promise.resolve(mockUserDoc);
+          return Promise.resolve({ exists: false });
+        })
+      })
+    })) as unknown as (collectionPath: string) => CollectionReference);
+
+    const res = await request(app).get('/api/v1/real-estate/properties/prop1/owner');
+    
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.verificationStatus).toBe('unverified');
+    expect(res.body.data).not.toHaveProperty('uid');
   });
 });

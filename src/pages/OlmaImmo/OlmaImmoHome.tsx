@@ -71,6 +71,7 @@ export const OlmaImmoHome: React.FC = () => {
           cardRefs={cardRefs}
           onBoundsChange={(bbox) => setMapBounds(bbox)}
           onResetFilters={resetAllFilters}
+          filters={filters}
         />
       </OlmaSection>
     </OlmaImmoShell>

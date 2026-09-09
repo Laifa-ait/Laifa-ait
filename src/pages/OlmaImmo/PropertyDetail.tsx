@@ -231,7 +231,7 @@ export const PropertyDetail: React.FC = () => {
           onClose={() => setIsDirectChatOpen(false)}
           initialContext={{
             type: 'REAL_ESTATE_INQUIRY',
-            recipientId: property.ownerId,
+            recipientId: property.ownerId || property.id,
             context: {
               propertyId: property.id,
               referenceTitle: property.title,

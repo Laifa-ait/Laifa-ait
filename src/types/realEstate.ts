@@ -67,9 +67,9 @@ export interface UtilityCharges {
   condoFees?: boolean; // Charges de copropriété / Syndic
 }
 
-export interface Property {
+export interface PublicPropertyDTO {
   id: string;
-  ownerId: string;
+  ownerId?: string; // Omis dans le DTO public assaini pour préserver la vie privée
   title: string;
   description: string;
   propertyType: PropertyType;
@@ -101,6 +101,8 @@ export interface Property {
   createdAt: string;
   updatedAt: string;
 }
+
+export type Property = PublicPropertyDTO;
 
 export type RealEstateProperty = Property;
 
@@ -201,13 +203,13 @@ export interface VisitResponse {
 }
 
 export interface PublicOwnerProfile {
-  uid: string;
+  uid?: string;
   displayName: string;
   photoURL?: string;
   role: string;
   shopName?: string;
   sellerType?: string;
-  verificationStatus: 'pending' | 'approved' | 'rejected' | 'action_required' | 'unverified';
+  verificationStatus: 'approved' | 'unverified';
   joinedAt?: string;
 }
 

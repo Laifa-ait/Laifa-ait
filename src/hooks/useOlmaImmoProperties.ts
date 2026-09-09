@@ -47,6 +47,8 @@ export function useOlmaImmoProperties() {
   const setFilters = useCallback(
     (newFilters: FilterState) => {
       setFiltersState(newFilters);
+      // Auto-clear selected property when filters change to prevent stale selection
+      setSelectedPropertyId(undefined);
       const nextParams = filtersToSearchParams(newFilters, showFavoritesOnly);
       setSearchParams(nextParams, { replace: true });
     },
@@ -69,6 +71,7 @@ export function useOlmaImmoProperties() {
     const clean: FilterState = { sort: 'recent' };
     setFiltersState(clean);
     setShowFavoritesOnly(false);
+    setSelectedPropertyId(undefined);
     setMapBounds(null);
     const nextParams = filtersToSearchParams(clean, false);
     setSearchParams(nextParams, { replace: true });
@@ -122,6 +125,12 @@ export function useOlmaImmoProperties() {
 
         if (listRes.success && listRes.data) {
           setProperties(listRes.data);
+          // Auto-deselect if the selected property is no longer present in the updated results
+          setSelectedPropertyId((current) => {
+            if (!current) return undefined;
+            const exists = listRes.data?.some((p) => p.id === current);
+            return exists ? current : undefined;
+          });
         }
         if (mapRes.success && mapRes.data) {
           setMapResults(mapRes.data);
@@ -155,12 +164,14 @@ export function useOlmaImmoProperties() {
   }, [fetchProperties, mapBounds]);
 
   const handleSelectProperty = (id: string) => {
-    setSelectedPropertyId(id);
-    if (id) {
-      const element = cardRefs.current[id];
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+    if (!id) {
+      setSelectedPropertyId(undefined);
+      return;
+    }
+    setSelectedPropertyId((prev) => (prev === id ? undefined : id));
+    const element = cardRefs.current[id];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   };
 

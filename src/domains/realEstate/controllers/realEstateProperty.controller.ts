@@ -15,6 +15,7 @@ import {
 } from '../../../schemas/realEstate';
 import {
   Property,
+  PublicPropertyDTO,
   PropertyMapResult,
   LegalPaperType,
 } from '../../../types/realEstate';
@@ -478,6 +479,61 @@ realEstatePropertyRouter.get(
   }
 );
 
+/**
+ * Sanitizes a Property entity into a strict PublicPropertyDTO.
+ * Strips sensitive/internal fields:
+ * - ownerId / Firebase UID
+ * - internal moderation notes / rejection reasons
+ * - KYC documents and administrative data
+ * - user private account data (email, phone, address)
+ * - non-authorized contact details
+ */
+export function toPublicPropertyDTO(property: Property): PublicPropertyDTO {
+  return {
+    id: property.id,
+    title: property.title || '',
+    description: property.description || '',
+    propertyType: property.propertyType,
+    listingType: property.listingType,
+    price: property.price,
+    pricePeriod: property.pricePeriod,
+    isPriceNegotiable: property.isPriceNegotiable,
+    paymentAdvanceMonths: property.paymentAdvanceMonths,
+    securityDepositMonths: property.securityDepositMonths,
+    utilityCharges: property.utilityCharges,
+    cleaningFee: property.cleaningFee,
+    serviceFee: property.serviceFee,
+    deposit: property.deposit,
+    areaSquareMeters: property.areaSquareMeters ?? property.area ?? 0,
+    area: property.areaSquareMeters ?? property.area ?? 0,
+    rooms: property.rooms ?? 0,
+    bathrooms: property.bathrooms ?? 0,
+    features: Array.isArray(property.features) ? property.features : [],
+    images: Array.isArray(property.images) ? property.images : [],
+    location: {
+      lat: property.location?.lat,
+      lng: property.location?.lng,
+      address: property.location?.address || '',
+      commune: property.location?.commune || property.commune || '',
+      wilaya: property.location?.wilaya || property.wilaya || '',
+      geohash: property.location?.geohash,
+    },
+    commune: property.location?.commune || property.commune || '',
+    wilaya: property.location?.wilaya || property.wilaya || '',
+    legalPapers: Array.isArray(property.legalPapers) ? property.legalPapers : [],
+    legalPaperType: property.legalPaperType,
+    isLegalVerified: Boolean(property.isLegalVerified),
+    // Contact phone: ONLY if explicitly set in the property listing as authorized public contact
+    ...(typeof property.contactPhone === 'string' && property.contactPhone.trim()
+      ? { contactPhone: property.contactPhone.trim() }
+      : {}),
+    status: property.status,
+    viewsCount: property.viewsCount || 0,
+    createdAt: property.createdAt || new Date().toISOString(),
+    updatedAt: property.updatedAt || new Date().toISOString(),
+  };
+}
+
 // GET /properties/:id
 realEstatePropertyRouter.get(
   '/properties/:id',
@@ -516,7 +572,7 @@ realEstatePropertyRouter.get(
         return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
       }
 
-      const nonPublicStatuses = ['draft', 'archived', 'pending'];
+      const nonPublicStatuses = ['draft', 'archived', 'pending', 'rejected'];
       if (nonPublicStatuses.includes(property.status)) {
         const callerUid = req.user?.uid;
         const isServerAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
@@ -534,7 +590,8 @@ realEstatePropertyRouter.get(
         }
       }
 
-      return res.json({ success: true, data: property });
+      const publicDto = toPublicPropertyDTO(property);
+      return res.json({ success: true, data: publicDto });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       safeLogger.error('Error fetching property detail', { propertyId: id, err: errorMsg });
@@ -590,23 +647,23 @@ realEstatePropertyRouter.get(
 
       const userData = userSnap.data();
 
+      const publicVerificationStatus = userData?.verificationStatus === 'approved' ? 'approved' : 'unverified';
+
       const publicProfile: {
-        uid: string;
         displayName: string;
         photoURL: string;
         role: string;
         shopName?: string;
         sellerType?: string;
-        verificationStatus: string;
+        verificationStatus: 'approved' | 'unverified';
         joinedAt?: string;
       } = {
-        uid: property.ownerId,
-        displayName: userData?.displayName || 'Propriétaire Anonyme',
+        displayName: userData?.displayName || 'Annonceur',
         photoURL: userData?.photoURL || '',
         role: userData?.role || 'buyer',
         shopName: userData?.shopName,
         sellerType: userData?.sellerType,
-        verificationStatus: userData?.verificationStatus || 'unverified',
+        verificationStatus: publicVerificationStatus,
       };
 
       if (userData?.createdAt) {
@@ -661,7 +718,7 @@ realEstatePropertyRouter.get(
         }
       });
 
-      const similarList = candidates.slice(0, 4);
+      const similarList = candidates.slice(0, 4).map(toPublicPropertyDTO);
       return res.json({ success: true, data: similarList });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);

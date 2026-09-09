@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { Property, PropertyMapResult } from '../../types/realEstate';
+import { FilterState } from './SearchFilters';
 import { PropertyCard, PropertyCardSkeleton } from './PropertyCard';
 import { InteractiveMap } from './InteractiveMap';
 import { PropertyMapDeck } from './PropertyMapDeck';
-import { OlmaSurface } from './primitives/OlmaSurface';
-import { Sparkles, Map as MapIcon, LayoutGrid, Columns2, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { OlmaImmoEmptyState } from './OlmaImmoEmptyState';
+import { OlmaImmoFloatingToggle } from './OlmaImmoFloatingToggle';
+import { Map as MapIcon, LayoutGrid, Columns2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface OlmaImmoPropertiesSectionProps {
   properties: Property[];
@@ -19,6 +20,7 @@ interface OlmaImmoPropertiesSectionProps {
   cardRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   onBoundsChange: (bbox: string | null) => void;
   onResetFilters: () => void;
+  filters?: FilterState;
 }
 
 export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps> = ({
@@ -33,27 +35,18 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
   cardRefs,
   onBoundsChange,
   onResetFilters,
+  filters,
 }) => {
   const [internalMode, setInternalMode] = useState<'split' | 'grid' | 'map'>('split');
   const activeView = (onViewModeChange ? (viewMode === 'list' ? 'grid' : viewMode) : internalMode) as 'split' | 'grid' | 'map';
   const [showBottomDeck, setShowBottomDeck] = useState(true);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | undefined>(undefined);
 
   const handleModeChange = (mode: 'split' | 'grid' | 'map') => {
     setInternalMode(mode);
-    if (onViewModeChange) {
-      onViewModeChange(mode);
-    }
+    if (onViewModeChange) onViewModeChange(mode);
   };
 
-  const toggleMapOrList = () => {
-    if (activeView === 'map') {
-      handleModeChange('grid');
-    } else {
-      handleModeChange('map');
-    }
-  };
-
-  // Only replace the whole screen with skeleton if we are in Grid mode on initial load
   if (isLoading && activeView === 'grid') {
     return (
       <div className="space-y-6 my-6">
@@ -68,37 +61,12 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
     );
   }
 
-  // Only show the full screen empty state if we are in pure grid mode
-  if (properties.length === 0 && activeView === 'grid') {
-    return (
-      <OlmaSurface
-        variant="default"
-        elevation="card"
-        radius="3xl"
-        padding="xl"
-        bordered
-        borderVariant="default"
-        className="text-center space-y-4 my-6 flex flex-col items-center"
-      >
-        <div className="w-14 h-14 bg-[#0D281E] text-[#EBDCB8] rounded-2xl flex items-center justify-center mx-auto shadow-md">
-          <Sparkles className="w-7 h-7 text-amber-400" />
-        </div>
-        <div className="space-y-1.5 max-w-md">
-          <h3 className="text-xl font-extrabold text-[#0D281E] font-['Playfair_Display',serif]">Aucune annonce trouvée</h3>
-          <p className="text-stone-500 text-sm">Aucun bien ne correspond à vos critères de recherche actuels.</p>
-          <p className="text-stone-400 text-xs">Ajustez vos critères ou réinitialisez les filtres pour découvrir nos annonces vérifiées.</p>
-        </div>
-        <button onClick={onResetFilters} className="mt-2 px-6 py-2.5 bg-[#0D281E] hover:bg-[#153e31] text-[#EBDCB8] rounded-full text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2">
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Réinitialiser les filtres</span>
-        </button>
-      </OlmaSurface>
-    );
+  if (properties.length === 0 && !isLoading && !isSearchingMap && (activeView === 'grid' || activeView === 'split')) {
+    return <OlmaImmoEmptyState filters={filters} onResetFilters={onResetFilters} />;
   }
 
   return (
     <div className="space-y-5 relative">
-      {/* Top Section Toolbar: Results Count + Modern Segmented Switcher */}
       <div className="flex items-center justify-between flex-wrap gap-3 pb-1">
         <div className="flex items-baseline gap-2">
           <span className="text-sm sm:text-base font-extrabold text-[#0D281E]">
@@ -107,27 +75,42 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
           <span className="text-xs text-stone-400 font-medium">en Algérie</span>
         </div>
 
-        {/* Segmented View Mode Toggle */}
         <div className="flex items-center p-1 bg-stone-100 rounded-full border border-stone-200/80 shadow-2xs">
-          <button type="button" onClick={() => handleModeChange('grid')} className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${activeView === 'grid' ? 'bg-white text-[#0D281E] shadow-xs' : 'text-stone-500 hover:text-stone-900'}`}>
+          <button
+            type="button"
+            onClick={() => handleModeChange('grid')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeView === 'grid' ? 'bg-white text-[#0D281E] shadow-xs' : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
             <LayoutGrid className="w-3.5 h-3.5" />
             <span>Grille</span>
           </button>
-          <button type="button" onClick={() => handleModeChange('map')} className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${activeView === 'map' ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs' : 'text-stone-500 hover:text-stone-900'}`}>
+          <button
+            type="button"
+            onClick={() => handleModeChange('map')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeView === 'map' ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs' : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
             <MapIcon className="w-3.5 h-3.5" />
             <span>Carte</span>
           </button>
-          <button type="button" onClick={() => handleModeChange('split')} className={`hidden lg:flex px-3.5 py-1.5 rounded-full text-xs font-bold transition-all items-center gap-1.5 cursor-pointer ${activeView === 'split' ? 'bg-white text-[#0D281E] shadow-xs' : 'text-stone-500 hover:text-stone-900'}`}>
+          <button
+            type="button"
+            onClick={() => handleModeChange('split')}
+            className={`hidden lg:flex px-3.5 py-1.5 rounded-full text-xs font-bold transition-all items-center gap-1.5 cursor-pointer ${
+              activeView === 'split' ? 'bg-white text-[#0D281E] shadow-xs' : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
             <Columns2 className="w-3.5 h-3.5" />
             <span>Mixte</span>
           </button>
         </div>
       </div>
 
-      {/* VIEW 1: FULL MAP MODE (With freedom toggle & smooth bottom carousel) */}
       {activeView === 'map' && (
-        <div className="w-full h-[calc(100vh-200px)] min-h-[560px] rounded-3xl overflow-hidden shadow-lg border border-[#DDD6C8] relative bg-[#F5EFE6] animate-in fade-in duration-300 flex flex-col">
-          {/* Quick Map Controls Header */}
+        <div className="w-full h-[calc(100vh-200px)] min-h-[560px] rounded-3xl overflow-hidden shadow-lg border border-[#DDD6C8] relative bg-[#F5EFE6] flex flex-col">
           <div className="absolute top-4 left-4 z-30 flex items-center gap-2 pointer-events-auto">
             <button
               type="button"
@@ -137,18 +120,17 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
               {showBottomDeck ? (
                 <>
                   <EyeOff className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Carte 100% libre</span>
+                  <span>Carte libre</span>
                 </>
               ) : (
                 <>
                   <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Afficher les {properties.length} annonces</span>
+                  <span>Afficher aperçus ({properties.length})</span>
                 </>
               )}
             </button>
           </div>
 
-          {/* Searching / Updating indicator badge */}
           {isSearchingMap && (
             <div className="absolute top-4 right-16 z-30 bg-[#0D281E]/95 backdrop-blur-md text-[#EBDCB8] text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md border border-[#EBDCB8]/30 flex items-center gap-2 pointer-events-none animate-pulse">
               <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
@@ -156,7 +138,6 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
             </div>
           )}
 
-          {/* Empty zone notification */}
           {properties.length === 0 && !isLoading && !isSearchingMap && (
             <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-[#0D281E]/95 text-[#EBDCB8] backdrop-blur-md px-4 py-2 rounded-full text-xs font-medium shadow-xl border border-amber-400/40 flex items-center gap-2.5 pointer-events-auto">
               <span>Aucun bien dans cette zone</span>
@@ -174,15 +155,15 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
             <InteractiveMap
               properties={mapResults.length > 0 ? mapResults : properties}
               selectedPropertyId={selectedPropertyId}
+              highlightPropertyId={hoveredPropertyId}
               onSelectProperty={onSelectProperty}
               onBoundsChange={onBoundsChange}
               showFilters={true}
-              showPreviewCard={!showBottomDeck} // Use floating preview card only when bottom deck is hidden
+              showPreviewCard={!showBottomDeck}
               className="w-full h-full"
             />
           </div>
 
-          {/* Bottom Floating Property Carousel */}
           <PropertyMapDeck
             properties={properties}
             selectedPropertyId={selectedPropertyId}
@@ -192,7 +173,6 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
         </div>
       )}
 
-      {/* VIEW 2: SPLIT VIEW (Desktop: 7 cols grid + 5 cols sticky map | Mobile: grid) */}
       {activeView === 'split' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -201,9 +181,9 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
               return (
                 <div
                   key={p.id}
-                  ref={(el) => {
-                    cardRefs.current[p.id] = el;
-                  }}
+                  ref={(el) => { cardRefs.current[p.id] = el; }}
+                  onMouseEnter={() => setHoveredPropertyId(p.id)}
+                  onMouseLeave={() => setHoveredPropertyId((c) => (c === p.id ? undefined : c))}
                   onClick={() => onSelectProperty(p.id)}
                   className={`transition-all duration-300 rounded-3xl cursor-pointer ${
                     isSelected ? 'ring-3 ring-[#0D281E] shadow-xl scale-[1.01]' : 'hover:shadow-md'
@@ -215,11 +195,11 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
             })}
           </div>
 
-          {/* Sticky Desktop Map */}
           <div className="lg:col-span-5 hidden lg:block sticky top-24 h-[calc(100vh-140px)] min-h-[540px]">
             <InteractiveMap
               properties={mapResults.length > 0 ? mapResults : properties}
               selectedPropertyId={selectedPropertyId}
+              highlightPropertyId={hoveredPropertyId}
               onSelectProperty={onSelectProperty}
               onBoundsChange={onBoundsChange}
               className="w-full h-full rounded-3xl overflow-hidden shadow-md border border-[#DDD6C8]"
@@ -228,39 +208,34 @@ export const OlmaImmoPropertiesSection: React.FC<OlmaImmoPropertiesSectionProps>
         </div>
       )}
 
-      {/* VIEW 3: PURE GRID VIEW */}
       {activeView === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((p) => (
-            <div key={p.id} ref={(el) => { cardRefs.current[p.id] = el; }}>
-              <PropertyCard property={p} />
-            </div>
-          ))}
+          {properties.map((p) => {
+            const isSelected = selectedPropertyId === p.id;
+            return (
+              <div
+                key={p.id}
+                ref={(el) => { cardRefs.current[p.id] = el; }}
+                onMouseEnter={() => setHoveredPropertyId(p.id)}
+                onMouseLeave={() => setHoveredPropertyId((c) => (c === p.id ? undefined : c))}
+                onClick={() => onSelectProperty(p.id)}
+                className={`transition-all duration-300 rounded-3xl cursor-pointer ${
+                  isSelected ? 'ring-3 ring-[#0D281E] shadow-xl scale-[1.01]' : 'hover:shadow-md'
+                }`}
+              >
+                <PropertyCard property={p} />
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* FLOATING ACTION PILL BUTTON (Mobile & Desktop 1-Click Map/List Switcher) */}
-      <div className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-        <motion.button
-          whileHover={{ scale: 1.05, y: -2 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={toggleMapOrList}
-          className="flex items-center gap-2.5 px-5 py-3 rounded-full bg-[#0D281E] text-[#EBDCB8] font-bold text-xs sm:text-sm shadow-[0_12px_32px_rgba(13,40,30,0.35)] border border-[#EBDCB8]/30 hover:bg-[#153e31] transition-all cursor-pointer backdrop-blur-md"
-        >
-          {activeView === 'map' ? (
-            <>
-              <LayoutGrid className="w-4 h-4 text-amber-400" />
-              <span>Afficher la liste ({properties.length})</span>
-            </>
-          ) : (
-            <>
-              <MapIcon className="w-4 h-4 text-emerald-400" />
-              <span>Afficher la carte ({properties.length})</span>
-            </>
-          )}
-        </motion.button>
-      </div>
+      <OlmaImmoFloatingToggle
+        activeView={activeView}
+        showBottomDeck={showBottomDeck}
+        totalProperties={properties.length}
+        onToggle={() => handleModeChange(activeView === 'map' ? 'grid' : 'map')}
+      />
     </div>
   );
 };
-

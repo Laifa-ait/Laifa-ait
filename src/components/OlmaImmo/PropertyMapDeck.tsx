@@ -42,7 +42,7 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
             ref={carouselRef}
             className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 px-2 scrollbar-none pointer-events-auto"
           >
-            {properties.slice(0, 15).map((p) => {
+            {properties.slice(0, 50).map((p, idx) => {
               const isSelected = selectedPropertyId === p.id;
               return (
                 <div
@@ -63,15 +63,20 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
                       className="w-20 h-20 rounded-xl object-cover shrink-0"
                     />
                     <div className="flex-1 min-w-0 pr-1">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mb-1">
-                        {p.wilaya || p.location?.wilaya || 'Alger'}
-                      </span>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                          {p.wilaya || p.location?.wilaya || 'Alger'}
+                        </span>
+                        <span className="text-[10px] text-stone-400 font-bold">
+                          {idx + 1}/{properties.length}
+                        </span>
+                      </div>
                       <h4 className="text-xs font-bold text-stone-900 truncate">
                         {p.title}
                       </h4>
                       <div className="flex items-center justify-between mt-1.5">
                         <span className="text-xs font-black text-[#0D281E]">
-                          {p.price.toLocaleString()} DZD
+                          {p.price.toLocaleString('fr-DZ')} DZD
                         </span>
                         <button
                           type="button"
