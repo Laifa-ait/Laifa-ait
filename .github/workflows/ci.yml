@@ -72,7 +72,7 @@ jobs:
 
       - name: Run Vitest Test Suite with Coverage (with Firebase Emulators)
         timeout-minutes: 6
-        run: npx firebase emulators:exec --only firestore,storage "npm run test:coverage"
+        run: npx firebase emulators:exec --only auth,firestore,storage "npm run test:coverage"
 
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

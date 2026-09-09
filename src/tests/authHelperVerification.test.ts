@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { getTestAuthToken, getTestAuthHeader } from "./helpers/firebaseAuthHelper";
 import { admin } from "../config/firebase-admin";
 
-describe("Firebase Auth Emulator Token Helper", () => {
+const hasAuthEmulator = Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST);
+
+describe.skipIf(!hasAuthEmulator)("Firebase Auth Emulator Token Helper", () => {
   it("generates a real valid Firebase ID token verifiable by admin.auth()", async () => {
     const token = await getTestAuthToken({
       uid: "test-admin-uid",

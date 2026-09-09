@@ -9,7 +9,9 @@ const app = express();
 app.use(express.json());
 app.use("/api/v1/auth/2fa", router);
 
-describe("OLMART — Two-Factor Authentication Route Integration & Security Suite", () => {
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST && process.env.FIREBASE_AUTH_EMULATOR_HOST);
+
+describe.skipIf(!hasEmulator)("OLMART — Two-Factor Authentication Route Integration & Security Suite", () => {
   const testUserUid = "test_2fa_user_999";
   let userAuthHeader: string;
 

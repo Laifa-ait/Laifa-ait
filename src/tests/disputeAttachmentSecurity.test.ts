@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use("/api/v1/disputes", router);
 
-const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST && process.env.FIREBASE_AUTH_EMULATOR_HOST);
 
 describe.skipIf(!hasEmulator)("Dispute Attachment Security & IDOR Hardening Integration Suite (LOT P0.6.8)", () => {
   const buyerUid = "test_dispute_buyer_101";

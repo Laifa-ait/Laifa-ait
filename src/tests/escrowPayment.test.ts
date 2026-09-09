@@ -4,7 +4,9 @@ import { app } from "../../app";
 import { db } from "../config/firebase-admin";
 import { getTestAuthHeader } from "./helpers/firebaseAuthHelper";
 
-describe("Olmart Aman - Escrow & Seller Wallet Tests", () => {
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST && process.env.FIREBASE_AUTH_EMULATOR_HOST);
+
+describe.skipIf(!hasEmulator)("Olmart Aman - Escrow & Seller Wallet Tests", () => {
   let buyerHeader: string;
   let sellerHeader: string;
   let adminHeader: string;

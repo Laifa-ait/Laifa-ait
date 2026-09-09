@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(router);
 
-const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST && process.env.FIREBASE_AUTH_EMULATOR_HOST);
 
 describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Suite", () => {
   const sellerUid = "test_integration_seller_999";
