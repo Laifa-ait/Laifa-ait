@@ -3846,5 +3846,21 @@
   "shop.promo_offer": "Offre exclusive :",
   "shop.from_min_order": "dès",
   "shop.copy_code": "Copier le code",
-  "home.discover_category_articles": "Découvrez nos articles dans {{category}}"
+  "home.discover_category_articles": "Découvrez nos articles dans {{category}}",
+  "seller.coupons.error_load": "Impossible de charger vos codes promo.",
+  "seller.coupons.error_toggle": "Erreur lors du changement de statut.",
+  "seller.coupons.error_delete": "Erreur lors de la suppression du coupon.",
+  "seller.coupons.no_results": "Aucun coupon trouvé pour cette recherche.",
+  "common.copy": "Copier",
+  "common.delete": "Supprimer",
+  "common.cancel": "Annuler",
+  "seller.coupons.error_code_length": "Le code promo doit contenir entre 4 et 20 caractères alphanumériques.",
+  "seller.coupons.error_value_invalid": "Veuillez saisir un montant de réduction valide.",
+  "seller.coupons.error_percentage_range": "Le pourcentage de réduction doit être compris entre 1 % et 70 %.",
+  "seller.coupons.error_fixed_range": "La réduction fixe doit être comprise entre 100 DZD et 50 000 DZD.",
+  "seller.coupons.error_expiry_required": "Veuillez sélectionner une date d'expiration valide.",
+  "seller.coupons.error_expiry_future": "La date d'expiration doit être ultérieure à la date actuelle.",
+  "seller.coupons.created_success": "Code promo créé avec succès !",
+  "seller.coupons.error_create": "Erreur lors de la création du coupon.",
+  "common.submitting": "Traitement..."
 }

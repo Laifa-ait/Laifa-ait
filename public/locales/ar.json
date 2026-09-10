@@ -3927,5 +3927,21 @@
   "shop.promo_offer": "عرض حصري:",
   "shop.from_min_order": "ابتداءً من",
   "shop.copy_code": "نسخ الرمز",
-  "home.discover_category_articles": "اكتشف منتجاتنا في قسم {{category}}"
+  "home.discover_category_articles": "اكتشف منتجاتنا في قسم {{category}}",
+  "seller.coupons.error_load": "تعذر تحميل رموز القسائم الترويجية الخاصة بك.",
+  "seller.coupons.error_toggle": "حدث خطأ أثناء تغيير حالة القسيمة.",
+  "seller.coupons.error_delete": "حدث خطأ أثناء حذف القسيمة.",
+  "seller.coupons.no_results": "لم يتم العثور على أي قسيمة مطابقة لبحثك.",
+  "common.copy": "نسخ",
+  "common.delete": "حذف",
+  "common.cancel": "إلغاء",
+  "seller.coupons.error_code_length": "يجب أن يحتوي رمز القسيمة بين 4 و20 حرفاً ورقمياً.",
+  "seller.coupons.error_value_invalid": "يرجى إدخال قيمة خصم صالحة.",
+  "seller.coupons.error_percentage_range": "يجب أن تكون نسبة الخصم المئوية بين 1% و 70%.",
+  "seller.coupons.error_fixed_range": "يجب أن يكون الخصم الثابت بين 100 دج و 50,000 دج.",
+  "seller.coupons.error_expiry_required": "يرجى تحديد تاريخ انتهاء صلاحية صالح.",
+  "seller.coupons.error_expiry_future": "يجب أن يكون تاريخ انتهاء الصلاحية بعد التاريخ الحالي.",
+  "seller.coupons.created_success": "تم إنشاء رمز القسيمة بنجاح!",
+  "seller.coupons.error_create": "حدث خطأ أثناء إنشاء القسيمة.",
+  "common.submitting": "جاري الإرسال..."
 }
