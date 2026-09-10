@@ -3,9 +3,9 @@ import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../../constants";
 import { safeLogger } from "../../../utils/logger";
 
 // Standard Wilayas mapped to standard format
-const FALLBACK_WILAYAS = ALGERIA_WILAYAS.map((w, index) => {
+const FALLBACK_WILAYAS = ALGERIA_WILAYAS.map((w: string, index: number) => {
   const parts = w.split(" ");
-  const id = parseInt(parts[0], 10) || (index + 1);
+  const id = parseInt(parts[0] || "", 10) || (index + 1);
   const name = parts.slice(1).join(" ");
   return { id, name, zone: 1 };
 });
@@ -39,7 +39,7 @@ export const calculateShippingRates = async (req: Request, res: Response) => {
 
     let wilayaKey = "Default";
     if (wilaya_name) {
-      const match = ALGERIA_WILAYAS.find(w => w.toLowerCase().includes(String(wilaya_name).toLowerCase()));
+      const match = ALGERIA_WILAYAS.find((w: string) => w.toLowerCase().includes(String(wilaya_name).toLowerCase()));
       if (match) {
         wilayaKey = match.replace(/^[0-9]+\s*/, '');
       }

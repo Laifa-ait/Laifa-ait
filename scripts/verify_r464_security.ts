@@ -9,6 +9,16 @@ interface TestResult {
   status: 'PASS' | 'FAIL' | 'BLOCKED';
 }
 
+interface FirestoreRestResponse {
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+  };
+  name?: string;
+  fields?: Record<string, { stringValue?: string; integerValue?: string }>;
+}
+
 const results: TestResult[] = [];
 
 async function getIdToken(uid: string, role: string, email: string) {
@@ -28,8 +38,8 @@ async function getIdToken(uid: string, role: string, email: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token: customToken, returnSecureToken: true })
   });
-  const data = await res.json();
-  return data.idToken as string;
+  const data = (await res.json()) as { idToken?: string };
+  return (data.idToken as string) || '';
 }
 
 async function run() {
@@ -97,7 +107,7 @@ async function run() {
   // TEST 2: Anonymous read access is denied
   // ---------------------------------------------------------------------------
   const resAnonGet = await fetch(`${firestoreRestBaseUrl}/bricolage_quote_requests/${seedRequestId}`);
-  const dataAnonGet = await resAnonGet.json();
+  const dataAnonGet = (await resAnonGet.json()) as FirestoreRestResponse;
   const passAnonGet = resAnonGet.status === 403 && dataAnonGet.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-02',
@@ -114,7 +124,7 @@ async function run() {
   const resBuyer2Get = await fetch(`${firestoreRestBaseUrl}/bricolage_quote_requests/${seedRequestId}`, {
     headers: { Authorization: `Bearer ${buyer2Token}` }
   });
-  const dataBuyer2Get = await resBuyer2Get.json();
+  const dataBuyer2Get = (await resBuyer2Get.json()) as FirestoreRestResponse;
   const passBuyer2Get = resBuyer2Get.status === 403 && dataBuyer2Get.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-03',
@@ -131,8 +141,8 @@ async function run() {
   const resBuyer1Get = await fetch(`${firestoreRestBaseUrl}/bricolage_quote_requests/${seedRequestId}`, {
     headers: { Authorization: `Bearer ${buyer1Token}` }
   });
-  const dataBuyer1Get = await resBuyer1Get.json();
-  const passBuyer1Get = resBuyer1Get.status === 200 && dataBuyer1Get.name?.includes(seedRequestId);
+  const dataBuyer1Get = (await resBuyer1Get.json()) as FirestoreRestResponse;
+  const passBuyer1Get = resBuyer1Get.status === 200 && (dataBuyer1Get.name?.includes(seedRequestId) ?? false);
   results.push({
     testId: 'TEST-04',
     name: 'Propriétaire peut lire sa propre demande',
@@ -148,7 +158,7 @@ async function run() {
   const resArtisanList = await fetch(`${firestoreRestBaseUrl}/bricolage_quote_requests`, {
     headers: { Authorization: `Bearer ${artisan1Token}` }
   });
-  const dataArtisanList = await resArtisanList.json();
+  const dataArtisanList = (await resArtisanList.json()) as FirestoreRestResponse;
   const passArtisanList = resArtisanList.status === 403 && dataArtisanList.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-05',
@@ -175,7 +185,7 @@ async function run() {
       }
     })
   });
-  const dataBuyerCreate = await resBuyerCreate.json();
+  const dataBuyerCreate = (await resBuyerCreate.json()) as FirestoreRestResponse;
   const passBuyerCreate = resBuyerCreate.status === 403 && dataBuyerCreate.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-06',
@@ -201,7 +211,7 @@ async function run() {
       }
     })
   });
-  const dataBuyerUpdate = await resBuyerUpdate.json();
+  const dataBuyerUpdate = (await resBuyerUpdate.json()) as FirestoreRestResponse;
   const passBuyerUpdate = resBuyerUpdate.status === 403 && dataBuyerUpdate.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-07',
@@ -219,7 +229,7 @@ async function run() {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${buyer1Token}` }
   });
-  const dataBuyerDelete = await resBuyerDelete.json();
+  const dataBuyerDelete = (await resBuyerDelete.json()) as FirestoreRestResponse;
   const passBuyerDelete = resBuyerDelete.status === 403 && dataBuyerDelete.error?.status === 'PERMISSION_DENIED';
   results.push({
     testId: 'TEST-08',
@@ -249,7 +259,7 @@ async function run() {
       description: 'Changement de siphon urgence'
     })
   });
-  const dataPostQuote = await resPostQuote.json();
+  const dataPostQuote = (await resPostQuote.json()) as { success?: boolean; data?: { requestId?: string } };
   const createdQuoteId = dataPostQuote.data?.requestId;
   const passPostQuote = resPostQuote.status === 200 && dataPostQuote.success === true && Boolean(createdQuoteId);
 
@@ -257,7 +267,7 @@ async function run() {
   const resGetOpps = await fetch(`${expressBaseUrl}/bricolage/opportunities?wilaya=Alger`, {
     headers: { Authorization: `Bearer ${artisan1Token}` }
   });
-  const dataGetOpps = await resGetOpps.json();
+  const dataGetOpps = (await resGetOpps.json()) as { success?: boolean; data?: Array<Record<string, unknown>> };
   const passGetOpps = resGetOpps.status === 200 && dataGetOpps.success === true && Array.isArray(dataGetOpps.data);
 
   // 9.3 POST /api/v1/bricolage/offers
@@ -277,8 +287,8 @@ async function run() {
         notes: 'Intervention rapide garantie'
       })
     });
-    const dataPostOffer = await resPostOffer.json();
-    createdOfferId = dataPostOffer.data?.offerId;
+    const dataPostOffer = (await resPostOffer.json()) as { success?: boolean; data?: { offerId?: string } };
+    createdOfferId = dataPostOffer.data?.offerId || '';
     passPostOffer = resPostOffer.status === 200 && dataPostOffer.success === true && Boolean(createdOfferId);
   }
 
@@ -293,7 +303,7 @@ async function run() {
       },
       body: JSON.stringify({ offerId: createdOfferId })
     });
-    const dataAcceptOffer = await resAcceptOffer.json();
+    const dataAcceptOffer = (await resAcceptOffer.json()) as { success?: boolean; data?: { status?: string } };
     passAcceptOffer = resAcceptOffer.status === 200 && dataAcceptOffer.success === true && dataAcceptOffer.data?.status === 'accepted';
   }
 

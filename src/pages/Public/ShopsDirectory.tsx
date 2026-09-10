@@ -1,15 +1,19 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { apiGet } from "../../lib/api";
-import { fetchPublicShops } from "../../services/storeRepository";
 import { ShopDirectoryItem, ShopsFilterState } from "../../types/shopsDirectory";
 import { ShopsHeader } from "../../components/ShopsDirectory/ShopsHeader";
 import { ShopsStats } from "../../components/ShopsDirectory/ShopsStats";
 import { FeaturedShops } from "../../components/ShopsDirectory/FeaturedShops";
 import { ShopsGrid } from "../../components/ShopsDirectory/ShopsGrid";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const ShopsDirectory: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isArabic = i18n.language === "ar" || i18n.language?.startsWith("ar");
   const [shops, setShops] = useState<ShopDirectoryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filters, setFilters] = useState<ShopsFilterState>({
     searchQuery: "",
     selectedWilaya: "",
@@ -18,48 +22,29 @@ export const ShopsDirectory: React.FC = () => {
     onlyVerified: false,
   });
 
-  useEffect(() => {
-    const fetchShops = async () => {
-      setIsLoading(true);
-      try {
-        const res = await apiGet<{ success: boolean; shops: ShopDirectoryItem[] }>("/api/v1/public/shops");
-        if (res.success && Array.isArray(res.shops) && res.shops.length > 0) {
-          setShops(res.shops);
-        } else {
-          // Fallback to client-side publicProfiles collection query
-          const rawShops = await fetchPublicShops(50);
-          if (rawShops.length > 0) {
-            const fetched = rawShops.map((data) => ({
-              id: data.id,
-              sellerId: data.id,
-              shopName: data.shopName || data.displayName || "Boutique Vendeur",
-              slogan: data.slogan || "",
-              description: data.description || data.shopDescription || "",
-              logoUrl: data.logoUrl || data.photoURL || "",
-              bannerUrl: data.bannerUrl || data.coverUrl || "",
-              wilaya: data.wilaya || "16 - Alger",
-              category: data.category || "Général",
-              rating: data.rating !== undefined ? data.rating : null,
-              reviewsCount: data.reviewsCount !== undefined ? data.reviewsCount : 0,
-              sellerTrustScore: data.sellerTrustScore !== undefined ? data.sellerTrustScore : 90,
-              productsCount: data.productsCount !== undefined ? data.productsCount : 0,
-              isVerified: data.isVerified !== undefined ? data.isVerified : true,
-            } as ShopDirectoryItem));
-            setShops(fetched);
-          } else {
-            setShops([]);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching shops directory:", err);
+  const fetchShops = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await apiGet<{ success: boolean; shops?: ShopDirectoryItem[]; error?: string }>("/api/v1/public/shops");
+      if (res && res.success && Array.isArray(res.shops)) {
+        setShops(res.shops);
+      } else {
         setShops([]);
-      } finally {
-        setIsLoading(false);
+        setErrorMessage(res?.error || (isArabic ? "تعذر تحميل المتاجر." : "Impossible de charger les boutiques."));
       }
-    };
+    } catch (err: unknown) {
+      console.error("Error fetching shops directory:", err);
+      setShops([]);
+      setErrorMessage(isArabic ? "حدث خطأ أثناء تحميل المتاجر." : "Une erreur est survenue lors du chargement des boutiques.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isArabic]);
 
+  useEffect(() => {
     fetchShops();
-  }, []);
+  }, [fetchShops]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -127,7 +112,9 @@ export const ShopsDirectory: React.FC = () => {
   }, [shops, filters]);
 
   const featuredShopsList = useMemo(() => {
-    return shops.filter((s) => (s.sellerTrustScore || 90) >= 90 || s.isVerified).slice(0, 3);
+    return shops
+      .filter((s) => (typeof s.sellerTrustScore === "number" && s.sellerTrustScore >= 90) || s.isVerified)
+      .slice(0, 3);
   }, [shops]);
 
   const handleResetFilters = () => {
@@ -151,6 +138,22 @@ export const ShopsDirectory: React.FC = () => {
         />
 
         <ShopsStats totalShops={shops.length} wilayaCount={uniqueWilayas || 58} />
+
+        {errorMessage && !isLoading && shops.length === 0 && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-6 text-center space-y-3">
+            <div className="flex items-center justify-center gap-2 text-rose-700 font-semibold">
+              <AlertCircle className="w-5 h-5" />
+              <span>{errorMessage}</span>
+            </div>
+            <button
+              onClick={fetchShops}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>{isArabic ? "إعادة المحاولة" : "Réessayer"}</span>
+            </button>
+          </div>
+        )}
 
         {!filters.searchQuery && !filters.selectedWilaya && !filters.selectedCategory && (
           <FeaturedShops shops={featuredShopsList} />

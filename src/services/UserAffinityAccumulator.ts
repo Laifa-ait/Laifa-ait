@@ -33,13 +33,26 @@ const SYNC_LOCK_KEY = "olma_affinity_last_synced";
 const MIN_INTERACTIONS_FOR_SYNC = 5; // Accumulate minimum interactions before syncing
 const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // Strictly 1 sync per 24 hours maximum
 
+function getSafeStorage(): { getItem: (key: string) => string | null; setItem: (key: string, value: string) => void } | null {
+  if (typeof globalThis !== "undefined" && "localStorage" in globalThis) {
+    try {
+      const storage = (globalThis as { localStorage?: { getItem: (k: string) => string | null; setItem: (k: string, v: string) => void } }).localStorage;
+      return storage || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 export class UserAffinityAccumulator {
   private static getStoredDigest(): UserAffinityDigest {
-    if (typeof window === "undefined") {
+    const storage = getSafeStorage();
+    if (!storage) {
       return this.createEmptyDigest();
     }
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = storage.getItem(STORAGE_KEY);
       if (raw) {
         return JSON.parse(raw);
       }
@@ -50,9 +63,10 @@ export class UserAffinityAccumulator {
   }
 
   private static saveStoredDigest(digest: UserAffinityDigest): void {
-    if (typeof window === "undefined") return;
+    const storage = getSafeStorage();
+    if (!storage) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(digest));
+      storage.setItem(STORAGE_KEY, JSON.stringify(digest));
     } catch {
       // Storage quota or private mode protection
     }
@@ -184,11 +198,12 @@ export class UserAffinityAccumulator {
    * Checks if daily sync threshold is reached (1 single write per 24 hours).
    */
   public static shouldSync(): boolean {
-    if (typeof window === "undefined") return false;
+    const storage = getSafeStorage();
+    if (!storage) return false;
     const digest = this.getStoredDigest();
     if (digest.totalInteractions < MIN_INTERACTIONS_FOR_SYNC) return false;
 
-    const lastSyncStr = localStorage.getItem(SYNC_LOCK_KEY);
+    const lastSyncStr = storage.getItem(SYNC_LOCK_KEY);
     const lastSyncTime = lastSyncStr ? Number(lastSyncStr) : 0;
     const now = Date.now();
 
@@ -199,9 +214,10 @@ export class UserAffinityAccumulator {
    * Marks sync completed for the next 24 hours.
    */
   public static markSyncCompleted(): void {
-    if (typeof window === "undefined") return;
+    const storage = getSafeStorage();
+    if (!storage) return;
     const now = Date.now();
-    localStorage.setItem(SYNC_LOCK_KEY, String(now));
+    storage.setItem(SYNC_LOCK_KEY, String(now));
   }
 
   /**

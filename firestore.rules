@@ -55,6 +55,29 @@ service cloud.firestore {
       return resource.data;
     }
 
+    function isValidPublicProfileData(data) {
+      return (!('shopName' in data) || (data.shopName is string && data.shopName.size() <= 100)) &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+        (!('shopDescription' in data) || (data.shopDescription is string && data.shopDescription.size() <= 2000)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+        (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 1000)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000)) &&
+        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 1000)) &&
+        (!('bannerUrl' in data) || (data.bannerUrl is string && data.bannerUrl.size() <= 1000)) &&
+        (!('coverUrl' in data) || (data.coverUrl is string && data.coverUrl.size() <= 1000)) &&
+        (!('coverImage' in data) || (data.coverImage is string && data.coverImage.size() <= 1000)) &&
+        (!('wilaya' in data) || (data.wilaya is string && data.wilaya.size() <= 50)) &&
+        (!('commune' in data) || (data.commune is string && data.commune.size() <= 100)) &&
+        (!('category' in data) || (data.category is string && data.category.size() <= 100)) &&
+        (!('categories' in data) || (data.categories is list && data.categories.size() <= 20)) &&
+        (!('slogan' in data) || (data.slogan is string && data.slogan.size() <= 200)) &&
+        (!('avgPreparationTime' in data) || (data.avgPreparationTime is string && data.avgPreparationTime.size() <= 50)) &&
+        (!('returnPolicy' in data) || (data.returnPolicy is string && data.returnPolicy.size() <= 2000)) &&
+        (!('legalStatus' in data) || (data.legalStatus is string && data.legalStatus.size() <= 100)) &&
+        (!('createdAt' in data) || data.createdAt is timestamp || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+        (!('updatedAt' in data) || data.updatedAt is timestamp || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
     // =========================================================================
     // 3. COLLECTION USERS (Profils, Paniers, Favoris)
     // =========================================================================
@@ -123,15 +146,102 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Profils publics (Vendeurs / Artisans)
+    // Profils publics commerciaux (Vendeurs / Artisans)
     match /publicProfiles/{id} {
-      allow read: if true;
-      allow write: if isOwner(id) || isAdmin();
+      // Lecture directe SDK client réservée au propriétaire du profil ou à un administrateur.
+      // Tous les écrans publics passent exclusivement par les routes API DTO (/api/v1/public/shops...).
+      allow read: if isOwner(id) || isAdmin();
+
+      // Création : autorisée uniquement pour le propriétaire ou l'administrateur avec liste blanche stricte
+      allow create: if isAdmin() || (
+        isOwner(id) &&
+        incoming().keys().hasOnly([
+          'shopName', 'displayName', 'shopDescription', 'description', 'logoUrl', 'photoURL',
+          'avatarUrl', 'bannerUrl', 'coverUrl', 'coverImage', 'wilaya', 'commune', 'category',
+          'categories', 'slogan', 'avgPreparationTime', 'returnPolicy', 'legalStatus',
+          'createdAt', 'updatedAt'
+        ]) &&
+        !incoming().keys().hasAny([
+          'isVerified', 'verified', 'status', 'sellerTrustScore', 'trustScore', 'badge',
+          'rating', 'reviewsCount', 'productsCount', 'followersCount', 'role', 'roles',
+          'isAdmin', 'customClaims', 'permissions', 'kycStatus', 'kyc', 'verification',
+          'email', 'phone', 'phoneNumber', 'shopPhone', 'supportPhone', 'personalPhone', 'contact',
+          'rib', 'rcNumber', 'nifNumber', 'nis', 'commercialRegister', 'documents',
+          'twoFactorSecret', 'is2FAEnabled', 'fcmToken', 'fcmTokens', 'tokens', 'metadata', 'internalNotes'
+        ]) &&
+        isValidPublicProfileData(incoming())
+      );
+
+      // Mise à jour : autorisée pour le propriétaire sur les champs commerciaux autorisés ou pour l'administrateur
+      allow update: if isAdmin() || (
+        isOwner(id) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'shopName', 'displayName', 'shopDescription', 'description', 'logoUrl', 'photoURL',
+          'avatarUrl', 'bannerUrl', 'coverUrl', 'coverImage', 'wilaya', 'commune', 'category',
+          'categories', 'slogan', 'avgPreparationTime', 'returnPolicy', 'legalStatus',
+          'createdAt', 'updatedAt'
+        ]) &&
+        !incoming().diff(existing()).affectedKeys().hasAny([
+          'isVerified', 'verified', 'status', 'sellerTrustScore', 'trustScore', 'badge',
+          'rating', 'reviewsCount', 'productsCount', 'followersCount', 'role', 'roles',
+          'isAdmin', 'customClaims', 'permissions', 'kycStatus', 'kyc', 'verification',
+          'email', 'phone', 'phoneNumber', 'shopPhone', 'supportPhone', 'personalPhone', 'contact',
+          'rib', 'rcNumber', 'nifNumber', 'nis', 'commercialRegister', 'documents',
+          'twoFactorSecret', 'is2FAEnabled', 'fcmToken', 'fcmTokens', 'tokens', 'metadata', 'internalNotes'
+        ]) &&
+        isValidPublicProfileData(incoming())
+      );
+
+      // Suppression : strictement réservée aux administrateurs
+      allow delete: if isAdmin();
     }
 
     match /public_profiles/{id} {
-      allow read: if true;
-      allow write: if isOwner(id) || isAdmin();
+      // Lecture directe SDK client réservée au propriétaire du profil ou à un administrateur.
+      allow read: if isOwner(id) || isAdmin();
+
+      // Création : autorisée uniquement pour le propriétaire ou l'administrateur avec liste blanche stricte
+      allow create: if isAdmin() || (
+        isOwner(id) &&
+        incoming().keys().hasOnly([
+          'shopName', 'displayName', 'shopDescription', 'description', 'logoUrl', 'photoURL',
+          'avatarUrl', 'bannerUrl', 'coverUrl', 'coverImage', 'wilaya', 'commune', 'category',
+          'categories', 'slogan', 'avgPreparationTime', 'returnPolicy', 'legalStatus',
+          'createdAt', 'updatedAt'
+        ]) &&
+        !incoming().keys().hasAny([
+          'isVerified', 'verified', 'status', 'sellerTrustScore', 'trustScore', 'badge',
+          'rating', 'reviewsCount', 'productsCount', 'followersCount', 'role', 'roles',
+          'isAdmin', 'customClaims', 'permissions', 'kycStatus', 'kyc', 'verification',
+          'email', 'phone', 'phoneNumber', 'shopPhone', 'supportPhone', 'personalPhone', 'contact',
+          'rib', 'rcNumber', 'nifNumber', 'nis', 'commercialRegister', 'documents',
+          'twoFactorSecret', 'is2FAEnabled', 'fcmToken', 'fcmTokens', 'tokens', 'metadata', 'internalNotes'
+        ]) &&
+        isValidPublicProfileData(incoming())
+      );
+
+      // Mise à jour : autorisée pour le propriétaire sur les champs commerciaux autorisés ou pour l'administrateur
+      allow update: if isAdmin() || (
+        isOwner(id) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'shopName', 'displayName', 'shopDescription', 'description', 'logoUrl', 'photoURL',
+          'avatarUrl', 'bannerUrl', 'coverUrl', 'coverImage', 'wilaya', 'commune', 'category',
+          'categories', 'slogan', 'avgPreparationTime', 'returnPolicy', 'legalStatus',
+          'createdAt', 'updatedAt'
+        ]) &&
+        !incoming().diff(existing()).affectedKeys().hasAny([
+          'isVerified', 'verified', 'status', 'sellerTrustScore', 'trustScore', 'badge',
+          'rating', 'reviewsCount', 'productsCount', 'followersCount', 'role', 'roles',
+          'isAdmin', 'customClaims', 'permissions', 'kycStatus', 'kyc', 'verification',
+          'email', 'phone', 'phoneNumber', 'shopPhone', 'supportPhone', 'personalPhone', 'contact',
+          'rib', 'rcNumber', 'nifNumber', 'nis', 'commercialRegister', 'documents',
+          'twoFactorSecret', 'is2FAEnabled', 'fcmToken', 'fcmTokens', 'tokens', 'metadata', 'internalNotes'
+        ]) &&
+        isValidPublicProfileData(incoming())
+      );
+
+      // Suppression : strictement réservée aux administrateurs
+      allow delete: if isAdmin();
     }
 
     match /user_habits/{userId} {

@@ -41,8 +41,8 @@ async function runAudit() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: customToken, returnSecureToken: true }),
     });
-    const data = await res.json();
-    return data.idToken;
+    const data = (await res.json()) as { idToken?: string };
+    return data.idToken || "";
   }
 
   const buyer1Token = await getIdToken(buyer1Uid, { role: "buyer" });

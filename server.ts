@@ -243,7 +243,7 @@ process.on("uncaughtException", (error: Error) => {
 });
 
 // Boot the server when executed directly as primary entrypoint
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
   startServer().catch((err: unknown) => {
     const errorMsg = err instanceof Error ? err.message : String(err);
     safeLogger.error("[Olmart Gateway] ❌ Fatal error during server startup", { err: errorMsg });

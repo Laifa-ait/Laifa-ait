@@ -1,3 +1,4 @@
+import type React from "react";
 import { AppTimestamp } from "../utils/date";
 
 export type ProductStatus =

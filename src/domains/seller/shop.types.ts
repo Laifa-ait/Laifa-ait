@@ -87,7 +87,6 @@ export interface PublicShopDTO {
   legalStatus: string;
   followersCount: number;
   badge: string;
-  supportPhone?: string;
 }
 
 export interface PublicShopResponse {

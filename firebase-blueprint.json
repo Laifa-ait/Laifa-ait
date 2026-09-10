@@ -40,6 +40,33 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       }
     },
+    "PublicProfile": {
+      "title": "Public Store Profile",
+      "description": "Public commercial seller storefront profile with restricted whitelisted fields",
+      "type": "object",
+      "properties": {
+        "shopName": { "type": "string", "maxLength": 100 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "shopDescription": { "type": "string", "maxLength": 2000 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "logoUrl": { "type": "string", "maxLength": 1000 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "avatarUrl": { "type": "string", "maxLength": 1000 },
+        "bannerUrl": { "type": "string", "maxLength": 1000 },
+        "coverUrl": { "type": "string", "maxLength": 1000 },
+        "coverImage": { "type": "string", "maxLength": 1000 },
+        "wilaya": { "type": "string", "maxLength": 50 },
+        "commune": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 100 },
+        "categories": { "type": "array" },
+        "slogan": { "type": "string", "maxLength": 200 },
+        "avgPreparationTime": { "type": "string", "maxLength": 50 },
+        "returnPolicy": { "type": "string", "maxLength": 2000 },
+        "legalStatus": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
     "Property": {
       "title": "Property Listing",
       "description": "Algerian real estate property listing details",
@@ -335,6 +362,14 @@
     "/user_notifications/{notifId}": {
       "schema": "UserNotification",
       "description": "Internal marketplace notices with premium translations"
+    },
+    "/publicProfiles/{id}": {
+      "schema": "PublicProfile",
+      "description": "Public commercial storefront seller profiles (restricted to owner/admin direct read; public access via backend DTO)"
+    },
+    "/public_profiles/{id}": {
+      "schema": "PublicProfile",
+      "description": "Legacy alias collection for public storefront profiles"
     },
     "/users/{uid}": {
       "schema": "User",
