@@ -129,9 +129,7 @@ function isTrustedOrigin(originString: string): boolean {
         hostname === "localhost" ||
         hostname === "127.0.0.1";
 
-      const isCloudRun = hostname.endsWith(".run.app");
-
-      if ((isTrustedAIStudio || isGoogleIframe || isLocalHost || isCloudRun) && (url.protocol === "https:" || url.protocol === "http:")) {
+      if ((isTrustedAIStudio || isGoogleIframe || isLocalHost) && (url.protocol === "https:" || url.protocol === "http:")) {
         return true;
       }
     } catch {
@@ -141,8 +139,7 @@ function isTrustedOrigin(originString: string): boolean {
         hostname === "ai.studio" ||
         hostname === "aistudio.google.com" ||
         hostname.endsWith(".ai.studio") ||
-        hostname.endsWith(".aistudio.google.com") ||
-        hostname.endsWith(".run.app")
+        hostname.endsWith(".aistudio.google.com")
       );
     }
   }

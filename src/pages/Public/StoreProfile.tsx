@@ -1,5 +1,5 @@
 import React from 'react';
-import { Store, ChevronLeft, Package, SearchX } from 'lucide-react';
+import { Store, ChevronLeft, Package, SearchX, AlertTriangle } from 'lucide-react';
 import { ProductCard } from '../../components/Product/ProductCard';
 import { Spinner } from '../../components/ui/Spinner';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -81,7 +81,10 @@ export const StoreProfile: React.FC = () => {
     handleSaveAdjustedImage,
     handleFollowToggle,
     executeFollowAction,
-    handleSaveAbout
+    handleSaveAbout,
+    errorType,
+    productsError,
+    reloadStore
   } = useStoreProfile();
 
   if (loading) {
@@ -94,6 +97,33 @@ export const StoreProfile: React.FC = () => {
   }
 
   if (!storeInfo) {
+    if (errorType === 'serverError') {
+      return (
+        <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-zinc-200/60 shadow-sm text-center space-y-4">
+          <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900">{d('loadError')}</h2>
+          <p className="text-sm text-zinc-500">{d('loadErrorDesc')}</p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={reloadStore}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-2xl text-xs font-bold hover:bg-orange-700 transition-all cursor-pointer"
+            >
+              <span>{d('retry')}</span>
+            </button>
+            <button
+              onClick={() => navigate('/catalog')}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-100 text-zinc-800 rounded-2xl text-xs font-bold hover:bg-zinc-200 transition-all cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>{d('backToCatalog')}</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-zinc-200/60 shadow-sm text-center space-y-4">
         <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto">
@@ -192,7 +222,21 @@ export const StoreProfile: React.FC = () => {
             isRTL={isRTL}
           />
 
-          {visibleProducts.length === 0 ? (
+          {productsError ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-red-200/60 shadow-sm space-y-3">
+              <AlertTriangle className="w-12 h-12 text-red-500 mx-auto" />
+              <h3 className="text-lg font-bold text-zinc-800">{d('productsError')}</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto">{d('productsErrorDesc')}</p>
+              <div className="pt-2">
+                <button
+                  onClick={reloadStore}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700 transition-all cursor-pointer"
+                >
+                  <span>{d('retry')}</span>
+                </button>
+              </div>
+            </div>
+          ) : visibleProducts.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 text-center border border-zinc-200/60 shadow-sm space-y-3">
               <SearchX className="w-12 h-12 text-zinc-400 mx-auto" />
               <h3 className="text-lg font-bold text-zinc-800">{d('emptyStore')}</h3>

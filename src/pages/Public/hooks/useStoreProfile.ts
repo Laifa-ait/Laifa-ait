@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { db } from "../../../lib/firebase";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Product } from "../../../domains/product/product.types";
 import { useAuth } from "../../../context/AuthContext";
 import { toast } from "react-hot-toast";
-import { apiGet } from "../../../lib/api";
+import { apiGet, ApiError } from "../../../lib/api";
 import { checkStoreFollowStatus, toggleStoreFollow } from "../../../services/storeRepository";
 import { PublicStoreInfo } from "../StoreProfile";
+import { PublicShopResponse } from "../../../domains/seller/shop.types";
 
 export function useStoreProfile() {
   const { sellerId } = useParams();
@@ -33,6 +34,11 @@ export function useStoreProfile() {
         allArticles: "Tous les articles",
         loadMore: "Voir plus d'articles",
         loading: "Chargement...",
+        loadError: "Erreur de chargement",
+        loadErrorDesc: "Impossible de charger les informations de cette boutique pour le moment. Veuillez réessayer ultérieurement.",
+        retry: "Réessayer",
+        productsError: "Impossible de charger les articles",
+        productsErrorDesc: "Une erreur est survenue lors de la récupération des produits de cette boutique.",
         emptyStore: "Boutique Vide",
         emptyDesc: "Ce vendeur n'a pas encore ajouté d'articles actifs.",
         subscribers: "Abonnés",
@@ -55,6 +61,11 @@ export function useStoreProfile() {
         allArticles: "All items",
         loadMore: "Load more items",
         loading: "Loading...",
+        loadError: "Loading Error",
+        loadErrorDesc: "Unable to load store information at this moment. Please try again later.",
+        retry: "Retry",
+        productsError: "Unable to load items",
+        productsErrorDesc: "An error occurred while fetching items for this store.",
         emptyStore: "Empty Store",
         emptyDesc: "This seller hasn't added any active items yet.",
         subscribers: "Subscribers",
@@ -77,6 +88,11 @@ export function useStoreProfile() {
         allArticles: "جميع المنتجات",
         loadMore: "عرض المزيد من المنتجات",
         loading: "جاري التحميل...",
+        loadError: "خطأ في التحميل",
+        loadErrorDesc: "تعذر تحميل معلومات هذا المتجر حالياً. يرجى المحاولة مرة أخرى لاحقاً.",
+        retry: "إعادة المحاولة",
+        productsError: "تعذر تحميل المنتجات",
+        productsErrorDesc: "حدث خطأ أثناء تحميل منتجات هذا المتجر.",
         emptyStore: "متجر فارغ",
         emptyDesc: "لم يضف هذا البائع أي منتجات نشطة بعد.",
         subscribers: "متابعون",
@@ -92,6 +108,13 @@ export function useStoreProfile() {
   const [storeInfo, setStoreInfo] = useState<PublicStoreInfo | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorType, setErrorType] = useState<"notFound" | "serverError" | null>(null);
+  const [productsError, setProductsError] = useState(false);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  const reloadStore = () => {
+    setReloadTrigger(prev => prev + 1);
+  };
 
   const { currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -247,79 +270,95 @@ export function useStoreProfile() {
   useEffect(() => {
     let isSubscribed = true;
 
+    // Reset store, products, and errors immediately when sellerId changes
+    setStoreInfo(null);
+    setProducts([]);
+    setTotalCount(null);
+    setErrorType(null);
+    setProductsError(false);
+
     async function loadStore() {
-      if (!sellerId) return;
+      if (!sellerId) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
 
-      try {
-        const publicProfileData = await apiGet<PublicStoreInfo>(`/api/v1/public-profiles/${sellerId}`);
-        
-        if (publicProfileData && !publicProfileData.error && isSubscribed) {
-          setStoreInfo(publicProfileData);
-          setEditForm({
-            shopName: publicProfileData.shopName || publicProfileData.displayName || '',
-            shopDescription: publicProfileData.shopDescription || publicProfileData.description || '',
-            wilaya: publicProfileData.wilaya || '',
-            legalStatus: publicProfileData.legalStatus || '',
-            avgPreparationTime: publicProfileData.avgPreparationTime || '',
-            returnPolicy: publicProfileData.returnPolicy || ''
-          });
-        } else {
-          // Fallback Firestore query
-          const shopDocRef = doc(db, 'shops', sellerId);
-          const shopDocSnap = await getDoc(shopDocRef);
+      let fetchedShop: PublicStoreInfo | null = null;
 
-          if (shopDocSnap.exists() && isSubscribed) {
-            const data = shopDocSnap.data() as PublicStoreInfo;
-            setStoreInfo({ ...data, id: shopDocSnap.id });
+      try {
+        try {
+          const res = await apiGet<PublicShopResponse>(`/api/v1/public/shops/${sellerId}`);
+          
+          if (!isSubscribed) return;
+
+          if (res && res.success && res.shop) {
+            const shop = res.shop;
+            fetchedShop = shop;
+            setStoreInfo(shop);
+            setErrorType(null);
             setEditForm({
-              shopName: data.shopName || data.displayName || '',
-              shopDescription: data.shopDescription || data.description || '',
-              wilaya: data.wilaya || '',
-              legalStatus: data.legalStatus || '',
-              avgPreparationTime: data.avgPreparationTime || '',
-              returnPolicy: data.returnPolicy || ''
+              shopName: shop.shopName || '',
+              shopDescription: shop.shopDescription || '',
+              wilaya: shop.wilaya || '',
+              legalStatus: shop.legalStatus || '',
+              avgPreparationTime: shop.avgPreparationTime || '',
+              returnPolicy: shop.returnPolicy || ''
             });
           } else {
-            const userDocRef = doc(db, 'users', sellerId);
-            const userDocSnap = await getDoc(userDocRef);
+            setStoreInfo(null);
+            setProducts([]);
+            setTotalCount(0);
+            setErrorType("serverError");
+            return;
+          }
+        } catch (error: unknown) {
+          if (!isSubscribed) return;
+          setStoreInfo(null);
+          setProducts([]);
+          setTotalCount(0);
 
-            if (userDocSnap.exists() && isSubscribed) {
-              const data = userDocSnap.data() as PublicStoreInfo;
-              setStoreInfo({ ...data, id: userDocSnap.id });
-              setEditForm({
-                shopName: data.shopName || data.displayName || '',
-                shopDescription: data.shopDescription || data.description || '',
-                wilaya: data.wilaya || '',
-                legalStatus: data.legalStatus || '',
-                avgPreparationTime: data.avgPreparationTime || '',
-                returnPolicy: data.returnPolicy || ''
-              });
-            } else if (isSubscribed) {
-              setStoreInfo(null);
+          const apiErr = error as ApiError;
+          if (apiErr && apiErr.status === 404) {
+            setErrorType("notFound");
+            console.info(`[StoreProfile] Boutique indisponible (404) pour le vendeur: ${sellerId}`);
+          } else {
+            setErrorType("serverError");
+            console.error("Error loading store profile:", error);
+            toast.error(isRTL ? "تعذر تحميل المتجر حالياً" : "Impossible de charger la boutique actuellement.");
+          }
+          return;
+        }
+
+        // If shop was successfully retrieved, attempt product fetching in isolation
+        if (fetchedShop && isSubscribed) {
+          try {
+            const productsQuery = query(
+              collection(db, 'products'),
+              where('sellerId', '==', sellerId),
+              where('status', '==', 'active')
+            );
+            const productsSnap = await getDocs(productsQuery);
+
+            if (isSubscribed) {
+              const prods = productsSnap.docs.map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
+              })) as Product[];
+              
+              setProducts(prods);
+              setTotalCount(prods.length);
+              setProductsError(false);
+            }
+          } catch (prodErr) {
+            if (isSubscribed) {
+              console.error("Error loading store products:", prodErr);
+              setProducts([]);
+              setTotalCount(0);
+              setProductsError(true);
             }
           }
         }
-
-        // Fetch seller active products
-        const productsQuery = query(
-          collection(db, 'products'),
-          where('sellerId', '==', sellerId),
-          where('status', '==', 'active')
-        );
-        const productsSnap = await getDocs(productsQuery);
-
-        if (isSubscribed) {
-          const prods = productsSnap.docs.map(docSnap => ({
-            id: docSnap.id,
-            ...docSnap.data()
-          })) as Product[];
-          
-          setProducts(prods);
-          setTotalCount(prods.length);
-        }
-      } catch (error) {
-        console.error("Error loading store profile:", error);
       } finally {
         if (isSubscribed) setLoading(false);
       }
@@ -330,7 +369,7 @@ export function useStoreProfile() {
     return () => {
       isSubscribed = false;
     };
-  }, [sellerId]);
+  }, [sellerId, reloadTrigger, isRTL]);
 
   useEffect(() => {
     async function checkFollow() {
@@ -451,6 +490,9 @@ export function useStoreProfile() {
     storeInfo,
     products,
     loading,
+    errorType,
+    productsError,
+    reloadStore,
     currentUser,
     isFollowing,
     followLoading,

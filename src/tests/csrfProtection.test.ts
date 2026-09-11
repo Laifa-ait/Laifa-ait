@@ -158,4 +158,202 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
     expect(statusCode).toBe(403);
     expect(responseJson).toHaveProperty("error");
   });
+
+  describe("Non-trusted .run.app domain rejection (Strict Origin/Referer & no fallback bypass)", () => {
+    const environments = ["development", "production"] as const;
+
+    environments.forEach((env) => {
+      describe(`Environment: ${env}`, () => {
+        it(`rejects Origin https://untrusted-preview.run.app without token (HTTP 403, next() not called)`, () => {
+          process.env.NODE_ENV = env;
+
+          let nextCalled = false;
+          let statusCode = 0;
+          let responseJson: unknown = null;
+
+          const req = {
+            method: "POST",
+            headers: {
+              host: "api.olmart.dz",
+              origin: "https://untrusted-preview.run.app",
+            },
+            path: "/api/v1/orders/create",
+            originalUrl: "/api/v1/orders/create",
+          } as unknown as Request;
+
+          const res = {
+            status(code: number) {
+              statusCode = code;
+              return this;
+            },
+            json(data: unknown) {
+              responseJson = data;
+              return this;
+            },
+          } as unknown as Response;
+
+          csrfProtection(req, res, () => {
+            nextCalled = true;
+          });
+
+          expect(nextCalled).toBe(false);
+          expect(statusCode).toBe(403);
+          expect(responseJson).toHaveProperty("error");
+        });
+
+        it(`rejects Referer https://untrusted-preview.run.app/page without Origin and without token`, () => {
+          process.env.NODE_ENV = env;
+
+          let nextCalled = false;
+          let statusCode = 0;
+          let responseJson: unknown = null;
+
+          const req = {
+            method: "POST",
+            headers: {
+              host: "api.olmart.dz",
+              referer: "https://untrusted-preview.run.app/page",
+            },
+            path: "/api/v1/orders/create",
+            originalUrl: "/api/v1/orders/create",
+          } as unknown as Request;
+
+          const res = {
+            status(code: number) {
+              statusCode = code;
+              return this;
+            },
+            json(data: unknown) {
+              responseJson = data;
+              return this;
+            },
+          } as unknown as Response;
+
+          csrfProtection(req, res, () => {
+            nextCalled = true;
+          });
+
+          expect(nextCalled).toBe(false);
+          expect(statusCode).toBe(403);
+          expect(responseJson).toHaveProperty("error");
+        });
+
+        it(`rejects raw hostname untrusted-preview.run.app preventing bypass via fallback catch`, () => {
+          process.env.NODE_ENV = env;
+
+          let nextCalled = false;
+          let statusCode = 0;
+          let responseJson: unknown = null;
+
+          const req = {
+            method: "POST",
+            headers: {
+              host: "api.olmart.dz",
+              origin: "untrusted-preview.run.app",
+            },
+            path: "/api/v1/orders/create",
+            originalUrl: "/api/v1/orders/create",
+          } as unknown as Request;
+
+          const res = {
+            status(code: number) {
+              statusCode = code;
+              return this;
+            },
+            json(data: unknown) {
+              responseJson = data;
+              return this;
+            },
+          } as unknown as Response;
+
+          csrfProtection(req, res, () => {
+            nextCalled = true;
+          });
+
+          expect(nextCalled).toBe(false);
+          expect(statusCode).toBe(403);
+          expect(responseJson).toHaveProperty("error");
+        });
+      });
+    });
+
+    it("allows POST request with valid CSRF token according to existing contract", () => {
+      process.env.NODE_ENV = "development";
+      const token = generateCsrfToken("guest");
+
+      let nextCalled = false;
+      const req = {
+        method: "POST",
+        headers: {
+          host: "api.olmart.dz",
+          origin: "https://untrusted-preview.run.app",
+          "x-csrf-token": token,
+        },
+        path: "/api/v1/orders/create",
+        originalUrl: "/api/v1/orders/create",
+      } as unknown as Request;
+
+      const res = {} as Response;
+
+      csrfProtection(req, res, () => {
+        nextCalled = true;
+      });
+
+      expect(nextCalled).toBe(true);
+    });
+
+    it("explicitly authorized OLMART origins (https://olmart.dz) retain their current allowed behavior", () => {
+      const environmentsToTest = ["development", "production"] as const;
+
+      environmentsToTest.forEach((env) => {
+        process.env.NODE_ENV = env;
+
+        let nextCalled = false;
+        const req = {
+          method: "POST",
+          headers: {
+            host: "api.olmart.dz",
+            origin: "https://olmart.dz",
+          },
+          path: "/api/v1/orders/create",
+          originalUrl: "/api/v1/orders/create",
+        } as unknown as Request;
+
+        const res = {} as Response;
+
+        csrfProtection(req, res, () => {
+          nextCalled = true;
+        });
+
+        expect(nextCalled).toBe(true);
+      });
+    });
+
+    it("explicitly authorized OLMART origins (https://www.olmart.dz) retain their current allowed behavior", () => {
+      const environmentsToTest = ["development", "production"] as const;
+
+      environmentsToTest.forEach((env) => {
+        process.env.NODE_ENV = env;
+
+        let nextCalled = false;
+        const req = {
+          method: "POST",
+          headers: {
+            host: "api.olmart.dz",
+            origin: "https://www.olmart.dz",
+          },
+          path: "/api/v1/orders/create",
+          originalUrl: "/api/v1/orders/create",
+        } as unknown as Request;
+
+        const res = {} as Response;
+
+        csrfProtection(req, res, () => {
+          nextCalled = true;
+        });
+
+        expect(nextCalled).toBe(true);
+      });
+    });
+  });
 });
