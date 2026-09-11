@@ -2,6 +2,9 @@ import { Router, Request, Response } from "express";
 import { db } from "../../config/firebase-admin";
 import { CoreService, LogErrorBody } from "../../services/CoreService";
 import { TrendingSearchesService } from "../../services/TrendingSearchesService";
+import { safeLogger } from "../../utils/logger";
+import { PublicShopDTO } from "../seller/shop.types";
+import { buildWhitelistedShopDTO } from "../seller/shopPublic.projection";
 
 const router = Router();
 
@@ -160,14 +163,48 @@ router.post("/api/v1/logs/error", async (req: Request, res: Response) => {
   }
 });
 
-// GET public profiles list
+// GET public profiles list (Authoritative projection with strict whitelist)
 router.get("/api/v1/public-profiles", async (_req: Request, res: Response) => {
   try {
-    const snap = await db.collection("publicProfiles").limit(100).get();
-    const profiles = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    return res.json({ profiles });
+    // 1. Select only active seller users up to a fixed limit of 100
+    // Query requires an index on (role, status) if Firestore executes composite query
+    const usersSnap = await db
+      .collection("users")
+      .where("role", "==", "seller")
+      .where("status", "in", ["active", "ACTIVE"])
+      .limit(100)
+      .get();
+
+    if (usersSnap.empty) {
+      safeLogger.info("/api/v1/public-profiles fetched public profiles", { count: 0 });
+      return res.json({ success: true, profiles: [] });
+    }
+
+    // 2. Load publicProfiles corresponding exactly to selected active sellers via bounded parallel get
+    const pubDocPromises = usersSnap.docs.map((doc) => db.collection("publicProfiles").doc(doc.id).get());
+    const pubDocs = await Promise.all(pubDocPromises);
+
+    const pubDocsMap = new Map<string, Record<string, unknown>>();
+    pubDocs.forEach((doc) => {
+      if (doc.exists) {
+        pubDocsMap.set(doc.id, doc.data() || {});
+      }
+    });
+
+    // 3. Build strictly whitelisted public shop DTOs
+    const profiles: PublicShopDTO[] = usersSnap.docs.map((userDoc) => {
+      const userData = userDoc.data() || {};
+      const pubData = pubDocsMap.get(userDoc.id) || {};
+      return buildWhitelistedShopDTO(userDoc.id, userData, pubData);
+    });
+
+    safeLogger.info("/api/v1/public-profiles fetched public profiles", { count: profiles.length });
+    return res.json({ success: true, profiles });
   } catch (err: unknown) {
-    return res.status(500).json({ error: err instanceof Error ? err.message : "Erreur interne" });
+    safeLogger.error("Error fetching public profiles", {
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return res.status(500).json({ success: false, error: "Erreur lors de la récupération des profils publics" });
   }
 });
 
