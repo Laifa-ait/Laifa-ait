@@ -25,7 +25,10 @@ vi.mock("../config/firebase-admin", () => {
       if (filter.op === "==") {
         entries = entries.filter(([, data]) => data[filter.field] === filter.val);
       } else if (filter.op === "in" && Array.isArray(filter.val)) {
-        entries = entries.filter(([, data]) => filter.val.includes(data[filter.field]));
+        const values: unknown[] = filter.val;
+        entries = entries.filter(([, data]) =>
+          values.includes(data[filter.field])
+        );
       }
     }
 
