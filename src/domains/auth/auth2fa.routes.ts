@@ -52,40 +52,20 @@ export class TwoFactorService {
     const secretRef = db.collection("user_secrets").doc(userId);
     const secretSnap = await secretRef.get();
 
-    // Check private user_secrets first
-    let secretData = secretSnap.exists ? secretSnap.data() : null;
-
-    // Fallback for legacy / mock user document verification.code if user_secrets doc does not exist
-    if (!secretData) {
-      const userRef = db.collection("users").doc(userId);
-      const userDoc = await userRef.get();
-      const userData = userDoc.data();
-      const legacyCode = userData?.verification?.code;
-      const legacyExpiresAt = userData?.verification?.expiresAt;
-
-      if (!userData?.verification || !legacyCode || !legacyExpiresAt) {
-        return { success: false, status: 403, error: "Aucun code de vérification actif pour cet utilisateur." };
-      }
-
-      const legacyHash = crypto.createHash("sha256").update(`${userId}:${legacyCode}`).digest("hex");
-      secretData = {
-        otpHash: legacyHash,
-        expiresAt: legacyExpiresAt,
-        attempts: 0,
-      };
+    if (!secretSnap.exists) {
+      return { success: false, status: 403, error: "Aucun code de vérification actif pour cet utilisateur." };
     }
 
+    const secretData = secretSnap.data();
     const attempts = Number(secretData?.attempts || 0);
     if (attempts >= 5) {
       await secretRef.delete().catch(() => null);
       return { success: false, status: 429, error: "Nombre maximal de tentatives dépassé (5/5). Veuillez demander un nouveau code." };
     }
 
-    if (secretSnap.exists) {
-      await secretRef.update({
-        attempts: admin.firestore.FieldValue.increment(1),
-      }).catch(() => null);
-    }
+    await secretRef.update({
+      attempts: admin.firestore.FieldValue.increment(1),
+    }).catch(() => null);
 
     const otpHash = secretData?.otpHash;
     const expiresAt = secretData?.expiresAt;

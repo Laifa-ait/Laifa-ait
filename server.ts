@@ -6,6 +6,7 @@ import { startProductPublisherWorker, stopProductPublisherWorker } from "./src/w
 import { startVelocityWorker, stopVelocityWorker, drainVelocityChecks } from "./src/utils/velocity";
 import { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } from "./src/services/ProductSeoService";
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
+import { validateCsrfConfiguration } from "./src/middlewares/csrf";
 import { safeLogger } from "./src/utils/logger";
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -130,6 +131,9 @@ export function startServer(portOverride?: number): Promise<http.Server> {
         safeLogger.info(msg);
       }
     };
+
+    // 0. Security Configuration Guard: Fail-closed CSRF validation in production
+    validateCsrfConfiguration();
 
     try {
       // 1. Setup Vite dev middleware or production static asset pipeline

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { generateCsrfToken, verifyCsrfToken, csrfProtection } from "../middlewares/csrf";
+import { generateCsrfToken, verifyCsrfToken, csrfProtection, getCsrfSecret, validateCsrfConfiguration } from "../middlewares/csrf";
 import { Request, Response } from "express";
 
 describe("CSRF Protection Suite (P1-01 Verification)", () => {
@@ -35,20 +35,27 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
     expect(verifyCsrfToken("invalid_base64")).toBe(false);
   });
 
-  it("uses an ephemeral secret gracefully in production when CSRF_SECRET is missing", () => {
+  it("fails closed in production when CSRF_SECRET is missing or too short", () => {
     process.env.NODE_ENV = "production";
     delete process.env.CSRF_SECRET;
 
-    const token = generateCsrfToken("user_123");
-    expect(token).toBeDefined();
-    expect(typeof token).toBe("string");
-    expect(verifyCsrfToken(token, "user_123")).toBe(true);
+    expect(() => getCsrfSecret()).toThrowError("CSRF_SECRET is required and must be at least 32 characters in production");
+    expect(() => validateCsrfConfiguration()).toThrowError("CSRF_SECRET is required and must be at least 32 characters in production");
+    expect(() => generateCsrfToken("user_123")).toThrowError("CSRF_SECRET is required and must be at least 32 characters in production");
+  });
+
+  it("fails closed in production when CSRF_SECRET is a known weak secret", () => {
+    process.env.NODE_ENV = "production";
+    process.env.CSRF_SECRET = "changeit";
+
+    expect(() => getCsrfSecret()).toThrowError("CSRF_SECRET is required and must be at least 32 characters in production");
   });
 
   it("works reliably in production when CSRF_SECRET is provided", () => {
     process.env.NODE_ENV = "production";
     process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
 
+    expect(() => validateCsrfConfiguration()).not.toThrow();
     const token = generateCsrfToken("prod_user_456");
     expect(token).toBeDefined();
     expect(verifyCsrfToken(token, "prod_user_456")).toBe(true);
