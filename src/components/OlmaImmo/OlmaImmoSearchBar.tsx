@@ -2,6 +2,7 @@ import React from 'react';
 import { SlidersHorizontal, X, LocateFixed, Loader2 } from 'lucide-react';
 import { LocationSearchResult } from '../../data/algerianCommunesDatabase';
 import { searchAlgerianLocations } from '../../data/algerianCommunesDatabase';
+import { ALGERIA_WILAYAS } from '../../constants/wilayas';
 
 interface OlmaImmoSearchBarProps {
   whatTerm: string;
@@ -62,18 +63,26 @@ export const OlmaImmoSearchBar: React.FC<OlmaImmoSearchBarProps> = ({
         <input
           type="text"
           placeholder="Où ? (Wilaya, Commune...)"
+          list="hero-algeria-wilayas"
           value={whereTerm}
           onChange={(e) => onWhereChange(e.target.value)}
           onFocus={() => {
             if (whereTerm.trim().length >= 2) {
-              const results = searchAlgerianLocations(whereTerm.trim(), 8);
-              onWhereFocus(results);
+               const results = searchAlgerianLocations(whereTerm.trim(), 8);
+               onWhereFocus(results);
             }
           }}
           onKeyDown={onKeyDown}
           className="w-full text-xs sm:text-sm font-normal text-[#1E293B] placeholder:text-[#64748B] focus:outline-none bg-transparent"
           aria-label="Localisation souhaitée"
         />
+        <datalist id="hero-algeria-wilayas">
+          {ALGERIA_WILAYAS.map((w) => (
+            <option key={w.code} value={w.name}>
+              {w.code} - {w.name} {w.name_ar ? `(${w.name_ar})` : ''}
+            </option>
+          ))}
+        </datalist>
 
         {whereTerm ? (
           <button

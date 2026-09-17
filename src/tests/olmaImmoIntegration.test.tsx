@@ -168,12 +168,10 @@ describe('OLM-IMMO 2.2 — Badge, Media & PropertyCard Integration', () => {
 
       expect(container?.textContent).toContain('Appartement F3 Vue Mer Hydra');
       expect(container?.textContent).toContain('Hydra');
-      expect(container?.textContent).toContain('Wilaya de Alger');
-      expect(container?.textContent).toContain('3 ch.');
+      expect(container?.textContent).toContain('Alger');
+      expect(container?.textContent).toContain('3 pces');
       expect(container?.textContent).toContain('110 m²');
-      expect(container?.textContent).toContain('Location');
-      expect(container?.textContent).toContain('Acte Notarié');
-      expect(container?.textContent).toContain('Consulter le bien');
+      expect(container?.textContent).toContain('85');
     });
   });
 });

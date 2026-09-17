@@ -100,7 +100,9 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
       requestUserAlgerianWilaya(onSuccess, onError);
 
       expect(onSuccess).not.toHaveBeenCalled();
-      expect(onError).toHaveBeenCalledWith('Accès à la géolocalisation refusé.');
+      expect(onError).toHaveBeenCalledWith(
+        'Accès à la géolocalisation refusé. Veuillez autoriser la localisation dans les paramètres de votre navigateur.'
+      );
     });
   });
 

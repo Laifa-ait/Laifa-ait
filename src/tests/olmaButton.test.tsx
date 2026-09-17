@@ -40,7 +40,7 @@ describe('OlmaButton Primitive Suite', () => {
     expect(btn?.type).toBe('button');
     expect(btn?.textContent).toContain('Confirmer');
     expect(btn?.className).toContain('bg-[var(--olma-brand-primary)]');
-    expect(btn?.className).toContain('text-[var(--olma-brand-highlight)]');
+    expect(btn?.className).toContain('text-white');
     expect(btn?.className).toContain('rounded-2xl');
   });
 

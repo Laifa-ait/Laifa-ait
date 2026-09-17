@@ -5,6 +5,7 @@ import { FilterState } from './SearchFilters';
 import { OlmaImmoFilterModal } from './filters/OlmaImmoFilterModal';
 import { searchAlgerianLocations, LocationSearchResult } from '../../data/algerianCommunesDatabase';
 import { requestUserAlgerianWilaya } from '../../utils/realEstateGeolocation';
+import { ALGERIA_WILAYAS } from '../../constants/wilayas';
 import { LocationSuggestionsPopup } from './LocationSuggestionsPopup';
 import { OlmaImmoSearchBar } from './OlmaImmoSearchBar';
 
@@ -69,6 +70,17 @@ export const OlmaImmoHero: React.FC<OlmaImmoHeroProps> = ({
 
   const handleWhereChange = (val: string) => {
     setWhereTerm(val);
+    const matchedWilaya = ALGERIA_WILAYAS.find(
+      (w) => w.name.toLowerCase() === val.trim().toLowerCase()
+    );
+    if (matchedWilaya) {
+      onFilterChange({
+        ...filters,
+        wilaya: matchedWilaya.name,
+        daira: undefined,
+        commune: undefined,
+      });
+    }
     if (val.trim().length >= 2) {
       const results = searchAlgerianLocations(val.trim(), 8);
       setSuggestions(results);
