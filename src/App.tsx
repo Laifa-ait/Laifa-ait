@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MetaTags } from "./components/MetaTags";
 import { GlobalSearchModal } from "./components/common/GlobalSearchModal";
+import { DataConsentBanner } from "./components/Consent/DataConsentBanner";
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -50,6 +51,7 @@ const App = () => {
       />
       <AppRouter />
       <GlobalSearchModal />
+      <DataConsentBanner />
       <Toaster
         position="top-right"
         richColors

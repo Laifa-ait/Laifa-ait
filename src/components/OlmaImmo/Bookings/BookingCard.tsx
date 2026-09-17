@@ -64,7 +64,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2 flex-wrap sm:flex-nowrap">
             <div>
-              <h3 className="text-lg font-bold text-[#1A3831] font-['Playfair_Display',serif] group-hover:text-[#274B42] transition">
+              <h3 className="text-lg font-bold text-[#1E3A8A] font-['Playfair_Display',serif] group-hover:text-blue-900 transition">
                 {booking.propertyTitle || 'Hébergement de vacances'}
               </h3>
               {booking.propertyLocation && (
@@ -88,16 +88,16 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-stone-700">
-            <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#F0EAE0]">
-              <Calendar className="w-4 h-4 text-[#1A3831] shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-slate-50 border border-slate-200">
+              <Calendar className="w-4 h-4 text-[#1E3A8A] shrink-0" aria-hidden="true" />
               <div>
                 <span className="text-[10px] text-stone-400 block font-bold uppercase">Dates du séjour</span>
                 <span className="font-semibold">{formatDate(booking.startDate)} → {formatDate(booking.endDate)}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#F0EAE0]">
-              <Users className="w-4 h-4 text-[#1A3831] shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-slate-50 border border-slate-200">
+              <Users className="w-4 h-4 text-[#1E3A8A] shrink-0" aria-hidden="true" />
               <div>
                 <span className="text-[10px] text-stone-400 block font-bold uppercase">Voyageurs</span>
                 <span className="font-semibold">
@@ -110,12 +110,12 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#E8E2D4] flex-wrap">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 flex-wrap">
           <OlmaButton
             variant="secondary"
             size="sm"
             onClick={() => onOpenChat(booking)}
-            leftIcon={<MessageSquare className="w-3.5 h-3.5 text-[#1A3831]" />}
+            leftIcon={<MessageSquare className="w-3.5 h-3.5 text-[#1E3A8A]" />}
           >
             Contacter l'hôte
           </OlmaButton>

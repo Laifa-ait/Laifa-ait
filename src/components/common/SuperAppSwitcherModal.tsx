@@ -114,22 +114,22 @@ export const SuperAppSwitcherModal: React.FC<SuperAppSwitcherModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-2xl bg-stone-900 border border-stone-800 rounded-3xl shadow-2xl overflow-hidden text-stone-100 z-10 max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-2xl bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.2)] overflow-hidden text-slate-900 z-10 max-h-[90vh] flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-stone-800/80 bg-stone-900/80">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-slate-50/80">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-stone-950 shadow-lg shadow-orange-500/20">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-white shadow-md shadow-orange-500/25">
                   <LayoutGrid className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
                     Écosystème Olmart
-                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    <span className="text-[10px] uppercase font-black tracking-wider bg-amber-100/90 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300/80">
                       Super-App DZ
                     </span>
                   </h3>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-xs text-slate-500 font-medium">
                     Basculez instantanément entre vos univers avec votre compte unique
                   </p>
                 </div>
@@ -137,14 +137,14 @@ export const SuperAppSwitcherModal: React.FC<SuperAppSwitcherModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-stone-700/60"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors cursor-pointer border border-slate-200/80"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Scrollable Content */}
-            <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-5 bg-gradient-to-b from-slate-50/40 via-white to-slate-50/20">
               <SuperAppBentoGrid
                 verticals={SUPER_APP_VERTICALS}
                 activeId={getActiveVerticalId()}
@@ -159,12 +159,12 @@ export const SuperAppSwitcherModal: React.FC<SuperAppSwitcherModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3.5 border-t border-stone-800/80 bg-stone-950/60 flex items-center justify-between text-[11px] text-stone-400">
-              <span className="flex items-center gap-1.5">
+            <div className="px-5 sm:px-6 py-3.5 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between text-xs text-slate-600">
+              <span className="flex items-center gap-2 font-semibold text-slate-700">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Compte Unique & Session Unifiée
               </span>
-              <span className="text-stone-300 font-medium">58 Wilayas d'Algérie</span>
+              <span className="text-slate-800 font-extrabold">58 Wilayas d'Algérie</span>
             </div>
           </motion.div>
         </div>

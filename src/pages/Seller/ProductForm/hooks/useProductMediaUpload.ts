@@ -4,6 +4,7 @@ import { uploadFileWithProgress } from "../../../../services/storage.service";
 import toast from "react-hot-toast";
 import { ProductFormData } from "../../../../types/seller";
 import { compressClientImage } from "../../../../utils/imageUtils";
+import { generateClientUUID } from "../../../../utils/secureCrypto";
 
 const MAX_IMAGES = 8;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -102,7 +103,7 @@ export function useProductMediaUpload(
         uploadFile = await compressClientImage(file);
       }
       const fileExt = file.name.split(".").pop() || "jpg";
-      const fileName = `${currentUser.uid}_${Date.now()}_${Math.random().toString(36).substring(7)}.${type === "image" ? "webp" : fileExt}`;
+      const fileName = `${currentUser.uid}_${Date.now()}_${generateClientUUID().substring(0, 8)}.${type === "image" ? "webp" : fileExt}`;
       const storagePath = `products/${type}s/${fileName}`;
       const downloadURL = await new Promise<string>((resolve, reject) => {
         const cancel = uploadFileWithProgress(

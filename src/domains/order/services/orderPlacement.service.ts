@@ -531,7 +531,6 @@ export class OrderPlacementService {
             const sellerEarned = sellerGrandTotal - commissionAmount;
 
             const subOrderRef = db.collection("orders").doc();
-            const subOrderDeliveryPin = Math.floor(100000 + Math.random() * 900000).toString();
             const subOrderData = {
               parentOrderId,
               userId,
@@ -552,7 +551,6 @@ export class OrderPlacementService {
               sellerIds: [sellerId],
               shippingBreakdown: { [sellerId]: sellerShippingCost },
               discountBreakdown: discountBreakdownMap,
-              deliveryPin: subOrderDeliveryPin,
               idempotencyKey: idempotencyKey || null,
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),

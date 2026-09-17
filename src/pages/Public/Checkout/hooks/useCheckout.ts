@@ -14,6 +14,7 @@ import { Shop } from "../../../../domains/seller/shop.types";
 import { analyticsEngine } from '../../../../utils/analyticsEngine';
 import { CartItem } from '../../../../domains/product/product.types';
 import { Coupon, CouponDateType } from '../../../../domains/marketing/coupon.types';
+import { generateRandomAlphanumeric } from '../../../../utils/secureCrypto';
 
 export interface CheckoutOrderSummary {
   id: string;
@@ -366,7 +367,7 @@ export const useCheckout = () => {
     setIsSubmitting(true);
     try {
       const cleanPhone = formData.phone.replace(/\s+/g, '');
-      const refId = `REG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const refId = `REG-${generateRandomAlphanumeric(6)}`;
 
       if (currentUser) {
          await apiPost("/api/v1/auth/profile", {
@@ -481,7 +482,7 @@ export const useCheckout = () => {
       const data = await processCheckout(payload);
       
       setOrderSummary({ 
-         id: data.orderId || deliveryRegId || `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`, 
+         id: data.orderId || deliveryRegId || `ORD-${generateRandomAlphanumeric(8)}`, 
          total: data.total || grandTotal, 
          guestUserId: data.guestUserId || (currentUser?.uid || "guest"),
          guestRecoveryToken: data.guestRecoveryToken || null,

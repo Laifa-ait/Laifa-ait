@@ -18,7 +18,7 @@ export const ShortTermBookingPriceBreakdown: React.FC<ShortTermBookingPriceBreak
   totalPriceDZD,
 }) => {
   return (
-    <div className="bg-[#f0ece1] border border-[#ded5be] rounded-2xl p-4 space-y-2 text-xs text-slate-800 animate-fade-in">
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-xs text-slate-800 animate-fade-in">
       <div className="flex justify-between">
         <span>
           {nightlyPrice.toLocaleString('fr-DZ')} DA × {totalNights} nuit{totalNights > 1 ? 's' : ''}
@@ -36,9 +36,9 @@ export const ShortTermBookingPriceBreakdown: React.FC<ShortTermBookingPriceBreak
         <span className="font-semibold">{serviceFee.toLocaleString('fr-DZ')} DA</span>
       </div>
 
-      <div className="pt-2 border-t border-[#d5caaf] flex justify-between text-sm font-extrabold text-[#1e3835]">
+      <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-extrabold text-[#1E3A8A]">
         <span>Total</span>
-        <span className="text-base text-[#1e3835]">{totalPriceDZD.toLocaleString('fr-DZ')} DA</span>
+        <span className="text-base text-[#1E3A8A]">{totalPriceDZD.toLocaleString('fr-DZ')} DA</span>
       </div>
     </div>
   );

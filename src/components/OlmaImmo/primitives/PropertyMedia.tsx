@@ -123,7 +123,7 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
             className="pointer-events-auto shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-[11px] font-semibold border border-white/10 shadow-xs"
             title={`${totalPhotos} photos disponibles`}
           >
-            <Camera className="w-3 h-3 text-[#EBDCB8]" aria-hidden="true" />
+            <Camera className="w-3 h-3 text-[#F59E0B]" aria-hidden="true" />
             <span>{totalPhotos}</span>
           </div>
         )}

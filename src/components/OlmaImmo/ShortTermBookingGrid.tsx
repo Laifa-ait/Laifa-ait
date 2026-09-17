@@ -45,7 +45,7 @@ export const ShortTermBookingGrid: React.FC<ShortTermBookingGridProps> = ({
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <span className="text-xs font-bold text-[#1e3835] capitalize tracking-wide">{monthName}</span>
+        <span className="text-xs font-bold text-[#1E3A8A] capitalize tracking-wide">{monthName}</span>
         <button
           type="button"
           onClick={nextMonth}
@@ -79,15 +79,15 @@ export const ShortTermBookingGrid: React.FC<ShortTermBookingGridProps> = ({
           const inRange = startDate && endDate && dateStr > startDate && dateStr < endDate;
           const inHoverRange = startDate && !endDate && hoverDate && dateStr > startDate && dateStr <= hoverDate;
 
-          let bgClass = 'bg-transparent text-slate-800 hover:bg-[#f0ebd8]';
+          let bgClass = 'bg-transparent text-slate-800 hover:bg-blue-50';
           if (disabled) {
             bgClass = 'bg-slate-100 text-slate-300 line-through cursor-not-allowed';
           } else if (isStart || isEnd) {
-            bgClass = 'bg-[#1e3835] text-white font-bold rounded-xl shadow-xs';
+            bgClass = 'bg-[#1E3A8A] text-white font-bold rounded-xl shadow-xs';
           } else if (inRange) {
-            bgClass = 'bg-[#f4ecd8] text-[#1e3835] font-semibold';
+            bgClass = 'bg-blue-100 text-[#1E3A8A] font-semibold';
           } else if (inHoverRange) {
-            bgClass = 'bg-[#f7f2e4] text-[#1e3835]';
+            bgClass = 'bg-blue-50 text-[#1E3A8A]';
           }
 
           return (
@@ -98,7 +98,7 @@ export const ShortTermBookingGrid: React.FC<ShortTermBookingGridProps> = ({
               onClick={() => handleDateClick(dateStr)}
               onMouseEnter={() => !endDate && startDate && setHoverDate(dateStr)}
               className={`h-9 text-xs rounded-lg flex items-center justify-center relative transition-all min-w-[32px] cursor-pointer ${bgClass} ${
-                isToday && !isStart && !isEnd ? 'ring-2 ring-emerald-600 font-bold text-emerald-900' : ''
+                isToday && !isStart && !isEnd ? 'ring-2 ring-blue-600 font-bold text-blue-900' : ''
               }`}
             >
               <span>{dayNum}</span>
@@ -108,7 +108,7 @@ export const ShortTermBookingGrid: React.FC<ShortTermBookingGridProps> = ({
       </div>
 
       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 px-1">
-        <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#1e3835]" /><span>Sélection</span></div>
+        <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#1E3A8A]" /><span>Sélection</span></div>
         <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-200" /><span>Indisponible</span></div>
       </div>
     </div>

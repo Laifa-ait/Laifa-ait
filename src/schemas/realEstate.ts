@@ -28,6 +28,7 @@ export const GeoPointLocationSchema = z.object({
   geohash: z.string().optional().default(''),
   address: z.string().max(200, "Adresse trop longue").optional().default(''),
   commune: z.string().min(1, "La commune est requise").max(100),
+  daira: z.string().max(100).optional(),
   wilaya: z.string().min(1, "La wilaya est requise").max(100),
 });
 
@@ -86,6 +87,7 @@ export const PropertySearchQuerySchema = z.object({
   hasLivretFoncier: z.coerce.boolean().optional(),
   isLegalVerified: z.coerce.boolean().optional(),
   wilaya: z.string().optional(),
+  daira: z.string().optional(),
   commune: z.string().optional(),
   minPrice: z.coerce.number().min(0, 'Le prix minimum ne peut être négatif').optional(),
   maxPrice: z.coerce.number().positive('Le prix maximum doit être supérieur à 0').optional(),

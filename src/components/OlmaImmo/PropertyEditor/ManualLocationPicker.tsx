@@ -1,15 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { GeoPointLocation } from '../../../types/realEstate';
-import { ALGERIA_WILAYAS } from '../../../constants/wilayas';
 import {
   getCommunesForWilaya,
+  getDairasForWilaya,
   findWilayaCoords,
   findCommuneCoords,
+  findDairaForCommune,
 } from '../../../data/algerianCommunesDatabase';
-import { MapPin, CheckCircle2, Edit3, ListFilter } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { ResidenceLocationPickerMap } from './ResidenceLocationPickerMap';
 import { AlgeriaPlaceSearchBar } from './AlgeriaPlaceSearchBar';
 import { AlgeriaPlaceResult } from '../../../services/algeriaPlaceSearch';
+import { AlgerianTerritoryExplainerModal } from '../common/AlgerianTerritoryExplainer';
+import { AdminTerritorySelectorGrid } from './AdminTerritorySelectorGrid';
 
 interface ManualLocationPickerProps {
   location: GeoPointLocation;
@@ -18,12 +21,27 @@ interface ManualLocationPickerProps {
 
 export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ location, onChange }) => {
   const [isManualTextEntry, setIsManualTextEntry] = useState(false);
+  const [isTerritoryModalOpen, setIsTerritoryModalOpen] = useState(false);
 
-  // Communes available for currently selected Wilaya
+  // Available Daïras for Wilaya
+  const availableDairas = useMemo(() => {
+    if (!location.wilaya) return [];
+    return getDairasForWilaya(location.wilaya);
+  }, [location.wilaya]);
+
+  // Communes available for currently selected Wilaya & Daïra
   const availableCommunes = useMemo(() => {
     if (!location.wilaya) return [];
-    return getCommunesForWilaya(location.wilaya);
-  }, [location.wilaya]);
+    return getCommunesForWilaya(location.wilaya, location.daira);
+  }, [location.wilaya, location.daira]);
+
+  const effectiveDaira = useMemo(() => {
+    if (location.daira) return location.daira;
+    if (location.wilaya && location.commune) {
+      return findDairaForCommune(location.wilaya, location.commune);
+    }
+    return undefined;
+  }, [location.daira, location.wilaya, location.commune]);
 
   const handleWilayaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedWilaya = e.target.value;
@@ -31,18 +49,35 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
     const newLat = coords?.lat ? Number(coords.lat.toFixed(6)) : location.lat || 36.7538;
     const newLng = coords?.lng ? Number(coords.lng.toFixed(6)) : location.lng || 3.0588;
 
-    // Check if current commune belongs to newly selected Wilaya
     const newCommunes = getCommunesForWilaya(selectedWilaya);
     const communeStillValid = newCommunes.some(
       (c) => c.name.toLowerCase() === (location.commune || '').toLowerCase()
     );
 
+    const updatedCommune = communeStillValid ? location.commune : '';
+    const updatedDaira = updatedCommune ? findDairaForCommune(selectedWilaya, updatedCommune) : '';
+
     onChange({
       ...location,
       wilaya: selectedWilaya,
-      commune: communeStillValid ? location.commune : '',
+      daira: updatedDaira,
+      commune: updatedCommune,
       lat: newLat,
       lng: newLng,
+    });
+  };
+
+  const handleDairaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDaira = e.target.value;
+    const communesInDaira = getCommunesForWilaya(location.wilaya || '', selectedDaira);
+    const communeStillValid = communesInDaira.some(
+      (c) => c.name.toLowerCase() === (location.commune || '').toLowerCase()
+    );
+
+    onChange({
+      ...location,
+      daira: selectedDaira,
+      commune: communeStillValid ? location.commune : '',
     });
   };
 
@@ -56,10 +91,12 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
     const coords = findCommuneCoords(location.wilaya || '', selectedCommune);
     const newLat = coords?.lat ? Number(coords.lat.toFixed(6)) : location.lat || 36.7538;
     const newLng = coords?.lng ? Number(coords.lng.toFixed(6)) : location.lng || 3.0588;
+    const autoDaira = findDairaForCommune(location.wilaya || '', selectedCommune);
 
     onChange({
       ...location,
       commune: selectedCommune,
+      daira: autoDaira || location.daira,
       lat: newLat,
       lng: newLng,
     });
@@ -67,19 +104,26 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
 
   const handleCommuneTextChange = (val: string) => {
     const coords = findCommuneCoords(location.wilaya || '', val);
+    const autoDaira = findDairaForCommune(location.wilaya || '', val);
     onChange({
       ...location,
       commune: val,
+      daira: autoDaira || location.daira,
       ...(coords ? { lat: Number(coords.lat.toFixed(6)), lng: Number(coords.lng.toFixed(6)) } : {}),
     });
   };
 
   const handlePlaceSelect = (place: AlgeriaPlaceResult) => {
+    const autoDaira = place.commune && (place.wilaya || location.wilaya)
+      ? findDairaForCommune(place.wilaya || location.wilaya || '', place.commune)
+      : undefined;
+
     onChange({
       ...location,
       lat: place.lat,
       lng: place.lng,
       wilaya: place.wilaya || location.wilaya,
+      daira: autoDaira || location.daira,
       commune: place.commune || location.commune,
       address: location.address || (place.category === 'quartier' || place.category === 'landmark' ? place.name : location.address),
     });
@@ -90,113 +134,27 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
 
   return (
     <div className="space-y-4">
-      {/* Wilaya and Commune selection */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-bold text-stone-700 mb-1">
-            1. Wilaya * ({ALGERIA_WILAYAS.length} wilayas)
-          </label>
-          <select
-            value={location.wilaya || ''}
-            onChange={handleWilayaChange}
-            required
-            className="w-full bg-white border border-stone-200 text-stone-800 text-xs font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 min-h-[44px] cursor-pointer"
-          >
-            <option value="" disabled>
-              Sélectionnez une Wilaya
-            </option>
-            {ALGERIA_WILAYAS.map((w) => (
-              <option key={w.code} value={w.name}>
-                {w.code} - {w.name} {w.name_ar ? `(${w.name_ar})` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
+      <AdminTerritorySelectorGrid
+        wilaya={location.wilaya}
+        daira={location.daira}
+        commune={location.commune}
+        effectiveDaira={effectiveDaira}
+        availableDairas={availableDairas}
+        availableCommunes={availableCommunes}
+        isManualTextEntry={isManualTextEntry}
+        onToggleManualTextEntry={() => setIsManualTextEntry(!isManualTextEntry)}
+        onWilayaChange={handleWilayaChange}
+        onDairaChange={handleDairaChange}
+        onCommuneSelect={handleCommuneSelect}
+        onCommuneTextChange={handleCommuneTextChange}
+        onOpenTerritoryModal={() => setIsTerritoryModalOpen(true)}
+      />
 
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-bold text-stone-700">
-              2. Commune * {availableCommunes.length > 0 ? `(${availableCommunes.length})` : ''}
-            </label>
-            {location.wilaya && availableCommunes.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setIsManualTextEntry(!isManualTextEntry)}
-                className="text-[11px] text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-1 cursor-pointer"
-              >
-                {isManualTextEntry ? (
-                  <>
-                    <ListFilter className="w-3 h-3" />
-                    <span>Choisir dans la liste</span>
-                  </>
-                ) : (
-                  <>
-                    <Edit3 className="w-3 h-3" />
-                    <span>Saisie libre</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          {!isManualTextEntry ? (
-            <select
-              value={location.commune || ''}
-              onChange={handleCommuneSelect}
-              required
-              disabled={!location.wilaya}
-              className="w-full bg-white border border-stone-200 text-stone-800 text-xs font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 min-h-[44px] disabled:bg-stone-100 disabled:text-stone-400 cursor-pointer"
-            >
-              <option value="" disabled>
-                {location.wilaya
-                  ? `-- Choisir une commune (${availableCommunes.length} communes) --`
-                  : "Sélectionnez d'abord une Wilaya"}
-              </option>
-              {availableCommunes.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.name} {c.postal_code ? `(${c.postal_code})` : ''} {c.name_ar ? `• ${c.name_ar}` : ''}
-                </option>
-              ))}
-              <option value="__custom__">✍️ Autre commune / saisie manuelle...</option>
-            </select>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                required
-                list="communes-datalist"
-                placeholder="Ex: Bab Ezzouar, Hydra, Bir El Djir..."
-                value={location.commune || ''}
-                onChange={(e) => handleCommuneTextChange(e.target.value)}
-                className="w-full bg-white border border-stone-200 text-stone-800 text-xs font-medium rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
-              />
-              {availableCommunes.length > 0 && (
-                <datalist id="communes-datalist">
-                  {availableCommunes.map((c) => (
-                    <option key={c.name} value={c.name} />
-                  ))}
-                </datalist>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Confirmation feedback when Wilaya and Commune are locked */}
-      {location.wilaya && location.commune && (
-        <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl px-3.5 py-2 flex items-center justify-between gap-2 text-xs text-emerald-950 font-medium shadow-xs">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>
-              Pieu positionné sur <strong>{location.commune}</strong> (Wilaya de {location.wilaya}).
-            </span>
-          </div>
-          <span className="text-[10px] text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            Localisation prête
-          </span>
-        </div>
-      )}
+      {/* Modal explicateur territorial */}
+      <AlgerianTerritoryExplainerModal
+        isOpen={isTerritoryModalOpen}
+        onClose={() => setIsTerritoryModalOpen(false)}
+      />
 
       {/* Address */}
       <div>
@@ -209,21 +167,20 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
           placeholder="Ex: Boulevard Millenium, Cité 500 Logements, Rue Didouche Mourad..."
           value={location.address || ''}
           onChange={(e) => onChange({ ...location, address: e.target.value })}
-          className="w-full bg-white border border-stone-200 text-stone-800 text-xs font-medium rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+          className="w-full bg-white border border-slate-200 text-slate-800 text-xs font-medium rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-blue-500 min-h-[44px]"
         />
       </div>
 
       {/* Interactive Draggable Map with Satellite View for Pin Dropping */}
-      <div className="space-y-2.5 pt-2 border-t border-stone-200">
+      <div className="space-y-2.5 pt-2 border-t border-slate-200">
         <div className="flex items-center justify-between gap-2">
-          <label className="text-xs font-bold text-[#0D281E] flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-emerald-700" />
+          <label className="text-xs font-bold text-[#1E3A8A] flex items-center gap-1.5">
+            <MapPin className="w-4 h-4 text-[#1E3A8A]" />
             <span>4. Positionner sur la carte (Recherche de lieux & Glissement)</span>
           </label>
-          <span className="text-[10px] text-stone-500 font-medium">Algérie 58 Wilayas</span>
+          <span className="text-[10px] text-slate-500 font-medium">Algérie 58 Wilayas</span>
         </div>
 
-        {/* Moteur de recherche de lieux en Algérie */}
         <AlgeriaPlaceSearchBar
           onSelectPlace={handlePlaceSelect}
           preferredWilaya={location.wilaya}
@@ -241,4 +198,3 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
     </div>
   );
 };
-

@@ -135,7 +135,7 @@ export const PropertyOwnerDashboard: React.FC = () => {
         <OwnerProBadge />
 
         {/* Tab navigation */}
-        <div className="flex items-center gap-2 border-b border-[#e8e2d4] pb-2">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
           {[
             { id: 'properties' as const, label: `Mes Annonces (${properties.length})` },
             { id: 'visits' as const, label: `Demandes de Visite (${visits.length})` },
@@ -147,8 +147,8 @@ export const PropertyOwnerDashboard: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-[#1a3831] text-[#ebdcb8] shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-[#e8e2d4]'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
               {tab.label}

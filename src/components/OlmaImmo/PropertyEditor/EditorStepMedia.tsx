@@ -80,20 +80,20 @@ export const EditorStepMedia: React.FC<EditorStepMediaProps> = ({ images, setIma
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
       {/* Header & Quality Meter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-[#1a3831]" />
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif] flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-[#F59E0B]" />
             <span>Photos du bien ({images.length})</span>
           </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Ajoutez de vraies photos nettes et lumineuses de votre bien immobilier.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#faf8f5] border border-[#e8e2d4]">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200">
           {images.length === 0 ? (
             <span className="text-amber-700 flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" /> 1 photo minimum requise
@@ -104,7 +104,7 @@ export const EditorStepMedia: React.FC<EditorStepMediaProps> = ({ images, setIma
             </span>
           ) : (
             <span className="text-emerald-800 flex items-center gap-1.5 font-bold">
-              <Sparkles className="w-4 h-4 text-amber-500" /> Visibilité Maximale (+300%)
+              <Sparkles className="w-4 h-4 text-[#F59E0B]" /> Visibilité Maximale (+300%)
             </span>
           )}
         </div>

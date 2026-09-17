@@ -45,8 +45,8 @@ export const PhotoCardItem: React.FC<PhotoCardItemProps> = ({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {isMain ? (
-            <span className="flex items-center gap-1 bg-[#1a3831] text-[#ebdcb8] text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-amber-400/50 shadow-md">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <span className="flex items-center gap-1 bg-[#1E3A8A] text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-[#F59E0B]/60 shadow-md">
+              <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" />
               <span>Photo Principale</span>
             </span>
           ) : (
@@ -82,7 +82,7 @@ export const PhotoCardItem: React.FC<PhotoCardItemProps> = ({
             <button
               type="button"
               onClick={() => onSetMain(index)}
-              className="flex items-center gap-1 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-[#1a3831] rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-[#1E3A8A] rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm transition-colors cursor-pointer"
             >
               <Star className="w-3 h-3 fill-current" />
               <span>Mettre en premier</span>

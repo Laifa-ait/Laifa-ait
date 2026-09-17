@@ -53,8 +53,8 @@ export const ProfileFavoritesSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-3xl p-12 border border-[#e8e2d4] text-center">
-        <Loader2 className="w-8 h-8 text-[#1e3835] animate-spin mx-auto mb-2" />
+      <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center">
+        <Loader2 className="w-8 h-8 text-[#1E3A8A] animate-spin mx-auto mb-2" />
         <p className="text-xs font-bold text-slate-600">Chargement de vos favoris...</p>
       </div>
     );
@@ -62,22 +62,22 @@ export const ProfileFavoritesSection: React.FC = () => {
 
   if (properties.length === 0) {
     return (
-      <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#e8e2d4] text-center space-y-4 shadow-xs">
-        <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1e3835] flex items-center justify-center mx-auto border border-[#e2d6b5]">
-          <Heart className="w-8 h-8 text-[#7a824e]" />
+      <div className="bg-white rounded-3xl p-8 md:p-12 border border-slate-200 text-center space-y-4 shadow-xs">
+        <div className="w-16 h-16 rounded-3xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mx-auto border border-slate-200">
+          <Heart className="w-8 h-8 text-[#F59E0B]" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-lg font-bold text-[#1e3835]">Vos biens favoris apparaîtront ici</h3>
+          <h3 className="text-lg font-bold text-[#1E3A8A]">Vos biens favoris apparaîtront ici</h3>
           <p className="text-xs text-slate-600 max-w-md mx-auto">
             Vous n'avez pas encore sauvegardé de propriétés. Explorez nos annonces de vente, location et vacances en Algérie.
           </p>
         </div>
         <Link
           to="/immo"
-          className="inline-flex items-center gap-2 py-3 px-6 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-2 py-3 px-6 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-xs cursor-pointer"
         >
           <span>Explorer l'immobilier</span>
-          <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
+          <ArrowRight className="w-4 h-4 text-[#F59E0B]" />
         </Link>
       </div>
     );

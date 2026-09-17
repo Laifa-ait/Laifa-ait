@@ -51,7 +51,8 @@ describe('OLM-IMMO 2.3 — Filters Standard Component Tests', () => {
     });
 
     const selects = container?.querySelectorAll('select');
-    expect(selects?.length).toBe(2);
+    // 3 administrative levels: Wilaya (1), Daïra (2), Commune/Baladia (3)
+    expect(selects?.length).toBe(3);
 
     const wilayaSelect = selects?.[0] as HTMLSelectElement;
     expect(wilayaSelect).toBeTruthy();
@@ -169,6 +170,7 @@ describe('OLM-IMMO 2.3 — Filters Standard Component Tests', () => {
       root?.render(
         <OlmaImmoFilterModal
           isOpen={true}
+          usePortal={false}
           onClose={onClose}
           filters={filters}
           onApplyFilters={onApply}

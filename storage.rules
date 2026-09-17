@@ -92,6 +92,17 @@ service firebase.storage {
     }
 
     // -------------------------------------------------------------------------
+    // USER VAULT DOCUMENTS (IDOR-protected, user or admin only)
+    // -------------------------------------------------------------------------
+    match /user_documents/{uid}/{fileName} {
+      allow read: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isLoggedIn() && request.auth.uid == uid 
+        && request.resource.size < 30 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+      allow delete: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // -------------------------------------------------------------------------
     // USER PUBLIC AVATARS (Legacy fallback / public avatars)
     // -------------------------------------------------------------------------
     match /users/{uid}/avatar/{fileName} {

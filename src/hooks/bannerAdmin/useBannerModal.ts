@@ -4,6 +4,7 @@ import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 import { DbBanner, compressAndResizeImage } from "./useBannerTypes";
+import { generateClientUUID } from "../../utils/secureCrypto";
 
 export function useBannerModal(
   banners: DbBanner[],
@@ -120,7 +121,7 @@ export function useBannerModal(
       toast.loading("Optimisation, redimensionnement et compression...", { id: "upload-desktop-toast" });
 
       const { blob } = await compressAndResizeImage(file, 1920, 1080);
-      const uuid = Math.random().toString(36).substring(2, 15);
+      const uuid = generateClientUUID().substring(0, 12);
       const storageRef = ref(storage, `banners/desktop_${uuid}_${file.name.replace(/\s+/g, "_")}`);
 
       const finalUrl = await new Promise<string>((resolve, reject) => {
@@ -172,7 +173,7 @@ export function useBannerModal(
       toast.loading("Optimisation et compression pour mobile...", { id: "upload-mobile-toast" });
 
       const { blob } = await compressAndResizeImage(file, 1080, 1080);
-      const uuid = Math.random().toString(36).substring(2, 15);
+      const uuid = generateClientUUID().substring(0, 12);
       const storageRef = ref(storage, `banners/mobile_${uuid}_${file.name.replace(/\s+/g, "_")}`);
 
       const finalUrl = await new Promise<string>((resolve, reject) => {

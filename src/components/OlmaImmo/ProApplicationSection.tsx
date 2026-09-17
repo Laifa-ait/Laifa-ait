@@ -37,8 +37,8 @@ export const ProApplicationSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-3xl p-10 border border-[#e8e2d4] text-center">
-        <Loader2 className="w-8 h-8 text-[#1e3835] animate-spin mx-auto mb-2" />
+      <div className="bg-white rounded-3xl p-10 border border-slate-200 text-center">
+        <Loader2 className="w-8 h-8 text-[#1E3A8A] animate-spin mx-auto mb-2" />
         <p className="text-xs font-bold text-slate-600">Vérification de votre statut professionnel...</p>
       </div>
     );
@@ -47,15 +47,15 @@ export const ProApplicationSection: React.FC = () => {
   // State 1: Verified Pro/Agency Account
   if (application && application.status === 'verified') {
     return (
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-300">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#7a824e]">Statut Officiel</span>
-              <h3 className="text-xl font-bold text-[#1e3835]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-800">Statut Officiel</span>
+              <h3 className="text-xl font-bold text-[#1E3A8A]">
                 {application.accountType === 'agency' ? 'Agence Immobilière Agréée' : 'Professionnel Certifié'}
               </h3>
             </div>
@@ -65,25 +65,25 @@ export const ProApplicationSection: React.FC = () => {
           </span>
         </div>
 
-        <div className="bg-[#f9f7f2] border border-[#e8e2d4] rounded-2xl p-4 text-xs space-y-2">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs space-y-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <span className="text-slate-400 font-bold uppercase text-[10px]">Raison Sociale</span>
-              <p className="font-bold text-[#1e3835]">{application.companyName}</p>
+              <p className="font-bold text-[#1E3A8A]">{application.companyName}</p>
             </div>
             <div>
               <span className="text-slate-400 font-bold uppercase text-[10px]">N° Registre du Commerce</span>
-              <p className="font-mono font-bold text-[#1e3835]">{application.tradeRegisterNumber}</p>
+              <p className="font-mono font-bold text-[#1E3A8A]">{application.tradeRegisterNumber}</p>
             </div>
             {application.agencyLicenseNumber && (
               <div>
                 <span className="text-slate-400 font-bold uppercase text-[10px]">N° Agrément</span>
-                <p className="font-mono font-bold text-[#1e3835]">{application.agencyLicenseNumber}</p>
+                <p className="font-mono font-bold text-[#1E3A8A]">{application.agencyLicenseNumber}</p>
               </div>
             )}
             <div>
               <span className="text-slate-400 font-bold uppercase text-[10px]">Wilaya & Contact</span>
-              <p className="font-bold text-[#1e3835]">{application.wilaya} · {application.contactPhone}</p>
+              <p className="font-bold text-[#1E3A8A]">{application.wilaya} · {application.contactPhone}</p>
             </div>
           </div>
         </div>
@@ -91,14 +91,14 @@ export const ProApplicationSection: React.FC = () => {
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             to="/immo/owner"
-            className="flex-1 py-3 px-5 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs transition"
+            className="flex-1 py-3 px-5 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs transition"
           >
             <span>Tableau de Bord Pro</span>
-            <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
+            <ArrowRight className="w-4 h-4 text-[#F59E0B]" />
           </Link>
           <Link
             to="/immo/publish"
-            className="py-3 px-5 bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1e3835] border border-[#e8e2d4] rounded-xl text-xs font-bold uppercase tracking-wider transition"
+            className="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-[#1E3A8A] border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider transition"
           >
             Publier une annonce
           </Link>
@@ -110,22 +110,22 @@ export const ProApplicationSection: React.FC = () => {
   // State 2: Application Pending Review
   if (application && application.status === 'pending') {
     return (
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-5">
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center border border-amber-300">
             <Clock className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Demande en cours</span>
-            <h3 className="text-xl font-bold text-[#1e3835]">Dossier en attente de validation</h3>
+            <h3 className="text-xl font-bold text-[#1E3A8A]">Dossier en attente de validation</h3>
           </div>
         </div>
 
-        <div className="p-4 bg-[#fefbf3] border border-[#e8dcc4] rounded-2xl text-xs space-y-2 text-slate-700">
+        <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-2xl text-xs space-y-2 text-slate-700">
           <p className="font-medium">
             Votre demande pour le compte <strong>{application.companyName}</strong> ({application.accountType === 'agency' ? 'Agence' : 'Pro'}) est actuellement examinée par notre équipe conformité.
           </p>
-          <div className="pt-2 border-t border-[#e8e2d4] grid grid-cols-2 gap-2 text-[11px] text-slate-500">
+          <div className="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
             <div>RC : <span className="font-mono font-bold text-slate-700">{application.tradeRegisterNumber}</span></div>
             <div>Wilaya : <span className="font-bold text-slate-700">{application.wilaya}</span></div>
             <div>Soumis le : <span className="font-bold text-slate-700">{new Date(application.submittedAt).toLocaleDateString('fr-DZ')}</span></div>
@@ -142,14 +142,14 @@ export const ProApplicationSection: React.FC = () => {
   // State 3: Application Rejected
   if (application && application.status === 'rejected') {
     return (
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-5">
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 flex items-center justify-center border border-rose-300">
             <XCircle className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700">Non validé</span>
-            <h3 className="text-xl font-bold text-[#1e3835]">Dossier à corriger</h3>
+            <h3 className="text-xl font-bold text-[#1E3A8A]">Dossier à corriger</h3>
           </div>
         </div>
 
@@ -161,7 +161,7 @@ export const ProApplicationSection: React.FC = () => {
         <button
           type="button"
           onClick={() => setApplication(null)}
-          className="py-3 px-5 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer"
+          className="py-3 px-5 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer"
         >
           Soumettre un nouveau dossier
         </button>
@@ -171,14 +171,14 @@ export const ProApplicationSection: React.FC = () => {
 
   // State 4: Fresh Application Form
   return (
-    <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
-      <div className="flex items-center gap-3 pb-4 border-b border-[#f0ebd8]">
-        <div className="w-12 h-12 rounded-2xl bg-[#f4ecd8] text-[#1e3835] flex items-center justify-center border border-[#e8e2d4]">
+    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+      <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center border border-slate-200">
           <Building2 className="w-6 h-6" />
         </div>
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#7a824e]">Certification Olma Immo</span>
-          <h3 className="text-xl font-bold text-[#1e3835] font-['Playfair_Display',serif]">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-800">Certification Olma Immo</span>
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Passer à un compte Pro ou Agence
           </h3>
         </div>

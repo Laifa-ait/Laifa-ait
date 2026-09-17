@@ -76,6 +76,14 @@ describe("BuyerService", () => {
     ]);
   });
 
+  it("should check if a store is followed", async () => {
+    mockGet.mockResolvedValueOnce({
+      exists: true,
+    });
+    const followed = await BuyerService.isStoreFollowed("user-1", "seller-1");
+    expect(followed).toBe(true);
+  });
+
   it("should follow a store", async () => {
     mockSet.mockResolvedValueOnce(undefined);
     await BuyerService.followStore("user-1", "seller-1", { notified: true });

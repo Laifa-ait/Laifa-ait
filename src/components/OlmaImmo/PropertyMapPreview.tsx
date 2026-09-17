@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Maximize, Bed, Bath, Heart, X, ArrowUpRight } from 'lucide-react';
 import { PublicPropertyDTO, PropertyMapResult } from '../../types/realEstate';
 import { isFavoritePropertyId, toggleFavoritePropertyId } from '../../utils/realEstateFavorites';
+import { findDairaForCommune } from '../../data/algerianCommunesDatabase';
 
 interface PropertyMapPreviewProps {
   property: PublicPropertyDTO | PropertyMapResult;
@@ -56,7 +57,9 @@ export const PropertyMapPreview: React.FC<PropertyMapPreviewProps> = ({
 
   const badge = getListingBadge(property.listingType);
   const commune = 'location' in property ? property.location.commune : property.commune;
+  const rawDaira = 'location' in property ? property.location.daira : ('daira' in property ? (property as { daira?: string }).daira : undefined);
   const wilaya = 'location' in property ? property.location.wilaya : property.wilaya;
+  const effectiveDaira = rawDaira || (wilaya && commune ? findDairaForCommune(wilaya, commune) : undefined);
   const bathrooms = 'bathrooms' in property ? property.bathrooms : 1;
 
   return (
@@ -109,27 +112,32 @@ export const PropertyMapPreview: React.FC<PropertyMapPreviewProps> = ({
                   onClose();
                 }}
                 aria-label="Fermer"
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-[#f2eee5] transition-colors shrink-0 cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          <p className="text-[#1e3835] font-black text-sm mt-0.5">
+          <p className="text-[#1E3A8A] font-black text-sm mt-0.5">
             {formatPrice(property.price, property.pricePeriod)}
           </p>
 
           <p className="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1 line-clamp-1">
-            <MapPin className="w-3 h-3 text-[#1e3835] shrink-0" />
-            <span>
-              {commune}, {wilaya}
+            <MapPin className="w-3 h-3 text-[#1E3A8A] shrink-0" />
+            <span title={`${commune}${effectiveDaira ? ` • Daïra de ${effectiveDaira}` : ''} • Wilaya de ${wilaya}`}>
+              {commune}
+              {effectiveDaira && effectiveDaira.toLowerCase() !== commune.toLowerCase()
+                ? ` (D. ${effectiveDaira})`
+                : ''}
+              {', '}
+              {wilaya}
             </span>
           </p>
         </div>
 
         {/* Features & Action */}
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#f0ece3] gap-2">
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 gap-2">
           <div className="flex items-center gap-2.5 text-slate-600 text-[11px] font-medium">
             {property.rooms > 0 && (
               <span className="flex items-center gap-1" title="Chambres">
@@ -150,7 +158,7 @@ export const PropertyMapPreview: React.FC<PropertyMapPreviewProps> = ({
 
           <Link
             to={`/immo/property/${property.id}`}
-            className="px-3 py-1.5 bg-[#1e3835] hover:bg-[#152725] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+            className="px-3 py-1.5 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
           >
             <span>Voir l'annonce</span>
             <ArrowUpRight className="w-3 h-3" />

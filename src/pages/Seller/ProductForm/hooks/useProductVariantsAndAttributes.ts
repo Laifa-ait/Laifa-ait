@@ -2,6 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { PRODUCT_HIERARCHY } from "../../../../constants";
 import { ProductFormData, ProductVariant, SizeTypeOption } from "../../../../types/seller";
+import { generateRandomPin6 } from "../../../../utils/secureCrypto";
 
 export const SIZE_TYPES: SizeTypeOption[] = [
   { id: "adult", label: "Pointures (18-60)", items: Array.from({ length: 43 }, (_, i) => (18 + i).toString()) },
@@ -52,7 +53,7 @@ export function useProductVariantsAndAttributes(
     const brandPrefix = formData.brand ? formData.brand.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, "") : "OLM";
     const catClean = (formData.category || "PRD").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     const catPrefix = catClean.substring(0, 3).replace(/[^A-Z0-9]/g, "");
-    const randomNum = Math.floor(100000 + Math.random() * 900000);
+    const randomNum = generateRandomPin6();
     const newSku = `${brandPrefix || "OLM"}-${catPrefix || "GEN"}-${randomNum}`;
     setFormData((prev) => ({ ...prev, sku: newSku }));
     toast.success(`SKU généré : ${newSku} 🏷️`);

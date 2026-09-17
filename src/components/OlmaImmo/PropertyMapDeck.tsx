@@ -51,8 +51,8 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
                   onClick={() => onSelectProperty(p.id)}
                   className={`shrink-0 w-72 sm:w-80 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 border transition-all cursor-pointer shadow-lg hover:shadow-xl ${
                     isSelected
-                      ? 'border-[#0D281E] ring-2 ring-[#0D281E] scale-[1.02]'
-                      : 'border-[#E6E0D4] hover:border-stone-400'
+                      ? 'border-[#1E3A8A] ring-2 ring-[#1E3A8A] scale-[1.02]'
+                      : 'border-slate-200 hover:border-slate-400'
                   }`}
                 >
                   <div className="flex gap-3 items-center">
@@ -64,18 +64,18 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
                     />
                     <div className="flex-1 min-w-0 pr-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-800 bg-blue-50 px-2 py-0.5 rounded-full inline-block">
                           {p.wilaya || p.location?.wilaya || 'Alger'}
                         </span>
-                        <span className="text-[10px] text-stone-400 font-bold">
+                        <span className="text-[10px] text-slate-400 font-bold">
                           {idx + 1}/{properties.length}
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-stone-900 truncate">
+                      <h4 className="text-xs font-bold text-slate-900 truncate">
                         {p.title}
                       </h4>
                       <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-xs font-black text-[#0D281E]">
+                        <span className="text-xs font-black text-[#1E3A8A]">
                           {p.price.toLocaleString('fr-DZ')} DZD
                         </span>
                         <button
@@ -84,7 +84,7 @@ export const PropertyMapDeck: React.FC<PropertyMapDeckProps> = ({
                             e.stopPropagation();
                             navigate(`/immo/property/${p.id}`);
                           }}
-                          className="p-1.5 rounded-lg bg-[#0D281E] text-[#EBDCB8] hover:bg-[#153e31] transition"
+                          className="p-1.5 rounded-lg bg-[#1E3A8A] text-white hover:bg-blue-900 transition"
                           title="Voir le bien"
                         >
                           <ChevronRight className="w-3.5 h-3.5" />

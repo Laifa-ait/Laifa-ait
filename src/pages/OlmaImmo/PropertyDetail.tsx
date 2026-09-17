@@ -13,11 +13,8 @@ import { Building2, ArrowLeft } from 'lucide-react';
 
 import { DetailHeader } from '../../components/OlmaImmo/PropertyDetail/DetailHeader';
 import { DetailGallery } from '../../components/OlmaImmo/PropertyDetail/DetailGallery';
-import { DetailSpecs } from '../../components/OlmaImmo/PropertyDetail/DetailSpecs';
-import { DetailLegalStatus } from '../../components/OlmaImmo/PropertyDetail/DetailLegalStatus';
-import { DetailFinancialTerms } from '../../components/OlmaImmo/PropertyDetail/DetailFinancialTerms';
-import { DetailDescription } from '../../components/OlmaImmo/PropertyDetail/DetailDescription';
-import { DetailLocation } from '../../components/OlmaImmo/PropertyDetail/DetailLocation';
+import { DetailSectionNav, DetailTabKey } from '../../components/OlmaImmo/PropertyDetail/DetailSectionNav';
+import { DetailPropertyAccordion } from '../../components/OlmaImmo/PropertyDetail/DetailPropertyAccordion';
 import { DetailSidebar } from '../../components/OlmaImmo/PropertyDetail/DetailSidebar';
 import { DetailSimilar } from '../../components/OlmaImmo/PropertyDetail/DetailSimilar';
 import { DetailMobileActionBar } from '../../components/OlmaImmo/PropertyDetail/DetailMobileActionBar';
@@ -28,6 +25,7 @@ export const PropertyDetail: React.FC = () => {
   const [similarProperties, setSimilarProperties] = useState<PublicPropertyDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
+  const [activeTab, setActiveTab] = useState<DetailTabKey>('all');
   const [ownerProfile, setOwnerProfile] = useState<PublicOwnerProfile | null>(null);
   const [isOwnerLoading, setIsOwnerLoading] = useState(false);
   const [ownerError, setOwnerError] = useState(false);
@@ -37,7 +35,6 @@ export const PropertyDetail: React.FC = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDirectChatOpen, setIsDirectChatOpen] = useState(false);
 
-  // Short-Term Booking selection
   const [bookingSummary, setBookingSummary] = useState({
     startDate: '', endDate: '', totalNights: 0, guests: { adults: 2, children: 1 },
     subtotal: 0, cleaningFee: 10000, serviceFee: 5000, totalPriceDZD: 0,
@@ -45,37 +42,26 @@ export const PropertyDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-
     const fetchPropertyData = async () => {
       setIsLoading(true);
       try {
-        const response = await apiGet<PropertyResponse>(
-          `/api/v1/real-estate/properties/${id}`
-        );
-
+        const response = await apiGet<PropertyResponse>(`/api/v1/real-estate/properties/${id}`);
         if (response.success && response.data) {
           setProperty(response.data);
           setIsFav(isFavoritePropertyId(response.data.id));
 
           setIsOwnerLoading(true);
           setOwnerError(false);
-          apiGet<{ success: boolean; data?: PublicOwnerProfile }>(
-            `/api/v1/real-estate/properties/${response.data.id}/owner`
-          ).then((res) => {
-            if (res.success && res.data) setOwnerProfile(res.data);
-            else setOwnerError(true);
-          }).catch(() => setOwnerError(true))
+          apiGet<{ success: boolean; data?: PublicOwnerProfile }>(`/api/v1/real-estate/properties/${response.data.id}/owner`)
+            .then((res) => { if (res.success && res.data) setOwnerProfile(res.data); else setOwnerError(true); })
+            .catch(() => setOwnerError(true))
             .finally(() => setIsOwnerLoading(false));
 
           try {
-            const similarRes = await apiGet<PropertyListResponse>(
-              `/api/v1/real-estate/properties/${response.data.id}/similar`
-            );
-            if (similarRes.success && similarRes.data) {
-              setSimilarProperties(similarRes.data);
-            }
+            const similarRes = await apiGet<PropertyListResponse>(`/api/v1/real-estate/properties/${response.data.id}/similar`);
+            if (similarRes.success && similarRes.data) setSimilarProperties(similarRes.data);
           } catch {
-            // Non-blocking fallback
+            void 0;
           }
         } else {
           toast.error('Annonce introuvable');
@@ -87,7 +73,6 @@ export const PropertyDetail: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
-
     fetchPropertyData();
   }, [id]);
 
@@ -106,13 +91,13 @@ export const PropertyDetail: React.FC = () => {
     return (
       <OlmaImmoShell showBottomNav={false}>
         <div className="max-w-md mx-auto py-24 text-center space-y-4 flex-1 flex flex-col items-center justify-center">
-          <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mb-2 border border-[#e8e2d4]">
+          <div className="w-16 h-16 rounded-3xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mb-2 border border-slate-200">
             <Building2 className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">Annonce introuvable</h2>
+          <h2 className="text-2xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">Annonce introuvable</h2>
           <p className="text-sm text-slate-600">Cette annonce n'existe plus ou a été retirée.</p>
-          <Link to="/immo" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider">
-            <ArrowLeft className="w-4 h-4" />
+          <Link to="/immo" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider">
+            <ArrowLeft className="w-4 h-4 text-[#F59E0B]" />
             <span>Explorer les annonces</span>
           </Link>
         </div>
@@ -135,9 +120,12 @@ export const PropertyDetail: React.FC = () => {
     }
   };
 
+  const legalCount = property.legalPapers?.length || (property.legalPaperType ? 1 : 0);
+  const featuresCount = property.features?.length || 0;
+
   return (
     <OlmaImmoShell
-      className="py-6 space-y-8 pb-24 lg:pb-8"
+      className="py-6 space-y-6 pb-24 lg:pb-8"
       bottomNav={
         <DetailMobileActionBar
           property={property}
@@ -163,18 +151,20 @@ export const PropertyDetail: React.FC = () => {
         onOpenLightbox={() => setIsLightboxOpen(true)}
       />
 
+      {/* Navigation par onglets / Rangement intelligent */}
+      <DetailSectionNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        legalCount={legalCount}
+        featuresCount={featuresCount}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-6">
-          <DetailSpecs property={property} />
-          <DetailLegalStatus property={property} />
-          <DetailFinancialTerms property={property} />
-          <DetailDescription property={property} />
-          <DetailLocation
-            location={property.location}
-            title={property.title}
-            price={property.price}
-            currentPropertyId={property.id}
-            similarProperties={similarProperties}
+        <div className="lg:col-span-8">
+          <DetailPropertyAccordion
+            property={property}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
         </div>
 
@@ -194,7 +184,6 @@ export const PropertyDetail: React.FC = () => {
 
       <DetailSimilar similarProperties={similarProperties} />
 
-      {/* Lightbox Modal */}
       <ImageGalleryLightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
@@ -204,7 +193,6 @@ export const PropertyDetail: React.FC = () => {
         title={property.title}
       />
 
-      {/* Visit Modal */}
       <VisitRequestModal
         propertyId={property.id}
         propertyTitle={property.title}
@@ -212,7 +200,6 @@ export const PropertyDetail: React.FC = () => {
         onClose={() => setIsVisitModalOpen(false)}
       />
 
-      {/* Booking Modal */}
       <BookingRequestModal
         propertyId={property.id}
         propertyTitle={property.title}
@@ -223,7 +210,6 @@ export const PropertyDetail: React.FC = () => {
         onClose={() => setIsBookingModalOpen(false)}
       />
 
-      {/* Unified Messaging Drawer */}
       {isDirectChatOpen && (
         <UnifiedMessagingDrawer
           isOpen={isDirectChatOpen}

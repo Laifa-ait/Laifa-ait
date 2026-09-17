@@ -9,7 +9,7 @@ import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
 import { validateCsrfConfiguration } from "./src/middlewares/csrf";
 import { safeLogger } from "./src/utils/logger";
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = 3000;
 const bootStartTime = Date.now();
 
 export const httpServer = http.createServer(app);
@@ -248,9 +248,23 @@ process.on("uncaughtException", (error: Error) => {
 
 // Boot the server when executed directly as primary entrypoint
 if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
-  startServer().catch((err: unknown) => {
-    const errorMsg = err instanceof Error ? err.message : String(err);
-    safeLogger.error("[Olmart Gateway] ❌ Fatal error during server startup", { err: errorMsg });
-    process.exit(1);
-  });
+  const attemptBoot = async (retries = 3, delayMs = 1500): Promise<void> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await startServer();
+        return;
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        const errorCode = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
+        safeLogger.error(`[Olmart Gateway] ❌ Boot attempt ${attempt}/${retries} failed`, { err: errorMsg, code: errorCode });
+        if (attempt < retries && (errorCode === "EADDRINUSE" || errorCode === "EAGAIN")) {
+          safeLogger.info(`[Olmart Gateway] ⏳ Port in use, retrying startup in ${delayMs}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        } else {
+          process.exit(1);
+        }
+      }
+    }
+  };
+  attemptBoot();
 }

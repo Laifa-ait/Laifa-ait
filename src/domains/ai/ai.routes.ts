@@ -3,8 +3,8 @@ import { authenticateToken, authorizeSeller, authorizeAdmin, AuthenticatedReques
 import { ai, DEFAULT_GEMINI_MODEL } from "../../config/gemini";
 import { AiService } from "../../services/AiService";
 import { safeLogger } from "../../utils/logger";
+import { LocaleStorageService } from "../../services/LocaleStorageService";
 import path from "path";
-import fs from "fs";
 import rateLimit from "express-rate-limit";
 import NodeCache from "node-cache";
 
@@ -84,14 +84,9 @@ router.post(
       const arPath = path.join(process.cwd(), "public/locales/ar.json");
       const enPath = path.join(process.cwd(), "public/locales/en.json");
 
-      const frContent: Record<string, string> = JSON.parse(fs.readFileSync(frPath, "utf8"));
-      let arContent: Record<string, string> = {};
-      let enContent: Record<string, string> = {};
-
-      if (fs.existsSync(arPath))
-        arContent = JSON.parse(fs.readFileSync(arPath, "utf8"));
-      if (fs.existsSync(enPath))
-        enContent = JSON.parse(fs.readFileSync(enPath, "utf8"));
+      const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
+      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
+      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
 
       const clientHarvested: string[] = req.body.harvestedKeys || [];
       const harvested = new Set<string>(clientHarvested);
@@ -266,11 +261,8 @@ router.post(
       const arPath = path.join(process.cwd(), "public/locales/ar.json");
       const enPath = path.join(process.cwd(), "public/locales/en.json");
 
-      let arContent: Record<string, string> = {};
-      let enContent: Record<string, string> = {};
-
-      if (fs.existsSync(arPath)) arContent = JSON.parse(fs.readFileSync(arPath, "utf8"));
-      if (fs.existsSync(enPath)) enContent = JSON.parse(fs.readFileSync(enPath, "utf8"));
+      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
+      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
 
       const result: Record<string, { ar: string; en: string; isNew: boolean }> = {};
       const termsToTranslate: string[] = [];
@@ -351,13 +343,9 @@ router.post(
       const arPath = path.join(process.cwd(), "public/locales/ar.json");
       const enPath = path.join(process.cwd(), "public/locales/en.json");
 
-      let frContent: Record<string, string> = {};
-      let arContent: Record<string, string> = {};
-      let enContent: Record<string, string> = {};
-
-      if (fs.existsSync(frPath)) frContent = JSON.parse(fs.readFileSync(frPath, "utf8"));
-      if (fs.existsSync(arPath)) arContent = JSON.parse(fs.readFileSync(arPath, "utf8"));
-      if (fs.existsSync(enPath)) enContent = JSON.parse(fs.readFileSync(enPath, "utf8"));
+      const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
+      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
+      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
 
       let modified = false;
 

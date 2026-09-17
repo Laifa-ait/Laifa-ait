@@ -17,7 +17,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
+  const generatedId = React.useId();
+  const inputId = id || `input-${generatedId.replace(/:/g, '')}`;
 
   const renderIcon = () => {
     if (!icon) return null;

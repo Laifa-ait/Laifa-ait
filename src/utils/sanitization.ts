@@ -108,6 +108,8 @@ export function sanitizeXSS(input: string): string {
   return sanitizeHTML(input);
 }
 
+export const sanitizeHtml = sanitizeHTML;
+
 /**
  * Completely strips all HTML tags and returns safe plain text
  */

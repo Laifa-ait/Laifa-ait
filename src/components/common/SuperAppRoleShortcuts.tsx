@@ -15,14 +15,14 @@ export const SuperAppRoleShortcuts: React.FC<SuperAppRoleShortcutsProps> = ({
 }) => {
   if (shortcuts.length === 0 && hasUser) {
     return (
-      <div className="p-3.5 rounded-2xl bg-stone-800/50 border border-stone-700/60 flex items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/80 to-orange-50/50 border border-amber-200/80 flex items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20 shrink-0">
-            <Key className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
+            <Key className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-bold text-white">Devenez Partenaire Pro</div>
-            <div className="text-[11px] text-stone-400">
+            <div className="text-xs font-black text-slate-900">Devenez Partenaire Pro</div>
+            <div className="text-[11px] text-slate-500 font-medium">
               Vendez vos produits ou louez vos biens sur Olmart
             </div>
           </div>
@@ -30,7 +30,7 @@ export const SuperAppRoleShortcuts: React.FC<SuperAppRoleShortcutsProps> = ({
         <button
           type="button"
           onClick={() => onSelect('/immo/owner')}
-          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-colors shrink-0 cursor-pointer"
+          className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-xs"
         >
           Activer
         </button>
@@ -41,10 +41,10 @@ export const SuperAppRoleShortcuts: React.FC<SuperAppRoleShortcutsProps> = ({
   if (shortcuts.length === 0) return null;
 
   return (
-    <div className="pt-2">
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-        <span className="text-xs font-bold uppercase tracking-wider text-stone-300">
+    <div className="pt-1">
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+        <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
           Vos Espaces Pro & Privilégiés
         </span>
       </div>
@@ -54,23 +54,23 @@ export const SuperAppRoleShortcuts: React.FC<SuperAppRoleShortcutsProps> = ({
             key={sc.id}
             type="button"
             onClick={() => onSelect(sc.route)}
-            className="p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 border border-stone-700/60 text-left flex items-center justify-between transition-colors group cursor-pointer"
+            className="p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 hover:border-slate-300 text-left flex items-center justify-between transition-all group cursor-pointer shadow-2xs hover:shadow-xs"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 group-hover:bg-[#1E3A8A] group-hover:text-white flex items-center justify-center transition-colors">
                 {sc.iconName === 'Briefcase' && <Briefcase className="w-4 h-4" />}
                 {sc.iconName === 'Building2' && <Building2 className="w-4 h-4" />}
                 {sc.iconName === 'Wrench' && <Wrench className="w-4 h-4" />}
                 {sc.iconName === 'ShieldCheck' && <ShieldCheck className="w-4 h-4" />}
               </div>
               <div>
-                <div className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
+                <div className="text-xs font-black text-slate-900 group-hover:text-[#1E3A8A] transition-colors">
                   {sc.title}
                 </div>
-                <div className="text-[10px] text-stone-400">{sc.subtitle}</div>
+                <div className="text-[11px] text-slate-500 font-medium">{sc.subtitle}</div>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-stone-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#1E3A8A] group-hover:translate-x-0.5 transition-transform" />
           </button>
         ))}
       </div>

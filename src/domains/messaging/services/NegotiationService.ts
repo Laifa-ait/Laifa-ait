@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { db } from "../../../config/firebase-admin";
 import {
   ConversationDocument,
@@ -74,7 +75,7 @@ export class NegotiationService {
       }
 
       const expiresAt = new Date(now.getTime() + this.OFFER_VALIDITY_HOURS * 60 * 60 * 1000).toISOString();
-      const offerId = `off_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const offerId = `off_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
 
       const newOffer: NegotiationOfferPayload = {
         offerId,
@@ -235,7 +236,7 @@ export class NegotiationService {
           throw new Error("INVALID_COUNTER_AMOUNT");
         }
 
-        const counterOfferId = `off_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const counterOfferId = `off_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
         const expiresAt = new Date(now.getTime() + this.OFFER_VALIDITY_HOURS * 60 * 60 * 1000).toISOString();
 
         updatedOffer = {

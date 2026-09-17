@@ -19,7 +19,7 @@ export const EditorStepper: React.FC<EditorStepperProps> = ({
   onStepClick,
 }) => {
   return (
-    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#e8e2d4] shadow-xs">
+    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-xs">
       <div className="flex items-center justify-between gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {steps.map((step) => {
           const isPassed = step.id < currentStep;
@@ -32,19 +32,19 @@ export const EditorStepper: React.FC<EditorStepperProps> = ({
               onClick={() => onStepClick(step.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${
                 isCurrent
-                  ? 'bg-[#1a3831] text-[#ebdcb8] shadow-xs'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
                   : isPassed
-                  ? 'bg-[#f4ecd8] text-[#1a3831] hover:bg-[#ebdcb8]'
-                  : 'bg-transparent text-slate-400 hover:bg-[#faf8f5]'
+                  ? 'bg-blue-50 text-[#1E3A8A] hover:bg-blue-100'
+                  : 'bg-transparent text-slate-400 hover:bg-slate-50'
               }`}
               aria-current={isCurrent ? 'step' : undefined}
             >
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
                   isCurrent
-                    ? 'bg-[#ebdcb8] text-[#1a3831]'
+                    ? 'bg-[#F59E0B] text-slate-900'
                     : isPassed
-                    ? 'bg-[#1a3831] text-[#ebdcb8]'
+                    ? 'bg-[#1E3A8A] text-white'
                     : 'bg-slate-100 text-slate-400'
                 }`}
               >

@@ -89,7 +89,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
 
                 {isLastCell && hasMore && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white p-2 text-center">
-                    <Grid className="w-6 h-6 mb-1 text-[#ebdcb8]" />
+                    <Grid className="w-6 h-6 mb-1 text-[#F59E0B]" />
                     <span className="font-bold text-sm sm:text-base">
                       +{safeImages.length - 4} photos
                     </span>
@@ -103,7 +103,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
       </div>
 
       {/* Mobile Image Carousel */}
-      <div className="md:hidden relative aspect-[16/10] bg-slate-900 rounded-3xl overflow-hidden shadow-xs border border-[#e8e2d4]">
+      <div className="md:hidden relative aspect-[16/10] bg-slate-900 rounded-3xl overflow-hidden shadow-xs border border-slate-200">
         <img loading="lazy" decoding="async" src={safeImages[selectedImageIndex] || safeImages[0]}
           alt={title}
           onClick={onOpenLightbox}
@@ -116,9 +116,9 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
         <button
           type="button"
           onClick={onOpenLightbox}
-          className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-xs text-[#1a3831] px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+          className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-xs text-[#1E3A8A] px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
         >
-          <Grid className="w-3.5 h-3.5 text-[#1a3831]" />
+          <Grid className="w-3.5 h-3.5 text-[#1E3A8A]" />
           <span>Voir les {safeImages.length} photos</span>
         </button>
       </div>
@@ -133,7 +133,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
               onClick={() => onSelectImage(idx)}
               className={`w-16 h-12 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                 selectedImageIndex === idx
-                  ? 'border-[#1a3831] ring-2 ring-[#1a3831]/20'
+                  ? 'border-[#1E3A8A] ring-2 ring-[#1E3A8A]/20'
                   : 'border-transparent opacity-60'
               }`}
             >

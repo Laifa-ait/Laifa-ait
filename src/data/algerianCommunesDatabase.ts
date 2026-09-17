@@ -12956,10 +12956,59 @@ export function findCommuneCoords(
   return null;
 }
 
+export function getDairasForWilaya(wilayaIdentifier: string): string[] {
+  const communes = getCommunesForWilaya(wilayaIdentifier);
+  const dairaSet = new Set<string>();
+  for (const c of communes) {
+    if (c.daira && c.daira.trim()) {
+      dairaSet.add(c.daira.trim());
+    }
+  }
+  return Array.from(dairaSet).sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+export function getCommunesForDaira(wilayaIdentifier: string, dairaName?: string): CommuneInfo[] {
+  const communes = getCommunesForWilaya(wilayaIdentifier);
+  if (!dairaName || dairaName === 'all') return communes;
+  const target = dairaName.trim().toLowerCase();
+  return communes.filter((c) => c.daira && c.daira.trim().toLowerCase() === target);
+}
+
+export function findDairaForCommune(wilayaIdentifier: string, communeName: string): string | null {
+  if (!communeName) return null;
+  const communes = getCommunesForWilaya(wilayaIdentifier);
+  const target = communeName.trim().toLowerCase();
+  const found = communes.find(
+    (c) =>
+      c.name.toLowerCase() === target ||
+      (c.name_ar && c.name_ar.trim() === communeName.trim()) ||
+      normalizeGeoString(c.name) === normalizeGeoString(communeName)
+  );
+  return found?.daira || null;
+}
+
+export function findDairaCoords(
+  wilayaIdentifier: string,
+  dairaName: string
+): { lat: number; lng: number } | null {
+  const communes = getCommunesForDaira(wilayaIdentifier, dairaName);
+  if (communes.length === 0) return null;
+  let sumLat = 0;
+  let sumLng = 0;
+  for (const c of communes) {
+    sumLat += c.lat;
+    sumLng += c.lng;
+  }
+  return {
+    lat: Number((sumLat / communes.length).toFixed(6)),
+    lng: Number((sumLng / communes.length).toFixed(6)),
+  };
+}
+
 export function findClosestLocation(
   lat: number,
   lng: number
-): { wilaya: string; wilayaCode: string; commune: string; lat: number; lng: number } {
+): { wilaya: string; wilayaCode: string; daira: string; commune: string; lat: number; lng: number } {
   let closestWilaya = ALGERIA_WILAYAS_DATABASE[0];
   let closestCommune: CommuneInfo = ALGERIA_WILAYAS_DATABASE[0].communes[0];
   let minDistance = Infinity;
@@ -12978,9 +13027,102 @@ export function findClosestLocation(
   return {
     wilaya: closestWilaya.name,
     wilayaCode: closestWilaya.code,
+    daira: closestCommune.daira || '',
     commune: closestCommune.name,
     lat: closestCommune.lat,
     lng: closestCommune.lng,
   };
 }
+
+export interface LocationSearchResult {
+  type: 'wilaya' | 'daira' | 'commune';
+  label: string;
+  wilaya: string;
+  wilayaCode: string;
+  daira?: string;
+  commune?: string;
+  nameAr?: string;
+}
+
+export function searchAlgerianLocations(query: string, limit = 8): LocationSearchResult[] {
+  if (!query || query.trim().length < 2) return [];
+  const normalizedQuery = normalizeGeoString(query);
+  const results: LocationSearchResult[] = [];
+  const seen = new Set<string>();
+
+  // 1. Check Wilayas
+  for (const w of ALGERIA_WILAYAS_DATABASE) {
+    const wNorm = normalizeGeoString(w.name);
+    const codeMatch = w.code === query.trim() || w.code.replace(/^0+/, '') === query.trim();
+    if (wNorm.includes(normalizedQuery) || codeMatch || (w.name_ar && w.name_ar.includes(query.trim()))) {
+      const key = `w-${w.code}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push({
+          type: 'wilaya',
+          label: `${w.name} (${w.code})`,
+          wilaya: w.name,
+          wilayaCode: w.code,
+          nameAr: w.name_ar,
+        });
+      }
+    }
+  }
+
+  // 2. Check Daïras
+  for (const w of ALGERIA_WILAYAS_DATABASE) {
+    const dairas = new Set<string>();
+    for (const c of w.communes) {
+      if (c.daira && !dairas.has(c.daira)) {
+        dairas.add(c.daira);
+        const dNorm = normalizeGeoString(c.daira);
+        if (dNorm.includes(normalizedQuery)) {
+          const key = `d-${w.code}-${c.daira}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            results.push({
+              type: 'daira',
+              label: `${c.daira} (Daïra, ${w.name})`,
+              wilaya: w.name,
+              wilayaCode: w.code,
+              daira: c.daira,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Check Communes
+  for (const w of ALGERIA_WILAYAS_DATABASE) {
+    for (const c of w.communes) {
+      const cNorm = normalizeGeoString(c.name);
+      if (
+        cNorm.includes(normalizedQuery) ||
+        (c.postal_code && c.postal_code.startsWith(query.trim())) ||
+        (c.name_ar && c.name_ar.includes(query.trim()))
+      ) {
+        const key = `c-${w.code}-${c.name}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          results.push({
+            type: 'commune',
+            label: `${c.name} (${w.name})`,
+            wilaya: w.name,
+            wilayaCode: w.code,
+            daira: c.daira,
+            commune: c.name,
+            nameAr: c.name_ar,
+          });
+        }
+      }
+      if (results.length >= limit * 2) break;
+    }
+    if (results.length >= limit * 2) break;
+  }
+
+  return results.slice(0, limit);
+}
+
+
 

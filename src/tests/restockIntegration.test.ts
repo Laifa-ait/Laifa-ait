@@ -609,8 +609,8 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
     expect(res.body.error).toContain("Accès non autorisé");
   });
 
-  it("TEST 18: Fails delivery confirmation when deliveryPin is absent in order", async () => {
-    const orderId = "test_integration_order_no_pin";
+  it("TEST 18: Confirms delivery successfully without PIN requirement", async () => {
+    const orderId = "test_integration_order_delivered_clean";
     await db.collection("orders").doc(orderId).set({
       id: orderId,
       userId: buyerUid,
@@ -618,46 +618,22 @@ describe.skipIf(!hasEmulator)("OrderStatusController Restock Real Integration Su
       sellerIds: [sellerUid],
       status: "shipped",
       items: [{ id: simpleProdId, quantity: 1 }],
+      subtotal: 1000,
+      total: 1000,
       restocked: false,
     });
 
     const res = await request(app)
       .post("/seller/orders/status")
       .set("Authorization", sellerHeader)
-      .send({ orderIds: [orderId], status: "delivered", deliveryPin: "123456" });
+      .send({ orderIds: [orderId], status: "delivered" });
 
-    expect(res.status).toBe(400);
-    expect(res.body.error).toContain("La commande ne possède pas de code PIN de livraison valide");
-  });
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
 
-  it("TEST 19: Fails delivery confirmation with invalid PIN (no fallback '123456' allowed)", async () => {
-    const orderId = "test_integration_order_valid_pin_needed";
-    await db.collection("orders").doc(orderId).set({
-      id: orderId,
-      userId: buyerUid,
-      sellerId: sellerUid,
-      sellerIds: [sellerUid],
-      status: "shipped",
-      items: [{ id: simpleProdId, quantity: 1 }],
-      restocked: false,
-      deliveryPin: "789012",
-    });
-
-    const res1 = await request(app)
-      .post("/seller/orders/status")
-      .set("Authorization", sellerHeader)
-      .send({ orderIds: [orderId], status: "delivered", deliveryPin: "123456" });
-
-    expect(res1.status).toBe(400);
-    expect(res1.body.error).toContain("La confirmation de livraison requiert soit le code PIN");
-
-    const res2 = await request(app)
-      .post("/seller/orders/status")
-      .set("Authorization", sellerHeader)
-      .send({ orderIds: [orderId], status: "delivered", deliveryPin: "789012" });
-
-    expect(res2.status).toBe(200);
-    expect(res2.body.success).toBe(true);
+    const docSnap = await db.collection("orders").doc(orderId).get();
+    expect(docSnap.data()?.status).toBe("delivered");
+    expect(docSnap.data()?.paymentStatus).toBe("paid");
   });
 
   it("TEST 20: Fails batch update and rolls back entirely if any order in batch is unauthorized or missing", async () => {

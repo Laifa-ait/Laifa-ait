@@ -330,32 +330,46 @@ export function useStoreProfile() {
           return;
         }
 
-        // If shop was successfully retrieved, attempt product fetching in isolation
+        // If shop was successfully retrieved, attempt product fetching via API with Firestore fallback
         if (fetchedShop && isSubscribed) {
           try {
-            const productsQuery = query(
-              collection(db, 'products'),
-              where('sellerId', '==', sellerId),
-              where('status', '==', 'active')
+            const prodRes = await apiGet<{ success: boolean; products: Product[]; count?: number }>(
+              `/api/v1/public/shops/${encodeURIComponent(sellerId)}/products`
             );
-            const productsSnap = await getDocs(productsQuery);
-
-            if (isSubscribed) {
-              const prods = productsSnap.docs.map(docSnap => ({
-                id: docSnap.id,
-                ...docSnap.data()
-              })) as Product[];
-              
-              setProducts(prods);
-              setTotalCount(prods.length);
+            if (isSubscribed && prodRes && Array.isArray(prodRes.products)) {
+              setProducts(prodRes.products);
+              setTotalCount(typeof prodRes.count === "number" ? prodRes.count : prodRes.products.length);
               setProductsError(false);
+            } else {
+              throw new Error("Invalid products response");
             }
-          } catch (prodErr) {
-            if (isSubscribed) {
-              console.error("Error loading store products:", prodErr);
-              setProducts([]);
-              setTotalCount(0);
-              setProductsError(true);
+          } catch {
+            // Fallback to direct Firestore query
+            try {
+              const productsQuery = query(
+                collection(db, 'products'),
+                where('sellerId', '==', sellerId),
+                where('status', '==', 'active')
+              );
+              const productsSnap = await getDocs(productsQuery);
+
+              if (isSubscribed) {
+                const prods = productsSnap.docs.map(docSnap => ({
+                  id: docSnap.id,
+                  ...docSnap.data()
+                })) as Product[];
+                
+                setProducts(prods);
+                setTotalCount(prods.length);
+                setProductsError(false);
+              }
+            } catch (prodErr) {
+              if (isSubscribed) {
+                console.error("Error loading store products:", prodErr);
+                setProducts([]);
+                setTotalCount(0);
+                setProductsError(true);
+              }
             }
           }
         }
@@ -412,7 +426,11 @@ export function useStoreProfile() {
     );
 
     try {
-      await toggleStoreFollow(sellerId, currentUser.uid, followState);
+      await toggleStoreFollow(sellerId, currentUser.uid, followState, {
+        name: storeInfo?.shopName || storeInfo?.displayName || "Boutique",
+        logo: storeInfo?.logoUrl || null,
+        location: storeInfo?.wilaya || "Algérie"
+      });
 
       setIsFollowing(followState);
       setStoreInfo(prev => {

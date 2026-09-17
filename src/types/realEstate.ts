@@ -58,6 +58,7 @@ export interface GeoPointLocation {
   geohash?: string;
   address: string;
   commune: string;
+  daira?: string;
   wilaya: string;
 }
 
@@ -213,6 +214,7 @@ export interface PropertyMapResult {
   pricePeriod?: 'night' | 'month' | 'total';
   lat: number;
   lng: number;
+  daira?: string;
   commune: string;
   wilaya: string;
   mainImage: string;

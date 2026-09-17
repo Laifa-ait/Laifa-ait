@@ -4,6 +4,7 @@ import { apiGet } from '../../lib/api';
 import { ShortTermBookingGuestsSelector } from './ShortTermBookingGuestsSelector';
 import { ShortTermBookingPriceBreakdown } from './ShortTermBookingPriceBreakdown';
 import { ShortTermBookingGrid } from './ShortTermBookingGrid';
+import { checkDateDisabled, resolveDateSelection } from './calendarDateHelpers';
 
 export interface UnavailableRange {
   id: string;
@@ -81,43 +82,12 @@ export const ShortTermBookingCalendar: React.FC<ShortTermBookingCalendarProps> =
     return () => { isMounted = false; };
   }, [propertyId]);
 
-  const isDateInPast = (dateStr: string) => dateStr < todayStr;
-  const isDateBooked = (dateStr: string) => unavailableRanges.some((r) => dateStr >= r.startDate && dateStr < r.endDate);
-  const isDateDisabled = (dateStr: string) => isDateInPast(dateStr) || isDateBooked(dateStr);
+  const isDateDisabled = (dateStr: string) => checkDateDisabled(dateStr, todayStr, unavailableRanges);
 
   const handleDateClick = (dateStr: string) => {
-    if (isDateDisabled(dateStr)) return;
-
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(dateStr);
-      setEndDate('');
-    } else if (startDate && !endDate) {
-      if (dateStr <= startDate) {
-        setStartDate(dateStr);
-      } else {
-        const curr = new Date(startDate);
-        const end = new Date(dateStr);
-        let hasBlockedInBetween = false;
-        let safetyDays = 0;
-
-        while (curr < end && safetyDays < 366) {
-          safetyDays++;
-          const currStr = curr.toISOString().split('T')[0];
-          if (isDateDisabled(currStr)) {
-            hasBlockedInBetween = true;
-            break;
-          }
-          curr.setDate(curr.getDate() + 1);
-        }
-
-        if (hasBlockedInBetween) {
-          setStartDate(dateStr);
-          setEndDate('');
-        } else {
-          setEndDate(dateStr);
-        }
-      }
-    }
+    const { newStartDate, newEndDate } = resolveDateSelection(dateStr, startDate, endDate, isDateDisabled);
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
   };
 
   const prevMonth = () => {
@@ -155,41 +125,41 @@ export const ShortTermBookingCalendar: React.FC<ShortTermBookingCalendarProps> =
   };
 
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-xl border border-[#e8e2d4] space-y-5 font-sans">
+    <div className="bg-white rounded-3xl p-5 shadow-xl border border-slate-200 space-y-5 font-sans">
       {/* Header Price Banner */}
-      <div className="flex items-baseline justify-between pb-4 border-b border-[#f0ebd8]">
+      <div className="flex items-baseline justify-between pb-4 border-b border-slate-100">
         <div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-extrabold text-[#1e3835]">
+            <span className="text-2xl font-extrabold text-[#1E3A8A]">
               {nightlyPrice.toLocaleString('fr-DZ')} DA
             </span>
             <span className="text-xs font-semibold text-slate-500">/ nuit</span>
           </div>
-          <p className="text-[11px] text-[#7a824e] font-semibold mt-0.5 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-500" />
+          <p className="text-[11px] text-slate-600 font-semibold mt-0.5 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-[#F59E0B]" />
             Séjour de courte durée
           </p>
         </div>
 
         <div className="text-right">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f4ebd8] text-[#1e3835] text-[11px] font-bold rounded-lg border border-[#e2d6b5]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#1e3835]" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-[#1E3A8A] text-[11px] font-bold rounded-lg border border-blue-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1E3A8A]" />
             Garantie Olma
           </span>
         </div>
       </div>
 
       {/* Date Range Display Box */}
-      <div className="grid grid-cols-2 gap-2 bg-[#f9f7f2] border border-[#e6e0d0] rounded-2xl p-2.5">
+      <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
         <div className="px-2">
           <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Arrivée</span>
-          <span className="text-xs font-bold text-[#1e3835]">
+          <span className="text-xs font-bold text-[#1E3A8A]">
             {startDate ? new Date(startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Choisir la date'}
           </span>
         </div>
-        <div className="px-2 border-s border-[#e6e0d0]">
+        <div className="px-2 border-s border-slate-200">
           <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Départ</span>
-          <span className="text-xs font-bold text-[#1e3835]">
+          <span className="text-xs font-bold text-[#1E3A8A]">
             {endDate ? new Date(endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Choisir la date'}
           </span>
         </div>
@@ -235,9 +205,9 @@ export const ShortTermBookingCalendar: React.FC<ShortTermBookingCalendarProps> =
         type="button"
         disabled={!startDate || !endDate || totalNights <= 0}
         onClick={handleConfirmReservation}
-        className="w-full py-3.5 px-4 bg-[#1e3835] hover:bg-[#152725] text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#1e3835]/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center gap-2"
+        className="w-full py-3.5 px-4 bg-[#F59E0B] hover:bg-amber-600 text-slate-900 rounded-2xl font-bold text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center gap-2"
       >
-        <CalendarIcon className="w-4 h-4 text-[#ebdcb8]" />
+        <CalendarIcon className="w-4 h-4 text-slate-900" />
         <span>
           {!startDate ? 'Choisir vos dates' : !endDate ? 'Choisir la date de départ' : 'Vérifier & Réserver'}
         </span>

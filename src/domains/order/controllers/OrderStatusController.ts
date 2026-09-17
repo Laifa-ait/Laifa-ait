@@ -19,8 +19,7 @@ router.post(
     const sellerId = req.user?.uid || "";
     const isUserAdmin = req.user?.role === "admin";
     const authUid = req.user?.uid || "";
-    const { deliveryPin, deliveryPhoto, latitude, longitude } = req.body as {
-      deliveryPin?: string | number;
+    const { deliveryPhoto, latitude, longitude } = req.body as {
       deliveryPhoto?: string;
       latitude?: number;
       longitude?: number;
@@ -37,7 +36,6 @@ router.post(
         sellerId,
         isUserAdmin,
         authUid,
-        deliveryPin,
         deliveryPhoto,
         latitude,
         longitude,

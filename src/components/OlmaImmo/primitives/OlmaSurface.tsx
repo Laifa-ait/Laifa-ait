@@ -6,7 +6,7 @@ export type OlmaSurfaceVariant =
   | 'subtle'    // Fond ivoire très doux (#FAF8F5)
   | 'muted'     // Fond sable/beige feutré (#F7F4ED)
   | 'raised'    // Surface blanche avec mise en avant
-  | 'dark';     // Vert forêt profond (#1A3831 / #0D281E)
+  | 'dark';     // Bleu profond (#1E3A8A)
 
 export type OlmaSurfaceElevation =
   | 'none'

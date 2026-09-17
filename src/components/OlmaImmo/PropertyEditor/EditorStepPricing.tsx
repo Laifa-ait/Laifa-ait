@@ -55,12 +55,12 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
   setContactPhone,
 }) => {
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-8">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8">
       {/* Price & Currency */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-[#1a3831]" />
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif] flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-[#F59E0B]" />
             <span>Prix & Conditions Financières</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -69,8 +69,8 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-            <label className="text-xs font-bold text-[#1a3831]">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <label className="text-xs font-bold text-[#1E3A8A]">
               Montant {listingType === 'sale' ? 'global' : listingType === 'rent_long' ? 'du loyer mensuel' : 'de la nuitée'} (DA)
             </label>
             <input
@@ -79,19 +79,19 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
               step="1000"
               value={price}
               onChange={(e) => setPrice(Math.max(0, Number(e.target.value)))}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-base font-black text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-base font-black text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
             <span className="text-[11px] text-slate-500 block">
               {new Intl.NumberFormat('fr-DZ').format(price)} Dinars Algériens
             </span>
           </div>
 
-          <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-            <label className="text-xs font-bold text-[#1a3831]">Périodicité</label>
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <label className="text-xs font-bold text-[#1E3A8A]">Périodicité</label>
             <select
               value={pricePeriod}
               onChange={(e) => setPricePeriod(e.target.value as 'night' | 'month' | 'total')}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-xs font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             >
               {listingType === 'sale' && <option value="total">Prix Total (Vente)</option>}
               {listingType === 'rent_long' && <option value="month">Par Mois</option>}
@@ -102,24 +102,24 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
 
         {listingType === 'rent_short' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-              <label className="text-xs font-bold text-[#1a3831]">Frais de ménage (DA)</label>
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <label className="text-xs font-bold text-[#1E3A8A]">Frais de ménage (DA)</label>
               <input
                 type="number"
                 min="0"
                 value={cleaningFee}
                 onChange={(e) => setCleaningFee(Math.max(0, Number(e.target.value)))}
-                className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-xs font-bold text-[#1a3831]"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#1E3A8A]"
               />
             </div>
-            <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-              <label className="text-xs font-bold text-[#1a3831]">Frais de service (DA)</label>
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <label className="text-xs font-bold text-[#1E3A8A]">Frais de service (DA)</label>
               <input
                 type="number"
                 min="0"
                 value={serviceFee}
                 onChange={(e) => setServiceFee(Math.max(0, Number(e.target.value)))}
-                className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-xs font-bold text-[#1a3831]"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#1E3A8A]"
               />
             </div>
           </div>
@@ -143,10 +143,10 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
       )}
 
       {/* Title & Description */}
-      <div className="space-y-4 pt-6 border-t border-[#f0eae0]">
+      <div className="space-y-4 pt-6 border-t border-slate-100">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#1a3831]" />
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif] flex items-center gap-2">
+            <FileText className="w-5 h-5 text-[#F59E0B]" />
             <span>Titre & Texte de l'Annonce</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -156,29 +156,29 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
 
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-bold text-[#1a3831] block mb-1">Titre de l'annonce</label>
+            <label className="text-xs font-bold text-[#1E3A8A] block mb-1">Titre de l'annonce</label>
             <input
               type="text"
               placeholder="Ex: Superbe Appartement F4 avec vue dégagée et ascenseur"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-[#faf8f5] border border-[#e8e2d4] rounded-xl text-sm font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-[#1a3831] block mb-1">Description complète</label>
+            <label className="text-xs font-bold text-[#1E3A8A] block mb-1">Description complète</label>
             <textarea
               rows={5}
               placeholder="Décrivez l'exposition, l'état de l'appartement, la proximité des commerces, écoles et transports..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 bg-[#faf8f5] border border-[#e8e2d4] rounded-xl text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-[#1a3831] block mb-1 flex items-center gap-1">
+            <label className="text-xs font-bold text-[#1E3A8A] block mb-1 flex items-center gap-1">
               <Phone className="w-3.5 h-3.5" />
               <span>Numéro de téléphone de contact</span>
             </label>
@@ -187,7 +187,7 @@ export const EditorStepPricing: React.FC<EditorStepPricingProps> = ({
               placeholder="0550 12 34 56"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
-              className="w-full max-w-sm px-4 py-2.5 bg-[#faf8f5] border border-[#e8e2d4] rounded-xl text-xs font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full max-w-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
         </div>

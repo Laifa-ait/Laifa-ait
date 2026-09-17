@@ -1,6 +1,7 @@
 import { StoredProperty, PropertyMapResult, LegalPaperType } from '../../../types/realEstate';
 import { encodeGeohash } from '../../../services/realEstateGeo';
 import { safeLogger } from '../../../utils/logger';
+import { findDairaForCommune } from '../../../data/algerianCommunesDatabase';
 
 export const SEED_REAL_ESTATE_PROPERTIES: StoredProperty[] = [
   {
@@ -394,6 +395,7 @@ export function toPropertyMapResult(p: StoredProperty & { distanceKm?: number })
     pricePeriod: p.pricePeriod,
     lat: p.location.lat,
     lng: p.location.lng,
+    daira: p.location.daira || (p.location.wilaya && p.location.commune ? findDairaForCommune(p.location.wilaya, p.location.commune) : undefined),
     commune: p.location.commune,
     wilaya: p.location.wilaya,
     mainImage: p.images && p.images.length > 0 ? p.images[0] : '',

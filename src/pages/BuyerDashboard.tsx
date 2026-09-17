@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Headphones, Package, Heart, LogOut, ChevronRight, Settings, ShoppingBag, Clock, ShieldCheck, Store, Sparkles, RotateCcw, Star } from 'lucide-react';
+import { Headphones, Package, Heart, LogOut, ChevronRight, Settings, ShoppingBag, Clock, ShieldCheck, Store, Sparkles, RotateCcw, Star, FolderLock } from 'lucide-react';
 import { BuyerSupport } from './BuyerSupport';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -18,6 +18,7 @@ import { CustomerPreferences } from '../components/Buyer/CustomerPreferences';
 import { ReturnManagement } from '../components/Buyer/ReturnManagement';
 import { MyReviews } from '../components/Buyer/MyReviews';
 import { FollowedStores } from '../components/Buyer/FollowedStores';
+import { UserDocumentsSection } from '../components/Buyer/UserDocumentsSection';
 
 export interface BuyerOrder {
   id: string;
@@ -44,7 +45,7 @@ export const BuyerDashboard: React.FC = () => {
   const [lastVisible, setLastVisible] = useState<string | null>(null);
 
   // Modern UI multi-tab router (Module 5) with URL persistence
-  const activeTab = (searchParams.get('tab') || 'orders') as 'orders' | 'addresses' | 'profile' | 'security' | 'preferences' | 'support' | 'returns' | 'reviews' | 'following';
+  const activeTab = (searchParams.get('tab') || 'orders') as 'orders' | 'addresses' | 'profile' | 'security' | 'preferences' | 'support' | 'returns' | 'reviews' | 'following' | 'documents';
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
   };
@@ -121,6 +122,7 @@ export const BuyerDashboard: React.FC = () => {
       <div className="md:hidden mb-6 overflow-x-auto -mx-4 px-4 flex gap-2 pb-2 scrollbar-none snap-x">
         {[
           { id: 'orders', icon: Package, label: t("dashboard.tabs.orders") },
+          { id: 'documents', icon: FolderLock, label: "Mes Documents" },
           { id: 'returns', icon: RotateCcw, label: t("dashboard.tabs.returns") },
           { id: 'reviews', icon: Star, label: t("dashboard.tabs.evaluations") || "Mes Avis" },
           { id: 'following', icon: Store, label: t("dashboard.tabs.followed_stores") || "Boutiques Suivies" },
@@ -176,6 +178,7 @@ export const BuyerDashboard: React.FC = () => {
           <nav className="hidden md:block bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-3 space-y-1">
             {[
               { id: 'orders', icon: Package, label: t("dashboard.tabs.orders") },
+              { id: 'documents', icon: FolderLock, label: "Mes Documents" },
               { id: 'returns', icon: RotateCcw, label: t("dashboard.tabs.returns") },
               { id: 'reviews', icon: Star, label: t("dashboard.tabs.evaluations") || "Mes Avis" },
               { id: 'following', icon: Store, label: t("dashboard.tabs.followed_stores") || "Boutiques Suivies" },
@@ -410,6 +413,10 @@ export const BuyerDashboard: React.FC = () => {
 
           {activeTab === 'reviews' && (
             <MyReviews currentUser={currentUser} />
+          )}
+
+          {activeTab === 'documents' && (
+            <UserDocumentsSection />
           )}
 
           {activeTab === 'following' && (

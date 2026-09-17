@@ -52,3 +52,7 @@ export const useUI = () => {
   if (!context) throw new Error("useUI must be used within UIProvider");
   return context;
 };
+
+export const useOptionalUI = () => {
+  return useContext(UIContext);
+};

@@ -429,3 +429,7 @@ export const useCart = () => {
   }
   return context;
 };
+
+export const useOptionalCart = () => {
+  return useContext(CartContext);
+};

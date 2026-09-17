@@ -42,10 +42,10 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
 
   return (
     <div className="space-y-6 sticky top-24">
-      {/* Short Term Booking Widget */}
+      {/* Short Term Booking Widget (Desktop only to prevent mobile duplication) */}
       {isShortTerm ? (
-        <div className="bg-white rounded-3xl p-6 border border-[#e8e2d4] shadow-md space-y-5">
-          <div className="flex items-center justify-between pb-4 border-b border-[#f0eae0]">
+        <div className="hidden lg:block bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-5">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <PropertyPrice
               price={property.price}
               period="night"
@@ -69,9 +69,9 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
           <button
             type="button"
             onClick={onOpenBookingModal}
-            className="w-full py-4 px-6 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            className="w-full py-4 px-6 bg-[#F59E0B] hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
-            <Calendar className="w-4 h-4 text-[#ebdcb8]" />
+            <Calendar className="w-4 h-4 text-slate-900" />
             <span>Demande de réservation</span>
           </button>
 
@@ -80,9 +80,9 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
           </p>
         </div>
       ) : (
-        /* Buy / Long Rent Action Card */
-        <div className="bg-white rounded-3xl p-6 border border-[#e8e2d4] shadow-md space-y-4">
-          <div className="space-y-1 pb-4 border-b border-[#f0eae0]">
+        /* Buy / Long Rent Action Card (Desktop only to prevent mobile duplication) */
+        <div className="hidden lg:block bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
+          <div className="space-y-1 pb-4 border-b border-slate-100">
             <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
               Mise en relation directe
             </span>
@@ -100,9 +100,9 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
           <button
             type="button"
             onClick={onOpenVisitModal}
-            className="w-full py-3.5 px-5 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            className="w-full py-3.5 px-5 bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
-            <Calendar className="w-4 h-4 text-[#ebdcb8]" />
+            <Calendar className="w-4 h-4 text-white" />
             <span>Planifier une visite</span>
           </button>
 
@@ -110,7 +110,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
             {property.contactPhone ? (
               <a
                 href={`tel:${property.contactPhone}`}
-                className="py-3 px-3 bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1a3831] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-[#e8e2d4] transition text-center"
+                className="py-3 px-3 bg-amber-50 hover:bg-amber-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-amber-200 transition text-center"
               >
                 <Phone className="w-3.5 h-3.5" />
                 <span>Appeler</span>
@@ -119,7 +119,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
               <button
                 type="button"
                 onClick={onOpenDirectChat}
-                className="py-3 px-3 bg-[#f4ecd8] hover:bg-[#ebdcb8] text-[#1a3831] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-[#e8e2d4] transition cursor-pointer"
+                className="py-3 px-3 bg-amber-50 hover:bg-amber-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-amber-200 transition cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Message</span>
@@ -129,7 +129,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
             <button
               type="button"
               onClick={onOpenDirectChat}
-              className="py-3 px-3 bg-[#faf8f5] hover:bg-[#f0eae0] text-[#1a3831] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-[#e8e2d4] transition cursor-pointer"
+              className="py-3 px-3 bg-slate-50 hover:bg-slate-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-slate-200 transition cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Message Olmart</span>

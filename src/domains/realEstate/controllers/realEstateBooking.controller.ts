@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Router, Response, Request } from 'express';
 import { db } from '../../../config/firebase-admin';
 import {
@@ -146,7 +147,7 @@ realEstateBookingRouter.post(
         const serviceFee = propertyData.serviceFee ?? 0;
         const totalPriceDZD = subtotal + cleaningFee + serviceFee;
 
-        const bookingId = `BOOK-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const bookingId = `BOOK-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
         const now = new Date().toISOString();
 
         const booking: BookingShort = {
@@ -537,7 +538,7 @@ realEstateBookingRouter.post(
       }
 
       const propertyData = propSnap.data() as StoredProperty;
-      const visitId = `VISIT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      const visitId = `VISIT-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
       const now = new Date().toISOString();
 
       const visit: PropertyVisit = {

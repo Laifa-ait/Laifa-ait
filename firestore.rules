@@ -135,6 +135,25 @@ service cloud.firestore {
       match /following/{id} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
+
+      match /followed_stores/{id} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /consents/{id} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /documents/{id} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Collection des documents justificatifs utilisateur (anti-IDOR)
+    match /user_documents/{docId} {
+      allow read, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     // Collections privées d'authentification et secrets OTP (strictement inaccessibles via SDK client)

@@ -6,6 +6,7 @@ import { db, auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { Product } from "../domains/product/product.types";
 import { NewsletterBlock } from "../types/newsletter.types";
+import { generateClientUUID } from "../utils/secureCrypto";
 
 export const useNewsletterState = () => {
   const { currentUser } = useAuth();
@@ -31,7 +32,7 @@ export const useNewsletterState = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const addBlock = (type: string) => {
-    const newBlock: NewsletterBlock = { id: Math.random().toString(), type, width: "100" };
+    const newBlock: NewsletterBlock = { id: `blk_${generateClientUUID().substring(0, 10)}`, type, width: "100" };
     if (type === "title") {
       newBlock.content = "Titre de la Newsletter";
     } else if (type === "text") {

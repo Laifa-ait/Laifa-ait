@@ -1,11 +1,19 @@
 import { ALGERIA_WILAYAS, WilayaOption } from '../constants/wilayas';
 import { calculateHaversineDistanceKm } from '../services/realEstateGeo';
+import { findClosestLocation } from '../data/algerianCommunesDatabase';
 
 export interface GeolocationResult {
   wilaya: WilayaOption;
   lat: number;
   lng: number;
   distanceKm: number;
+  accuracy?: number;
+}
+
+export interface DetailedGeolocationResult extends GeolocationResult {
+  commune: string;
+  daira: string;
+  wilayaCode: string;
 }
 
 /**
@@ -39,10 +47,28 @@ export function findNearestAlgerianWilaya(lat: number, lng: number): Geolocation
 }
 
 /**
+ * Trouve la wilaya et la commune algérienne la plus précise pour un point donné.
+ */
+export function findNearestAlgerianDetailedLocation(lat: number, lng: number, accuracy?: number): DetailedGeolocationResult | null {
+  const wilayaResult = findNearestAlgerianWilaya(lat, lng);
+  if (!wilayaResult) return null;
+
+  const closest = findClosestLocation(lat, lng);
+
+  return {
+    ...wilayaResult,
+    commune: closest.commune,
+    daira: closest.daira,
+    wilayaCode: closest.wilayaCode,
+    accuracy,
+  };
+}
+
+/**
  * Demande la position du navigateur de manière non-bloquante et résout la wilaya la plus proche.
  */
 export function requestUserAlgerianWilaya(
-  onSuccess: (result: GeolocationResult) => void,
+  onSuccess: (result: DetailedGeolocationResult) => void,
   onError: (errorMessage: string) => void,
   onFinally?: () => void
 ): void {
@@ -52,29 +78,42 @@ export function requestUserAlgerianWilaya(
     return;
   }
 
+  const handlePosition = (pos: GeolocationPosition) => {
+    const { latitude, longitude, accuracy } = pos.coords;
+    const res = findNearestAlgerianDetailedLocation(latitude, longitude, accuracy);
+    if (res) {
+      onSuccess(res);
+    } else {
+      onError("Position détectée hors du territoire algérien.");
+    }
+    if (onFinally) onFinally();
+  };
+
+  const handleError = (err: GeolocationPositionError) => {
+    let msg = "Impossible d'accéder à votre position actuelle.";
+    if (err.code === 1) {
+      msg = "Accès à la géolocalisation refusé. Veuillez autoriser la localisation dans les paramètres de votre navigateur.";
+    } else if (err.code === 2) {
+      msg = "Position GPS ou réseau non disponible.";
+    } else if (err.code === 3) {
+      msg = "Délai de géolocalisation dépassé. Veuillez réessayer ou choisir votre wilaya manuellement.";
+    }
+    onError(msg);
+    if (onFinally) onFinally();
+  };
+
+  // Try standard quick network/cached positioning first for instant responsive feel
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      const res = findNearestAlgerianWilaya(latitude, longitude);
-      if (res) {
-        onSuccess(res);
-      } else {
-        onError("Impossible de trouver une wilaya correspondante.");
-      }
-      if (onFinally) onFinally();
+    handlePosition,
+    () => {
+      // Fallback with high accuracy if quick attempt fails
+      navigator.geolocation.getCurrentPosition(
+        handlePosition,
+        handleError,
+        { timeout: 8000, maximumAge: 0, enableHighAccuracy: true }
+      );
     },
-    (err) => {
-      let msg = "Impossible d'accéder à votre position actuelle.";
-      if (err.code === 1) {
-        msg = "Accès à la géolocalisation refusé.";
-      } else if (err.code === 2) {
-        msg = "Position non disponible.";
-      } else if (err.code === 3) {
-        msg = "Délai de géolocalisation dépassé.";
-      }
-      onError(msg);
-      if (onFinally) onFinally();
-    },
-    { timeout: 7000, maximumAge: 60000, enableHighAccuracy: false }
+    { timeout: 5000, maximumAge: 300000, enableHighAccuracy: false }
   );
 }
+

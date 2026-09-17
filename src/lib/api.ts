@@ -114,11 +114,12 @@ export async function apiGet<T>(path: string, retries = 3): Promise<T> {
       if (err?.status === 401) {
         continue;
       }
-      // Retry on network errors, 5xx server errors, or 429 rate limits
+      // Retry on network errors, 5xx server errors, 429 rate limits, or transient reverse proxy HTML fallbacks
       if (
         err?.message === 'Failed to fetch' ||
         (err?.status && (err.status >= 500 || err.status === 429)) ||
-        err?.message?.includes('Rate exceeded')
+        err?.message?.includes('Rate exceeded') ||
+        err?.message?.includes('returned non-JSON response')
       ) {
         await new Promise(resolve => setTimeout(resolve, 400 * Math.pow(2, i) + Math.random() * 200));
       } else {
@@ -157,11 +158,12 @@ export async function apiPost<T>(path: string, body: unknown, retries = 3): Prom
       if (err?.status === 401) {
         continue;
       }
-      // Retry on network errors, 5xx server errors, or 429 rate limits
+      // Retry on network errors, 5xx server errors, 429 rate limits, or transient reverse proxy HTML fallbacks
       if (
         err?.message === 'Failed to fetch' ||
         (err?.status && (err.status >= 500 || err.status === 429)) ||
-        err?.message?.includes('Rate exceeded')
+        err?.message?.includes('Rate exceeded') ||
+        err?.message?.includes('returned non-JSON response')
       ) {
         await new Promise(resolve => setTimeout(resolve, 400 * Math.pow(2, i) + Math.random() * 200));
       } else {

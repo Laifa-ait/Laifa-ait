@@ -31,6 +31,7 @@ import { realEstateRouter } from "./src/domains/realEstate/realEstate.routes";
 import messagingRouter from "./src/domains/messaging/messaging.routes";
 import paymentRouter from "./src/domains/payment/payment.routes";
 import bootstrapRouter from "./src/domains/bootstrap/bootstrap.routes";
+import { domainUserDocumentsRouter } from "./src/domains/userDocuments/userDocuments.routes";
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
@@ -115,6 +116,7 @@ app.use("/api/v1", artisanRouter);
 app.use("/api/v1/real-estate", realEstateRouter);
 app.use("/api/v1/messaging", messagingRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/user-documents", domainUserDocumentsRouter);
 app.use("/api/v1", bootstrapRouter);
 
 // Domain catalog & core gateways
@@ -122,7 +124,8 @@ app.use("/", productsRouter);
 app.use("/", coreRouter);
 
 // Catch-all 404 handler for any unhandled /api requests to prevent falling through to SPA HTML serving
-app.use("/api/*", (req: Request, res: Response) => {
+app.all(["/api", "/api/*"], (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "application/json");
   return res.status(404).json({ error: `Endpoint API introuvable: ${req.method} ${req.originalUrl}` });
 });
 

@@ -48,12 +48,12 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-8">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8">
       {/* Physical Specs */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif] flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#1a3831]" />
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif] flex items-center gap-2">
+            <Layers className="w-5 h-5 text-[#F59E0B]" />
             <span>Caractéristiques Principales</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -62,8 +62,8 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-            <label className="text-xs font-bold text-[#1a3831] flex items-center gap-1.5">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <label className="text-xs font-bold text-[#1E3A8A] flex items-center gap-1.5">
               <Maximize className="w-4 h-4" />
               <span>Superficie (m²)</span>
             </label>
@@ -73,12 +73,12 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
               max="50000"
               value={areaSquareMeters}
               onChange={(e) => setAreaSquareMeters(Math.max(1, Number(e.target.value)))}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-sm font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
 
-          <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-            <label className="text-xs font-bold text-[#1a3831] flex items-center gap-1.5">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <label className="text-xs font-bold text-[#1E3A8A] flex items-center gap-1.5">
               <Bed className="w-4 h-4" />
               <span>Nombre de Pièces (F)</span>
             </label>
@@ -88,12 +88,12 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
               max="50"
               value={rooms}
               onChange={(e) => setRooms(Math.max(1, Number(e.target.value)))}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-sm font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
 
-          <div className="p-4 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4] space-y-2">
-            <label className="text-xs font-bold text-[#1a3831] flex items-center gap-1.5">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <label className="text-xs font-bold text-[#1E3A8A] flex items-center gap-1.5">
               <Bath className="w-4 h-4" />
               <span>Salles de bain</span>
             </label>
@@ -103,16 +103,16 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
               max="20"
               value={bathrooms}
               onChange={(e) => setBathrooms(Math.max(0, Number(e.target.value)))}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#e8e2d4] rounded-xl text-sm font-bold text-[#1a3831] focus:outline-none focus:border-[#1a3831]"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-[#1E3A8A] focus:outline-none focus:border-[#1E3A8A]"
             />
           </div>
         </div>
       </div>
 
       {/* Amenities & Equipments */}
-      <div className="space-y-4 pt-6 border-t border-[#f0eae0]">
+      <div className="space-y-4 pt-6 border-t border-slate-100">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Équipements & Atouts ({features.length} sélectionnés)
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -131,12 +131,12 @@ export const EditorStepSpecs: React.FC<EditorStepSpecsProps> = ({
                 onClick={() => toggleFeature(item)}
                 className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex items-center justify-between ${
                   isChecked
-                    ? 'border-[#1a3831] bg-[#f4ecd8]/60 text-[#1a3831] font-bold'
-                    : 'border-[#e8e2d4] bg-[#faf8f5] text-slate-700 hover:bg-white'
+                    ? 'border-[#1E3A8A] bg-blue-50/60 text-[#1E3A8A] font-bold'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'
                 }`}
               >
                 <span className="text-xs">{item}</span>
-                <CheckCircle2 className={`w-4 h-4 shrink-0 ${isChecked ? 'text-[#1a3831]' : 'text-slate-300'}`} />
+                <CheckCircle2 className={`w-4 h-4 shrink-0 ${isChecked ? 'text-[#1E3A8A]' : 'text-slate-300'}`} />
               </button>
             );
           })}

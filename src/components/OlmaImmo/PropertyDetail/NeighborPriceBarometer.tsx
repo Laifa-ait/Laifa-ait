@@ -45,15 +45,15 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
   }
 
   return (
-    <div className="bg-[#FAF8F5] rounded-2xl p-4 sm:p-5 border border-[#EBE4D8] space-y-3.5">
+    <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200 space-y-3.5">
       {/* Top row with Title & Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-[#0D281E] text-[#EBDCB8] flex items-center justify-center shadow-2xs">
-            <BarChart2 className="w-4 h-4 text-emerald-400" />
+          <span className="w-7 h-7 rounded-lg bg-[#1E3A8A] text-white flex items-center justify-center shadow-2xs">
+            <BarChart2 className="w-4 h-4 text-[#F59E0B]" />
           </span>
           <div>
-            <h4 className="text-xs sm:text-sm font-bold text-[#0D281E]">
+            <h4 className="text-xs sm:text-sm font-bold text-[#1E3A8A]">
               Prix comparés dans le secteur ({commune || wilaya})
             </h4>
             <p className="text-[11px] text-stone-500 font-medium">
@@ -68,7 +68,7 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border cursor-pointer active:scale-95 shrink-0 ${
             showNeighborsOnMap
               ? 'bg-white text-stone-800 border-stone-300 shadow-2xs hover:bg-stone-50'
-              : 'bg-[#0D281E] text-[#EBDCB8] border-[#0D281E] shadow-sm'
+              : 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-sm'
           }`}
         >
           {showNeighborsOnMap ? (
@@ -78,7 +78,7 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
             </>
           ) : (
             <>
-              <Eye className="w-3.5 h-3.5 text-amber-300" />
+              <Eye className="w-3.5 h-3.5 text-[#F59E0B]" />
               <span>Afficher voisins sur la carte ({neighbors.length})</span>
             </>
           )}
@@ -89,7 +89,7 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
       <div className="grid grid-cols-3 gap-2 pt-1 border-t border-stone-200/60">
         <div className="bg-white p-2.5 rounded-xl border border-stone-200/80">
           <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">Prix ce logement</span>
-          <span className="text-xs sm:text-sm font-black text-[#0D281E] block mt-0.5">
+          <span className="text-xs sm:text-sm font-black text-[#1E3A8A] block mt-0.5">
             {formatPriceAlgeria(currentPrice)}
           </span>
         </div>
@@ -124,7 +124,7 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
                 key={n.id}
                 type="button"
                 onClick={() => onSelectNeighbor(n.id)}
-                className="px-2 py-0.5 rounded-md bg-white border border-stone-200 text-[10px] font-bold text-stone-700 hover:border-[#0D281E] hover:text-[#0D281E] transition cursor-pointer shrink-0"
+                className="px-2 py-0.5 rounded-md bg-white border border-stone-200 text-[10px] font-bold text-stone-700 hover:border-[#1E3A8A] hover:text-[#1E3A8A] transition cursor-pointer shrink-0"
               >
                 {formatPriceAlgeria(n.price)}
               </button>

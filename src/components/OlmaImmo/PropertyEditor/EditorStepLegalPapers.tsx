@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Check, Info, X } from 'lucide-react';
 import { LegalPaperType } from '../../../types/realEstate';
 import { LEGAL_PAPERS_CONFIG } from '../../../constants/legalPapers';
+import { UniversalFileUploader } from '../../Documents/UniversalFileUploader';
 
 interface EditorStepLegalPapersProps {
   activePapers: LegalPaperType[];
@@ -15,11 +16,11 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
   const [activeTooltipPaper, setActiveTooltipPaper] = useState<LegalPaperType | null>(null);
 
   return (
-    <div className="space-y-5 pt-6 border-t border-[#f0eae0]">
+    <div className="space-y-5 pt-6 border-t border-slate-100">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+            <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
               Situation Juridique & Documents du Bien
             </h3>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -31,13 +32,13 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
             Sélectionnez tous les titres applicables à votre bien (ex: Acte individuel + Livret foncier).
           </p>
         </div>
-        <span className="text-xs font-bold text-[#1a3831] bg-[#f4ecd8] px-3 py-1 rounded-xl self-start sm:self-auto border border-[#e8e2d4]">
+        <span className="text-xs font-bold text-[#1E3A8A] bg-blue-50 px-3 py-1 rounded-xl self-start sm:self-auto border border-blue-200">
           {activePapers.length} document{activePapers.length > 1 ? 's' : ''} sélectionné{activePapers.length > 1 ? 's' : ''}
         </span>
       </div>
 
       {/* Sélecteur à puces interactif (Puces rapides) */}
-      <div className="flex flex-wrap items-center gap-2 p-3 bg-[#faf8f5] rounded-2xl border border-[#e8e2d4]">
+      <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 me-1">
           Sélection rapide à puces :
         </span>
@@ -50,11 +51,11 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
               onClick={() => onTogglePaper(paper.type)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 isSelected
-                  ? 'bg-[#1a3831] text-[#ebdcb8] shadow-2xs font-bold'
-                  : 'bg-white text-slate-700 border border-[#e8e2d4] hover:border-slate-300'
+                  ? 'bg-[#1E3A8A] text-white shadow-2xs font-bold'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+              <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-[#F59E0B]' : 'bg-slate-300'}`} />
               <span>{paper.shortLabel}</span>
               {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
             </button>
@@ -74,8 +75,8 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
               key={paper.type}
               className={`p-4 rounded-2xl border-2 text-left transition relative flex flex-col justify-between space-y-2.5 ${
                 isSelected
-                  ? 'border-[#1a3831] bg-[#f4ecd8]/60 shadow-xs ring-1 ring-[#1a3831]'
-                  : 'border-[#e8e2d4] hover:border-slate-300 bg-[#faf8f5]'
+                  ? 'border-[#1E3A8A] bg-blue-50/60 shadow-xs ring-1 ring-[#1E3A8A]'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50'
               }`}
             >
               {/* Header card: Icon, Badge & Info tooltip trigger */}
@@ -86,7 +87,7 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
                   className="flex items-center gap-2 cursor-pointer text-left focus:outline-none"
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                    isSelected ? 'bg-[#1a3831] text-[#ebdcb8]' : 'bg-white text-slate-700 border border-[#e8e2d4]'
+                    isSelected ? 'bg-[#1E3A8A] text-white' : 'bg-white text-slate-700 border border-slate-200'
                   }`}>
                     <PaperIcon className="w-4 h-4" />
                   </div>
@@ -108,7 +109,7 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
                     title="Afficher l'infobulle explicative sur ce document"
                     className={`p-1 rounded-lg transition cursor-pointer ${
                       isTooltipOpen
-                        ? 'bg-[#1a3831] text-white'
+                        ? 'bg-[#1E3A8A] text-white'
                         : 'text-slate-400 hover:text-slate-700 hover:bg-slate-200/60'
                     }`}
                   >
@@ -122,7 +123,7 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
                     className="cursor-pointer focus:outline-none"
                   >
                     {isSelected ? (
-                      <div className="w-5 h-5 rounded-full bg-[#1a3831] text-white flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center">
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     ) : (
@@ -138,7 +139,7 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
                 onClick={() => onTogglePaper(paper.type)}
                 className="cursor-pointer text-left focus:outline-none flex-1"
               >
-                <h4 className={`text-xs font-bold leading-snug ${isSelected ? 'text-[#1a3831]' : 'text-slate-800'}`}>
+                <h4 className={`text-xs font-bold leading-snug ${isSelected ? 'text-[#1E3A8A]' : 'text-slate-800'}`}>
                   {paper.shortLabel}
                 </h4>
                 <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-tight">
@@ -150,7 +151,7 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
               {isTooltipOpen && (
                 <div className="mt-2 p-3 bg-white rounded-xl border border-slate-300 shadow-md text-slate-800 text-[11px] space-y-2 z-10 animate-in fade-in zoom-in-95 duration-150">
                   <div className="flex items-center justify-between pb-1 border-b border-slate-100">
-                    <span className="font-bold text-[#1a3831] flex items-center gap-1">
+                    <span className="font-bold text-[#1E3A8A] flex items-center gap-1">
                       <ShieldCheck className="w-3 h-3 text-emerald-600" />
                       Infobulle Juridique DZ
                     </span>
@@ -180,6 +181,15 @@ export const EditorStepLegalPapers: React.FC<EditorStepLegalPapersProps> = ({
             </div>
           );
         })}
+      </div>
+
+      {/* Justificatifs Numérisés & Actes Légaux */}
+      <div className="pt-4 border-t border-slate-100">
+        <UniversalFileUploader
+          category="real_estate_legal"
+          title="Numérisation des actes & livrets fonciers"
+          description="Téléversez vos copies PDF ou photos de l'acte notarié, livret foncier ou certificat d'urbanisme"
+        />
       </div>
     </div>
   );

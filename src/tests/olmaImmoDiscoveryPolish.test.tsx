@@ -136,7 +136,7 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
   });
 
   describe('OlmaImmoHero Component', () => {
-    it('renders Algerian wilayas datalist and provides quick popular destinations', () => {
+    it('renders Algerian wilayas datalist and handles search input filter change', () => {
       const onFilterChange = vi.fn();
       const onSearchSubmit = vi.fn();
 
@@ -152,19 +152,19 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
         );
       });
 
-      const input = container?.querySelector('input[list="hero-algeria-wilayas"]');
+      const input = container?.querySelector('input[list="hero-algeria-wilayas"]') as HTMLInputElement;
       expect(input).not.toBeNull();
 
       const datalist = container?.querySelector('#hero-algeria-wilayas');
       expect(datalist).not.toBeNull();
 
-      const oranBtn = Array.from(container?.querySelectorAll('button') || []).find((b) =>
-        b.textContent?.includes('Oran')
-      );
-      expect(oranBtn).toBeDefined();
-
       act(() => {
-        oranBtn?.click();
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        )?.set;
+        nativeInputValueSetter?.call(input, 'Oran');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
       });
 
       expect(onFilterChange).toHaveBeenCalledWith(

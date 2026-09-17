@@ -28,7 +28,7 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
             <ShieldCheck className="w-4 h-4 text-emerald-700" />
             <span>Garanties Juridiques & Papiers Fonciers DZ</span>
           </label>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EBDCB8] text-[#0D281E]">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-[#1E3A8A]">
             Conforme loi foncière
           </span>
         </div>
@@ -40,7 +40,7 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
           className={`flex items-center gap-2.5 p-3 rounded-2xl border transition-all cursor-pointer select-none text-xs font-bold ${
             hasActeNotarie
               ? 'bg-emerald-50/90 border-emerald-500 text-emerald-900 shadow-xs'
-              : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:bg-stone-100'
+              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
           }`}
         >
           <input
@@ -61,21 +61,21 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
         <label
           className={`flex items-center gap-2.5 p-3 rounded-2xl border transition-all cursor-pointer select-none text-xs font-bold ${
             hasLivretFoncier
-              ? 'bg-[#EBDCB8]/40 border-[#0D281E] text-[#0D281E] shadow-xs'
-              : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:bg-stone-100'
+              ? 'bg-blue-50 border-[#1E3A8A] text-[#1E3A8A] shadow-xs'
+              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
           }`}
         >
           <input
             type="checkbox"
             checked={Boolean(hasLivretFoncier)}
             onChange={(e) => onToggleLivretFoncier(e.target.checked)}
-            className="w-4 h-4 rounded text-[#0D281E] focus:ring-[#0D281E] border-stone-300 accent-[#0D281E] cursor-pointer"
+            className="w-4 h-4 rounded text-[#1E3A8A] focus:ring-[#1E3A8A] border-slate-300 accent-[#1E3A8A] cursor-pointer"
           />
           <div className="flex-1 min-w-0">
             <div>Livret foncier disponible</div>
             <div className="text-[10px] font-normal text-stone-500">Immatriculation cadastrale</div>
           </div>
-          <span className="text-[10px] font-extrabold text-[#0D281E] bg-[#EBDCB8] px-2 py-0.5 rounded-lg shrink-0">
+          <span className="text-[10px] font-extrabold text-[#1E3A8A] bg-blue-100 px-2 py-0.5 rounded-lg shrink-0">
             Cadastre
           </span>
         </label>
@@ -90,7 +90,7 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
             onClick={() => onSelectLegalPaper(undefined)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer min-h-[36px] ${
               !legalPaperType
-                ? 'bg-[#0D281E] text-[#EBDCB8] shadow-xs'
+                ? 'bg-[#1E3A8A] text-white shadow-xs'
                 : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
             }`}
           >
@@ -106,7 +106,7 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer min-h-[36px] flex items-center gap-1.5 border ${
                   isSelected
                     ? `${p.badgeBg} ${p.badgeText} ${p.badgeBorder} shadow-xs ring-1 ring-emerald-600/30`
-                    : 'bg-[#FAF8F5] text-stone-700 hover:bg-stone-100 border-stone-200'
+                    : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'
                 }`}
                 title={p.description}
               >

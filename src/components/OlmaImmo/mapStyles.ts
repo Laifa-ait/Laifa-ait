@@ -1,13 +1,13 @@
-// Custom luxury styling for Google Maps aligned with Olmart aesthetic:
-// Warm cream landcover, soft emerald waters, crisp stone roads, and uncluttered labels.
+// Custom modern styling for Google Maps aligned with Olma Immo aesthetic:
+// Clean slate landcover (#f8fafc), royal blue typography (#1e3a8a), crisp slate roads, and soft sky-blue waters.
 export const OLMART_LUXURY_MAP_STYLES = [
   {
     elementType: 'geometry',
-    stylers: [{ color: '#fbf9f5' }],
+    stylers: [{ color: '#f8fafc' }],
   },
   {
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#2b3a36' }],
+    stylers: [{ color: '#334155' }],
   },
   {
     elementType: 'labels.text.stroke',
@@ -16,12 +16,12 @@ export const OLMART_LUXURY_MAP_STYLES = [
   {
     featureType: 'administrative.locality',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#0d281e' }, { weight: 'bold' }],
+    stylers: [{ color: '#1e3a8a' }, { weight: 'bold' }],
   },
   {
     featureType: 'poi',
     elementType: 'geometry',
-    stylers: [{ color: '#edf4f1' }],
+    stylers: [{ color: '#f1f5f9' }],
   },
   {
     featureType: 'poi',
@@ -35,7 +35,7 @@ export const OLMART_LUXURY_MAP_STYLES = [
   {
     featureType: 'poi.park',
     elementType: 'geometry',
-    stylers: [{ color: '#dbece5' }],
+    stylers: [{ color: '#e2e8f0' }],
   },
   {
     featureType: 'road',
@@ -45,32 +45,32 @@ export const OLMART_LUXURY_MAP_STYLES = [
   {
     featureType: 'road',
     elementType: 'geometry.stroke',
-    stylers: [{ color: '#e5decb' }],
+    stylers: [{ color: '#e2e8f0' }],
   },
   {
     featureType: 'road.highway',
     elementType: 'geometry',
-    stylers: [{ color: '#f3ede1' }],
+    stylers: [{ color: '#f1f5f9' }],
   },
   {
     featureType: 'road.highway',
     elementType: 'geometry.stroke',
-    stylers: [{ color: '#d8cdb7' }],
+    stylers: [{ color: '#cbd5e1' }],
   },
   {
     featureType: 'transit',
     elementType: 'geometry',
-    stylers: [{ color: '#eef2ee' }],
+    stylers: [{ color: '#f8fafc' }],
   },
   {
     featureType: 'water',
     elementType: 'geometry',
-    stylers: [{ color: '#b6ded7' }],
+    stylers: [{ color: '#dbeafe' }],
   },
   {
     featureType: 'water',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#165b4c' }],
+    stylers: [{ color: '#1e3a8a' }],
   },
 ];
 

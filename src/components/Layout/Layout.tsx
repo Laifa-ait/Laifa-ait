@@ -72,6 +72,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isImmoPage =
     location.pathname.startsWith("/immo") ||
     location.pathname.startsWith("/olma-immo");
+  const isStorePage =
+    location.pathname.startsWith("/store") ||
+    location.pathname.startsWith("/boutique");
 
   const hideNavigation = isDashboard || isAuthPage;
 
@@ -97,9 +100,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </a>
       )}
 
-      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && <Navbar />}
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && <Navbar />}
 
-      {isImmoPage ? (
+      {isImmoPage || isStorePage ? (
         <div id="main-content" className="min-h-screen relative">
           {children}
         </div>
@@ -111,11 +114,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {isBricolagePage && <ArtisanMobileBottomNav />}
 
-      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && (
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
         <Footer isHomepage={isHomepage} />
       )}
 
-      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && (
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
         <MobileBottomNav
           hideOnRoutes={[
             "/checkout",
@@ -128,6 +131,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             "/services/bricolage",
             "/immo",
             "/olma-immo",
+            "/store",
+            "/boutique",
           ]}
         />
       )}

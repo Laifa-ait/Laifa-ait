@@ -23,7 +23,7 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
       {/* Top title and publish button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Tableau de bord Annonceur & Propriétaire
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
@@ -50,15 +50,15 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
           variant="default"
           elevation="card"
           padding="md"
-          className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
+          className="rounded-3xl border border-slate-200 shadow-xs space-y-2"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Biens en ligne</span>
-            <div className="w-8 h-8 rounded-xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-[#1a3831] font-['Playfair_Display',serif]">
+          <div className="text-2xl font-black text-[#1E3A8A] font-['Playfair_Display',serif]">
             {propertiesCount}
           </div>
         </OlmaSurface>
@@ -67,11 +67,11 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
           variant="default"
           elevation="card"
           padding="md"
-          className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
+          className="rounded-3xl border border-slate-200 shadow-xs space-y-2"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Visites demandées</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
@@ -84,7 +84,7 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
           variant="default"
           elevation="card"
           padding="md"
-          className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
+          className="rounded-3xl border border-slate-200 shadow-xs space-y-2"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Réservations séjours</span>
@@ -101,15 +101,15 @@ export const OwnerHeaderStats: React.FC<OwnerHeaderStatsProps> = ({
           variant="default"
           elevation="card"
           padding="md"
-          className="rounded-3xl border border-[#e8e2d4] shadow-xs space-y-2"
+          className="rounded-3xl border border-slate-200 shadow-xs space-y-2"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Volume généré</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-[#F59E0B] flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#1a3831] font-['Playfair_Display',serif]">
+          <div className="text-xl sm:text-2xl font-black text-[#1E3A8A] font-['Playfair_Display',serif]">
             {new Intl.NumberFormat('fr-DZ').format(totalRevenueDZD)}{' '}
             <span className="text-xs font-bold font-sans">DA</span>
           </div>

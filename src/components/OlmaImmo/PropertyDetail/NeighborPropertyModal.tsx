@@ -30,7 +30,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
   const area = property.areaSquareMeters || 0;
 
   return (
-    <div className="bg-white/98 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-[#0D281E]/15 shadow-2xl space-y-3 w-full max-w-sm pointer-events-auto animate-in fade-in zoom-in-95 duration-200">
+    <div className="bg-white/98 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-2xl space-y-3 w-full max-w-sm pointer-events-auto animate-in fade-in zoom-in-95 duration-200">
       {/* Header with Title & Close */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -61,7 +61,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
         />
 
         <div className="flex-1 min-w-0">
-          <h4 className="text-xs font-bold text-[#0D281E] line-clamp-1">{property.title}</h4>
+          <h4 className="text-xs font-bold text-[#1E3A8A] line-clamp-1">{property.title}</h4>
 
           <div className="flex items-center gap-2 text-[11px] text-stone-500 mt-1">
             {rooms > 0 && (
@@ -79,7 +79,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
           </div>
 
           <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-sm font-extrabold text-[#0D281E]">
+            <span className="text-sm font-extrabold text-[#1E3A8A]">
               {formatPriceAlgeria(price, property.pricePeriod)}
             </span>
           </div>
@@ -108,7 +108,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
       <button
         type="button"
         onClick={() => navigate(`/immo/property/${property.id}`)}
-        className="w-full py-2 px-3 rounded-xl bg-[#0D281E] hover:bg-[#163e30] text-[#EBDCB8] text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+        className="w-full py-2 px-3 rounded-xl bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
       >
         <span>Consulter cette annonce</span>
         <ExternalLink className="w-3.5 h-3.5" />

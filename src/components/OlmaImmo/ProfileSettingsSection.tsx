@@ -35,17 +35,17 @@ export const ProfileSettingsSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-stone-200">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h2 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Paramètres du compte
           </h2>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Gérez vos informations personnelles et vos préférences immobilières
           </p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center border border-blue-100">
           <ShieldCheck className="w-5 h-5" />
         </div>
       </div>
@@ -143,9 +143,9 @@ export const ProfileSettingsSection: React.FC = () => {
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 bg-[#1a3831] text-[#ebdcb8] rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#122b24] shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-900 shadow-xs transition cursor-pointer disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-4 h-4 text-[#F59E0B]" />
             <span>{isSaving ? 'Enregistrement...' : 'Enregistrer les modifications'}</span>
           </button>
 

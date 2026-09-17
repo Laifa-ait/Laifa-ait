@@ -39,6 +39,7 @@ export const ResidenceLocationPickerMap: React.FC<ResidenceLocationPickerMapProp
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const dragStartCenterRef = useRef({ lat: initialLat, lng: initialLng });
   const hasMovedRef = useRef(false);
+  const lastWheelTimeRef = useRef(0);
 
   // Sync with incoming external prop changes (wilaya selection, commune selection, or direct coordinate edits)
   useEffect(() => {
@@ -147,16 +148,20 @@ export const ResidenceLocationPickerMap: React.FC<ResidenceLocationPickerMapProp
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
+    const now = performance.now();
+    if (now - lastWheelTimeRef.current < 160) return;
+    lastWheelTimeRef.current = now;
+
     if (e.deltaY < 0) {
-      setZoom((z) => Math.min(z + 1, 18));
+      setZoom((z) => Math.min(Math.round(z) + 1, 18));
     } else if (e.deltaY > 0) {
-      setZoom((z) => Math.max(z - 1, 5));
+      setZoom((z) => Math.max(Math.round(z) - 1, 5));
     }
   };
 
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setZoom((z) => Math.min(z + 1, 18));
+    setZoom((z) => Math.min(Math.round(z) + 1, 18));
   };
 
   const handleRecenter = useCallback(() => {

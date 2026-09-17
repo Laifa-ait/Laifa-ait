@@ -3,9 +3,9 @@ import { cn } from '../../../lib/utils';
 
 export type OlmaPillVariant =
   | 'neutral'   // Gris pierre / surface douce
-  | 'brand'     // Vert forêt (#1A3831) avec texte doré/ivoire
-  | 'accent'    // Terracotta (#C97A40)
-  | 'highlight' // Sable doré (#EBDCB8)
+  | 'brand'     // Bleu roi (#1E3A8A)
+  | 'accent'    // Ambre vif (#F59E0B)
+  | 'highlight' // Ambre clair / doré
   | 'success'   // Vert émeraude
   | 'warning'   // Ambre
   | 'danger'    // Rose/Rouge
@@ -28,16 +28,16 @@ const variantStyles: Record<OlmaPillVariant, { pill: string; dot: string }> = {
     dot: 'bg-[var(--olma-text-muted)]',
   },
   brand: {
-    pill: 'bg-[var(--olma-brand-primary)] text-[var(--olma-brand-highlight)] border border-[var(--olma-brand-highlight)]/30',
-    dot: 'bg-[var(--olma-brand-highlight)]',
+    pill: 'bg-[var(--olma-brand-primary)] text-white border border-blue-900/30',
+    dot: 'bg-[#F59E0B]',
   },
   accent: {
-    pill: 'bg-[var(--olma-brand-accent)] text-white border border-[var(--olma-brand-accent-soft)]/30',
-    dot: 'bg-white',
+    pill: 'bg-[var(--olma-brand-accent)] text-slate-950 font-bold border border-[#F59E0B]/40',
+    dot: 'bg-slate-950',
   },
   highlight: {
-    pill: 'bg-[var(--olma-brand-highlight)] text-[var(--olma-brand-primary-dark)] border border-[var(--olma-brand-primary)]/20 font-bold',
-    dot: 'bg-[var(--olma-brand-primary-dark)]',
+    pill: 'bg-amber-100 text-amber-900 border border-amber-300/60 font-bold',
+    dot: 'bg-amber-500',
   },
   success: {
     pill: 'bg-[var(--olma-semantic-success-light)] text-[var(--olma-semantic-success)] border border-[var(--olma-semantic-success)]/20',

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Router, Response } from 'express';
 import { admin, db } from '../../../config/firebase-admin';
 import {
@@ -28,6 +29,7 @@ import {
 } from '../../../services/realEstateGeo';
 import { safeLogger } from '../../../utils/logger';
 import { toPropertyMapResult } from '../data/realEstateSeed';
+import { findDairaForCommune } from '../../../data/algerianCommunesDatabase';
 
 type PropertySearchQuery = z.infer<typeof PropertySearchQuerySchema>;
 
@@ -49,6 +51,7 @@ realEstatePropertyRouter.get(
         hasLivretFoncier,
         isLegalVerified,
         wilaya,
+        daira,
         commune,
         minPrice,
         maxPrice,
@@ -215,6 +218,22 @@ realEstatePropertyRouter.get(
         }
       }
 
+      if (daira && typeof daira === 'string' && daira.trim()) {
+        const dairaTarget = daira.trim().toLowerCase();
+        results = results.filter((p) => {
+          if (p.location?.daira && p.location.daira.trim().toLowerCase() === dairaTarget) {
+            return true;
+          }
+          const propCommune = p.location?.commune;
+          const propWilaya = p.location?.wilaya;
+          if (propCommune && propWilaya) {
+            const resolvedDaira = findDairaForCommune(propWilaya, propCommune);
+            return resolvedDaira?.toLowerCase() === dairaTarget;
+          }
+          return false;
+        });
+      }
+
       if (lat !== undefined && lng !== undefined) {
         const centerLat = Number(lat);
         const centerLng = Number(lng);
@@ -301,6 +320,7 @@ realEstatePropertyRouter.get(
         hasLivretFoncier,
         isLegalVerified,
         wilaya,
+        daira,
         commune,
         minPrice,
         maxPrice,
@@ -445,6 +465,22 @@ realEstatePropertyRouter.get(
         }
       }
 
+      if (daira && typeof daira === 'string' && daira.trim()) {
+        const dairaTarget = daira.trim().toLowerCase();
+        results = results.filter((p) => {
+          if (p.location?.daira && p.location.daira.trim().toLowerCase() === dairaTarget) {
+            return true;
+          }
+          const propCommune = p.location?.commune;
+          const propWilaya = p.location?.wilaya;
+          if (propCommune && propWilaya) {
+            const resolvedDaira = findDairaForCommune(propWilaya, propCommune);
+            return resolvedDaira?.toLowerCase() === dairaTarget;
+          }
+          return false;
+        });
+      }
+
       if (lat !== undefined && lng !== undefined) {
         const centerLat = Number(lat);
         const centerLng = Number(lng);
@@ -535,6 +571,11 @@ export function toPublicPropertyDTO(property: StoredProperty): PublicPropertyDTO
       lat: property.location?.lat,
       lng: property.location?.lng,
       address: property.location?.address || '',
+      daira:
+        property.location?.daira ||
+        (property.location?.wilaya && property.location?.commune
+          ? findDairaForCommune(property.location.wilaya, property.location.commune)
+          : undefined),
       commune: property.location?.commune || property.commune || '',
       wilaya: property.location?.wilaya || property.wilaya || '',
     },
@@ -776,7 +817,7 @@ realEstatePropertyRouter.post(
     void _incomingOwnerId;
     const ownerId = req.user.uid;
 
-    const propertyId = `PROP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const propertyId = `PROP-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
     const now = new Date().toISOString();
 
     const legalPapersList: LegalPaperType[] = Array.isArray(cleanBody.legalPapers) && cleanBody.legalPapers.length > 0
@@ -797,16 +838,20 @@ realEstatePropertyRouter.post(
       updatedAt: now,
     };
 
-    if (
-      newProperty.location &&
-      typeof newProperty.location.lat === 'number' &&
-      typeof newProperty.location.lng === 'number'
-    ) {
-      newProperty.location.geohash = encodeGeohash(
-        newProperty.location.lat,
-        newProperty.location.lng,
-        7
-      );
+    if (newProperty.location) {
+      if (newProperty.location.commune && newProperty.location.wilaya && !newProperty.location.daira) {
+        newProperty.location.daira = findDairaForCommune(newProperty.location.wilaya, newProperty.location.commune);
+      }
+      if (
+        typeof newProperty.location.lat === 'number' &&
+        typeof newProperty.location.lng === 'number'
+      ) {
+        newProperty.location.geohash = encodeGeohash(
+          newProperty.location.lat,
+          newProperty.location.lng,
+          7
+        );
+      }
     }
 
     try {
@@ -900,16 +945,20 @@ realEstatePropertyRouter.put(
         updatedAt: new Date().toISOString(),
       };
 
-      if (
-        updatedProperty.location &&
-        typeof updatedProperty.location.lat === 'number' &&
-        typeof updatedProperty.location.lng === 'number'
-      ) {
-        updatedProperty.location.geohash = encodeGeohash(
-          updatedProperty.location.lat,
-          updatedProperty.location.lng,
-          7
-        );
+      if (updatedProperty.location) {
+        if (updatedProperty.location.commune && updatedProperty.location.wilaya && !updatedProperty.location.daira) {
+          updatedProperty.location.daira = findDairaForCommune(updatedProperty.location.wilaya, updatedProperty.location.commune);
+        }
+        if (
+          typeof updatedProperty.location.lat === 'number' &&
+          typeof updatedProperty.location.lng === 'number'
+        ) {
+          updatedProperty.location.geohash = encodeGeohash(
+            updatedProperty.location.lat,
+            updatedProperty.location.lng,
+            7
+          );
+        }
       }
 
       await docRef.set(updatedProperty, { merge: true });

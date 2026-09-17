@@ -214,9 +214,9 @@ export const PropertyEditor: React.FC = () => {
         <div className="flex items-center justify-between">
           <Link
             to="/immo/owner"
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-[#1a3831] bg-white border border-[#e8e2d4] px-4 py-2 rounded-xl"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-[#1E3A8A] bg-white border border-slate-200 px-4 py-2 rounded-xl"
           >
-            <ArrowLeft className="w-4 h-4 text-[#1a3831]" />
+            <ArrowLeft className="w-4 h-4 text-[#1E3A8A]" />
             <span>Tableau de bord</span>
           </Link>
           <span className="text-xs font-bold text-slate-500">

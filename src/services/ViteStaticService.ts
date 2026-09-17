@@ -4,6 +4,7 @@ import { promises as fsPromises, existsSync } from "fs";
 import { getProductSeoData, injectProductSeo } from "./ProductSeoService";
 import { injectNonceToHtml } from "../middlewares/security";
 import { safeLogger } from "../utils/logger";
+import { LocaleStorageService } from "./LocaleStorageService";
 
 let cachedHtmlTemplate = "";
 let isStaticBuildValid = false;
@@ -51,6 +52,36 @@ export function validateProductionHtmlTemplate(content: string, distPath: string
 }
 
 export async function setupViteAndStaticServing(app: Express): Promise<void> {
+  const distPath = path.join(process.cwd(), "dist");
+  const publicLocalesPath = path.join(process.cwd(), "public", "locales");
+  const distLocalesPath = path.join(distPath, "locales");
+
+  // Dedicated, fail-safe /locales/:lang.json handler: registered FIRST so it works in both dev & prod
+  // and NEVER falls through to Vite middlewares or SPA HTML serving.
+  app.get("/locales/:lang.json", (req, res) => {
+    const lang = req.params.lang;
+    if (!["fr", "ar", "en"].includes(lang)) {
+      return res.status(404).json({ error: `Langue non supportée: ${lang}` });
+    }
+
+    const cached = LocaleStorageService.getCachedLocale(lang);
+    if (cached) {
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+      return res.json(cached);
+    }
+
+    const distLocale = path.join(distLocalesPath, `${lang}.json`);
+    const publicLocale = path.join(publicLocalesPath, `${lang}.json`);
+    const targetPath = existsSync(distLocale) ? distLocale : publicLocale;
+
+    const data = LocaleStorageService.safeReadJson(targetPath, {});
+    LocaleStorageService.setCachedLocale(lang, data);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+    return res.json(data);
+  });
+
   if (process.env.NODE_ENV !== "production") {
     try {
       const { createServer: createViteServer } = await import("vite");
@@ -61,7 +92,7 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
       app.use(vite.middlewares);
 
       app.get("*", async (req, res, next) => {
-        if (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/api-docs")) {
+        if (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/api-docs") || req.originalUrl.startsWith("/locales")) {
           return next();
         }
         try {
@@ -86,10 +117,10 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     }
   }
 
-  const distPath = path.join(process.cwd(), "dist");
   const indexHtmlPath = path.join(distPath, "index.html");
 
   app.use("/locales", express.static(path.join(distPath, "locales"), { maxAge: "1h", immutable: false, setHeaders: (res) => { res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate"); } }));
+  app.use("/locales", express.static(path.join(process.cwd(), "public", "locales"), { maxAge: "1h", immutable: false, setHeaders: (res) => { res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate"); } }));
   app.use(
     express.static(distPath, {
       index: false,
@@ -177,5 +208,10 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     }
   });
 
-  app.get("*", (req, res) => sendOptimizedHtml(res, cachedHtmlTemplate));
+  app.get("*", (req, res) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/api-docs") || req.path.startsWith("/locales")) {
+      return res.status(404).json({ error: `Ressource introuvable: ${req.method} ${req.path}` });
+    }
+    return sendOptimizedHtml(res, cachedHtmlTemplate);
+  });
 }

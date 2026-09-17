@@ -48,14 +48,14 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
               onClick={() => setSelectedStatusTab(tab.id)}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 isActive
-                  ? 'bg-[#1a3831] text-[#ebdcb8] shadow-xs'
-                  : 'bg-[#faf8f5] text-slate-600 hover:bg-[#f0eae0]'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`px-1.5 py-0.5 rounded-md text-[10px] ${
-                  isActive ? 'bg-[#ebdcb8] text-[#1a3831]' : 'bg-slate-200 text-slate-700'
+                className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                  isActive ? 'bg-[#F59E0B] text-slate-900' : 'bg-slate-200 text-slate-700'
                 }`}
               >
                 {tab.count}
@@ -71,10 +71,10 @@ export const OwnerPropertiesList: React.FC<OwnerPropertiesListProps> = ({
         </div>
       ) : filteredProperties.length === 0 ? (
         <div className="py-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mx-auto">
-            <Building2 className="w-7 h-7" />
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mx-auto">
+            <Building2 className="w-7 h-7 text-[#F59E0B]" />
           </div>
-          <h3 className="text-base font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h3 className="text-base font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Aucune annonce dans cet état
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">

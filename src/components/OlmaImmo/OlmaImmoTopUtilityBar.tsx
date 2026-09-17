@@ -13,7 +13,7 @@ export const OlmaImmoTopUtilityBar: React.FC<OlmaImmoTopUtilityBarProps> = React
     return (
       <div
         id="olma-immo-top-utility-bar"
-        className="bg-stone-950 text-stone-300 text-xs font-medium px-3 sm:px-6 lg:px-8 py-1.5 border-b border-stone-800/80 sticky top-0 z-50 shadow-xs"
+        className="bg-stone-950 text-stone-300 text-xs font-medium px-3 sm:px-6 lg:px-8 py-1.5 border-b border-stone-800/80 shadow-xs"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide py-0.5">
           {/* Universes Navigation Hub - 1-Click Direct Cross-Vertical Navigation */}

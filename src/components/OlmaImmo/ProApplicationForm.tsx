@@ -65,11 +65,11 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           onClick={() => setAccountType('agency')}
           className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
             accountType === 'agency'
-              ? 'bg-[#f8f5ee] border-[#1e3835] text-[#1e3835]'
-              : 'bg-white border-[#e8e2d4] text-slate-600 hover:bg-[#faf7f2]'
+              ? 'bg-blue-50/70 border-[#1E3A8A] text-[#1E3A8A]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <Building2 className="w-5 h-5 mb-1.5 text-[#1e3835]" />
+          <Building2 className="w-5 h-5 mb-1.5 text-[#1E3A8A]" />
           <p className="text-xs font-bold">Agence Immobilière</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Pour les agences avec agrément et registre</p>
         </button>
@@ -79,11 +79,11 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           onClick={() => setAccountType('pro')}
           className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
             accountType === 'pro'
-              ? 'bg-[#f8f5ee] border-[#1e3835] text-[#1e3835]'
-              : 'bg-white border-[#e8e2d4] text-slate-600 hover:bg-[#faf7f2]'
+              ? 'bg-blue-50/70 border-[#1E3A8A] text-[#1E3A8A]'
+              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <Briefcase className="w-5 h-5 mb-1.5 text-[#7a824e]" />
+          <Briefcase className="w-5 h-5 mb-1.5 text-[#1E3A8A]" />
           <p className="text-xs font-bold">Agent / Courtier Pro</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Pour les professionnels indépendants</p>
         </button>
@@ -101,7 +101,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             placeholder="Ex: Agence El Bahdja Immo"
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
 
@@ -115,7 +115,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
             value={tradeRegisterNumber}
             onChange={(e) => setTradeRegisterNumber(e.target.value)}
             placeholder="Ex: 16/00-1234567B19"
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
       </div>
@@ -131,7 +131,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
             value={agencyLicenseNumber}
             onChange={(e) => setAgencyLicenseNumber(e.target.value)}
             placeholder="Ex: AGR-2023-987"
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
 
@@ -144,7 +144,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
             value={taxIdentificationNumber}
             onChange={(e) => setTaxIdentificationNumber(e.target.value)}
             placeholder="Ex: 001916012345678"
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
       </div>
@@ -156,7 +156,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           <select
             value={wilaya}
             onChange={(e) => setWilaya(e.target.value)}
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           >
             <option value="Alger">16 - Alger</option>
             <option value="Oran">31 - Oran</option>
@@ -179,7 +179,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
             value={contactPhone}
             onChange={(e) => setContactPhone(e.target.value)}
             placeholder="Ex: 0550 12 34 56"
-            className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
       </div>
@@ -192,7 +192,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="Ex: 12 Rue Didouche Mourad, Alger Centre"
-          className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835]"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
         />
       </div>
 
@@ -203,19 +203,19 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Spécialités, zones d'intervention, types de biens gérés..."
-          className="w-full bg-[#faf8f5] border border-[#e8e2d4] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1e3835] h-20 resize-none"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A] h-20 resize-none"
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full py-3.5 px-5 bg-[#1e3835] hover:bg-[#152725] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+        className="w-full py-3.5 px-5 bg-[#1E3A8A] hover:bg-blue-900 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
       >
         {isSubmitting ? (
-          <Loader2 className="w-4 h-4 animate-spin text-[#ebdcb8]" />
+          <Loader2 className="w-4 h-4 animate-spin text-[#F59E0B]" />
         ) : (
-          <Send className="w-4 h-4 text-[#ebdcb8]" />
+          <Send className="w-4 h-4 text-[#F59E0B]" />
         )}
         <span>Envoyer la demande de vérification</span>
       </button>

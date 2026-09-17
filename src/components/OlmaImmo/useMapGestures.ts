@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { project, unproject, calculateZoomAnchorCenter, GpsCoord } from './webMercator';
+import {
+  clampZoom,
+  formatBoundingBox,
+  computePinchZoomAndCenter,
+} from './mapGestureHelpers';
 
 interface UseMapGesturesOptions {
   initialCenterLat: number;
@@ -27,13 +32,12 @@ export function useMapGestures({
   const dragStartCenterRef = useRef<GpsCoord>({ lat: initialCenterLat, lng: initialCenterLng });
   const dragStartPosRef = useRef({ x: 0, y: 0 });
 
-  // Pinch-to-zoom state
+  // Pinch-to-zoom state & inertia animation
   const pinchStartDistRef = useRef(0);
   const pinchStartZoomRef = useRef(initialZoom);
   const pinchStartCenterRef = useRef<GpsCoord>({ lat: initialCenterLat, lng: initialCenterLng });
-  const pinchStartMidpointRef = useRef({ x: 0, y: 0 });
-
-  // Inertia animation
+  const isPinchingRef = useRef(false);
+  const lastWheelTimeRef = useRef(0);
   const velocityRef = useRef({ vx: 0, vy: 0, lastTime: 0 });
   const animFrameRef = useRef<number | null>(null);
 
@@ -64,10 +68,7 @@ export function useMapGestures({
     if (!onBoundsChange) return;
     const { width, height } = dimensions;
     if (width <= 0 || height <= 0) return;
-    const centerProj = project(currentCenter.lat, currentCenter.lng, zoom);
-    const nw = unproject(centerProj.x - width / 2, centerProj.y - height / 2, zoom);
-    const se = unproject(centerProj.x + width / 2, centerProj.y + height / 2, zoom);
-    onBoundsChange(`${nw.lng.toFixed(4)},${se.lat.toFixed(4)},${se.lng.toFixed(4)},${nw.lat.toFixed(4)}`);
+    onBoundsChange(formatBoundingBox(currentCenter, zoom, width, height));
   }, [currentCenter, zoom, dimensions, onBoundsChange]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -88,17 +89,13 @@ export function useMapGestures({
       dragStartCenterRef.current = { ...currentCenter };
       velocityRef.current = { vx: 0, vy: 0, lastTime: performance.now() };
     } else if (pointersRef.current.size === 2) {
-      // 2 fingers: prepare pinch-to-zoom
       isDraggingRef.current = false;
+      isPinchingRef.current = true;
       const pts = Array.from(pointersRef.current.values());
       const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
       pinchStartDistRef.current = dist > 0 ? dist : 1;
       pinchStartZoomRef.current = zoom;
       pinchStartCenterRef.current = { ...currentCenter };
-      pinchStartMidpointRef.current = {
-        x: (pts[0].x + pts[1].x) / 2,
-        y: (pts[0].y + pts[1].y) / 2,
-      };
     }
   }, [currentCenter, zoom, stopInertia]);
 
@@ -117,7 +114,6 @@ export function useMapGestures({
         setHasMovedZone(true);
       }
 
-      // Track velocity for inertia
       const dt = Math.max(now - velocityRef.current.lastTime, 8);
       velocityRef.current = {
         vx: (dx - (e.clientX - dragStartPosRef.current.x)) / dt || (dx * 0.1),
@@ -129,33 +125,23 @@ export function useMapGestures({
       const newCenter = unproject(startProj.x - dx, startProj.y - dy, zoom);
       setCurrentCenter(newCenter);
     } else if (pointersRef.current.size >= 2) {
-      // Multi-touch pinch-to-zoom
       hasMovedRef.current = true;
       setHasMovedZone(true);
       const pts = Array.from(pointersRef.current.values());
-      const currentDist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-      const scale = currentDist / pinchStartDistRef.current;
-      const targetZoom = Math.min(Math.max(pinchStartZoomRef.current + Math.log2(scale), 4), 18);
-
       const el = containerRef.current;
       const rect = el ? el.getBoundingClientRect() : { left: 0, top: 0 };
-      const currentMid = {
-        x: (pts[0].x + pts[1].x) / 2 - rect.left,
-        y: (pts[0].y + pts[1].y) / 2 - rect.top,
-      };
 
-      const newCenter = calculateZoomAnchorCenter(
-        pinchStartCenterRef.current.lat,
-        pinchStartCenterRef.current.lng,
+      const { targetZoom, newCenter } = computePinchZoomAndCenter(
+        pts,
+        pinchStartDistRef.current,
         pinchStartZoomRef.current,
-        targetZoom,
-        currentMid.x,
-        currentMid.y,
+        pinchStartCenterRef.current,
+        rect,
         dimensions.width,
         dimensions.height
       );
 
-      setZoom(Math.round(targetZoom * 100) / 100);
+      setZoom(targetZoom);
       setCurrentCenter(newCenter);
     }
   }, [zoom, dimensions]);
@@ -170,8 +156,12 @@ export function useMapGestures({
 
     if (pointersRef.current.size === 0) {
       isDraggingRef.current = false;
+      if (isPinchingRef.current) {
+        isPinchingRef.current = false;
+        // Snap back to crisp integer zoom when pinch ends
+        setZoom((z) => clampZoom(Math.round(z)));
+      }
     } else if (pointersRef.current.size === 1) {
-      // Reset single-finger drag baseline after releasing pinch
       const remainingPt = Array.from(pointersRef.current.values())[0];
       isDraggingRef.current = true;
       dragStartPosRef.current = { x: remainingPt.x, y: remainingPt.y };
@@ -179,70 +169,64 @@ export function useMapGestures({
     }
   }, [currentCenter]);
 
+  // Standard ordinary map wheel zoom: 1 integer level per notch, throttled to avoid runaway jumps
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     stopInertia();
 
+    const now = performance.now();
+    if (now - lastWheelTimeRef.current < 160) {
+      return;
+    }
+    lastWheelTimeRef.current = now;
+
     const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const cursorX = e.clientX - rect.left;
-    const cursorY = e.clientY - rect.top;
 
-    const delta = e.deltaY < 0 ? 0.35 : -0.35;
-    const targetZoom = Math.min(Math.max(zoom + delta, 4), 18);
-    const roundedZoom = Math.round(targetZoom * 100) / 100;
+    // Ordinary discrete step: +1 level on wheel-up, -1 level on wheel-down
+    const currentBase = Math.round(zoom);
+    const targetZoom = clampZoom(e.deltaY < 0 ? currentBase + 1 : currentBase - 1);
+    if (targetZoom === zoom) return;
 
     const newCenter = calculateZoomAnchorCenter(
-      currentCenter.lat,
-      currentCenter.lng,
-      zoom,
-      roundedZoom,
-      cursorX,
-      cursorY,
-      dimensions.width,
-      dimensions.height
+      currentCenter.lat, currentCenter.lng, zoom, targetZoom,
+      e.clientX - rect.left, e.clientY - rect.top, dimensions.width, dimensions.height
     );
-
-    setZoom(roundedZoom);
-    setCurrentCenter(newCenter);
-    setHasMovedZone(true);
-  }, [zoom, currentCenter, dimensions, stopInertia]);
-
-  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    stopInertia();
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cursorX = e.clientX - rect.left;
-    const cursorY = e.clientY - rect.top;
-
-    const targetZoom = Math.min(zoom + 1, 18);
-    const newCenter = calculateZoomAnchorCenter(
-      currentCenter.lat,
-      currentCenter.lng,
-      zoom,
-      targetZoom,
-      cursorX,
-      cursorY,
-      dimensions.width,
-      dimensions.height
-    );
-
     setZoom(targetZoom);
     setCurrentCenter(newCenter);
     setHasMovedZone(true);
   }, [zoom, currentCenter, dimensions, stopInertia]);
 
+  // Standard double-click zoom (+1 level anchored on click point)
+  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    stopInertia();
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const currentBase = Math.round(zoom);
+    const targetZoom = clampZoom(currentBase + 1);
+    if (targetZoom === zoom) return;
+
+    const newCenter = calculateZoomAnchorCenter(
+      currentCenter.lat, currentCenter.lng, zoom, targetZoom,
+      e.clientX - rect.left, e.clientY - rect.top, dimensions.width, dimensions.height
+    );
+    setZoom(targetZoom);
+    setCurrentCenter(newCenter);
+    setHasMovedZone(true);
+  }, [zoom, currentCenter, dimensions, stopInertia]);
+
+  // Ordinary zoom buttons: exactly +1 or -1 discrete integer step
   const zoomIn = useCallback(() => {
     stopInertia();
-    setZoom((z) => Math.min(Math.round((z + 0.8) * 10) / 10, 18));
+    setZoom((z) => clampZoom(Math.round(z) + 1));
     setHasMovedZone(true);
   }, [stopInertia]);
 
   const zoomOut = useCallback(() => {
     stopInertia();
-    setZoom((z) => Math.max(Math.round((z - 0.8) * 10) / 10, 4));
+    setZoom((z) => clampZoom(Math.round(z) - 1));
     setHasMovedZone(true);
   }, [stopInertia]);
 

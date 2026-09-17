@@ -6,6 +6,7 @@ import { apiPost } from "../../lib/api";
 import { ALGERIA_REGIONS } from "../../data/algeriaRegions";
 import { ALGERIA_WILAYAS, WilayaOption } from "../../constants/wilayas";
 import { UserProfile, UserAddress, AuthUser as FirebaseUser } from "../../domains/user/user.types";
+import { generateClientUUID } from "../../utils/secureCrypto";
 
 interface AddressManagerProps {
   currentUser: FirebaseUser | null;
@@ -102,7 +103,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ currentUser, use
     setSaving(true);
     try {
       const newAddress: UserAddress = {
-        id: Math.random().toString(36).substring(2, 9),
+        id: `addr_${generateClientUUID().substring(0, 10)}`,
         wilaya: formData.wilaya,
         daira: formData.daira.trim(),
         commune: formData.commune.trim(),

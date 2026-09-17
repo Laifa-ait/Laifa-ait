@@ -28,23 +28,23 @@ export const PhotoDropzone: React.FC<PhotoDropzoneProps> = ({
       onDrop={onDrop}
       className={`relative rounded-3xl p-8 sm:p-10 border-2 border-dashed transition-all duration-200 text-center flex flex-col items-center justify-center gap-4 ${
         isDragging
-          ? 'border-emerald-600 bg-emerald-50/60 scale-[1.01]'
-          : 'border-stone-300 hover:border-[#1a3831] bg-[#faf8f5] hover:bg-[#f5efe6]/60'
+          ? 'border-blue-600 bg-blue-50/60 scale-[1.01]'
+          : 'border-slate-300 hover:border-[#1E3A8A] bg-slate-50 hover:bg-slate-100'
       }`}
     >
-      <div className="w-14 h-14 rounded-2xl bg-white shadow-xs border border-stone-200 flex items-center justify-center text-[#1a3831]">
+      <div className="w-14 h-14 rounded-2xl bg-white shadow-xs border border-slate-200 flex items-center justify-center text-[#1E3A8A]">
         {isProcessing ? (
-          <Loader2 className="w-7 h-7 animate-spin text-emerald-600" />
+          <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
         ) : (
-          <Upload className="w-7 h-7" />
+          <Upload className="w-7 h-7 text-[#F59E0B]" />
         )}
       </div>
 
       <div className="space-y-1 max-w-md">
-        <h4 className="text-sm font-bold text-stone-900">
+        <h4 className="text-sm font-bold text-slate-900">
           {isProcessing ? 'Optimisation des photos...' : 'Glissez-déposez vos photos ici'}
         </h4>
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-slate-500">
           Sélectionnez plusieurs photos à la fois depuis votre téléphone ou ordinateur.
         </p>
       </div>
@@ -54,9 +54,9 @@ export const PhotoDropzone: React.FC<PhotoDropzoneProps> = ({
           type="button"
           disabled={isProcessing}
           onClick={() => fileInputRef.current?.click()}
-          className="px-5 py-2.5 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] text-xs font-bold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
+          className="px-5 py-2.5 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
         >
-          <Upload className="w-4 h-4" />
+          <Upload className="w-4 h-4 text-[#F59E0B]" />
           <span>Sélectionner des photos</span>
         </button>
 

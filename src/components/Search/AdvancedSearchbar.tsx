@@ -10,6 +10,7 @@ import { formatPrice } from "../../utils/format";
 import { useTrendingSearches } from "../../hooks/useTrendingSearches";
 import { getOptimizedImageUrl } from "../../utils/imageUtils";
 import { useDebounce } from "../../hooks/useDebounce";
+import { demoProducts } from "../../data/demoProducts";
 
 const ROTATING_HINTS = [
   "Robe de soirée luxe & Caftan",
@@ -92,16 +93,18 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
       setRecentSearches([]);
     }
 
-    // Pre-fetch a few popular/fallback products for zero results or empty state recommendations
+    // Pre-fetch popular products, with immediate safe fallback to demo products
     const fetchFallbacks = async () => {
       try {
         const data = await apiGet<{ products?: Product[] }>("/api/v1/products?limit=4");
-        if (data && Array.isArray(data.products)) {
+        if (data && Array.isArray(data.products) && data.products.length > 0) {
           setFallbackProducts(data.products);
+          return;
         }
-      } catch (e) {
-        console.warn("Error loading fallback products for search-bar:", e);
+      } catch {
+        // Safe fallback below
       }
+      setFallbackProducts(demoProducts.slice(0, 4));
     };
     fetchFallbacks();
   }, []);

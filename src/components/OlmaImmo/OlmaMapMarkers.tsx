@@ -60,11 +60,11 @@ export const OlmaMapMarkers: React.FC<OlmaMapMarkersProps> = ({
           >
             {isHighlight ? (
               <div className="relative flex flex-col items-center">
-                <span className="absolute -inset-2 rounded-full bg-emerald-500/30 animate-ping pointer-events-none" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#0D281E] bg-[#EBDCB8] px-2 py-0.5 rounded-full shadow-md mb-0.5 border border-[#c4b38d] z-10">
+                <span className="absolute -inset-2 rounded-full bg-blue-500/30 animate-ping pointer-events-none" />
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-900 bg-[#F59E0B] px-2 py-0.5 rounded-full shadow-md mb-0.5 border border-amber-400 z-10">
                   ★ Ce bien
                 </span>
-                <div className="px-3.5 py-1.5 rounded-full text-xs font-black bg-[#0D281E] text-[#EBDCB8] border-2 border-white shadow-2xl flex items-center gap-1">
+                <div className="px-3.5 py-1.5 rounded-full text-xs font-black bg-[#1E3A8A] text-white border-2 border-white shadow-2xl flex items-center gap-1">
                   <span>{formatPriceAlgeria(p.price, p.pricePeriod)}</span>
                 </div>
               </div>
@@ -72,11 +72,11 @@ export const OlmaMapMarkers: React.FC<OlmaMapMarkersProps> = ({
               <div
                 className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg transition-all border flex items-center gap-1 ${
                   isSelected
-                    ? 'bg-[#1e3835] text-white border-white ring-4 ring-[#1e3835]/30 shadow-2xl'
-                    : 'bg-white/95 text-stone-900 border-stone-300 hover:bg-[#1e3835] hover:text-white shadow-md'
+                    ? 'bg-[#1E3A8A] text-white border-white ring-4 ring-blue-900/30 shadow-2xl'
+                    : 'bg-white/95 text-slate-900 border-slate-300 hover:bg-[#1E3A8A] hover:text-white shadow-md'
                 }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-emerald-400' : 'bg-emerald-600'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#F59E0B]' : 'bg-blue-600'}`} />
                 <span>{formatPriceShort(p.price, p.pricePeriod)}</span>
               </div>
             )}

@@ -49,14 +49,14 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
       >
         <div className="flex items-center gap-3.5">
           <div
-            className="w-12 h-12 bg-[#FAF8F5] rounded-full flex items-center justify-center border border-[#E8E2D4] shrink-0"
+            className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 shrink-0"
             aria-hidden="true"
           >
-            <User className="w-5 h-5 text-stone-400" />
+            <User className="w-5 h-5 text-slate-400" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-bold text-[#1A3831] text-sm truncate">Annonceur</h3>
-            <p className="text-xs text-stone-500 font-medium">Informations publiques non renseignées</p>
+            <h3 className="font-bold text-[#1E3A8A] text-sm truncate">Annonceur</h3>
+            <p className="text-xs text-slate-500 font-medium">Informations publiques non renseignées</p>
           </div>
         </div>
       </OlmaSurface>
@@ -101,14 +101,14 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
               src={owner.photoURL}
               alt={`Photo de profil de ${displayName}`}
               onError={() => setImageError(true)}
-              className="w-12 h-12 rounded-full object-cover border-2 border-[#E8E2D4]"
+              className="w-12 h-12 rounded-full object-cover border-2 border-slate-200"
             />
           ) : (
             <div
-              className="w-12 h-12 bg-[#FAF8F5] rounded-full flex items-center justify-center border-2 border-[#EBDCB8]"
+              className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center border-2 border-blue-200"
               aria-hidden="true"
             >
-              <User className="w-5 h-5 text-[#1A3831]" />
+              <User className="w-5 h-5 text-[#1E3A8A]" />
             </div>
           )}
 
@@ -118,7 +118,7 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
               title="Identité vérifiée par Olmart"
               aria-hidden="true"
             >
-              <div className="w-4 h-4 bg-emerald-700 rounded-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-blue-700 rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-2.5 h-2.5 text-white" />
               </div>
             </div>
@@ -127,7 +127,7 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-[#1A3831] text-sm truncate">{displayName}</h3>
+            <h3 className="font-bold text-[#1E3A8A] text-sm truncate">{displayName}</h3>
             {isProfessional ? (
               <OlmaPill variant="brand" size="sm">
                 Professionnel
@@ -141,21 +141,21 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
 
           <div className="flex items-center gap-1.5 mt-1 flex-wrap text-xs">
             {isVerified ? (
-              <span className="text-emerald-800 font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-700" aria-hidden="true" />
+              <span className="text-blue-900 font-semibold flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-blue-700" aria-hidden="true" />
                 <span>Identité vérifiée</span>
               </span>
             ) : (
-              <span className="text-stone-500 font-medium flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5 shrink-0 opacity-60 text-stone-500" aria-hidden="true" />
+              <span className="text-slate-500 font-medium flex items-center gap-1">
+                <Shield className="w-3.5 h-3.5 shrink-0 opacity-60 text-slate-500" aria-hidden="true" />
                 <span>Annonceur</span>
               </span>
             )}
 
             {hasValidYear && (
               <>
-                <span className="text-stone-300 mx-0.5" aria-hidden="true">•</span>
-                <span className="text-stone-500 font-medium">
+                <span className="text-slate-300 mx-0.5" aria-hidden="true">•</span>
+                <span className="text-slate-500 font-medium">
                   Membre depuis {memberSinceYear}
                 </span>
               </>
@@ -164,7 +164,7 @@ export const OwnerTrustCard: React.FC<OwnerTrustCardProps> = ({ owner, isLoading
         </div>
       </div>
 
-      <div className="pt-2 border-t border-[#E8E2D4]/60 text-[11px] text-stone-500 leading-relaxed font-medium">
+      <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 leading-relaxed font-medium">
         {isProfessional ? (
           <span>Annonce professionnelle vérifiable sur Olmart. Les visites et démarches s'effectuent directement avec l'agence.</span>
         ) : (

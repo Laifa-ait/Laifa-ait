@@ -39,11 +39,11 @@ export const MapCategoryFilterBar: React.FC<MapCategoryFilterBarProps> = ({
               }}
               className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
                 isSelected
-                  ? 'bg-[#1e3835] text-white border-[#1e3835] shadow-xs'
-                  : 'bg-stone-50/80 hover:bg-[#f2eee5] text-stone-700 border-[#e8e2d4]'
+                  ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-xs'
+                  : 'bg-slate-50/80 hover:bg-slate-100 text-slate-700 border-slate-200'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-400' : 'text-stone-500'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#F59E0B]' : 'text-slate-500'}`} />
               <span className="whitespace-nowrap">{btn.label}</span>
             </button>
           );

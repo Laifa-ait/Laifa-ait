@@ -225,7 +225,7 @@ export function fitBoundsToCoordinates(
   const zoomY = Math.log2(availH / deltaY);
 
   const calculatedZoom = Math.min(zoomX, zoomY);
-  const clampedZoom = Math.max(5, Math.min(15, Math.floor(calculatedZoom * 10) / 10));
+  const clampedZoom = Math.max(5, Math.min(15, Math.floor(calculatedZoom)));
 
   return {
     centerLat,

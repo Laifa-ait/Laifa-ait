@@ -3,6 +3,7 @@ import { storage } from "../../lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 import { compressAndResizeImage } from "./useBannerTypes";
+import { generateClientUUID } from "../../utils/secureCrypto";
 
 export function useBannerWilayaCampaigns(
   electroTitle: string,
@@ -158,7 +159,7 @@ interface WilayaCampaign {
     try {
       toast.loading("Optimisation de l'image Hero régionale...", { id: "upload-wilaya-hero" });
       const { blob } = await compressAndResizeImage(file, 1600, 1000);
-      const uuid = Math.random().toString(36).substring(2, 15);
+      const uuid = generateClientUUID().substring(0, 12);
       const storageRef = ref(storage, `banners/wilaya_hero_${uuid}_${file.name.replace(/\s+/g, "_")}`);
 
       const finalUrl = await new Promise<string>((resolve, reject) => {
@@ -201,7 +202,7 @@ interface WilayaCampaign {
     try {
       toast.loading("Optimisation Promo Gauche régionale...", { id: "upload-wilaya-promo-left" });
       const { blob } = await compressAndResizeImage(file, 800, 800);
-      const uuid = Math.random().toString(36).substring(2, 15);
+      const uuid = generateClientUUID().substring(0, 12);
       const storageRef = ref(storage, `banners/wilaya_left_${uuid}_${file.name.replace(/\s+/g, "_")}`);
 
       const finalUrl = await new Promise<string>((resolve, reject) => {
@@ -244,7 +245,7 @@ interface WilayaCampaign {
     try {
       toast.loading("Optimisation Promo Droite régionale...", { id: "upload-wilaya-promo-right" });
       const { blob } = await compressAndResizeImage(file, 800, 800);
-      const uuid = Math.random().toString(36).substring(2, 15);
+      const uuid = generateClientUUID().substring(0, 12);
       const storageRef = ref(storage, `banners/wilaya_right_${uuid}_${file.name.replace(/\s+/g, "_")}`);
 
       const finalUrl = await new Promise<string>((resolve, reject) => {

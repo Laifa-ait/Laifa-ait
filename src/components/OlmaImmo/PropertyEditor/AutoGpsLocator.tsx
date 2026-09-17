@@ -124,7 +124,7 @@ export const AutoGpsLocator: React.FC<AutoGpsLocatorProps> = ({ location, onChan
       {/* Map Preview & Fine-Tuning of detected GPS point */}
       {hasDetected && (
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-[#0D281E] block">
+          <label className="text-xs font-bold text-[#1E3A8A] block">
             Ajuster le repère sur la carte (Glisser la carte / Vue Satellite)
           </label>
           <ResidenceLocationPickerMap

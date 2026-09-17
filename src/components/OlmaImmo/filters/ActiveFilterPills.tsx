@@ -57,10 +57,18 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
     });
   }
 
+  if (filters.daira) {
+    activeItems.push({
+      key: 'daira',
+      label: `Daïra: ${filters.daira}`,
+      variant: 'highlight',
+    });
+  }
+
   if (filters.commune) {
     activeItems.push({
       key: 'commune',
-      label: `Commune: ${filters.commune}`,
+      label: `Baladia / Commune: ${filters.commune}`,
       variant: 'highlight',
     });
   }
@@ -137,7 +145,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
       {activeItems.map((item) => (
         <span
           key={item.key}
-          className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-bold bg-[#FAF8F5] text-[#0D281E] border border-[#E6E0D4] shadow-2xs transition-all hover:border-stone-400"
+          className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-[#1E3A8A] border border-slate-200 shadow-2xs transition-all hover:border-slate-400"
         >
           <span>{item.label}</span>
           <button

@@ -22,7 +22,6 @@ export interface UpdateOrderStatusInput {
   sellerId: string;
   isUserAdmin: boolean;
   authUid: string;
-  deliveryPin?: string | number;
   deliveryPhoto?: string;
   latitude?: number;
   longitude?: number;
@@ -50,7 +49,7 @@ export interface ConfirmDeliveryInput {
 
 export class OrderStatusService {
   static async updateOrderStatus(input: UpdateOrderStatusInput): Promise<void> {
-    const { orderIds, status, sellerId, isUserAdmin, authUid, deliveryPin, deliveryPhoto, latitude, longitude } = input;
+    const { orderIds, status, sellerId, isUserAdmin, authUid, deliveryPhoto, latitude, longitude } = input;
 
     await db.runTransaction(async (t: firestore.Transaction) => {
       let globalCommissionRate = 0;
@@ -240,18 +239,6 @@ export class OrderStatusService {
         }
 
         if (tStatus === "delivered" && cStatus !== "delivered") {
-          const orderPin = data.deliveryPin as string | undefined;
-          if (!orderPin) {
-            throw new BusinessError(400, "La commande ne possède pas de code PIN de livraison valide.");
-          }
-
-          const hasValidPin = deliveryPin && String(deliveryPin).trim() === String(orderPin).trim();
-          const hasValidPhoto = deliveryPhoto && typeof deliveryPhoto === 'string' && latitude !== undefined && longitude !== undefined;
-
-          if (!isUserAdmin && !hasValidPin && !hasValidPhoto) {
-            throw new BusinessError(400, "La confirmation de livraison requiert soit le code PIN de l'acheteur (deliveryPin), soit une photo de livraison géolocalisée (deliveryPhoto, latitude, longitude).");
-          }
-
           const subtotal = Number(data.subtotal || 0);
           const commissionToDeduct = (subtotal * sellerCommissionRate) / 100;
           const amountToCredit = Number(data.total || 0) - commissionToDeduct;
@@ -260,6 +247,13 @@ export class OrderStatusService {
           updatePayload.commissionAmount = commissionToDeduct;
           updatePayload.payoutAmount = amountToCredit;
           updatePayload.paymentStatus = "paid";
+
+          if (deliveryPhoto) {
+            updatePayload.deliveryPhoto = deliveryPhoto;
+          }
+          if (latitude !== undefined && longitude !== undefined) {
+            updatePayload.deliveryCoordinates = { latitude, longitude };
+          }
         }
 
         t.update(orderRef, updatePayload);

@@ -5,62 +5,60 @@
  * Il garantit une étanchéité totale avec le Marketplace Olmart.
  * 
  * Direction visuelle :
- * - Forest / Petrol (#1E3835, #1A3831, #0D281E)
- * - Warm Ivory (#F7F4ED, #FAF8F5)
- * - Warm Beige (#F2EEE5, #E8E2D4, #D8D2C4)
- * - Terracotta & Accent (#C97A40, #D97706)
- * - Warm Highlight (#EBDCB8)
+ * - 60% Dominante (Neutre) : #F8FAFC
+ * - 30% Secondaire (Identité) : #1E3A8A (Bleu Roi profond)
+ * - 10% Accent (Action) : #F59E0B (Ambre / Jaune Orangé vif)
  */
 
 export const olmaTokens = {
   colors: {
     brand: {
-      primary: 'var(--olma-brand-primary, #1A3831)',
-      primaryDark: 'var(--olma-brand-primary-dark, #0D281E)',
-      primaryLight: 'var(--olma-brand-primary-light, #2A4D45)',
-      accent: 'var(--olma-brand-accent, #C97A40)',
-      accentSoft: 'var(--olma-brand-accent-soft, #E8A87C)',
-      highlight: 'var(--olma-brand-highlight, #EBDCB8)',
-      highlightLight: 'var(--olma-brand-highlight-light, #F4ECD8)',
+      primary: 'var(--olma-brand-primary, #1E293B)',
+      primaryDark: 'var(--olma-brand-primary-dark, #0F172A)',
+      primaryLight: 'var(--olma-brand-primary-light, #334155)',
+      accent: 'var(--olma-brand-accent, #64748B)',
+      accentSoft: 'var(--olma-brand-accent-soft, #F1F5F9)',
+      highlight: 'var(--olma-brand-highlight, #475569)',
+      highlightLight: 'var(--olma-brand-highlight-light, #F8FAFC)',
     },
     background: {
-      base: 'var(--olma-bg-base, #FAF8F5)',
-      subtle: 'var(--olma-bg-subtle, #F7F4ED)',
-      muted: 'var(--olma-bg-muted, #F2EEE5)',
-      dark: 'var(--olma-bg-dark, #0D281E)',
+      base: 'var(--olma-bg-base, #FFFFFF)',
+      subtle: 'var(--olma-bg-subtle, #F8FAFC)',
+      muted: 'var(--olma-bg-muted, #F1F5F9)',
+      dark: 'var(--olma-bg-dark, #0F172A)',
     },
     surface: {
       default: 'var(--olma-surface-default, #FFFFFF)',
-      subtle: 'var(--olma-surface-subtle, #FAF8F5)',
+      subtle: 'var(--olma-surface-subtle, #F8FAFC)',
       raised: 'var(--olma-surface-raised, #FFFFFF)',
-      muted: 'var(--olma-surface-muted, #F7F4ED)',
-      dark: 'var(--olma-surface-dark, #1A3831)',
+      muted: 'var(--olma-surface-muted, #F1F5F9)',
+      dark: 'var(--olma-surface-dark, #1E293B)',
     },
     border: {
-      subtle: 'var(--olma-border-subtle, #F2EEE5)',
-      default: 'var(--olma-border-default, #E8E2D4)',
-      strong: 'var(--olma-border-strong, #D8D2C4)',
-      focus: 'var(--olma-border-focus, #1A3831)',
-      accent: 'var(--olma-border-accent, #EBDCB8)',
+      subtle: 'var(--olma-border-subtle, #F1F5F9)',
+      default: 'var(--olma-border-default, #E2E8F0)',
+      strong: 'var(--olma-border-strong, #CBD5E1)',
+      focus: 'var(--olma-border-focus, #475569)',
+      accent: 'var(--olma-border-accent, #64748B)',
     },
     text: {
-      primary: 'var(--olma-text-primary, #1C211E)',
-      secondary: 'var(--olma-text-secondary, #4A5550)',
-      muted: 'var(--olma-text-muted, #738079)',
-      subtle: 'var(--olma-text-subtle, #9CA8A1)',
-      inverse: 'var(--olma-text-inverse, #FAF8F5)',
-      highlight: 'var(--olma-text-highlight, #EBDCB8)',
-      accent: 'var(--olma-text-accent, #C97A40)',
+      primary: 'var(--olma-text-primary, #1E293B)',
+      secondary: 'var(--olma-text-secondary, #475569)',
+      muted: 'var(--olma-text-muted, #64748B)',
+      subtle: 'var(--olma-text-subtle, #94A3B8)',
+      inverse: 'var(--olma-text-inverse, #FFFFFF)',
+      highlight: 'var(--olma-text-highlight, #1E293B)',
+      accent: 'var(--olma-text-accent, #475569)',
     },
     semantic: {
-      success: 'var(--olma-semantic-success, #059669)',
-      successLight: 'var(--olma-semantic-success-light, #ECFDF5)',
-      warning: 'var(--olma-semantic-warning, #D97706)',
-      warningLight: 'var(--olma-semantic-warning-light, #FEF3C7)',
-      danger: 'var(--olma-semantic-danger, #E11D48)',
-      dangerLight: 'var(--olma-semantic-danger-light, #FFF1F2)',
-      info: 'var(--olma-semantic-info, #0284C7)',
-      infoLight: 'var(--olma-semantic-info-light, #F0F9FF)',
+      success: 'var(--olma-semantic-success, #10B981)',
+      successLight: 'var(--olma-semantic-success-light, #F0FDF4)',
+      warning: 'var(--olma-semantic-warning, #64748B)',
+      warningLight: 'var(--olma-semantic-warning-light, #F1F5F9)',
+      danger: 'var(--olma-semantic-danger, #EF4444)',
+      dangerLight: 'var(--olma-semantic-danger-light, #FEF2F2)',
+      info: 'var(--olma-semantic-info, #475569)',
+      infoLight: 'var(--olma-semantic-info-light, #F8FAFC)',
     },
   },
   typography: {

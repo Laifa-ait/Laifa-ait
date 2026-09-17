@@ -59,11 +59,11 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-8">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8">
       {/* Transaction Type */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Type de Transaction
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -83,11 +83,11 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
               onClick={() => setListingType(item.id)}
               className={`p-5 rounded-2xl border-2 text-left transition cursor-pointer flex flex-col justify-between space-y-2 ${
                 listingType === item.id
-                  ? 'border-[#1a3831] bg-[#faf8f5] shadow-xs'
-                  : 'border-[#e8e2d4] hover:border-slate-300 bg-white'
+                  ? 'border-[#1E3A8A] bg-blue-50/50 shadow-xs'
+                  : 'border-slate-200 hover:border-slate-300 bg-white'
               }`}
             >
-              <span className={`text-sm font-bold ${listingType === item.id ? 'text-[#1a3831]' : 'text-slate-800'}`}>
+              <span className={`text-sm font-bold ${listingType === item.id ? 'text-[#1E3A8A]' : 'text-slate-800'}`}>
                 {item.title}
               </span>
               <span className="text-xs text-slate-500 leading-relaxed">{item.desc}</span>
@@ -103,9 +103,9 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
       />
 
       {/* Property Category */}
-      <div className="space-y-4 pt-6 border-t border-[#f0eae0]">
+      <div className="space-y-4 pt-6 border-t border-slate-100">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Catégorie du Bien
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -125,16 +125,16 @@ export const EditorStepTransaction: React.FC<EditorStepTransactionProps> = ({
                 onClick={() => setPropertyType(cat.type)}
                 className={`p-4 rounded-2xl border-2 text-left transition cursor-pointer flex flex-col space-y-2 ${
                   isSelected
-                    ? 'border-[#1a3831] bg-[#f4ecd8]/60 shadow-xs'
-                    : 'border-[#e8e2d4] hover:border-slate-300 bg-[#faf8f5]'
+                    ? 'border-[#1E3A8A] bg-blue-50/60 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50'
                 }`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                  isSelected ? 'bg-[#1a3831] text-[#ebdcb8]' : 'bg-white text-slate-700 border border-[#e8e2d4]'
+                  isSelected ? 'bg-[#1E3A8A] text-white' : 'bg-white text-slate-700 border border-slate-200'
                 }`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className={`text-xs font-bold ${isSelected ? 'text-[#1a3831]' : 'text-slate-800'}`}>
+                <span className={`text-xs font-bold ${isSelected ? 'text-[#1E3A8A]' : 'text-slate-800'}`}>
                   {cat.title}
                 </span>
               </button>

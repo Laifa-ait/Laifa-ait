@@ -620,7 +620,7 @@ export const CheckoutAuditAdmin: React.FC = () => {
                 <AdminDataTable 
                   data={reports}
                   columns={historyColumns}
-                  keyExtractor={(item) => item.id || Math.random().toString()}
+                  keyExtractor={(item, index) => item.id || (item.timestamp ? String(item.timestamp) : `report-${index}`)}
                   isLoading={loadingReports}
                   emptyState={
                     <div className="py-12 text-center text-zinc-600 font-medium">

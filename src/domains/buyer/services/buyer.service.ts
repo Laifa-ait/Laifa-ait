@@ -41,6 +41,11 @@ export class BuyerService {
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
+  static async isStoreFollowed(userId: string, sellerId: string): Promise<boolean> {
+    const docSnap = await db.collection("users").doc(userId).collection("following").doc(sellerId).get();
+    return docSnap.exists;
+  }
+
   static async followStore(userId: string, sellerId: string, payload: Record<string, unknown>): Promise<void> {
     await db.collection("users").doc(userId).collection("following").doc(sellerId).set(payload);
   }

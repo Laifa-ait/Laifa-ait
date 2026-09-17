@@ -48,37 +48,37 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
     return (
       <div
         id={id}
-        className={`bg-white rounded-3xl p-6 border border-[#E8E2D4] shadow-xs grid grid-cols-2 sm:grid-cols-4 gap-4 text-center ${className}`}
+        className={`bg-white rounded-3xl p-6 border border-slate-200 shadow-xs grid grid-cols-2 sm:grid-cols-4 gap-4 text-center ${className}`}
       >
         {typeof rooms === 'number' && rooms > 0 && (
           <div className="space-y-1 p-2">
-            <BedDouble className="w-5 h-5 text-[#1A3831] mx-auto" aria-hidden="true" />
+            <BedDouble className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
             <span className="block text-xs text-stone-500 font-medium">Pièces</span>
-            <span className="font-bold text-[#1A3831] text-base sm:text-lg">F{rooms}</span>
+            <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">F{rooms}</span>
           </div>
         )}
 
         {typeof areaSquareMeters === 'number' && areaSquareMeters > 0 && (
-          <div className="space-y-1 p-2 sm:border-l border-[#F0EAE0]">
-            <Maximize2 className="w-5 h-5 text-[#1A3831] mx-auto" aria-hidden="true" />
+          <div className="space-y-1 p-2 sm:border-l border-slate-100">
+            <Maximize2 className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
             <span className="block text-xs text-stone-500 font-medium">Superficie</span>
-            <span className="font-bold text-[#1A3831] text-base sm:text-lg">{areaSquareMeters} m²</span>
+            <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">{areaSquareMeters} m²</span>
           </div>
         )}
 
         {typeof bathrooms === 'number' && bathrooms > 0 && (
-          <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-[#F0EAE0]">
-            <Bath className="w-5 h-5 text-[#1A3831] mx-auto" aria-hidden="true" />
+          <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-slate-100">
+            <Bath className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
             <span className="block text-xs text-stone-500 font-medium">Salles de bain</span>
-            <span className="font-bold text-[#1A3831] text-base sm:text-lg">{bathrooms}</span>
+            <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">{bathrooms}</span>
           </div>
         )}
 
         {formattedType && (
-          <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-[#F0EAE0]">
-            <Building2 className="w-5 h-5 text-[#1A3831] mx-auto" aria-hidden="true" />
+          <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-slate-100">
+            <Building2 className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
             <span className="block text-xs text-stone-500 font-medium">Catégorie</span>
-            <span className="font-bold text-[#1A3831] text-sm sm:text-base capitalize line-clamp-1">
+            <span className="font-bold text-[#1E3A8A] text-sm sm:text-base capitalize line-clamp-1">
               {formattedType}
             </span>
           </div>

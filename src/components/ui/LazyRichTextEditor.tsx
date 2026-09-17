@@ -1,5 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback } from 'react';
 import 'react-quill-new/dist/quill.snow.css';
+import { sanitizeHTML } from '../../utils/sanitization';
 
 const ReactQuillLazy = React.lazy(() => import('react-quill-new'));
 
@@ -11,7 +12,13 @@ interface LazyRichTextEditorProps {
   className?: string;
 }
 
-export const LazyRichTextEditor: React.FC<LazyRichTextEditorProps> = (props) => {
+export const LazyRichTextEditor: React.FC<LazyRichTextEditorProps> = ({ onChange, value, ...props }) => {
+  const handleChange = useCallback((content: string) => {
+    // Proactively sanitize output HTML to mitigate Quill XSS / HTML export vulnerabilities
+    const safeContent = sanitizeHTML(content);
+    onChange(safeContent);
+  }, [onChange]);
+
   return (
     <Suspense fallback={
       <div className="h-[200px] flex flex-col items-center justify-center bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium text-zinc-400 gap-2">
@@ -19,7 +26,7 @@ export const LazyRichTextEditor: React.FC<LazyRichTextEditorProps> = (props) => 
         Chargement de l'éditeur de texte...
       </div>
     }>
-      <ReactQuillLazy {...props} />
+      <ReactQuillLazy {...props} value={value} onChange={handleChange} />
     </Suspense>
   );
 };

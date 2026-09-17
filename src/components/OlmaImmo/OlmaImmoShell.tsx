@@ -54,12 +54,12 @@ export const OlmaImmoShell: React.FC<OlmaImmoShellProps> = React.memo(
 
     return (
       <div
-        className="olma-immo-scope min-h-screen bg-[var(--olma-bg-base)] text-[var(--olma-text-primary)] flex flex-col font-sans selection:bg-[#1A3831]/20 selection:text-[#0D281E]"
+        className="olma-immo-scope min-h-screen bg-[var(--olma-bg-base)] text-[var(--olma-text-primary)] flex flex-col font-sans selection:bg-[#1E3A8A]/20 selection:text-[#172554]"
         data-testid="olma-immo-shell"
       >
         <a
           href="#olma-immo-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#1a3831] focus:text-[#ebdcb8] focus:rounded-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#ebdcb8] text-xs font-bold uppercase tracking-wider"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#1E3A8A] focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#F59E0B] text-xs font-bold uppercase tracking-wider"
         >
           Passer au contenu immobilier
         </a>

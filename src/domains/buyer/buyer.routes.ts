@@ -76,6 +76,26 @@ router.get("/api/v1/buyer/followed-stores", authenticateToken, async (req: Authe
   }
 });
 
+// GET buyer follow status for a specific store
+router.get("/api/v1/buyer/follow-status/:sellerId", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+    const { sellerId } = req.params;
+    if (!sellerId) {
+      return res.status(400).json({ error: "sellerId parameter required" });
+    }
+    const isFollowing = await BuyerService.isStoreFollowed(uid, sellerId);
+    return res.json({ isFollowing });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Erreur serveur";
+    safeLogger.error("[Buyer Domain] Follow status fetch error", { err: message });
+    return res.status(500).json({ error: message });
+  }
+});
+
 // POST unfollow store
 router.post("/api/v1/buyer/unfollow", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {

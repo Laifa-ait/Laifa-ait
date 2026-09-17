@@ -46,9 +46,9 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
       <div className="flex items-center justify-between gap-4">
         <Link
           to="/immo"
-          className="inline-flex items-center gap-2 text-xs font-bold text-stone-700 hover:text-[#1A3831] bg-white border border-[#E8E2D4] px-4 py-2.5 rounded-xl shadow-2xs hover:shadow-xs transition-all"
+          className="inline-flex items-center gap-2 text-xs font-bold text-stone-700 hover:text-[#1E3A8A] bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-2xs hover:shadow-xs transition-all"
         >
-          <ArrowLeft className="w-4 h-4 text-[#1A3831]" />
+          <ArrowLeft className="w-4 h-4 text-[#1E3A8A]" />
           <span>Explorer les annonces</span>
         </Link>
 
@@ -56,7 +56,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
           <button
             type="button"
             onClick={onShare}
-            className="p-2.5 bg-white border border-[#E8E2D4] text-stone-700 hover:bg-[#FAF8F5] rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
+            className="p-2.5 bg-white border border-slate-200 text-stone-700 hover:bg-slate-50 rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
             title="Partager l'annonce"
             aria-label="Partager l'annonce"
           >
@@ -73,7 +73,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
       </div>
 
       {/* Main title & Price card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D4] shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2.5 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <PropertyBadge type="listingType" value={property.listingType} size="md" />
@@ -82,10 +82,16 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
               {propertyTypeLabel}
             </OlmaPill>
 
-            {/* Papiers Fonciers DZ Official Badges */}
-            {legalPapersList.map((paperType) => (
+            {/* Papiers Fonciers DZ Official Badges (groupés proprement) */}
+            {legalPapersList.slice(0, 2).map((paperType) => (
               <PropertyBadge key={paperType} type="legalPaper" value={paperType} size="md" />
             ))}
+
+            {legalPapersList.length > 2 && (
+              <span className="px-2.5 py-1 bg-blue-50 text-[#1E3A8A] border border-blue-200 rounded-full text-xs font-semibold">
+                +{legalPapersList.length - 2} autres titres
+              </span>
+            )}
 
             {property.isLegalVerified && (
               <PropertyBadge type="verified" size="md" />
@@ -97,7 +103,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1A3831] font-['Playfair_Display',serif] leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif] leading-tight">
             {property.title}
           </h1>
 
@@ -111,8 +117,8 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
           />
         </div>
 
-        <div className="bg-[#1A3831] text-white px-7 py-5 rounded-2xl shadow-md shrink-0 text-left lg:text-right border border-[#274B42]">
-          <span className="block text-[10px] text-[#EBDCB8] uppercase font-bold tracking-widest mb-1">
+        <div className="bg-[#1E3A8A] text-white px-7 py-5 rounded-2xl shadow-md shrink-0 text-left lg:text-right border border-blue-900">
+          <span className="block text-[10px] text-amber-300 uppercase font-bold tracking-widest mb-1">
             Prix demandé
           </span>
           <PropertyPrice

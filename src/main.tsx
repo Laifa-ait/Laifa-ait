@@ -14,6 +14,7 @@ import { CartProvider } from "./context/CartContext";
 import { ShopProvider } from "./context/ShopContext";
 import { UIProvider } from "./context/UIContext";
 import { MegaMenuProvider } from "./context/MegaMenuContext";
+import { DataConsentProvider } from "./context/DataConsentContext";
 import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient({
@@ -147,7 +148,9 @@ createRoot(document.getElementById("root")!).render(
                   <CartProvider>
                     <UIProvider>
                       <MegaMenuProvider>
-                        <App />
+                        <DataConsentProvider>
+                          <App />
+                        </DataConsentProvider>
                         <Toaster
                           position="top-center"
                           toastOptions={{

@@ -31,17 +31,17 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e2d4] shadow-xs space-y-6">
-      <div className="flex items-center justify-between border-b border-[#f0eae0] pb-4">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Demandes de visites reçues
           </h3>
           <p className="text-xs text-slate-500">
             Validez les créneaux proposés par les acquéreurs et locataires intéressés.
           </p>
         </div>
-        <span className="px-3 py-1 bg-[#f4ecd8] text-[#1a3831] font-bold text-xs rounded-full">
+        <span className="px-3 py-1 bg-blue-50 text-[#1E3A8A] font-bold text-xs rounded-full">
           {visits.length} demandes
         </span>
       </div>
@@ -52,10 +52,10 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
         </div>
       ) : visits.length === 0 ? (
         <div className="py-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mx-auto">
-            <Calendar className="w-7 h-7" />
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mx-auto">
+            <Calendar className="w-7 h-7 text-[#F59E0B]" />
           </div>
-          <h4 className="text-base font-bold text-[#1a3831]">Aucune demande de visite pour le moment</h4>
+          <h4 className="text-base font-bold text-[#1E3A8A]">Aucune demande de visite pour le moment</h4>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
             Dès qu'un client planifie une visite sur l'une de vos annonces, elle apparaîtra ici.
           </p>
@@ -65,41 +65,41 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
           {visits.map((visit) => (
             <div
               key={visit.id}
-              className="p-5 rounded-2xl bg-[#faf8f5] border border-[#e8e2d4] flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+              className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   {getStatusBadge(visit.status)}
-                  <span className="text-xs font-bold text-[#1a3831]">{visit.propertyTitle || 'Bien immobilier'}</span>
+                  <span className="text-xs font-bold text-[#1E3A8A]">{visit.propertyTitle || 'Bien immobilier'}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-700">
                   <div className="flex items-center gap-1.5 font-medium">
-                    <Calendar className="w-3.5 h-3.5 text-[#1a3831]" />
+                    <Calendar className="w-3.5 h-3.5 text-[#1E3A8A]" />
                     <span>Date: {visit.preferredDate}</span>
                   </div>
                   <div className="flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-[#1a3831]" />
+                    <Clock className="w-3.5 h-3.5 text-[#1E3A8A]" />
                     <span>Créneau: {visit.timeSlot || 'Après-midi'}</span>
                   </div>
                   <div className="flex items-center gap-1.5 font-medium">
-                    <User className="w-3.5 h-3.5 text-[#1a3831]" />
+                    <User className="w-3.5 h-3.5 text-[#1E3A8A]" />
                     <span>Demandeur: {visit.visitorName}</span>
                   </div>
                 </div>
 
                 {visit.visitorNotes && (
-                  <p className="text-xs text-slate-500 italic bg-white p-2.5 rounded-xl border border-[#f0eae0]">
+                  <p className="text-xs text-slate-500 italic bg-white p-2.5 rounded-xl border border-slate-200">
                     "{visit.visitorNotes}"
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#e8e2d4]">
+              <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-200">
                 <button
                   type="button"
                   onClick={() => onOpenChat(visit)}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-[#e8e2d4] text-[#1a3831] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-[#1E3A8A] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>Messagerie</span>
@@ -108,7 +108,7 @@ export const OwnerVisitsList: React.FC<OwnerVisitsListProps> = ({
                 {visit.visitorPhone && (
                   <a
                     href={`tel:${visit.visitorPhone}`}
-                    className="p-2 bg-[#f4ecd8] border border-[#ebdcb8] text-[#1a3831] rounded-xl hover:bg-[#ebdcb8] transition flex items-center justify-center"
+                    className="p-2 bg-slate-100 border border-slate-200 text-[#1E3A8A] rounded-xl hover:bg-slate-200 transition flex items-center justify-center"
                     title="Appeler le visiteur"
                   >
                     <Phone className="w-3.5 h-3.5" />

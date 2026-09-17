@@ -46,29 +46,29 @@ const sizeClasses: Record<PropertyPriceSize, { amount: string; currency: string;
 
 const variantClasses: Record<PropertyPriceVariant, { amount: string; currency: string; period: string }> = {
   default: {
-    amount: 'text-[#1A3831]',
-    currency: 'text-[#1A3831]',
-    period: 'text-stone-500',
+    amount: 'text-[#1E3A8A]',
+    currency: 'text-[#1E3A8A]',
+    period: 'text-slate-500',
   },
   mineral: {
     amount: 'text-[#0D281E]',
-    currency: 'text-[#2A4D45]',
-    period: 'text-stone-500',
+    currency: 'text-[#1E3A8A]',
+    period: 'text-slate-500',
   },
   light: {
     amount: 'text-white',
-    currency: 'text-[#EBDCB8]',
-    period: 'text-stone-300',
+    currency: 'text-[#F59E0B]',
+    period: 'text-slate-200',
   },
   accent: {
-    amount: 'text-[#C97A40]',
-    currency: 'text-[#C97A40]',
-    period: 'text-stone-600',
+    amount: 'text-[#F59E0B]',
+    currency: 'text-[#F59E0B]',
+    period: 'text-slate-600',
   },
   muted: {
-    amount: 'text-stone-700',
-    currency: 'text-stone-500',
-    period: 'text-stone-400',
+    amount: 'text-slate-700',
+    currency: 'text-slate-500',
+    period: 'text-slate-400',
   },
 };
 

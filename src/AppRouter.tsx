@@ -440,6 +440,14 @@ export const AppRouter: React.FC = () => {
                 }
               />
               <Route
+                path="/boutique/:sellerId"
+                element={
+                  <PageWrapper>
+                    <StoreProfile />
+                  </PageWrapper>
+                }
+              />
+              <Route
                 path="/catalogue/:tagSlug"
                 element={
                   <PageWrapper>

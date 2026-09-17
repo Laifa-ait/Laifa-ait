@@ -42,37 +42,38 @@ export const OlmaImmoHome: React.FC = () => {
         onSearchSubmit={fetchProperties}
       />
 
-      <OlmaSection spacing="none" className="pt-2 pb-12 flex-1 w-full">
-        {/* Category Bar with golden hour pills & tactile motion */}
-        <OlmaCategoryBar
-          activeCategory={filters.propertyType || 'all'}
-          onCategorySelect={handleCategorySelect}
-        />
+      <OlmaSection spacing="none" container={false} className="pt-2 pb-12 flex-1 w-full">
+        <div className="max-w-[1920px] 2xl:max-w-[2100px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 w-full space-y-2">
+          {/* Category Bar with golden hour pills & tactile motion */}
+          <OlmaCategoryBar
+            activeCategory={filters.propertyType || 'all'}
+            onCategorySelect={handleCategorySelect}
+          />
 
-        {/* Active Filter Pills Dismissible Bar */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          {/* Active Filter Pills Dismissible Bar */}
           <ActiveFilterPills
             filters={filters}
             onRemoveFilter={removeFilter}
             onResetAll={resetAllFilters}
           />
-        </div>
 
-        {/* Properties View Container */}
-        <OlmaImmoPropertiesSection
-          properties={displayedProperties}
-          mapResults={mapResults}
-          selectedPropertyId={selectedPropertyId}
-          onSelectProperty={handleSelectProperty}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          isLoading={isLoading}
-          isSearchingMap={isSearchingMap}
-          cardRefs={cardRefs}
-          onBoundsChange={(bbox) => setMapBounds(bbox)}
-          onResetFilters={resetAllFilters}
-          filters={filters}
-        />
+          {/* Properties View Container */}
+          <OlmaImmoPropertiesSection
+            properties={displayedProperties}
+            mapResults={mapResults}
+            selectedPropertyId={selectedPropertyId}
+            onSelectProperty={handleSelectProperty}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            isLoading={isLoading}
+            isSearchingMap={isSearchingMap}
+            cardRefs={cardRefs}
+            onBoundsChange={(bbox) => setMapBounds(bbox)}
+            onResetFilters={resetAllFilters}
+            filters={filters}
+            onFilterChange={(newFilters) => setFilters(newFilters)}
+          />
+        </div>
       </OlmaSection>
     </OlmaImmoShell>
   );

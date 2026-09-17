@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, ShieldCheck, ArrowRight, MessageSquare, Building2 } from 'lucide-react';
+import { X, ShieldCheck, ArrowRight, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiPost } from '../../lib/api';
 import toast from 'react-hot-toast';
+import { BookingSuccessView } from './Bookings/BookingSuccessView';
 
 interface BookingMessagingContext {
   type: string;
@@ -127,95 +128,54 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
         </button>
 
         {createdBookingId ? (
-          <div className="text-center py-6 space-y-5">
-            <div className="w-16 h-16 bg-[#1e3835] text-[#ebdcb8] rounded-2xl flex items-center justify-center mx-auto shadow-lg border border-[#b8a679]">
-              <CheckCircle2 className="w-10 h-10" />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#7a824e]">
-                Demande transmise
-              </span>
-              <h3 className="text-xl font-bold text-[#1e3835] font-['Playfair_Display',serif]">
-                Réservation en attente de confirmation
-              </h3>
-              <p className="text-xs text-zinc-600 max-w-sm mx-auto leading-relaxed">
-                Votre demande de séjour pour <strong className="text-zinc-900">{propertyTitle}</strong> a été enregistrée avec succès sous la référence <span className="font-mono font-bold text-[#1e3835]">{createdBookingId}</span>.
-              </p>
-            </div>
-
-            <div className="bg-white border border-[#e8e2d4] rounded-2xl p-4 text-left space-y-2 text-xs text-zinc-700">
-              <div className="flex justify-between font-medium">
-                <span>Dates du séjour :</span>
-                <span className="font-bold text-[#1e3835]">{formatDateLabel(startDate)} → {formatDateLabel(endDate)}</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Voyageurs :</span>
-                <span className="font-bold text-[#1e3835]">{guests.adults} adulte{guests.adults > 1 ? 's' : ''} {guests.children > 0 ? `· ${guests.children} enfant${guests.children > 1 ? 's' : ''}` : ''}</span>
-              </div>
-              <div className="flex justify-between font-bold pt-2 border-t border-[#f0ebd8]">
-                <span>Total estimé :</span>
-                <span className="text-emerald-800 text-sm">{totalPriceDZD.toLocaleString('fr-DZ')} DA</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleGoToMyBookings}
-                className="w-full py-3 px-4 bg-[#1e3835] hover:bg-[#152725] text-white rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
-              >
-                <span>Mes séjours</span>
-                <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleContactOwner}
-                className="w-full py-3 px-4 bg-[#ebdcb8] hover:bg-[#e2d0a5] text-[#1e3835] rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Contacter l'hôte</span>
-              </button>
-            </div>
-          </div>
+          <BookingSuccessView
+            createdBookingId={createdBookingId}
+            propertyTitle={propertyTitle}
+            startDate={startDate}
+            endDate={endDate}
+            guests={guests}
+            totalPriceDZD={totalPriceDZD}
+            formatDateLabel={formatDateLabel}
+            onGoToMyBookings={handleGoToMyBookings}
+            onContactOwner={handleContactOwner}
+          />
         ) : (
           <form onSubmit={handleSubmitBooking} className="space-y-5">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#7a824e] flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" /> Récapitulatif de votre séjour
+              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Récapitulatif de votre séjour
               </span>
-              <h3 className="text-xl font-bold text-[#1e3835] font-['Playfair_Display',serif]">
+              <h3 className="text-xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
                 Confirmer la réservation
               </h3>
             </div>
 
             {/* Property Summary Header */}
-            <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3.5 flex items-center gap-3">
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center gap-3">
               {propertyImage ? (
-                <img loading="lazy" decoding="async" src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-2xl object-cover border border-[#e8e2d4] shrink-0" />
+                <img loading="lazy" decoding="async" src={propertyImage} alt={propertyTitle} className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shrink-0" />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-[#ebdcb8]/40 border border-[#b8a679]/30 flex items-center justify-center text-[#1e3835] shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1E3A8A] shrink-0">
                   <Building2 className="w-6 h-6" />
                 </div>
               )}
               <div className="min-w-0">
-                <h4 className="text-sm font-bold text-[#1e3835] truncate">{propertyTitle}</h4>
+                <h4 className="text-sm font-bold text-[#1E3A8A] truncate">{propertyTitle}</h4>
                 <p className="text-xs text-zinc-500 font-medium">{propertyLocation}</p>
               </div>
             </div>
 
             {/* Dates & Guests Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3">
+              <div className="bg-white border border-slate-200 rounded-2xl p-3">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block">Dates</span>
-                <span className="font-bold text-[#1e3835] block mt-0.5">{formatDateLabel(startDate)}</span>
+                <span className="font-bold text-[#1E3A8A] block mt-0.5">{formatDateLabel(startDate)}</span>
                 <span className="text-[11px] text-zinc-500 font-medium">au {formatDateLabel(endDate)} ({totalNights} nuit{totalNights > 1 ? 's' : ''})</span>
               </div>
 
-              <div className="bg-white border border-[#e8e2d4] rounded-2xl p-3">
+              <div className="bg-white border border-slate-200 rounded-2xl p-3">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block">Voyageurs</span>
-                <span className="font-bold text-[#1e3835] block mt-0.5">
+                <span className="font-bold text-[#1E3A8A] block mt-0.5">
                   {guests.adults} adulte{guests.adults > 1 ? 's' : ''}
                 </span>
                 <span className="text-[11px] text-zinc-500 font-medium">
@@ -225,7 +185,7 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
             </div>
 
             {/* Detailed Price Calculation Box */}
-            <div className="bg-[#f0ece1] border border-[#ded5be] rounded-2xl p-4 space-y-2 text-xs text-zinc-800">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-xs text-slate-800">
               <div className="flex justify-between">
                 <span>Prix du séjour ({totalNights} nuit{totalNights > 1 ? 's' : ''})</span>
                 <span className="font-semibold">{subtotal.toLocaleString('fr-DZ')} DA</span>
@@ -241,19 +201,19 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
                 <span className="font-semibold">{serviceFee.toLocaleString('fr-DZ')} DA</span>
               </div>
 
-              <div className="pt-2 border-t border-[#d5caaf] flex justify-between text-base font-extrabold text-[#1e3835]">
+              <div className="pt-2 border-t border-slate-200 flex justify-between text-base font-extrabold text-[#1E3A8A]">
                 <span>Total</span>
-                <span className="text-[#1e3835]">{totalPriceDZD.toLocaleString('fr-DZ')} DA</span>
+                <span className="text-[#1E3A8A]">{totalPriceDZD.toLocaleString('fr-DZ')} DA</span>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 px-4 bg-[#1e3835] hover:bg-[#152725] text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer disabled:opacity-50 min-h-[48px] flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-[#F59E0B] hover:bg-amber-600 text-slate-900 rounded-2xl font-bold text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer disabled:opacity-50 min-h-[48px] flex items-center justify-center gap-2"
             >
               <span>{isSubmitting ? 'Transmissions de la demande...' : 'Envoyer la demande de réservation'}</span>
-              <ArrowRight className="w-4 h-4 text-[#ebdcb8]" />
+              <ArrowRight className="w-4 h-4 text-slate-900" />
             </button>
           </form>
         )}

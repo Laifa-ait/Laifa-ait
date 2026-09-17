@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { safeLogger } from "../utils/logger";
 import { resilientFetch } from "../utils/resilientFetch";
+import { LocaleStorageService } from "./LocaleStorageService";
 
 export class AiService {
   private static parseJsonSafely<T = Record<string, unknown>>(rawText: string, fallback: T): T {
@@ -83,14 +84,16 @@ export class AiService {
       safeLogger.error("Path traversal detected in dualWrite", { lang });
       return;
     }
-    const dir1 = path.dirname(p1);
-    if (!fs.existsSync(dir1)) fs.mkdirSync(dir1, { recursive: true });
-    fs.writeFileSync(p1, JSON.stringify(content, null, 2), "utf8");
 
+    // Cache in memory for immediate access
+    LocaleStorageService.setCachedLocale(lang, content);
+
+    // Atomically write to public/locales
+    LocaleStorageService.safeWriteJsonAtomic(p1, content);
+
+    // Atomically write to dist/locales if production directory exists
     if (fs.existsSync(path.join(process.cwd(), "dist"))) {
-      const dir2 = path.dirname(p2);
-      if (!fs.existsSync(dir2)) fs.mkdirSync(dir2, { recursive: true });
-      fs.writeFileSync(p2, JSON.stringify(content, null, 2), "utf8");
+      LocaleStorageService.safeWriteJsonAtomic(p2, content);
     }
   }
 
@@ -99,11 +102,11 @@ export class AiService {
     const arPath = path.join(process.cwd(), "public/locales/ar.json");
     const enPath = path.join(process.cwd(), "public/locales/en.json");
 
-    if (!fs.existsSync(frPath)) throw new Error("Fichier source Français introuvable");
+    const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
+    if (Object.keys(frContent).length === 0) throw new Error("Fichier source Français introuvable ou corrompu");
 
-    const frContent = JSON.parse(fs.readFileSync(frPath, "utf8"));
-    const arContent = fs.existsSync(arPath) ? JSON.parse(fs.readFileSync(arPath, "utf8")) : {};
-    const enContent = fs.existsSync(enPath) ? JSON.parse(fs.readFileSync(enPath, "utf8")) : {};
+    const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
+    const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
 
     const keysToCorrect = new Set<string>();
     Object.keys(frContent).forEach((key) => {

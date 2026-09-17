@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { db } from "../../../config/firebase-admin";
 import { safeLogger } from "../../../utils/logger";
 import {
@@ -207,7 +208,7 @@ export class ArtisanProfileService {
       if (!profile) return { success: false, error: "Profil artisan introuvable" };
 
       const newService: ArtisanService = {
-        id: `srv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        id: `srv_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
         artisanId: profile.id,
         title: serviceData.title.trim(),
         categoryId: serviceData.categoryId || profile.tradeId,
@@ -306,7 +307,7 @@ export class ArtisanProfileService {
       if (!profile) return { success: false, error: "Profil artisan introuvable" };
 
       const newItem: ArtisanPortfolioItem = {
-        id: `port_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        id: `port_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
         title: itemData.title.trim(),
         description: itemData.description?.trim() || "",
         imageUrl: itemData.imageUrl.trim(),

@@ -1,4 +1,5 @@
 import { safeLogger } from './logger';
+import { generateClientUUID } from './secureCrypto';
 
 export interface AnalyticsEvent {
   id: string;
@@ -28,7 +29,7 @@ class AnalyticsEngine {
       const trimmed = savedEvents.slice(-499);
       
       const newEvent: AnalyticsEvent = {
-        id: `evt_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`,
+        id: `evt_${generateClientUUID().substring(0, 10)}_${Date.now()}`,
         name,
         timestamp: Date.now(),
         metadata,

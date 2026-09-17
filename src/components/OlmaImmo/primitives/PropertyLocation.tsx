@@ -1,14 +1,17 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import { findDairaForCommune } from '../../../data/algerianCommunesDatabase';
 
 export type PropertyLocationSize = 'xs' | 'sm' | 'md' | 'lg';
 export type PropertyLocationVariant = 'default' | 'muted' | 'light' | 'pill';
 
 export interface PropertyLocationProps {
+  daira?: string;
   commune?: string;
   wilaya?: string;
   address?: string;
   showAddress?: boolean;
+  showDaira?: boolean;
   size?: PropertyLocationSize;
   variant?: PropertyLocationVariant;
   className?: string;
@@ -23,10 +26,12 @@ const sizeConfig: Record<PropertyLocationSize, { text: string; icon: string; gap
 };
 
 export const PropertyLocation: React.FC<PropertyLocationProps> = ({
+  daira,
   commune,
   wilaya,
   address,
   showAddress = false,
+  showDaira = true,
   size = 'sm',
   variant = 'default',
   className = '',
@@ -34,14 +39,23 @@ export const PropertyLocation: React.FC<PropertyLocationProps> = ({
 }) => {
   const sz = sizeConfig[size] || sizeConfig.sm;
 
+  const resolvedDaira = React.useMemo(() => {
+    if (daira) return daira;
+    if (wilaya && commune) return findDairaForCommune(wilaya, commune);
+    return undefined;
+  }, [daira, wilaya, commune]);
+
   const locationText = React.useMemo(() => {
     if (commune && wilaya) {
+      if (showDaira && resolvedDaira && resolvedDaira.toLowerCase() !== commune.toLowerCase()) {
+        return `${commune} (Daïra de ${resolvedDaira}), Wilaya de ${wilaya}`;
+      }
       return `${commune}, Wilaya de ${wilaya}`;
     }
     if (commune) return commune;
     if (wilaya) return `Wilaya de ${wilaya}`;
     return 'Algérie';
-  }, [commune, wilaya]);
+  }, [commune, wilaya, showDaira, resolvedDaira]);
 
   let containerStyles = `inline-flex items-center ${sz.gap} ${sz.text} ${className}`;
   let iconStyles = `${sz.icon} shrink-0`;
@@ -52,17 +66,17 @@ export const PropertyLocation: React.FC<PropertyLocationProps> = ({
       iconStyles += ' text-stone-400';
       break;
     case 'light':
-      containerStyles += ' text-stone-200';
-      iconStyles += ' text-[#EBDCB8]';
+      containerStyles += ' text-slate-200';
+      iconStyles += ' text-[#F59E0B]';
       break;
     case 'pill':
-      containerStyles += ' px-2.5 py-1 rounded-full bg-[#FAF8F5] text-[#1A3831] border border-[#E8E2D4]';
-      iconStyles += ' text-[#C97A40]';
+      containerStyles += ' px-2.5 py-1 rounded-full bg-slate-50 text-[#1E3A8A] border border-slate-200';
+      iconStyles += ' text-[#F59E0B]';
       break;
     case 'default':
     default:
-      containerStyles += ' text-stone-600';
-      iconStyles += ' text-[#C97A40]';
+      containerStyles += ' text-slate-600';
+      iconStyles += ' text-[#F59E0B]';
       break;
   }
 

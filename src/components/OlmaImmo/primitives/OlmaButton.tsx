@@ -32,15 +32,15 @@ export type OlmaButtonProps<E extends React.ElementType = 'button'> = OlmaButton
 
 const variantStyles: Record<OlmaButtonVariant, string> = {
   primary:
-    'bg-[var(--olma-brand-primary)] text-[var(--olma-brand-highlight)] hover:bg-[var(--olma-brand-primary-dark)] active:bg-[var(--olma-brand-primary-dark)] border border-[var(--olma-brand-highlight)]/20 shadow-xs',
+    'bg-[var(--olma-brand-primary)] text-white hover:bg-[var(--olma-brand-primary-dark)] active:bg-[var(--olma-brand-primary-dark)] border border-blue-900/30 shadow-xs',
   secondary:
     'bg-[var(--olma-surface-default)] text-[var(--olma-text-primary)] hover:bg-[var(--olma-surface-muted)] active:bg-[var(--olma-surface-muted)] border border-[var(--olma-border-default)] shadow-2xs',
   outline:
-    'bg-transparent text-[var(--olma-brand-primary)] border border-[var(--olma-brand-primary)] hover:bg-[var(--olma-brand-primary)]/5 active:bg-[var(--olma-brand-primary)]/10',
+    'bg-transparent text-[var(--olma-brand-primary)] border border-[var(--olma-brand-primary)] hover:bg-[var(--olma-brand-primary-soft)] active:bg-blue-100',
   ghost:
-    'bg-transparent text-[var(--olma-text-secondary)] hover:text-[var(--olma-brand-primary)] hover:bg-[var(--olma-surface-muted)] active:bg-[var(--olma-surface-muted)] border border-transparent',
+    'bg-transparent text-[var(--olma-text-secondary)] hover:text-[var(--olma-brand-primary)] hover:bg-[var(--olma-brand-primary-soft)] active:bg-blue-100 border border-transparent',
   accent:
-    'bg-[var(--olma-brand-accent)] text-white hover:bg-[#B36934] active:bg-[#9E5A29] shadow-xs border border-transparent',
+    'bg-[var(--olma-brand-accent)] text-slate-950 font-bold hover:bg-[var(--olma-brand-accent-hover)] active:bg-[var(--olma-brand-accent-hover)] hover:text-white shadow-xs border border-transparent',
   dark:
     'bg-[var(--olma-brand-primary-dark)] text-white hover:bg-[var(--olma-brand-primary)] active:bg-[var(--olma-brand-primary)] border border-white/10 shadow-xs',
   danger:

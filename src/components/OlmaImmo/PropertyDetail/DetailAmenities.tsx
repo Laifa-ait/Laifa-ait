@@ -28,11 +28,11 @@ export const DetailAmenities: React.FC = () => {
               onClick={() => setSelectedAmenity(isSelected ? null : amenity.label)}
               className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-[#0D281E] text-[#EBDCB8] border-[#0D281E] shadow-xs'
-                  : 'bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 border-stone-200/80'
+                  ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-xs'
+                  : 'bg-slate-50 hover:bg-stone-100 text-stone-700 border-stone-200/80'
               }`}
             >
-              <Icon className={`w-4 h-4 mb-2 ${isSelected ? 'text-amber-400' : 'text-emerald-700'}`} />
+              <Icon className={`w-4 h-4 mb-2 ${isSelected ? 'text-[#F59E0B]' : 'text-[#1E3A8A]'}`} />
               <div>
                 <span className="text-[11px] font-bold block leading-tight">{amenity.label}</span>
                 <span className={`text-[10px] font-medium ${isSelected ? 'text-stone-300' : 'text-stone-400'}`}>

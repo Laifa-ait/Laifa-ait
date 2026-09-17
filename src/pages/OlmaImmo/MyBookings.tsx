@@ -82,10 +82,10 @@ export const MyBookings: React.FC = () => {
     return (
       <OlmaImmoShell>
         <div className="max-w-md mx-auto py-24 text-center space-y-4 flex-1 flex flex-col items-center justify-center">
-          <div className="w-16 h-16 rounded-3xl bg-[#f4ecd8] text-[#1a3831] flex items-center justify-center mb-2 border border-[#ebdcb8]">
+          <div className="w-16 h-16 rounded-3xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mb-2 border border-slate-200">
             <UserX className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+          <h2 className="text-2xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
             Connexion requise
           </h2>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -94,9 +94,9 @@ export const MyBookings: React.FC = () => {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('auth:openModal', { detail: { mode: 'login' } }))}
-            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#1a3831] hover:bg-[#122b24] text-[#ebdcb8] font-bold text-xs rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer mt-2"
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer mt-2"
           >
-            <LogIn className="w-4 h-4" />
+            <LogIn className="w-4 h-4 text-[#F59E0B]" />
             <span>Se connecter / S'inscrire</span>
           </button>
         </div>
@@ -122,11 +122,11 @@ export const MyBookings: React.FC = () => {
   return (
     <OlmaImmoShell className="max-w-5xl py-8 space-y-6">
       <div className="space-y-1">
-        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1a3831] uppercase tracking-wider">
-          <Palmtree className="w-4 h-4" />
+        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E3A8A] uppercase tracking-wider">
+          <Palmtree className="w-4 h-4 text-[#F59E0B]" />
           <span>Séjours & Vacances</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3831] font-['Playfair_Display',serif]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
           Mes Réservations de Séjours
         </h1>
         <p className="text-xs sm:text-sm text-slate-600">
