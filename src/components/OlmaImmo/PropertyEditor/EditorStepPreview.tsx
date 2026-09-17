@@ -90,7 +90,7 @@ export const EditorStepPreview: React.FC<EditorStepPreviewProps> = ({
                 period={pricePeriod}
                 listingType={listingType}
                 size="md"
-                variant="primary"
+                variant="default"
               />
             </div>
           }

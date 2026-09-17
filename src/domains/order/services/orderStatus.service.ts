@@ -176,7 +176,7 @@ export class OrderStatusService {
           }
         }
 
-        const updatePayload: Record<string, firestore.FieldValue | string | number | boolean | undefined> = {
+        const updatePayload: Record<string, firestore.FieldValue | string | number | boolean | Record<string, number> | undefined> = {
           status: tStatus,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };

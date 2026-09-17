@@ -138,7 +138,7 @@ export const DetailPropertyAccordion: React.FC<DetailPropertyAccordionProps> = (
       >
         <AccordionRow
           label="Acte de propriété principal"
-          value={LEGAL_PAPER_NAMES[property.legalPaperType] || property.legalPaperType}
+          value={property.legalPaperType ? (LEGAL_PAPER_NAMES[property.legalPaperType] || property.legalPaperType) : 'Non spécifié'}
         />
         <AccordionRow
           label="Statut du livret foncier"

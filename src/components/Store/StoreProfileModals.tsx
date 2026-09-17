@@ -2,9 +2,15 @@ import React from 'react';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { ImageAdjusterModal } from '../ui/ImageAdjusterModal';
 
+export interface AdjustingImagePayload {
+  file?: File;
+  type: 'logo' | 'banner';
+  src: string;
+}
+
 interface StoreProfileModalsProps {
-  adjustingImage: { src: string; type: 'logo' | 'banner' } | null;
-  setAdjustingImage: (val: { src: string; type: 'logo' | 'banner' } | null) => void;
+  adjustingImage: AdjustingImagePayload | null;
+  setAdjustingImage: React.Dispatch<React.SetStateAction<{ file: File; type: 'logo' | 'banner'; src: string } | null>> | ((val: AdjustingImagePayload | null) => void);
   showConfirm: boolean;
   setShowConfirm: (val: boolean) => void;
   isRTL: boolean;

@@ -17,6 +17,12 @@ interface LegalDocConfig {
 
 const LEGAL_PAPER_CONFIGS: Record<LegalPaperType, LegalDocConfig> = {
   acte_notarie: {
+    title: "Acte Notarié",
+    short: 'Acte Notarié',
+    scope: 'Pleine propriété authentifiée par devant notaire et enregistrée.',
+    buyerAdvice: "Titre de propriété formel. Vérifier l'identité du vendeur par rapport à l'acte.",
+  },
+  acte_notarie_individuel: {
     title: "Acte Notarié dans l'Individuel",
     short: 'Acte Individuel',
     scope: 'Pleine propriété individuelle enregistrée et publiée à la conservation foncière.',
@@ -28,13 +34,13 @@ const LEGAL_PAPER_CONFIGS: Record<LegalPaperType, LegalDocConfig> = {
     scope: 'Document officiel délivré par le cadastre certifiant la délimitation et la propriété du bien.',
     buyerAdvice: 'Garantie maximale en droit foncier algérien. Permet une transaction rapide chez le notaire.',
   },
-  dans_indivision: {
+  acte_dans_indivision: {
     title: "Acte Notarié dans l'Indivision (Chiyou3)",
     short: 'Indivision (Chiyou3)',
     scope: 'Part de propriété indivise au sein d’une assiette foncière partagée entre plusieurs copropriétaires.',
     buyerAdvice: 'Exiger la renonciation au droit de préemption des autres indivisaires avant la vente.',
   },
-  permis_de_construire: {
+  permis_construire: {
     title: 'Permis de Construire',
     short: 'Permis de Construire',
     scope: 'Autorisation administrative délivrée par l’APC autorisant l’édification de la bâtisse.',
@@ -46,7 +52,7 @@ const LEGAL_PAPER_CONFIGS: Record<LegalPaperType, LegalDocConfig> = {
     scope: 'Document rédigé sous seing privé sans publication cadastrale formelle.',
     buyerAdvice: 'Régularisation recommandée via la loi 08-15 ou procédure de certificat de possession.',
   },
-  decision: {
+  decision_attribution: {
     title: 'Décision d’Attribution / Arrêté Administratif',
     short: 'Décision Attribution',
     scope: 'Attribution légale par un organisme étatique (ex: OPGI, AADL, Agence Foncière).',
@@ -85,9 +91,10 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
   const [expandedPapers, setExpandedPapers] = useState<Record<string, boolean>>({});
   const [showAllPapers, setShowAllPapers] = useState<boolean>(false);
 
-  const paperKeys = property.legalPapers && property.legalPapers.length > 0
+  const rawKeys = property.legalPapers && property.legalPapers.length > 0
     ? property.legalPapers
-    : [property.legalPaperType];
+    : property.legalPaperType ? [property.legalPaperType] : [];
+  const paperKeys = rawKeys.filter((k): k is LegalPaperType => Boolean(k));
 
   const isVerified = property.isLegalVerified;
   const displayedKeys = showAllPapers ? paperKeys : paperKeys.slice(0, 4);

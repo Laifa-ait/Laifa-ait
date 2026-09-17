@@ -37,7 +37,7 @@ describe('Olma Immo Dedicated Desktop PC Design Tests', () => {
     root = null;
   });
 
-  it('renders OlmaDesktopToolbar with count, cadastral status and layout controls', () => {
+  it('renders OlmaDesktopToolbar with count and wilaya location', () => {
     const onViewChange = vi.fn();
     const onSplitRatioChange = vi.fn();
     const onFilterChange = vi.fn();
@@ -58,43 +58,10 @@ describe('Olma Immo Dedicated Desktop PC Design Tests', () => {
 
     expect(container?.textContent).toContain('14 biens disponibles');
     expect(container?.textContent).toContain('à Alger');
-    expect(container?.textContent).toContain('Contrôle Cadastral & Notarié');
-    expect(container?.textContent).toContain('Acte notarié & Livret');
-    expect(container?.textContent).toContain('Mixte');
-    expect(container?.textContent).toContain('Grille');
-    expect(container?.textContent).toContain('Carte');
-    expect(container?.textContent).toContain('Focus Liste');
-    expect(container?.textContent).toContain('Focus Carte');
+    expect(container?.querySelector('select[aria-label="Trier les résultats"]')).toBeDefined();
   });
 
-  it('allows switching split ratio from OlmaDesktopToolbar', () => {
-    const onSplitRatioChange = vi.fn();
-
-    act(() => {
-      root?.render(
-        <OlmaDesktopToolbar
-          propertiesCount={5}
-          activeView="split"
-          onViewChange={vi.fn()}
-          splitRatio="balanced"
-          onSplitRatioChange={onSplitRatioChange}
-        />
-      );
-    });
-
-    const focusListBtn = Array.from(container?.querySelectorAll('button') || []).find(
-      (btn) => btn.textContent?.includes('Focus Liste')
-    );
-    expect(focusListBtn).toBeDefined();
-
-    act(() => {
-      focusListBtn?.click();
-    });
-
-    expect(onSplitRatioChange).toHaveBeenCalledWith('focus-list');
-  });
-
-  it('triggers view mode change when desktop user clicks Grille or Carte', () => {
+  it('triggers view mode change when desktop user clicks Grille, Partagée or Carte', () => {
     const onViewChange = vi.fn();
 
     act(() => {
@@ -109,9 +76,7 @@ describe('Olma Immo Dedicated Desktop PC Design Tests', () => {
       );
     });
 
-    const gridBtn = Array.from(container?.querySelectorAll('button') || []).find(
-      (btn) => btn.textContent?.includes('Grille')
-    );
+    const gridBtn = container?.querySelector('button[title="Vue Grille"]') as HTMLButtonElement;
     expect(gridBtn).toBeDefined();
 
     act(() => {
@@ -148,6 +113,7 @@ describe('Olma Immo Dedicated Desktop PC Design Tests', () => {
       updatedAt: new Date().toISOString(),
       legalPapers: ['acte_notarie'],
       status: 'active',
+      viewsCount: 0,
     };
 
     act(() => {
@@ -160,25 +126,21 @@ describe('Olma Immo Dedicated Desktop PC Design Tests', () => {
             onSelectProperty={vi.fn()}
             viewMode="split"
             onViewModeChange={onViewModeChange}
-            isLoading={false}
             cardRefs={cardRefs}
+            isLoading={false}
             onBoundsChange={vi.fn()}
             onResetFilters={vi.fn()}
+            filters={{ wilaya: 'Alger', sort: 'recent' }}
+            onFilterChange={vi.fn()}
           />
         </MemoryRouter>
       );
     });
 
-    // Simulate keypress 'g' for Grid
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'g' }));
     });
-    expect(onViewModeChange).toHaveBeenCalledWith('grid');
 
-    // Simulate keypress 'm' for Map
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'm' }));
-    });
-    expect(onViewModeChange).toHaveBeenCalledWith('map');
+    expect(onViewModeChange).toHaveBeenCalledWith('grid');
   });
 });

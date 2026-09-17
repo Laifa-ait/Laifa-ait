@@ -574,7 +574,7 @@ export function toPublicPropertyDTO(property: StoredProperty): PublicPropertyDTO
       daira:
         property.location?.daira ||
         (property.location?.wilaya && property.location?.commune
-          ? findDairaForCommune(property.location.wilaya, property.location.commune)
+          ? (findDairaForCommune(property.location.wilaya, property.location.commune) || undefined)
           : undefined),
       commune: property.location?.commune || property.commune || '',
       wilaya: property.location?.wilaya || property.wilaya || '',
@@ -840,7 +840,7 @@ realEstatePropertyRouter.post(
 
     if (newProperty.location) {
       if (newProperty.location.commune && newProperty.location.wilaya && !newProperty.location.daira) {
-        newProperty.location.daira = findDairaForCommune(newProperty.location.wilaya, newProperty.location.commune);
+        newProperty.location.daira = findDairaForCommune(newProperty.location.wilaya, newProperty.location.commune) || undefined;
       }
       if (
         typeof newProperty.location.lat === 'number' &&
@@ -947,7 +947,7 @@ realEstatePropertyRouter.put(
 
       if (updatedProperty.location) {
         if (updatedProperty.location.commune && updatedProperty.location.wilaya && !updatedProperty.location.daira) {
-          updatedProperty.location.daira = findDairaForCommune(updatedProperty.location.wilaya, updatedProperty.location.commune);
+          updatedProperty.location.daira = findDairaForCommune(updatedProperty.location.wilaya, updatedProperty.location.commune) || undefined;
         }
         if (
           typeof updatedProperty.location.lat === 'number' &&

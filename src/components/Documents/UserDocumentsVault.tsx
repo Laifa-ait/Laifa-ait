@@ -17,7 +17,7 @@ const CATEGORY_LABELS: Record<DocumentCategory, string> = {
 };
 
 interface UserDocumentsVaultProps {
-  initialCategory?: DocumentCategory;
+  initialCategory?: DocumentCategory | "all";
   onSelectDocument?: (doc: UserDocumentDTO) => void;
 }
 

@@ -14,7 +14,7 @@ export const StoreLoadingState: React.FC<StoreLoadingStateProps> = ({ message })
 );
 
 interface StoreErrorStateProps {
-  errorType: 'notFound' | 'serverError';
+  errorType?: 'notFound' | 'serverError' | null;
   d: (key: string) => string;
   onRetry: () => void;
   onBack: () => void;
@@ -68,7 +68,7 @@ export const StoreErrorState: React.FC<StoreErrorStateProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold hover:bg-black transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all cursor-pointer mt-2"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>{d('backToCatalog')}</span>

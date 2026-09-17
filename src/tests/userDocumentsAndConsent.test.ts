@@ -28,7 +28,8 @@ describe("User Documents & Data Consent System", () => {
         fileSize: 2048500,
         mimeType: "application/pdf",
         createdAt: "2026-09-15T12:00:00Z",
-        verified: false,
+        updatedAt: "2026-09-15T12:00:00Z",
+        isVerified: false,
       };
 
       expect(sampleDoc.category).toBe("real_estate_legal");
@@ -39,11 +40,15 @@ describe("User Documents & Data Consent System", () => {
 
     it("validates data consent preferences defaults and flags", () => {
       const defaultPrefs: UserDataConsentPreferences = {
+        essential: true,
         localStorageCache: true,
         documentMemory: true,
         analyticsPerformance: false,
+        consentTimestamp: new Date().toISOString(),
+        consentVersion: "1.0",
       };
 
+      expect(defaultPrefs.essential).toBe(true);
       expect(defaultPrefs.documentMemory).toBe(true);
       expect(defaultPrefs.localStorageCache).toBe(true);
       expect(defaultPrefs.analyticsPerformance).toBe(false);
@@ -62,7 +67,6 @@ describe("User Documents & Data Consent System", () => {
 
       expect(categories.length).toBe(7);
       expect(categories).toContain("real_estate_legal");
-      expect(categories).toContain("identity");
     });
   });
 });

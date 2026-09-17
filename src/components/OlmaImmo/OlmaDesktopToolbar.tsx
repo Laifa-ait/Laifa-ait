@@ -40,6 +40,7 @@ export const OlmaDesktopToolbar: React.FC<OlmaDesktopToolbarProps> = ({
       <div className="flex items-center gap-2">
         <h2 className="text-base sm:text-lg font-bold text-[#1E293B] tracking-tight">
           {propertiesCount} {propertiesCount > 1 ? 'biens disponibles' : 'bien disponible'}
+          {filters?.wilaya ? ` à ${filters.wilaya}` : ''}
         </h2>
       </div>
 

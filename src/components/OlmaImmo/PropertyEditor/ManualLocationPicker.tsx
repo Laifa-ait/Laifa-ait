@@ -32,13 +32,15 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
   // Communes available for currently selected Wilaya & Daïra
   const availableCommunes = useMemo(() => {
     if (!location.wilaya) return [];
-    return getCommunesForWilaya(location.wilaya, location.daira);
+    const all = getCommunesForWilaya(location.wilaya);
+    if (!location.daira) return all;
+    return all.filter((c) => c.daira && c.daira.toLowerCase() === location.daira?.toLowerCase());
   }, [location.wilaya, location.daira]);
 
   const effectiveDaira = useMemo(() => {
     if (location.daira) return location.daira;
     if (location.wilaya && location.commune) {
-      return findDairaForCommune(location.wilaya, location.commune);
+      return findDairaForCommune(location.wilaya, location.commune) || undefined;
     }
     return undefined;
   }, [location.daira, location.wilaya, location.commune]);
@@ -55,7 +57,7 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
     );
 
     const updatedCommune = communeStillValid ? location.commune : '';
-    const updatedDaira = updatedCommune ? findDairaForCommune(selectedWilaya, updatedCommune) : '';
+    const updatedDaira = updatedCommune ? (findDairaForCommune(selectedWilaya, updatedCommune) || undefined) : undefined;
 
     onChange({
       ...location,
@@ -69,14 +71,17 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
 
   const handleDairaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDaira = e.target.value;
-    const communesInDaira = getCommunesForWilaya(location.wilaya || '', selectedDaira);
+    const allCommunes = getCommunesForWilaya(location.wilaya || '');
+    const communesInDaira = selectedDaira
+      ? allCommunes.filter((c) => c.daira && c.daira.toLowerCase() === selectedDaira.toLowerCase())
+      : allCommunes;
     const communeStillValid = communesInDaira.some(
       (c) => c.name.toLowerCase() === (location.commune || '').toLowerCase()
     );
 
     onChange({
       ...location,
-      daira: selectedDaira,
+      daira: selectedDaira || undefined,
       commune: communeStillValid ? location.commune : '',
     });
   };
@@ -91,7 +96,7 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
     const coords = findCommuneCoords(location.wilaya || '', selectedCommune);
     const newLat = coords?.lat ? Number(coords.lat.toFixed(6)) : location.lat || 36.7538;
     const newLng = coords?.lng ? Number(coords.lng.toFixed(6)) : location.lng || 3.0588;
-    const autoDaira = findDairaForCommune(location.wilaya || '', selectedCommune);
+    const autoDaira = findDairaForCommune(location.wilaya || '', selectedCommune) || undefined;
 
     onChange({
       ...location,
@@ -104,7 +109,7 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
 
   const handleCommuneTextChange = (val: string) => {
     const coords = findCommuneCoords(location.wilaya || '', val);
-    const autoDaira = findDairaForCommune(location.wilaya || '', val);
+    const autoDaira = findDairaForCommune(location.wilaya || '', val) || undefined;
     onChange({
       ...location,
       commune: val,
@@ -115,7 +120,7 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
 
   const handlePlaceSelect = (place: AlgeriaPlaceResult) => {
     const autoDaira = place.commune && (place.wilaya || location.wilaya)
-      ? findDairaForCommune(place.wilaya || location.wilaya || '', place.commune)
+      ? (findDairaForCommune(place.wilaya || location.wilaya || '', place.commune) || undefined)
       : undefined;
 
     onChange({
@@ -159,41 +164,52 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
       {/* Address */}
       <div>
         <label className="block text-xs font-bold text-stone-700 mb-1">
-          3. Adresse, Quartier ou Cité *
+          Adresse détaillée / Repère (Rue, Résidence, Bâtiment)
         </label>
         <input
           type="text"
-          required
-          placeholder="Ex: Boulevard Millenium, Cité 500 Logements, Rue Didouche Mourad..."
-          value={location.address || ''}
+          value={location.address}
           onChange={(e) => onChange({ ...location, address: e.target.value })}
-          className="w-full bg-white border border-slate-200 text-slate-800 text-xs font-medium rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+          placeholder="Ex: 12 Rue Didouche Mourad, en face de la Grande Poste"
+          className="w-full text-xs sm:text-sm font-medium border border-stone-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#008BB5] bg-stone-50/50"
         />
       </div>
 
-      {/* Interactive Draggable Map with Satellite View for Pin Dropping */}
-      <div className="space-y-2.5 pt-2 border-t border-slate-200">
-        <div className="flex items-center justify-between gap-2">
-          <label className="text-xs font-bold text-[#1E3A8A] flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-[#1E3A8A]" />
-            <span>4. Positionner sur la carte (Recherche de lieux & Glissement)</span>
-          </label>
-          <span className="text-[10px] text-slate-500 font-medium">Algérie 58 Wilayas</span>
-        </div>
-
+      {/* Autocomplete / Recherche rapide de lieu */}
+      <div className="pt-1">
         <AlgeriaPlaceSearchBar
           onSelectPlace={handlePlaceSelect}
           preferredWilaya={location.wilaya}
-          placeholder="Rechercher un quartier, cité ou repère (ex: Bouchaoui, Hydra, Akid Lotfi...)"
         />
+      </div>
 
+      {/* Interactive Map Picker */}
+      <div className="pt-2">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#008BB5]" />
+            <span>Position exacte sur la carte (GPS Algérie)</span>
+          </label>
+          <span className="text-[10px] text-stone-400 font-mono">
+            {currentLat.toFixed(4)}, {currentLng.toFixed(4)}
+          </span>
+        </div>
         <ResidenceLocationPickerMap
           lat={currentLat}
           lng={currentLng}
           wilayaName={location.wilaya}
           communeName={location.commune}
-          onLocationChange={(newLat, newLng) => onChange({ ...location, lat: newLat, lng: newLng })}
+          onLocationChange={(newLat, newLng) => {
+            onChange({
+              ...location,
+              lat: Number(newLat.toFixed(6)),
+              lng: Number(newLng.toFixed(6)),
+            });
+          }}
         />
+        <p className="text-[11px] text-stone-400 mt-1">
+          Cliquez sur la carte ou déplacez le marqueur pour ajuster le positionnement du bien.
+        </p>
       </div>
     </div>
   );
