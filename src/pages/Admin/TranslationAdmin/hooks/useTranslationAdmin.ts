@@ -655,12 +655,19 @@ export const useTranslationAdmin = () => {
     setIsAgentTyping(true);
 
     try {
+      const authUser = getCurrentAuthUser();
+      const idToken = authUser ? await authUser.getIdToken() : '';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+      }
+
       const response = await fetch('/api/v1/admin/translate-single-key', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('adminToken') || localStorage.getItem('token')}`,
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
           key: 'chat_translation',
           fr: userText,

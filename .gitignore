@@ -44,6 +44,11 @@ firebase-applet-config.json
 *.sln
 *.sw?
 
+# Python Cache Artifacts
+__pycache__/
+*.pyc
+*.pyo
+
 # Security
 .env
 .env.production

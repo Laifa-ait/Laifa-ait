@@ -3,7 +3,7 @@ import { db, admin } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeSeller, require2FA, AuthenticatedRequest } from "../../../middlewares/auth";
 import { validateRequest } from "../../../middlewares/validation";
 import { SellerService } from "../../../services/SellerService";
-import { shippingTariffsSchema, sellerSettingsSchema } from "../validators/seller.validators";
+import { shippingTariffsSchema, sellerSettingsSchema, sellerVerificationSubmissionSchema } from "../validators/seller.validators";
 import { safeLogger } from "../../../utils/logger";
 
 const router = Router();
@@ -24,34 +24,65 @@ router.post("/api/v1/seller/ocr", authenticateToken, authorizeSeller, async (req
 });
 
 // PUT seller verification submission
-router.put("/api/v1/seller/profile/verification", authenticateToken, authorizeSeller, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    if (!req.user?.uid) {
-      return res.status(401).json({ error: "Authentification requise" });
+router.put(
+  "/api/v1/seller/profile/verification",
+  authenticateToken,
+  authorizeSeller,
+  validateRequest(sellerVerificationSubmissionSchema),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user?.uid) {
+        return res.status(401).json({ error: "Authentification requise" });
+      }
+      const uid = req.user.uid;
+      const {
+        brandName,
+        designStyle,
+        portfolioUrl,
+        brandStory,
+        rcNumber,
+        nifNumber,
+        rib,
+        documents,
+        idCard,
+        businessDoc,
+      } = req.body;
+
+      // Whitelist strictly functional fields - sensitive administrative & security fields are forbidden
+      const safeUpdateData: Record<string, unknown> = {
+        status: "pending_verification",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (brandName !== undefined) safeUpdateData.brandName = brandName;
+      if (designStyle !== undefined) safeUpdateData.designStyle = designStyle;
+      if (portfolioUrl !== undefined) safeUpdateData.portfolioUrl = portfolioUrl;
+      if (brandStory !== undefined) safeUpdateData.brandStory = brandStory;
+      if (rcNumber !== undefined) safeUpdateData.rcNumber = rcNumber;
+      if (nifNumber !== undefined) safeUpdateData.nifNumber = nifNumber;
+      if (rib !== undefined) safeUpdateData.rib = rib;
+      if (documents !== undefined) safeUpdateData.documents = documents;
+      if (idCard !== undefined) safeUpdateData.idCard = idCard;
+      if (businessDoc !== undefined) safeUpdateData.businessDoc = businessDoc;
+
+      await db.collection("users").doc(uid).set(safeUpdateData, { merge: true });
+
+      await db.collection("internal_notifications").add({
+        type: "DOCUMENT_SUBMISSION",
+        sellerId: uid,
+        sellerName: brandName || "Vendeur Olmart",
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        message: `Le vendeur ${String(brandName || "Nouveau")} a soumis ses documents de vérification.`
+      }).catch(() => null);
+
+      return res.json({ success: true, message: "Verification submitted" });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Internal error";
+      return res.status(500).json({ error: msg });
     }
-    const uid = req.user.uid;
-    const updateData = req.body as Record<string, unknown>;
-
-    updateData.status = "pending_verification";
-    updateData.updatedAt = new Date();
-
-    await db.collection("users").doc(uid).set(updateData, { merge: true });
-
-    await db.collection("internal_notifications").add({
-      type: "DOCUMENT_SUBMISSION",
-      sellerId: uid,
-      sellerName: updateData.brandName || "Vendeur Olmart",
-      read: false,
-      createdAt: new Date(),
-      message: `Le vendeur ${String(updateData.brandName || "Nouveau")} a soumis ses documents de vérification.`
-    }).catch(() => null);
-
-    return res.json({ success: true, message: "Verification submitted" });
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Internal error";
-    return res.status(500).json({ error: msg });
   }
-});
+);
 
 // PUT seller settings
 router.put(

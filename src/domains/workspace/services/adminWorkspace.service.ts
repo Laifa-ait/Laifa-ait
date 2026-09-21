@@ -1,6 +1,7 @@
 import { db, admin } from "../../../config/firebase-admin";
 import { ai } from "../../../config/gemini";
 import { safeLogger } from "../../../utils/logger";
+import { validateExternalUrl } from "../../../utils/security";
 import type { WorkspaceSellerRecord, WorkspaceOrderRecord } from "../types/adminWorkspace.types";
 
 export class AdminWorkspaceService {
@@ -72,7 +73,20 @@ export class AdminWorkspaceService {
   }
 
   static async performOcr(documentUrl: string): Promise<Record<string, unknown>> {
-    const imageResp = await fetch(documentUrl);
+    const validatedUrl = validateExternalUrl(documentUrl, false);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    let imageResp: Response;
+    try {
+      imageResp = await fetch(validatedUrl.toString(), {
+        redirect: "error",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!imageResp.ok) throw new Error("Failed to fetch image");
     const arrayBuffer = await imageResp.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

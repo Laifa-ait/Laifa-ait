@@ -7,6 +7,7 @@ import { startVelocityWorker, stopVelocityWorker, drainVelocityChecks } from "./
 import { startProductCacheCleanupTimer, stopProductCacheCleanupTimer } from "./src/services/ProductSeoService";
 import { setupViteAndStaticServing } from "./src/services/ViteStaticService";
 import { validateCsrfConfiguration } from "./src/middlewares/csrf";
+import { TrendingSearchesService } from "./src/services/TrendingSearchesService";
 import { safeLogger } from "./src/utils/logger";
 
 const PORT = 3000;
@@ -206,6 +207,14 @@ export function startServer(portOverride?: number): Promise<http.Server> {
         httpServer.off("error", onError);
         const startupDuration = ((Date.now() - bootStartTime) / 1000).toFixed(2);
         safeLogger.info(`OLMART STARTUP READY - Port: ${bindPort}, Environment: ${process.env.NODE_ENV || "development"}, Startup Time: ${startupDuration}s`);
+
+        // Asynchronously warm-up trending searches cache without blocking the HTTP server or readiness probe
+        TrendingSearchesService.warmupTrendingSearches().catch((warmupErr: unknown) => {
+          safeLogger.warn("[Startup] Trending searches warm-up non-fatal failure", {
+            err: warmupErr instanceof Error ? warmupErr.message : String(warmupErr),
+          });
+        });
+
         resolve(httpServer);
       });
     });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Compass, Calendar, LayoutGrid, MessageSquare, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +9,7 @@ import { UnifiedMessagingDrawer } from '../Chat/UnifiedMessagingDrawer';
 import { SuperAppSwitcherModal } from '../common/SuperAppSwitcherModal';
 
 export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, openAuthModal } = useAuth();
@@ -45,14 +47,14 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
   const navItems = [
     {
       id: 'explorer',
-      label: 'Explorer',
+      label: t('nav_explorer'),
       icon: Compass,
       isActive: isExplorerActive,
       onClick: () => navigate('/immo'),
     },
     {
       id: 'bookings',
-      label: 'Réservations',
+      label: t('nav_my_stays_bookings'),
       icon: Calendar,
       isActive: isBookingsActive,
       badgeCount: activeBookingsCount,
@@ -60,7 +62,7 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
     },
     {
       id: 'univers',
-      label: 'Applications',
+      label: t('nav_applications'),
       icon: LayoutGrid,
       isActive: isSwitcherOpen,
       isSpecial: true,
@@ -68,14 +70,14 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
     },
     {
       id: 'messages',
-      label: 'Messages',
+      label: t('nav_messages_exchanges'),
       icon: MessageSquare,
       isActive: isMessagingOpen,
       onClick: handleOpenMessaging,
     },
     {
       id: 'profile',
-      label: 'Profil',
+      label: t('nav_owner_space'),
       icon: User,
       isActive: isProfileActive,
       onClick: handleProfileClick,

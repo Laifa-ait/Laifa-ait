@@ -247,5 +247,32 @@ export class TrendingSearchesService {
           ];
     }
   }
+
+  /**
+   * Asynchronously pre-populates trending search caches during server boot.
+   * Executed in a detached, non-blocking flow with structured safety logging
+   * ensuring zero latency on first client query and non-fatal degradation.
+   */
+  public static async warmupTrendingSearches(): Promise<void> {
+    try {
+      safeLogger.info("[TrendingSearches] 🚀 Initiating async warm-up of trending searches cache...");
+      const trends = await this.getTrendingSearches();
+      safeLogger.info("[TrendingSearches] ✅ Cache warm-up completed", { count: trends.length });
+    } catch (err: unknown) {
+      safeLogger.warn("[TrendingSearches] ⚠️ Warm-up encountered non-fatal error", {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  /**
+   * Resets in-memory caches and tracker counts for testing purposes only.
+   */
+  public static resetCacheForTesting(): void {
+    this.cachedTrends = [];
+    this.cachedTimestamp = 0;
+    this.inMemorySearchCounts.clear();
+    this.inMemoryPurchaseCounts.clear();
+  }
 }
 

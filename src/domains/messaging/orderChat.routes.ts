@@ -53,6 +53,9 @@ router.post("/api/v1/messages/send", authenticateToken, async (req: Authenticate
     };
 
     if (imageUrl) {
+      if (typeof imageUrl !== "string" || (!imageUrl.startsWith("https://") && !imageUrl.startsWith("data:image/"))) {
+        return res.status(400).json({ error: "Format d'image invalide (HTTPS ou data-URI requis)" });
+      }
       messageObj.imageUrl = imageUrl;
     }
 
@@ -197,11 +200,21 @@ router.post("/api/v1/messages/report", authenticateToken, async (req: Authentica
 router.get("/api/v1/orders/:orderId/chat", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { orderId } = req.params;
+    const callerUid = req.user?.uid || "";
+    const isAdmin = req.user?.role === "admin" || req.user?.role === "superadmin";
+
     const docSnap = await db.collection("orders").doc(orderId).get();
     if (!docSnap.exists) {
       return res.status(404).json({ error: "Order not found" });
     }
     const orderData = docSnap.data();
+    const buyerId = orderData?.userId || orderData?.buyerId;
+    const sellerId = orderData?.sellerId || (orderData?.sellerIds && orderData?.sellerIds[0]);
+
+    if (!isAdmin && callerUid !== buyerId && callerUid !== sellerId) {
+      return res.status(403).json({ error: "Accès refusé : vous n'êtes pas participant de cette commande." });
+    }
+
     const buyerName = orderData?.shippingAddress?.fullName || orderData?.shippingAddress?.name || "Acheteur Olmart";
     let shopName = "Boutique Olmart";
     const sid = orderData?.sellerId || (orderData?.sellerIds && orderData?.sellerIds[0]);

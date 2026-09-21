@@ -166,3 +166,43 @@ export interface ArtisanStatsSummary {
   totalQuoteRequests: number;
   totalTrades: number;
 }
+
+export interface ArtisanJobBroadcast {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail?: string;
+  tradeId: string;
+  tradeName: string;
+  categoryPreset?: string;
+  title: string;
+  description: string;
+  wilaya: string;
+  wilayaCode?: string;
+  commune: string;
+  address?: string;
+  urgency: "urgent" | "standard" | "flexible";
+  estimatedBudget?: number;
+  status: "open" | "contacted" | "fulfilled" | "cancelled";
+  repliesCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArtisanJobBroadcastPayload {
+  tradeId: string;
+  tradeName: string;
+  categoryPreset?: string;
+  title: string;
+  description: string;
+  wilaya: string;
+  wilayaCode?: string;
+  commune: string;
+  address?: string;
+  urgency: "urgent" | "standard" | "flexible";
+  estimatedBudget?: number;
+  clientName: string;
+  clientPhone: string;
+  clientEmail?: string;
+}

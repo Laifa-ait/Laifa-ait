@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { BrandIcon } from "./ui/BrandIcon";
 import { safeLogger } from "../utils/logger";
+import { apiGet } from "../lib/api";
 
 export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false }) => {
   const { t, i18n } = useTranslation();
@@ -30,7 +31,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [supportEmail, setSupportEmail] = useState("");
+  const [supportEmail, setSupportEmail] = useState("contact@olmart.dz");
 
   const isArabic = i18n.language === "ar" || i18n.language?.startsWith("ar");
 
@@ -38,15 +39,16 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
     let cancelled = false;
     const fetchSettings = async () => {
       try {
-        const res = await fetch("/api/v1/public/settings");
-        if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
-          const data = await res.json();
-          if (!cancelled && data.supportEmail) {
-            setSupportEmail(data.supportEmail);
-          }
+        const data = await apiGet<{ supportEmail?: string }>("/api/v1/public/settings");
+        if (!cancelled && data?.supportEmail) {
+          setSupportEmail(data.supportEmail);
         }
       } catch (error) {
-        if (!cancelled) safeLogger.error("Error fetching support email", { err: error instanceof Error ? error.message : String(error) });
+        if (!cancelled) {
+          safeLogger.warn("Notice: could not load dynamic support email, using standard fallback", {
+            err: error instanceof Error ? error.message : String(error)
+          });
+        }
       }
     };
     fetchSettings();

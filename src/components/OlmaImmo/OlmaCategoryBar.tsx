@@ -12,24 +12,26 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { PropertyType } from '../../types/realEstate';
 
 interface CategoryItem {
   id: PropertyType | 'all';
-  label: string;
+  translationKey: string;
+  defaultLabel: string;
   icon: LucideIcon;
 }
 
 const CATEGORY_ITEMS: CategoryItem[] = [
-  { id: 'all', label: 'Tout voir', icon: Compass },
-  { id: 'villa', label: 'Villas & Piscine', icon: Palmtree },
-  { id: 'apartment', label: 'Appartements', icon: Building2 },
-  { id: 'house', label: 'Maisons & Riad', icon: Home },
-  { id: 'studio', label: 'Studios & Lofts', icon: BedDouble },
-  { id: 'land', label: 'Terrains & Nature', icon: Trees },
-  { id: 'commercial', label: 'Commerces', icon: Store },
-  { id: 'building', label: 'Immeubles', icon: Building },
-  { id: 'office', label: 'Bureaux', icon: Briefcase },
+  { id: 'all', translationKey: 'immo_cat_all', defaultLabel: 'Tout voir', icon: Compass },
+  { id: 'villa', translationKey: 'immo_cat_villa', defaultLabel: 'Villas & Piscine', icon: Palmtree },
+  { id: 'apartment', translationKey: 'immo_cat_apartment', defaultLabel: 'Appartements', icon: Building2 },
+  { id: 'house', translationKey: 'immo_cat_house', defaultLabel: 'Maisons & Riad', icon: Home },
+  { id: 'studio', translationKey: 'immo_cat_studio', defaultLabel: 'Studios & Lofts', icon: BedDouble },
+  { id: 'land', translationKey: 'immo_cat_land', defaultLabel: 'Terrains & Nature', icon: Trees },
+  { id: 'commercial', translationKey: 'immo_cat_commercial', defaultLabel: 'Commerces', icon: Store },
+  { id: 'building', translationKey: 'immo_cat_building', defaultLabel: 'Immeubles', icon: Building },
+  { id: 'office', translationKey: 'immo_cat_office', defaultLabel: 'Bureaux', icon: Briefcase },
 ];
 
 interface OlmaCategoryBarProps {
@@ -41,6 +43,8 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="w-full pt-1 pb-3 mb-1">
       {/* Horizontal Pill Filters Bar with Tactile Motion */}
@@ -67,7 +71,7 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
                   isSelected ? 'text-[#F59E0B] stroke-[2.2]' : 'text-slate-500'
                 }`}
               />
-              <span className="tracking-tight">{cat.label}</span>
+              <span className="tracking-tight">{t(cat.translationKey, cat.defaultLabel)}</span>
             </motion.button>
           );
         })}
@@ -75,7 +79,3 @@ export const OlmaCategoryBar: React.FC<OlmaCategoryBarProps> = ({
     </div>
   );
 };
-
-
-
-

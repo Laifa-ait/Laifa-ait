@@ -79,3 +79,20 @@ export const sellerCouponStatusSchema = z.object({
   isActive: z.boolean(),
 });
 
+export const sellerVerificationSubmissionSchema = z.object({
+  brandName: z.string().max(100).optional(),
+  designStyle: z.string().max(200).optional(),
+  portfolioUrl: z.string().max(500).optional(),
+  brandStory: z.string().max(2000).optional(),
+  rcNumber: z.string().max(50).optional(),
+  nifNumber: z.string().max(50).optional(),
+  rib: z.string().max(50).optional(),
+  documents: z.object({
+    fileRC: z.string().max(1000).optional().nullable(),
+    fileId: z.string().max(1000).optional().nullable(),
+    fileRib: z.string().max(1000).optional().nullable(),
+  }).optional(),
+  idCard: z.string().max(1000).optional().nullable(),
+  businessDoc: z.string().max(1000).optional().nullable(),
+}).strict();
+

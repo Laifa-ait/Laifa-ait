@@ -44,7 +44,6 @@ export const PropertyCreateSchema = z.object({
   propertyType: PropertyTypeEnum,
   listingType: ListingTypeEnum,
   legalPapers: z.array(LegalPaperTypeEnum).optional().default([]),
-  isLegalVerified: z.boolean().optional().default(false),
   legalPaperType: LegalPaperTypeEnum.optional(),
   price: z.number().positive("Le prix doit être un nombre positif (DZD)"),
   pricePeriod: PricePeriodEnum.optional(),
@@ -65,9 +64,7 @@ export const PropertyCreateSchema = z.object({
 });
 
 export const PropertyUpdateSchema = PropertyCreateSchema.partial().omit({
-  status: true, // Status updates should use specific status endpoint or restricted schema if needed
-}).extend({
-  status: PropertyStatusEnum.optional(),
+  status: true, // Status updates MUST use the dedicated PUT /properties/:id/status endpoint
 });
 
 export const PropertySortOptionEnum = z.enum([

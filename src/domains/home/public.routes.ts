@@ -3,6 +3,8 @@ import { db } from "../../config/firebase-admin";
 import { CoreService, LogErrorBody } from "../../services/CoreService";
 import { TrendingSearchesService } from "../../services/TrendingSearchesService";
 import { safeLogger } from "../../utils/logger";
+import { validateExternalUrl } from "../../utils/security";
+import { corsOptions } from "../../middlewares/security";
 import { PublicShopDTO } from "../seller/shop.types";
 import { buildWhitelistedShopDTO } from "../seller/shopPublic.projection";
 
@@ -18,26 +20,12 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
 
     let parsedUrl: URL;
     try {
-      parsedUrl = new URL(videoUrl);
-    } catch {
-      return res.status(400).json({ error: "Invalid URL format" });
-    }
-
-    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-      return res.status(400).json({ error: "Invalid protocol" });
+      parsedUrl = validateExternalUrl(videoUrl, false);
+    } catch (err) {
+      return res.status(400).json({ error: err instanceof Error ? err.message : "Format d'URL invalide" });
     }
 
     const hostname = parsedUrl.hostname.toLowerCase();
-    const isLocalhost =
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname.endsWith(".localhost") ||
-      hostname.endsWith(".local") ||
-      hostname === "[::1]";
-
-    if (isLocalhost) {
-      return res.status(403).json({ error: "Access to local network resources is forbidden" });
-    }
 
     const ALLOWED_VIDEO_HOSTS = [
       "commondatastorage.googleapis.com",
@@ -70,11 +58,16 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
       headers["Range"] = req.headers.range;
     }
 
-    const response = await fetch(videoUrl, {
-      signal: controller.signal,
-      headers,
-    });
-    clearTimeout(timeoutId);
+    let response: globalThis.Response;
+    try {
+      response = await fetch(parsedUrl.toString(), {
+        signal: controller.signal,
+        headers,
+        redirect: "error",
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok && response.status !== 206) {
       return res.status(response.status).json({ error: `Upstream returned status ${response.status}` });
@@ -103,7 +96,15 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
       }
     });
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    const origin = req.headers.origin;
+    if (origin && typeof corsOptions.origin === "function") {
+      corsOptions.origin(origin, (err: Error | null, allow?: boolean) => {
+        if (!err && allow) {
+          res.setHeader("Access-Control-Allow-Origin", origin);
+          res.setHeader("Vary", "Origin");
+        }
+      });
+    }
     res.setHeader("Access-Control-Allow-Headers", "Range");
     res.setHeader("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
 

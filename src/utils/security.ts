@@ -2,9 +2,9 @@ import { URL } from "url";
 
 /**
  * Validates external URLs to prevent SSRF (Server-Side Request Forgery) attacks.
- * Rejects non-HTTP(S) protocols and private/loopback IP address ranges.
+ * Rejects non-HTTPS protocols by default and private/loopback IP address ranges.
  */
-export function validateExternalUrl(inputUrl: string): URL {
+export function validateExternalUrl(inputUrl: string, allowHttp = false): URL {
   if (!inputUrl || typeof inputUrl !== "string") {
     throw new Error("URL d'entrée invalide");
   }
@@ -16,8 +16,13 @@ export function validateExternalUrl(inputUrl: string): URL {
     throw new Error("Format d'URL invalide");
   }
 
-  if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-    throw new Error("Seuls les protocoles HTTP et HTTPS sont autorisés");
+  const allowedProtocols = allowHttp ? ["http:", "https:"] : ["https:"];
+  if (!allowedProtocols.includes(parsedUrl.protocol)) {
+    throw new Error(
+      allowHttp
+        ? "Seuls les protocoles HTTP et HTTPS sont autorisés"
+        : "Seul le protocole HTTPS sécurisé est autorisé"
+    );
   }
 
   const hostname = parsedUrl.hostname.toLowerCase();
@@ -26,11 +31,14 @@ export function validateExternalUrl(inputUrl: string): URL {
   if (
     hostname === "localhost" ||
     hostname === "localhost.localdomain" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".local") ||
     hostname === "metadata.google.internal" ||
     hostname === "metadata" ||
     hostname === "instance-data" ||
     hostname === "::1" ||
     hostname === "::" ||
+    hostname === "[::1]" ||
     hostname.startsWith("fe80:") ||
     hostname.startsWith("fc00:") ||
     hostname.startsWith("fd00:")

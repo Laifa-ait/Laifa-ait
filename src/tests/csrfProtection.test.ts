@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { generateCsrfToken, verifyCsrfToken, csrfProtection, getCsrfSecret, validateCsrfConfiguration } from "../middlewares/csrf";
 import { Request, Response } from "express";
+import crypto from "crypto";
 
 describe("CSRF Protection Suite (P1-01 Verification)", () => {
   const originalEnv = process.env.NODE_ENV;
   const originalSecret = process.env.CSRF_SECRET;
+  const generateDynamicSecret = () => crypto.randomBytes(32).toString("hex");
 
   beforeEach(() => {
     process.env.NODE_ENV = "test";
@@ -53,7 +55,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("works reliably in production when CSRF_SECRET is provided", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
+    process.env.CSRF_SECRET = generateDynamicSecret();
 
     expect(() => validateCsrfConfiguration()).not.toThrow();
     const token = generateCsrfToken("prod_user_456");
@@ -78,7 +80,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("rejects requests relying solely on Authorization Bearer header or X-Requested-With without CSRF token", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
+    process.env.CSRF_SECRET = generateDynamicSecret();
 
     let nextCalled = false;
     let statusCode = 0;
@@ -111,7 +113,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("allows requests with valid X-CSRF-Token header bound to authenticated user", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
+    process.env.CSRF_SECRET = generateDynamicSecret();
 
     const token = generateCsrfToken("user_789");
     let nextCalled = false;
@@ -134,7 +136,7 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
   it("blocks untrusted POST requests without token or credentials", () => {
     process.env.NODE_ENV = "production";
-    process.env.CSRF_SECRET = "production_super_secure_random_key_64_characters_long_abcdef123456";
+    process.env.CSRF_SECRET = generateDynamicSecret();
 
     let nextCalled = false;
     let statusCode = 0;

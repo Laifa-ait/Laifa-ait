@@ -1,13 +1,16 @@
 import React, { useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutGrid } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useOlmaBookingsCount } from '../../hooks/useOlmaBookingsCount';
 import { UnifiedMessagingDrawer } from '../Chat/UnifiedMessagingDrawer';
 import { SuperAppSwitcherModal } from '../common/SuperAppSwitcherModal';
 import { OlmaImmoUserMenu } from './OlmaImmoUserMenu';
+import { OlmaLanguageSelector } from '../common/OlmaLanguageSelector';
 
 export const OlmaImmoNavbar: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { currentUser, openAuthModal } = useAuth();
   const { activeBookingsCount } = useOlmaBookingsCount();
@@ -51,7 +54,7 @@ export const OlmaImmoNavbar: React.FC = React.memo(() => {
               aria-label="Applications Olmart"
             >
               <LayoutGrid className="w-3.5 h-3.5 text-amber-600 group-hover:scale-105 transition-transform" />
-              <span>Applications</span>
+              <span>{t('nav_applications')}</span>
             </button>
           </div>
 
@@ -65,7 +68,7 @@ export const OlmaImmoNavbar: React.FC = React.memo(() => {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
               }`}
             >
-              Explorer
+              {t('nav_explorer')}
             </Link>
 
             <Link
@@ -76,7 +79,7 @@ export const OlmaImmoNavbar: React.FC = React.memo(() => {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
               }`}
             >
-              <span>Séjours</span>
+              <span>{t('nav_stays')}</span>
               {activeBookingsCount > 0 && (
                 <span className="min-w-4 h-4 bg-[#059669] text-white text-[9px] font-extrabold rounded-full flex items-center justify-center px-1 shadow-2xs">
                   {activeBookingsCount > 99 ? '99+' : activeBookingsCount}
@@ -92,7 +95,7 @@ export const OlmaImmoNavbar: React.FC = React.memo(() => {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
               }`}
             >
-              Acheter
+              {t('nav_buy')}
             </Link>
 
             <Link
@@ -103,18 +106,20 @@ export const OlmaImmoNavbar: React.FC = React.memo(() => {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
               }`}
             >
-              Louer
+              {t('nav_rent')}
             </Link>
           </nav>
 
-          {/* Right: Minimalist User Profile Avatar (Secondary icons hidden & in menu) */}
+          {/* Right: Language Selector + Minimalist User Profile Avatar */}
           <div className="flex items-center gap-2">
+            <OlmaLanguageSelector variant="compact" />
+
             <Link
               to="/immo/owner"
               id="olma-immo-nav-owner-link"
               className="text-xs font-medium text-slate-700 hover:text-slate-950 px-3.5 py-2 rounded-full border border-slate-200 hover:border-slate-300 transition-all hidden xl:inline-flex items-center cursor-pointer"
             >
-              <span>Publier</span>
+              <span>{t('nav_publish_property')}</span>
             </Link>
 
             {/* Minimalist Profile Avatar in cool grey circle */}

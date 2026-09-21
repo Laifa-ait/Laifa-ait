@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Router, Request, Response } from "express";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeSeller, AuthenticatedRequest } from "../../../middlewares/auth";
@@ -129,9 +130,20 @@ router.post("/prepare-shipment", authenticateToken, authorizeSeller, async (req:
 
 router.post("/cron/sync-tracking", async (req: Request, res: Response) => {
   try {
-    // Vérifier un secret Cron
-    const cronSecret = req.headers["x-cron-secret"] || req.query.secret;
-    if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+    const configuredSecret = process.env.CRON_SECRET;
+    const rawSecret = req.headers["x-cron-secret"] || req.query.secret;
+
+    // Fail-Closed: CRON_SECRET must be configured in environment and provided in request
+    if (!configuredSecret || typeof rawSecret !== "string" || !rawSecret) {
+      safeLogger.warn("[OrderTracking] ⚠️ Unauthorized cron access attempt - missing or unconfigured secret");
+      return res.status(401).json({ error: "Unauthorized cron access" });
+    }
+
+    const secretBuffer = Buffer.from(rawSecret);
+    const expectedBuffer = Buffer.from(configuredSecret);
+
+    if (secretBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(secretBuffer, expectedBuffer)) {
+      safeLogger.warn("[OrderTracking] ⚠️ Unauthorized cron access attempt - invalid secret");
       return res.status(401).json({ error: "Unauthorized cron access" });
     }
 

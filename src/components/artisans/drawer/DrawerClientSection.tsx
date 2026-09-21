@@ -88,10 +88,10 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
             onClose();
             navigate(isLoggedIn ? '/artisans/mes-demandes' : '/auth?redirect=/artisans/mes-demandes');
           }}
-          className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-between transition-colors cursor-pointer"
+          className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-black flex items-center justify-between shadow-xs transition-all cursor-pointer"
         >
           <span>Consulter mes devis ({myQuotes.length})</span>
-          <ChevronRight className="w-4 h-4 text-amber-400" />
+          <ChevronRight className="w-4 h-4 text-slate-950 stroke-[2.5]" />
         </button>
       </div>
 

@@ -130,7 +130,7 @@ export async function apiGet<T>(path: string, retries = 3): Promise<T> {
   throw new Error("Failed to fetch after retries");
 }
 
-export async function apiPost<T>(path: string, body: unknown, retries = 3): Promise<T> {
+export async function apiPost<T>(path: string, body: unknown, retries = 1): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       const forceRefresh = i > 0;

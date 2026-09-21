@@ -8,12 +8,19 @@ import { ArtisanProfileService } from "./services/artisanProfile.service";
 import { ArtisanQuotesService } from "./services/artisanQuotes.service";
 import { ArtisanReviewsService } from "./services/artisanReviews.service";
 import { ArtisanAdminService } from "./services/artisanAdmin.service";
+import { ArtisanBroadcastsService } from "./services/artisanBroadcasts.service";
 
 export class ArtisanServiceLayer {
   // Public
   static listApprovedArtisans = ArtisanPublicService.listApprovedArtisans.bind(ArtisanPublicService);
   static getArtisanById = ArtisanPublicService.getArtisanById.bind(ArtisanPublicService);
   static getTrades = ArtisanPublicService.getTrades.bind(ArtisanPublicService);
+
+  // Broadcasts / Client job advertisements
+  static createJobBroadcast = ArtisanBroadcastsService.createBroadcast.bind(ArtisanBroadcastsService);
+  static listJobBroadcasts = ArtisanBroadcastsService.listBroadcasts.bind(ArtisanBroadcastsService);
+  static getClientJobBroadcasts = ArtisanBroadcastsService.getClientBroadcasts.bind(ArtisanBroadcastsService);
+  static updateJobBroadcastStatus = ArtisanBroadcastsService.updateStatus.bind(ArtisanBroadcastsService);
 
   // Profile & Services
   static applyArtisan = ArtisanProfileService.applyArtisan.bind(ArtisanProfileService);

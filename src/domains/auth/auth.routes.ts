@@ -1,6 +1,6 @@
 import { Response, Router } from "express";
 import crypto from "crypto";
-import { authenticateToken, require2FA, AuthenticatedRequest } from "../../middlewares/auth";
+import { authenticateToken, authorizeAdmin, require2FA, AuthenticatedRequest } from "../../middlewares/auth";
 import { loginLimiter } from "../../middlewares/rateLimiters";
 import { admin, db } from "../../config/firebase-admin";
 import { ALGERIA_WILAYAS, ALGERIA_SHIPPING_DATA } from "../../constants";
@@ -680,6 +680,35 @@ router.post("/convert-guest", loginLimiter, authenticateToken, async (req: Authe
     });
     return res.status(500).json({ error: message });
   }
+});
+
+router.post("/admin-session", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const authHeader = req.headers.authorization;
+  const idToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split("Bearer ")[1] : (req.body?.idToken as string | undefined);
+
+  if (!idToken || typeof idToken !== "string") {
+    return res.status(400).json({ error: "Jeton ID manquant." });
+  }
+
+  res.cookie("admin_session", idToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    maxAge: 3600 * 1000,
+  });
+
+  return res.json({ success: true, message: "Session administrateur sécurisée établie." });
+});
+
+router.delete("/admin-session", async (_req: AuthenticatedRequest, res: Response) => {
+  res.clearCookie("admin_session", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+  });
+  return res.json({ success: true, message: "Session administrateur révoquée." });
 });
 
 export default router;

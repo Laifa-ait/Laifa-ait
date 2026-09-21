@@ -1,32 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
-  Wrench,
-  Sparkles,
-  UserCheck,
-  Clock,
-  ArrowRight,
-  ShieldCheck,
-  ChevronLeft,
-  LayoutDashboard,
-  PlusCircle,
+  LayoutGrid,
   Menu,
   FileText,
+  LayoutDashboard,
+  Clock,
+  PlusCircle,
+  Compass,
+  AlertTriangle,
+  Hammer,
+  Send,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { fetchMyArtisanProfile, fetchClientMyRequests } from '../../services/artisan.api';
 import { ArtisanProfile } from '../../types/artisan';
 import { ArtisanSideDrawer } from './ArtisanSideDrawer';
+import { SuperAppSwitcherModal } from '../common/SuperAppSwitcherModal';
+import { OlmaArtisanUserMenu } from './shell/OlmaArtisanUserMenu';
+import { OlmaLanguageSelector } from '../common/OlmaLanguageSelector';
 
-export const ArtisanNavbar: React.FC<{ activeTab?: string }> = () => {
+interface ArtisanNavbarProps {
+  activeTab?: string;
+  onFilterUrgency?: () => void;
+  onFilterRenovation?: () => void;
+}
+
+export const ArtisanNavbar: React.FC<ArtisanNavbarProps> = ({
+  activeTab = 'explorer',
+  onFilterUrgency,
+  onFilterRenovation,
+}) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const [myArtisanProfile, setMyArtisanProfile] = useState<ArtisanProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [clientQuotesCount, setClientQuotesCount] = useState(0);
-
-  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   useEffect(() => {
     if (currentUser) {
@@ -35,9 +48,11 @@ export const ArtisanNavbar: React.FC<{ activeTab?: string }> = () => {
         .then((profile) => setMyArtisanProfile(profile))
         .finally(() => setLoadingProfile(false));
 
-      fetchClientMyRequests().then((quotes) => {
-        setClientQuotesCount(quotes.length);
-      });
+      fetchClientMyRequests()
+        .then((quotes) => {
+          setClientQuotesCount(quotes.length);
+        })
+        .catch(() => setClientQuotesCount(0));
     } else {
       setMyArtisanProfile(null);
       setClientQuotesCount(0);
@@ -46,140 +61,146 @@ export const ArtisanNavbar: React.FC<{ activeTab?: string }> = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        {/* Top Banner / Breadcrumb back to Olmart */}
-        <div className="bg-slate-900 text-slate-300 text-xs py-1.5 px-4 sm:px-6">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Link
-                to="/"
-                className="hover:text-white transition-colors flex items-center gap-1 font-medium"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Retour à Olmart Marketplace</span>
-              </Link>
-              <span className="text-slate-600">|</span>
-              <span className="text-amber-400 font-semibold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                Réseau National des Artisans & Pro 58 Wilayas
-              </span>
-            </div>
-
-            <div className="hidden sm:flex items-center gap-4 text-[11px] text-slate-400">
-              <span>Devis 100% Gratuits</span>
-              <span>•</span>
-              <span>Artisans Vérifiés & Qualifiés</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Artisan Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
-          {/* Left section: Hamburger (3 traits) + Brand */}
+      <header className="sticky top-0 z-40 bg-[#F8FAFC]/95 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(30,58,138,0.03)] transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Left: Brand + Application Switcher matching Olma Immo */}
           <div className="flex items-center gap-3">
-            {/* 3 TRAITS - HAMBURGER MENU BUTTON */}
-            <button
-              onClick={() => setIsDrawerOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-amber-100/70 text-slate-800 hover:text-amber-900 border border-slate-200/80 transition-all flex items-center gap-2 cursor-pointer group"
-              aria-label="Ouvrir le menu et espace compte"
-              id="artisan-hamburger-button"
-            >
-              <Menu className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline text-xs font-black tracking-wider uppercase text-slate-900">
-                Menu
+            <Link to="/artisans" className="flex items-center gap-1.5 group">
+              <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1E293B] font-['Playfair_Display',serif] select-none">
+                OLMA
               </span>
-              {clientQuotesCount > 0 && (
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              )}
-            </button>
+              <span className="text-[11px] sm:text-xs font-bold tracking-widest text-slate-500 uppercase">
+                ARTISANS
+              </span>
+            </Link>
 
-            {/* Brand identity */}
+            {/* Applications SuperApp Switcher Button */}
             <button
-              onClick={() => navigate('/artisans')}
-              className="flex items-center gap-2.5 text-left cursor-pointer group"
+              type="button"
+              onClick={() => setIsSwitcherOpen(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100/90 text-slate-700 hover:text-slate-950 hover:bg-slate-200/80 border border-slate-200/70 transition-all cursor-pointer shadow-2xs group"
+              title="Changer d'univers Olmart"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 text-slate-950 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                <Wrench className="w-5 h-5 stroke-[2.2]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-lg font-black text-slate-900 tracking-tight">OLMART</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 uppercase tracking-wider">
-                    Artisans
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 font-medium">Services & Bâtiment Algérie</p>
-              </div>
+              <LayoutGrid className="w-3.5 h-3.5 text-amber-600 group-hover:scale-105 transition-transform" />
+              <span>{t('nav_applications')}</span>
             </button>
           </div>
 
-          {/* Action Buttons & Identity integration */}
-          <div className="flex items-center gap-2.5">
-            {/* Quick access: Client Quotes if logged in */}
+          {/* Center: Travel Pill Navigation matching Olma Immo */}
+          <nav
+            aria-label="Navigation principale"
+            className="hidden md:flex items-center gap-1 bg-slate-100/80 rounded-full border border-slate-200/60 p-1 shadow-2xs"
+          >
+            <button
+              type="button"
+              onClick={() => navigate('/artisans')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'explorer'
+                  ? 'bg-white text-[#1E293B] font-semibold shadow-xs'
+                  : 'text-[#64748B] hover:text-[#1E293B] hover:bg-white/50'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>{t('nav_explorer')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onFilterUrgency) onFilterUrgency();
+                else navigate('/artisans?urgency=true');
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'urgency'
+                  ? 'bg-white text-rose-700 font-semibold shadow-xs'
+                  : 'text-[#64748B] hover:text-rose-700 hover:bg-white/50'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+              <span>{t('nav_urgency_247')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onFilterRenovation) onFilterRenovation();
+                else navigate('/artisans?trade=renovation');
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'renovation'
+                  ? 'bg-white text-[#1E293B] font-semibold shadow-xs'
+                  : 'text-[#64748B] hover:text-[#1E293B] hover:bg-white/50'
+              }`}
+            >
+              <Hammer className="w-3.5 h-3.5 text-amber-600" />
+              <span>{t('nav_renovation')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/artisans/annonces')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'broadcasts'
+                  ? 'bg-white text-[#1E293B] font-semibold shadow-xs'
+                  : 'text-[#64748B] hover:text-[#1E293B] hover:bg-white/50'
+              }`}
+            >
+              <Send className="w-3.5 h-3.5 text-amber-600" />
+              <span>{t('nav_broadcasts')}</span>
+            </button>
+
             {currentUser && (
               <button
+                type="button"
                 onClick={() => navigate('/artisans/mes-demandes')}
-                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200 text-xs font-bold transition-all cursor-pointer"
-                title="Mes demandes de devis envoyées"
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'quotes'
+                    ? 'bg-white text-[#1E293B] font-semibold shadow-xs'
+                    : 'text-[#64748B] hover:text-[#1E293B] hover:bg-white/50'
+                }`}
               >
                 <FileText className="w-3.5 h-3.5 text-amber-600" />
-                <span>Mes Devis</span>
+                <span>{t('nav_my_quotes')}</span>
                 {clientQuotesCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-950 text-[10px] font-black">
+                  <span className="w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
                     {clientQuotesCount}
                   </span>
                 )}
               </button>
             )}
+          </nav>
 
-            {/* Admin shortcut if logged as admin */}
-            {isAdmin && (
-              <button
-                onClick={() => navigate('/dashboard/admin/artisans')}
-                className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-50 text-purple-900 hover:bg-purple-100 border border-purple-200 text-xs font-bold transition-all cursor-pointer"
-                title="Dashboard Organisation & Modération"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-                <span>Organisation & Admin</span>
-              </button>
-            )}
+          {/* Right: Relocated Action Button & User Menu matching Olma Immo */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Selector (FR / AR / EN) */}
+            <OlmaLanguageSelector variant="compact" />
 
-            {/* User Status / Action Flow */}
+            {/* Relocated Primary Action Button */}
             {loadingProfile ? (
-              <div className="h-9 w-28 bg-slate-100 animate-pulse rounded-xl" />
+              <div className="h-9 w-28 bg-slate-100 animate-pulse rounded-full" />
             ) : myArtisanProfile ? (
-              // User already has an artisan record
-              <div className="flex items-center gap-2">
-                {myArtisanProfile.status === 'approved' ? (
-                  <button
-                    onClick={() => navigate('/artisans/dashboard')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer"
-                  >
-                    <LayoutDashboard className="w-3.5 h-3.5" />
-                    <span>Mon Dashboard Pro</span>
-                  </button>
-                ) : myArtisanProfile.status === 'under_review' ||
-                  myArtisanProfile.status === 'pending' ? (
-                  <button
-                    onClick={() => navigate('/artisans/devenir-artisan')}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold transition-all cursor-pointer"
-                  >
-                    <Clock className="w-3.5 h-3.5 text-blue-600 animate-spin" />
-                    <span>Dossier en Examen</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => navigate('/artisans/devenir-artisan')}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-bold transition-all cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    <span>Statut: {myArtisanProfile.status}</span>
-                  </button>
-                )}
-              </div>
+              myArtisanProfile.status === 'approved' ? (
+                <button
+                  type="button"
+                  onClick={() => navigate('/artisans/dashboard')}
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 hover:text-slate-950 px-4 py-2 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-amber-600" />
+                  <span>{t('nav_pro_space')}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigate('/artisans/devenir-artisan')}
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 cursor-pointer"
+                >
+                  <Clock className="w-3.5 h-3.5 animate-spin" />
+                  <span>{t('nav_under_review')}</span>
+                </button>
+              )
             ) : (
-              // User does not have an artisan application yet
               <button
+                type="button"
                 onClick={() => {
                   if (!currentUser) {
                     navigate('/auth?redirect=/artisans/devenir-artisan');
@@ -187,13 +208,29 @@ export const ArtisanNavbar: React.FC<{ activeTab?: string }> = () => {
                     navigate('/artisans/devenir-artisan');
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-extrabold shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 hover:text-slate-950 px-4 py-2 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all shadow-2xs cursor-pointer group"
               >
-                <PlusCircle className="w-4 h-4 text-slate-950 group-hover:rotate-90 transition-transform duration-300" />
-                <span>Devenir artisan</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <PlusCircle className="w-3.5 h-3.5 text-amber-600 group-hover:rotate-90 transition-transform duration-200" />
+                <span>{t('nav_become_artisan')}</span>
               </button>
             )}
+
+            {/* User Profile Avatar Dropdown Menu */}
+            <OlmaArtisanUserMenu
+              artisanProfile={myArtisanProfile}
+              clientQuotesCount={clientQuotesCount}
+            />
+
+            {/* Hamburger Drawer Trigger (Barre à trois traits) */}
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-amber-50 active:bg-amber-100 text-slate-800 hover:text-amber-700 border border-slate-200/80 hover:border-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+              aria-label="Ouvrir le menu complet"
+              title="Menu et navigation complète"
+            >
+              <Menu className="w-5 h-5 stroke-[2.2]" />
+            </button>
           </div>
         </div>
       </header>
@@ -204,6 +241,12 @@ export const ArtisanNavbar: React.FC<{ activeTab?: string }> = () => {
         onClose={() => setIsDrawerOpen(false)}
         artisanProfile={myArtisanProfile}
         loadingProfile={loadingProfile}
+      />
+
+      {/* Super App Switcher Modal */}
+      <SuperAppSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
       />
     </>
   );

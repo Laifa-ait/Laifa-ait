@@ -79,7 +79,9 @@ export const useTrendingSearches = () => {
           }
         }
       } catch (error) {
-        safeLogger.error("Error fetching trending searches", { err: error instanceof Error ? error.message : String(error) });
+        safeLogger.warn("Notice: could not refresh live trending searches, using localized fallbacks", {
+          err: error instanceof Error ? error.message : String(error)
+        });
         setTrends(fallbacks);
       }
     };

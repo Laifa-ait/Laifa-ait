@@ -2,7 +2,10 @@ import { z } from "zod";
 
 export const AttachmentSchema = z.object({
   type: z.enum(["image", "pdf"]),
-  url: z.string().url("Format d'URL de pièce jointe invalide"),
+  url: z.string().url("Format d'URL de pièce jointe invalide").refine(
+    (u) => u.startsWith("https://"),
+    "L'URL de pièce jointe doit utiliser le protocole HTTPS sécurisé"
+  ),
   fileName: z.string().min(1).max(200),
   fileSizeBytes: z.number().int().positive().max(5 * 1024 * 1024, "Taille maximale autorisée : 5 Mo")
 });

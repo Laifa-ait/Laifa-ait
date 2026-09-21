@@ -3,6 +3,7 @@ import { Router, Response } from 'express';
 import { admin, db } from '../../../config/firebase-admin';
 import {
   authenticateToken,
+  authorizeAdmin,
   optionalAuthenticateToken,
   AuthenticatedRequest,
 } from '../../../middlewares/auth';
@@ -13,6 +14,7 @@ import {
   PropertyCreateSchema,
   PropertyUpdateSchema,
   PropertySearchQuerySchema,
+  PropertyStatusEnum,
 } from '../../../schemas/realEstate';
 import {
   StoredProperty,
@@ -830,7 +832,7 @@ realEstatePropertyRouter.post(
       ...cleanBody,
       legalPapers: legalPapersList,
       legalPaperType: primaryLegalPaper,
-      isLegalVerified: cleanBody.isLegalVerified ?? false,
+      isLegalVerified: false, // Strictly forced to false server-side upon creation (verification requires admin review)
       id: propertyId,
       ownerId,
       viewsCount: 0,
@@ -922,12 +924,18 @@ realEstatePropertyRouter.put(
         id: _discardId,
         viewsCount: _discardViews,
         createdAt: _discardCreatedAt,
+        isLegalVerified: incomingIsLegalVerified,
         ...updatePayload
       } = req.body;
       void _discardOwnerId;
       void _discardId;
       void _discardViews;
       void _discardCreatedAt;
+
+      // Regular property owners cannot tamper with isLegalVerified. Only admins can update it.
+      const targetIsLegalVerified = isServerAdmin && typeof incomingIsLegalVerified === 'boolean'
+        ? incomingIsLegalVerified
+        : Boolean(existingProperty.isLegalVerified);
 
       const incomingPapers: LegalPaperType[] = Array.isArray(updatePayload.legalPapers)
         ? updatePayload.legalPapers
@@ -940,6 +948,8 @@ realEstatePropertyRouter.put(
         ...updatePayload,
         legalPapers: incomingPapers,
         legalPaperType: incomingPaperType,
+        isLegalVerified: targetIsLegalVerified,
+        status: existingProperty.status,
         id,
         ownerId: existingProperty.ownerId,
         updatedAt: new Date().toISOString(),
@@ -977,6 +987,47 @@ realEstatePropertyRouter.put(
   }
 );
 
+// PUT /properties/:id/verify-legal (Admin-only legal verification route)
+realEstatePropertyRouter.put(
+  '/properties/:id/verify-legal',
+  strictLimiter,
+  authenticateToken,
+  authorizeAdmin,
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+    const { isLegalVerified } = req.body;
+
+    if (typeof isLegalVerified !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'Paramètre isLegalVerified booléen requis.' });
+    }
+
+    try {
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Service de base de données indisponible.' });
+      }
+
+      const docRef = db.collection('real_estate_properties').doc(id);
+      const snap = await docRef.get();
+      if (!snap.exists) {
+        return res.status(404).json({ success: false, error: 'Annonce immobilière introuvable.' });
+      }
+
+      await docRef.update({
+        isLegalVerified,
+        updatedAt: new Date().toISOString(),
+      });
+
+      safeLogger.info('RealEstate Property legal verification status updated by admin', { propertyId: id, isLegalVerified, adminUid: req.user?.uid });
+
+      return res.json({ success: true, isLegalVerified });
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      safeLogger.error('Error verifying real estate legal status', { propertyId: id, err: errorMsg });
+      return res.status(500).json({ success: false, error: 'Erreur lors de la vérification légale.' });
+    }
+  }
+);
+
 // PUT /properties/:id/status (Update property status)
 realEstatePropertyRouter.put(
   '/properties/:id/status',
@@ -995,6 +1046,12 @@ realEstatePropertyRouter.put(
     if (!id || !status) {
       return res.status(400).json({ success: false, error: 'Identifiant et statut requis.' });
     }
+
+    const parseResult = PropertyStatusEnum.safeParse(status);
+    if (!parseResult.success) {
+      return res.status(400).json({ success: false, error: 'Statut demandé invalide.' });
+    }
+    const targetStatus = parseResult.data;
 
     try {
       if (!db) {
@@ -1017,12 +1074,35 @@ realEstatePropertyRouter.put(
         });
       }
 
+      // Non-admin state transition restrictions
+      if (!isServerAdmin) {
+        const currentStatus = existingProperty.status || 'draft';
+        const allowedOwnerTransitions: Record<string, string[]> = {
+          draft: ['draft', 'pending', 'active', 'archived'],
+          pending: ['draft', 'archived'],
+          active: ['paused', 'rented', 'sold', 'archived'],
+          paused: ['active', 'rented', 'sold', 'archived'],
+          rented: ['active', 'paused', 'archived'],
+          sold: ['archived'],
+          archived: ['draft', 'pending'],
+          rejected: ['draft', 'pending'],
+        };
+
+        const allowedTargets = allowedOwnerTransitions[currentStatus] || [];
+        if (!allowedTargets.includes(targetStatus)) {
+          return res.status(403).json({
+            success: false,
+            error: `Transition de statut non autorisée depuis '${currentStatus}' vers '${targetStatus}'.`,
+          });
+        }
+      }
+
       await docRef.update({
-        status,
+        status: targetStatus,
         updatedAt: new Date().toISOString(),
       });
 
-      return res.json({ success: true, message: 'Statut mis à jour avec succès.' });
+      return res.json({ success: true, message: 'Statut mis à jour avec succès.', status: targetStatus });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       safeLogger.error('Error updating property status', { propertyId: id, err: errorMsg });

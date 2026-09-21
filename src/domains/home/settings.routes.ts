@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { authenticateToken, authorizeAdmin } from "../../middlewares/auth";
+import { validateIdParam } from "../../middlewares/validation";
 import type { AuthenticatedSettingsRequest, NewsletterSubscribeDTO } from "./types/settings.types";
 import { SettingsService } from "./services/settings.service";
 import { safeLogger } from "../../utils/logger";
@@ -37,7 +38,7 @@ router.get("/api/v1/settings/categories", async (_req: Request, res: Response) =
 });
 
 // GET any setting document by id
-router.get("/api/v1/settings/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/settings/:id", validateIdParam({ reservedNames: ["categories", "categories-hierarchy", "homepage-categories", "public", "support"] }), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getSettingById(id);
@@ -48,7 +49,7 @@ router.get("/api/v1/settings/:id", async (req: Request, res: Response) => {
 });
 
 // POST any setting document by id (Admin only)
-router.post("/api/v1/settings/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedSettingsRequest, res: Response) => {
+router.post("/api/v1/settings/:id", authenticateToken, authorizeAdmin, validateIdParam({ reservedNames: ["categories", "categories-hierarchy", "homepage-categories", "public", "support"] }), async (req: AuthenticatedSettingsRequest, res: Response) => {
   const { id } = req.params;
   try {
     const data = req.body;
@@ -81,7 +82,7 @@ router.post("/api/v1/newsletter/subscribe", async (req: Request, res: Response) 
 });
 
 // GET any metadata document by id
-router.get("/api/v1/metadata/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/metadata/:id", validateIdParam(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getMetadataById(id);
@@ -92,7 +93,7 @@ router.get("/api/v1/metadata/:id", async (req: Request, res: Response) => {
 });
 
 // GET any seasonal theme by id
-router.get("/api/v1/seasonal-themes/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/seasonal-themes/:id", validateIdParam(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getSeasonalThemeById(id);
@@ -103,7 +104,7 @@ router.get("/api/v1/seasonal-themes/:id", async (req: Request, res: Response) =>
 });
 
 // GET any ui-element document by id
-router.get("/api/v1/ui-elements/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/ui-elements/:id", validateIdParam(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getUiElementById(id);
@@ -114,7 +115,7 @@ router.get("/api/v1/ui-elements/:id", async (req: Request, res: Response) => {
 });
 
 // GET any homepage-categories-v2 document by id
-router.get("/api/v1/homepage-categories-v2/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/homepage-categories-v2/:id", validateIdParam(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getHomepageCategoriesV2ById(id);
@@ -125,7 +126,7 @@ router.get("/api/v1/homepage-categories-v2/:id", async (req: Request, res: Respo
 });
 
 // GET any platform stats document by id
-router.get("/api/v1/platform-stats/:id", async (req: Request, res: Response) => {
+router.get("/api/v1/platform-stats/:id", validateIdParam({ reservedNames: ["trending_searches", "trending", "searches"], passReservedToNext: true }), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = await SettingsService.getPlatformStatsById(id);

@@ -9,7 +9,7 @@ import { apiLimiter, debugLimiter, webhookLimiter, strictLimiter } from "./src/m
 import { helmetMiddleware, corsMiddleware, preventDirectCloudRunAccess, nonceMiddleware } from "./src/middlewares/security";
 import { handleCspReport } from "./src/middlewares/cspReporter";
 import { csrfProtection, getCsrfTokenHandler } from "./src/middlewares/csrf";
-import { optionalAuthenticateToken } from "./src/middlewares/auth";
+import { optionalAuthenticateToken, authenticateToken, authorizeAdmin } from "./src/middlewares/auth";
 import { deprecationMiddleware } from "./src/middlewares/deprecation";
 import { generateOpenApiSpec } from "./src/swagger/openapi";
 import { safeLogger } from "./src/utils/logger";
@@ -85,20 +85,31 @@ app.use(optionalAuthenticateToken);
 app.get("/api/v1/csrf-token", getCsrfTokenHandler);
 app.use("/api", csrfProtection);
 
-// Swagger Documentation (Lazy Loaded)
+// Swagger Documentation (Lazy Loaded & Production Restricted)
 let swaggerMiddleware: express.RequestHandler | null = null;
-app.use("/api-docs", (req: Request, res: Response, next: NextFunction) => {
-  if (!swaggerMiddleware) {
-    const openApiDoc = generateOpenApiSpec();
-    swaggerMiddleware = swaggerUi.setup(openApiDoc) as unknown as express.RequestHandler;
-  }
-  return (swaggerUi.serve as unknown as express.RequestHandler)(req, res, () => {
-    if (swaggerMiddleware) {
-      return swaggerMiddleware(req, res, next);
+app.use(
+  "/api-docs",
+  (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV === "production") {
+      return authenticateToken(req, res, () => {
+        return authorizeAdmin(req, res, next);
+      });
     }
     return next();
-  });
-});
+  },
+  (req: Request, res: Response, next: NextFunction) => {
+    if (!swaggerMiddleware) {
+      const openApiDoc = generateOpenApiSpec();
+      swaggerMiddleware = swaggerUi.setup(openApiDoc) as unknown as express.RequestHandler;
+    }
+    return (swaggerUi.serve as unknown as express.RequestHandler)(req, res, () => {
+      if (swaggerMiddleware) {
+        return swaggerMiddleware(req, res, next);
+      }
+      return next();
+    });
+  }
+);
 
 // -----------------------------------------------------------------------------
 // OLMART API GATEWAY ROUTER PIPELINE

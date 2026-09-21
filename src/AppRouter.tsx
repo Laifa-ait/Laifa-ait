@@ -276,6 +276,9 @@ const ArtisanDashboardPage = React.lazy(() =>
 const ClientArtisanQuotesPage = React.lazy(() =>
   import("./pages/Artisans/ClientArtisanQuotesPage").then((m) => ({ default: m.ClientArtisanQuotesPage }))
 );
+const ArtisanBroadcastsPage = React.lazy(() =>
+  import("./pages/Artisans/ArtisanBroadcastsPage").then((m) => ({ default: m.ArtisanBroadcastsPage }))
+);
 const ArtisansAdmin = React.lazy(() =>
   import("./pages/Admin/ArtisansAdmin").then((m) => ({ default: m.ArtisansAdmin }))
 );
@@ -622,6 +625,14 @@ export const AppRouter: React.FC = () => {
                 element={
                   <PageWrapper>
                     <ClientArtisanQuotesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/artisans/annonces"
+                element={
+                  <PageWrapper>
+                    <ArtisanBroadcastsPage />
                   </PageWrapper>
                 }
               />

@@ -10,6 +10,8 @@ import {
   ArtisanStatsSummary,
   ArtisanApplicationPayload,
   ArtisanStatus,
+  ArtisanJobBroadcast,
+  ArtisanJobBroadcastPayload,
 } from '../types/artisan';
 import { DEFAULT_ARTISAN_TRADES } from '../data/artisanTrades';
 
@@ -351,3 +353,61 @@ export async function adminFetchAuditLogs(): Promise<ArtisanAdminAuditLog[]> {
     return [];
   }
 }
+
+// ==========================================
+// CLIENT JOB BROADCASTS (PUBLICITÉ RECHERCHE D'ARTISAN)
+// ==========================================
+
+export async function createArtisanJobBroadcast(
+  payload: ArtisanJobBroadcastPayload
+): Promise<{ success: boolean; data?: ArtisanJobBroadcast; error?: string }> {
+  return await apiPost<{ success: boolean; data?: ArtisanJobBroadcast; error?: string }>(
+    '/api/v1/artisans/broadcasts',
+    payload
+  );
+}
+
+export async function fetchArtisanJobBroadcasts(filters?: {
+  tradeId?: string;
+  wilaya?: string;
+  urgency?: string;
+  limit?: number;
+}): Promise<ArtisanJobBroadcast[]> {
+  try {
+    const params = new URLSearchParams();
+    if (filters?.tradeId) params.append('tradeId', filters.tradeId);
+    if (filters?.wilaya) params.append('wilaya', filters.wilaya);
+    if (filters?.urgency) params.append('urgency', filters.urgency);
+    if (filters?.limit) params.append('limit', String(filters.limit));
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await apiGet<{ success: boolean; data: ArtisanJobBroadcast[] }>(
+      `/api/v1/artisans/broadcasts${queryString}`
+    );
+    return res?.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchClientJobBroadcasts(): Promise<ArtisanJobBroadcast[]> {
+  try {
+    const res = await apiGet<{ success: boolean; data: ArtisanJobBroadcast[] }>(
+      '/api/v1/artisans/my-broadcasts'
+    );
+    return res?.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function updateArtisanJobBroadcastStatus(
+  broadcastId: string,
+  status: ArtisanJobBroadcast['status']
+): Promise<{ success: boolean; error?: string }> {
+  return await apiPost<{ success: boolean; error?: string }>(
+    `/api/v1/artisans/broadcasts/${encodeURIComponent(broadcastId)}/status`,
+    { status }
+  );
+}
+

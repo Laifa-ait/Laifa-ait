@@ -20,6 +20,7 @@ import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken } from "../../../middlewares/auth";
 import { GoogleGenAI, Part } from "@google/genai";
 import { safeLogger } from "../../../utils/logger";
+import { validateExternalUrl } from "../../../utils/security";
 
 async function getGeminiImagePart(photoStr: string): Promise<Part | null> {
   try {
@@ -33,18 +34,28 @@ async function getGeminiImagePart(photoStr: string): Promise<Part | null> {
           }
         };
       }
-    } else if (photoStr.startsWith("http")) {
-      const response = await fetch(photoStr);
-      if (response.ok) {
-        const buffer = await response.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString("base64");
-        const contentType = response.headers.get("content-type") || "image/jpeg";
-        return {
-          inlineData: {
-            mimeType: contentType,
-            data: base64
-          }
-        };
+    } else if (photoStr.startsWith("http://") || photoStr.startsWith("https://")) {
+      const validatedUrl = validateExternalUrl(photoStr, false);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      try {
+        const response = await fetch(validatedUrl.toString(), {
+          redirect: "error",
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const buffer = await response.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString("base64");
+          const contentType = response.headers.get("content-type") || "image/jpeg";
+          return {
+            inlineData: {
+              mimeType: contentType,
+              data: base64
+            }
+          };
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
   } catch (err) {

@@ -19,7 +19,10 @@ const RecordDocumentSchema = z.object({
   fileName: z.string().min(1).max(255),
   fileSize: z.number().int().positive().max(30 * 1024 * 1024),
   mimeType: z.string().min(1).max(100),
-  downloadUrl: z.string().url(),
+  downloadUrl: z.string().url().refine(
+    (url) => url.startsWith("https://"),
+    "L'URL de téléchargement doit utiliser le protocole HTTPS sécurisé"
+  ),
   storagePath: z.string().min(1).max(500),
   description: z.string().max(1000).optional(),
 });

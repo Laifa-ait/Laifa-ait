@@ -1,191 +1,237 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
-  MapPin,
   Star,
   ShieldCheck,
   Phone,
-  Briefcase,
   ArrowRight,
-  Heart,
+  Check,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { ArtisanProfile } from '../../types/artisan';
 import { isArtisanFavorite, toggleFavoriteArtisan } from '../../services/artisanHistory';
+import { PropertyFavoriteButton } from '../OlmaImmo/primitives/PropertyFavoriteButton';
 import { QuoteRequestModal } from './QuoteRequestModal';
+
+const TRADE_COVER_FALLBACKS: Record<string, string> = {
+  plomberie: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=800&auto=format&fit=crop&q=80',
+  electricite: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80',
+  peinture: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&auto=format&fit=crop&q=80',
+  menuiserie: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=800&auto=format&fit=crop&q=80',
+  serrurerie: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&auto=format&fit=crop&q=80',
+  climatisation: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&auto=format&fit=crop&q=80',
+  maconnerie: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?w=800&auto=format&fit=crop&q=80',
+  etancheite: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
+  default: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80',
+};
 
 interface ArtisanCardProps {
   artisan: ArtisanProfile;
   onRequestQuote?: (artisan: ArtisanProfile) => void;
+  className?: string;
 }
 
-export const ArtisanCard: React.FC<ArtisanCardProps> = ({ artisan, onRequestQuote }) => {
+export const ArtisanCard: React.FC<ArtisanCardProps> = ({
+  artisan,
+  onRequestQuote,
+  className = '',
+}) => {
   const navigate = useNavigate();
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [showPhone, setShowPhone] = useState(false);
   const [isFav, setIsFav] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
 
   useEffect(() => {
     setIsFav(isArtisanFavorite(artisan.id));
   }, [artisan.id]);
 
-  const handleToggleFav = (e: React.MouseEvent) => {
+  const handleToggleFav = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    e.preventDefault();
     const result = toggleFavoriteArtisan(artisan);
     setIsFav(result);
   };
 
-  const displayAvatar =
+  const handleCopyOrCallPhone = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (artisan.phone) {
+      navigator.clipboard?.writeText(artisan.phone);
+      setCopiedPhone(true);
+      toast.success(`Numéro copié : ${artisan.phone}`);
+      setTimeout(() => setCopiedPhone(false), 2500);
+    }
+  };
+
+  // Select banner cover image
+  const tradeKey = (artisan.tradeName || '').toLowerCase();
+  const matchedKey = Object.keys(TRADE_COVER_FALLBACKS).find((k) => tradeKey.includes(k)) || 'default';
+  const coverImage =
+    artisan.portfolio && artisan.portfolio.length > 0 && artisan.portfolio[0].imageUrl
+      ? artisan.portfolio[0].imageUrl
+      : TRADE_COVER_FALLBACKS[matchedKey];
+
+  const avatar =
     artisan.avatarUrl ||
     `https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=150&auto=format&fit=crop&q=80`;
 
+  const startingPrice =
+    artisan.services && artisan.services.length > 0 && artisan.services[0].priceStartingFrom
+      ? `${new Intl.NumberFormat('fr-FR').format(artisan.services[0].priceStartingFrom)} DZD`
+      : 'Sur devis';
+
   return (
     <>
-      <div
-        id={`artisan-card-${artisan.id}`}
-        className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between group relative"
+      <motion.article
+        whileHover={{ y: -3 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+        className={`group bg-white rounded-2xl overflow-hidden flex flex-col justify-between relative border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-4px_rgba(100,116,139,0.14)] transition-all duration-200 ${className}`}
       >
-        {/* Favorite button */}
-        <button
-          onClick={handleToggleFav}
-          className={`absolute top-4 right-4 p-1.5 rounded-full transition-all cursor-pointer ${
-            isFav
-              ? 'bg-red-50 text-red-500 hover:bg-red-100'
-              : 'bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50'
-          }`}
-          title={isFav ? 'Retirer des favoris' : 'Enregistrer cet artisan'}
+        <div
+          onClick={() => navigate(`/artisans/profile/${artisan.id}`)}
+          className="cursor-pointer flex flex-col flex-1"
         >
-          <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
-        </button>
+          {/* Top Media Header matching Olma Immo PropertyCard */}
+          <div className="relative aspect-16/10 rounded-t-2xl overflow-hidden bg-slate-100">
+            <img
+              src={coverImage}
+              alt={artisan.tradeName}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
 
-        {/* Top Info: Avatar, Name, Trade, Verified */}
-        <div className="space-y-3.5 pr-6">
-          <div className="flex items-start gap-3.5">
-            <div className="relative shrink-0">
-              <img loading="lazy" decoding="async" src={displayAvatar}
-                alt={artisan.fullName}
-                referrerPolicy="no-referrer"
-                className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500/20 shadow-xs group-hover:scale-105 transition-transform"
+            {/* Top-Right: Relocated Favorite Heart Button */}
+            <div className="absolute top-2.5 right-2.5 z-10">
+              <PropertyFavoriteButton
+                isFav={isFav}
+                onClick={handleToggleFav}
+                size="sm"
+                variant="glass"
+                className="bg-black/30 hover:bg-black/50 text-white backdrop-blur-xs border-0 shadow-none"
               />
-              {artisan.status === 'approved' && (
-                <div
-                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-xs"
-                  title="Artisan Vérifié Olmart"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
+            </div>
+
+            {/* Top-Left: Availability / Status Badge */}
+            <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
+              {artisan.isAvailable ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  Disponible
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/40 text-white/90 backdrop-blur-md">
+                  Sur RDV
+                </span>
               )}
             </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-100/80 text-amber-900 border border-amber-200/60">
-                  {artisan.tradeName}
-                </span>
-                {artisan.isAvailable ? (
-                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Disponible
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">
-                    Occupé
-                  </span>
+            {/* Bottom-Left: Nested Avatar & Verified shield */}
+            <div className="absolute bottom-2.5 left-3 z-10 flex items-center gap-2">
+              <div className="relative">
+                <img
+                  src={avatar}
+                  alt={artisan.fullName}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md bg-white"
+                />
+                {artisan.status === 'approved' && (
+                  <div
+                    className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-xs"
+                    title="Artisan vérifié Olmart"
+                  >
+                    <ShieldCheck className="w-3 h-3 stroke-[2.5]" />
+                  </div>
                 )}
               </div>
-
-              <h3
-                onClick={() => navigate(`/artisans/profile/${artisan.id}`)}
-                className="text-base font-extrabold text-slate-900 truncate hover:text-amber-600 transition-colors cursor-pointer mt-1"
-              >
-                {artisan.fullName}
-              </h3>
-
-              <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
-                <span className="flex items-center gap-1 text-amber-600 font-bold">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span>{artisan.rating.toFixed(1)}</span>
-                  <span className="text-slate-400 font-normal">({artisan.reviewCount || 0})</span>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1 font-medium text-slate-600 truncate">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>
-                    {artisan.commune}, {artisan.wilaya}
-                  </span>
+              <div className="text-white drop-shadow-sm">
+                <span className="text-[11px] font-bold bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-md">
+                  {artisan.tradeName}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Bio Snippet */}
-          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-            {artisan.bio ||
-              `Artisan qualifié en ${artisan.tradeName} intervenant à ${artisan.commune} et wilaya de ${artisan.wilaya}. Travail soigné et devis rapide.`}
-          </p>
+          {/* Typography & Specs in refined slate palette */}
+          <div className="p-4 flex-1 flex flex-col justify-between gap-1.5">
+            <div>
+              {/* Line 1: Name & Rating */}
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-bold text-[#1E293B] text-[15px] sm:text-base leading-snug truncate group-hover:text-[#1E3A8A] transition-colors">
+                  {artisan.fullName}
+                </h3>
+                <div className="flex items-center gap-1 text-xs font-bold text-amber-600 shrink-0">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span>{artisan.rating ? artisan.rating.toFixed(1) : '5.0'}</span>
+                  <span className="text-slate-400 font-normal text-[11px]">
+                    ({artisan.reviewCount || 0})
+                  </span>
+                </div>
+              </div>
 
-          {/* Specialties Pills */}
-          {artisan.specialties && artisan.specialties.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {artisan.specialties.slice(0, 3).map((spec, idx) => (
-                <span
-                  key={idx}
-                  className="text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md truncate max-w-[150px]"
-                >
-                  {spec}
-                </span>
-              ))}
-              {artisan.specialties.length > 3 && (
-                <span className="text-[10px] font-semibold text-slate-400 px-1 py-0.5">
-                  +{artisan.specialties.length - 3}
-                </span>
-              )}
+              {/* Line 2: Location */}
+              <p className="text-xs sm:text-[13px] font-normal text-[#64748B] truncate mt-0.5">
+                {artisan.commune ? `${artisan.commune}, ` : ''}{artisan.wilaya}
+              </p>
+
+              {/* Line 3: Experience & Specialties */}
+              <p className="text-xs font-normal text-[#94A3B8] truncate mt-0.5">
+                {artisan.yearsOfExperience || 1} ans d'expérience
+                {artisan.specialties && artisan.specialties.length > 0 && ` • ${artisan.specialties.slice(0, 2).join(', ')}`}
+              </p>
             </div>
-          )}
 
-          {/* Experience & stats */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span className="flex items-center gap-1 font-medium">
-              <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-              <span>{artisan.yearsOfExperience || 1} ans d'expérience</span>
-            </span>
-            {artisan.services && artisan.services.length > 0 && (
-              <span className="text-[11px] font-bold text-slate-900">
-                Dès {artisan.services[0].priceStartingFrom || 'Sur devis'}{' '}
-                {artisan.services[0].priceStartingFrom ? 'DZD' : ''}
+            {/* Line 4: Pricing */}
+            <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
+              <span className="text-[11px] font-medium text-slate-500">Tarif indicatif</span>
+              <span className="text-sm font-bold text-[#1E293B] tracking-tight">
+                {startingPrice}
               </span>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* Actions Bottom Bar */}
-        <div className="pt-4 mt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-          {showPhone ? (
-            <a
-              href={`tel:${artisan.phone}`}
-              className="h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>{artisan.phone}</span>
-            </a>
-          ) : (
+        {/* Revamped Button Section with Elegant Placement */}
+        <div className="px-4 pb-4 pt-1 flex items-center gap-2">
+          {/* Direct Phone Call / Copy Button */}
+          {artisan.phone && (
             <button
-              onClick={() => setShowPhone(true)}
-              className="h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              type="button"
+              onClick={handleCopyOrCallPhone}
+              className="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              title={`Appeler ou copier : ${artisan.phone}`}
+              aria-label="Contacter par téléphone"
             >
-              <Phone className="w-3.5 h-3.5 text-slate-500" />
-              <span>Téléphone</span>
+              {copiedPhone ? (
+                <Check className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <Phone className="w-4 h-4 text-slate-600" />
+              )}
             </button>
           )}
 
+          {/* Prominent Primary Call-To-Action Button */}
           <button
-            onClick={() => (onRequestQuote ? onRequestQuote(artisan) : setIsQuoteModalOpen(true))}
-            className="h-9 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer group-hover:shadow-sm"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onRequestQuote) {
+                onRequestQuote(artisan);
+              } else {
+                setIsQuoteModalOpen(true);
+              }
+            }}
+            className="flex-1 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs hover:shadow-md cursor-pointer select-none"
           >
             <span>Devis gratuit</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-950 stroke-[2.2] group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
-      </div>
+      </motion.article>
 
       {/* Quote Request Modal */}
       {!onRequestQuote && (

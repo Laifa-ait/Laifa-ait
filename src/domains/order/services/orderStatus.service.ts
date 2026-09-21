@@ -401,7 +401,7 @@ export class OrderStatusService {
   }
 
   static async confirmDelivery(input: ConfirmDeliveryInput): Promise<string> {
-    const { id, fullName, email, phone, wilaya, commune, address, deliveryMethod, items, total, authUid, userId } = input;
+    const { id, fullName, email, phone, wilaya, commune, address, deliveryMethod, items, total, authUid } = input;
 
     const deliveryPayload = {
       id,
@@ -414,7 +414,7 @@ export class OrderStatusService {
       deliveryMethod,
       items,
       total,
-      userId: authUid || userId || "guest",
+      userId: authUid ? authUid : "guest",
       createdAt: admin.firestore.Timestamp.now(),
     };
 

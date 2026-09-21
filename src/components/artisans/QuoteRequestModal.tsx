@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { X, Send, Calendar, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Send, AlertCircle } from 'lucide-react';
 import { ArtisanProfile } from '../../types/artisan';
 import { submitClientQuoteRequest } from '../../services/artisan.api';
 import { useAuth } from '../../context/AuthContext';
-import { WilayaCommuneSelector } from './WilayaCommuneSelector';
 import { QuoteRequestSuccess } from './QuoteRequestSuccess';
+import { QuoteRequestFormFields } from './quotes/QuoteRequestFormFields';
 
 interface QuoteRequestModalProps {
   artisan: ArtisanProfile | null;
@@ -40,6 +40,26 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleEscape);
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+        window.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [isOpen, onClose]);
 
   if (!isOpen || !artisan) return null;
 
@@ -91,7 +111,7 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto" onTouchMove={(e) => e.stopPropagation()}>
       <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative my-8">
         <button
           onClick={onClose}
@@ -120,126 +140,30 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Votre Nom *</label>
-                <input
-                  type="text"
-                  required
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Téléphone *</label>
-                <input
-                  type="tel"
-                  required
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Email (Optionnel)</label>
-                <input
-                  type="email"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Budget max (DZD)</label>
-                <input
-                  type="number"
-                  placeholder="Ex: 5000"
-                  value={estimatedBudget || ''}
-                  onChange={(e) =>
-                    setEstimatedBudget(e.target.value ? parseInt(e.target.value, 10) : undefined)
-                  }
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Titre des travaux *</label>
-              <input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Description du besoin *</label>
-              <textarea
-                rows={3}
-                required
-                placeholder="Décrivez les réparations, surface, pannes..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700">Lieu d'intervention</label>
-              <WilayaCommuneSelector
-                selectedWilaya={wilaya}
-                selectedCommune={commune}
-                onWilayaChange={(w: string) => setWilaya(w)}
-                onCommuneChange={(c: string) => setCommune(c)}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Adresse / Repère (Optionnel)</label>
-              <input
-                type="text"
-                placeholder="Cité, numéro de rue..."
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Niveau d'urgence</label>
-                <select
-                  value={urgency}
-                  onChange={(e) =>
-                    setUrgency(e.target.value as 'urgent' | 'standard' | 'flexible')
-                  }
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                >
-                  <option value="standard">Standard (Sous 48h)</option>
-                  <option value="urgent">Urgent (Aujourd'hui)</option>
-                  <option value="flexible">Flexible</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Date souhaitée</label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={preferredDate}
-                    onChange={(e) => setPreferredDate(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
-                  />
-                  <Calendar className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
-                </div>
-              </div>
-            </div>
+            <QuoteRequestFormFields
+              clientName={clientName}
+              setClientName={setClientName}
+              clientPhone={clientPhone}
+              setClientPhone={setClientPhone}
+              clientEmail={clientEmail}
+              setClientEmail={setClientEmail}
+              estimatedBudget={estimatedBudget}
+              setEstimatedBudget={setEstimatedBudget}
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              wilaya={wilaya}
+              setWilaya={setWilaya}
+              commune={commune}
+              setCommune={setCommune}
+              address={address}
+              setAddress={setAddress}
+              urgency={urgency}
+              setUrgency={setUrgency}
+              preferredDate={preferredDate}
+              setPreferredDate={setPreferredDate}
+            />
 
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <button
@@ -264,3 +188,4 @@ export const QuoteRequestModal: React.FC<QuoteRequestModalProps> = ({
     </div>
   );
 };
+

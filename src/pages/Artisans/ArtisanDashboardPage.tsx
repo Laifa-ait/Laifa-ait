@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Tag, Camera, Settings, RefreshCw } from 'lucide-react';
+import { FileText, Tag, Camera, Settings, RefreshCw, Send } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
   fetchMyArtisanProfile,
@@ -87,6 +87,15 @@ export const ArtisanDashboardPage: React.FC = () => {
 
         {/* Dashboard Tabs Navigation */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => navigate(`/artisans/annonces?tradeId=${encodeURIComponent(profile.tradeId)}`)}
+            className="px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 shadow-xs"
+          >
+            <Send className="w-4 h-4" />
+            <span>Chantiers & Annonces</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('quotes')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0 ${

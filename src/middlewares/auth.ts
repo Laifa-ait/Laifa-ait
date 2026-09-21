@@ -19,14 +19,16 @@ export interface AuthenticatedRequest extends Request {
 
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
+  let idToken: string | undefined;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Authentification requise. Jeton manquant." });
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    idToken = authHeader.split("Bearer ")[1];
+  } else if (req.cookies && typeof req.cookies.admin_session === "string" && req.cookies.admin_session.trim()) {
+    idToken = req.cookies.admin_session.trim();
   }
 
-  const idToken = authHeader.split("Bearer ")[1];
   if (!idToken || idToken === "undefined" || idToken === "null") {
-    return res.status(401).json({ error: "Authentification requise. Jeton invalide." });
+    return res.status(401).json({ error: "Authentification requise. Jeton manquant." });
   }
 
   try {
@@ -127,12 +129,14 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
 
 export const optionalAuthenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
+  let idToken: string | undefined;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next();
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    idToken = authHeader.split("Bearer ")[1];
+  } else if (req.cookies && typeof req.cookies.admin_session === "string" && req.cookies.admin_session.trim()) {
+    idToken = req.cookies.admin_session.trim();
   }
 
-  const idToken = authHeader.split("Bearer ")[1];
   if (!idToken || idToken === "undefined" || idToken === "null") {
     return next();
   }
@@ -248,43 +252,45 @@ export const require2FA = async (req: AuthenticatedRequest, res: Response, next:
 
   const uid = req.user.uid;
   try {
-    if (db) {
-      const userDoc = await db.collection("users").doc(uid).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        const has2FA = userData?.verification?.verified === true || userData?.is2FAEnabled === true;
+    if (!db) {
+      return res.status(503).json({ error: "Service de base de données indisponible pour la vérification 2FA." });
+    }
 
-        if (has2FA) {
-          const verifiedAt = userData?.verification?.verifiedAt;
-          const authTime = Number(req.user.auth_time || 0);
+    const userDoc = await db.collection("users").doc(uid).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const has2FA = userData?.verification?.verified === true || userData?.is2FAEnabled === true;
 
-          if (!authTime) {
-            return res.status(403).json({
-              error: "MFA_REQUIRED",
-              message: "Date d'authentification invalide pour cette session.",
-            });
+      if (has2FA) {
+        const verifiedAt = userData?.verification?.verifiedAt;
+        const authTime = Number(req.user.auth_time || 0);
+
+        if (!authTime) {
+          return res.status(403).json({
+            error: "MFA_REQUIRED",
+            message: "Date d'authentification invalide pour cette session.",
+          });
+        }
+
+        let isVerifiedForSession = false;
+        if (verifiedAt) {
+          const verifiedAtMillis = typeof verifiedAt.toMillis === "function"
+            ? verifiedAt.toMillis()
+            : typeof verifiedAt === "number"
+            ? verifiedAt
+            : new Date(verifiedAt).getTime();
+
+          const authTimeMillis = authTime * 1000;
+          if (verifiedAtMillis >= authTimeMillis) {
+            isVerifiedForSession = true;
           }
+        }
 
-          let isVerifiedForSession = false;
-          if (verifiedAt) {
-            const verifiedAtMillis = typeof verifiedAt.toMillis === "function"
-              ? verifiedAt.toMillis()
-              : typeof verifiedAt === "number"
-              ? verifiedAt
-              : new Date(verifiedAt).getTime();
-
-            const authTimeMillis = authTime * 1000;
-            if (verifiedAtMillis >= authTimeMillis) {
-              isVerifiedForSession = true;
-            }
-          }
-
-          if (!isVerifiedForSession) {
-            return res.status(403).json({
-              error: "MFA_REQUIRED",
-              message: "Double authentification requise pour cette session.",
-            });
-          }
+        if (!isVerifiedForSession) {
+          return res.status(403).json({
+            error: "MFA_REQUIRED",
+            message: "Double authentification requise pour cette session.",
+          });
         }
       }
     }

@@ -158,5 +158,14 @@ describe('Enterprise Sanitization & XSS Defense Suite (DOMPurify)', () => {
       expect(sanitizeURL('jav%61script:alert(1)')).toBe('#');
       expect(sanitizeURL('java\0script:alert(1)')).toBe('#');
     });
+
+    it('neutralizes malicious payload in email HTML preview (<img src=x onerror=alert(1)>)', () => {
+      const emailHtmlPreview = '<p>Bonjour,</p><img src=x onerror=alert(1) /><p>Votre panier vous attend !</p>';
+      const sanitized = sanitizeHTML(emailHtmlPreview);
+      expect(sanitized).not.toContain('onerror');
+      expect(sanitized).not.toContain('alert');
+      expect(sanitized).toContain('<p>Bonjour,</p>');
+      expect(sanitized).toContain('<p>Votre panier vous attend !</p>');
+    });
   });
 });

@@ -50,6 +50,11 @@ artisanPublicRouter.get("/artisans/trades", async (_req, res: Response) => {
 artisanPublicRouter.get("/artisans/profile/:id", async (req, res: Response) => {
   try {
     const { id } = req.params;
+
+    if (!id || !/^[a-zA-Z0-9_-]{3,128}$/.test(id)) {
+      return res.status(400).json({ error: "Identifiant d'artisan invalide" });
+    }
+
     const artisan = await ArtisanServiceLayer.getArtisanById(id, true);
 
     if (!artisan) {
