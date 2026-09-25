@@ -83,7 +83,7 @@ export const SectionTargetingTab: React.FC<SectionTargetingTabProps> = ({
         </div>
       </div>
 
-      {/* Wilaya Geo-targeting (58 Wilayas) */}
+      {/* Wilaya Geo-targeting (69 Wilayas) */}
       <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
@@ -91,7 +91,7 @@ export const SectionTargetingTab: React.FC<SectionTargetingTabProps> = ({
             <h4 className="text-xs font-bold text-zinc-900">
               {t("Ciblage Géographique par Wilaya")}
               <span className="ml-2 text-zinc-500 font-normal">
-                ({secTargetRegions.length === 0 ? "58 Wilayas (Toute l'Algérie)" : `${secTargetRegions.length} sélectionnée(s)`})
+                ({secTargetRegions.length === 0 ? "69 Wilayas (Toute l'Algérie)" : `${secTargetRegions.length} sélectionnée(s)`})
               </span>
             </h4>
           </div>
@@ -102,7 +102,7 @@ export const SectionTargetingTab: React.FC<SectionTargetingTabProps> = ({
               onClick={handleSelectAllWilayas}
               className="text-amber-700 hover:text-amber-800 font-bold cursor-pointer"
             >
-              {t("Toutes (58)")}
+              {t("Toutes (69)", "Toutes (69)")}
             </button>
             <span className="text-zinc-300">|</span>
             <button

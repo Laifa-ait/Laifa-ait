@@ -26,7 +26,7 @@ export const TERRITORY_LEVELS: TerritoryLevel[] = [
     iconBg: 'bg-emerald-600 text-white',
     icon: Landmark,
     description:
-      "C'est la plus grande collectivité territoriale. L'Algérie compte actuellement 58 wilayas. Chaque wilaya est dirigée par un Wali (gouverneur) nommé par le président, et possède une assemblée élue (l'APW).",
+      "C'est la plus grande collectivité territoriale. L'Algérie compte actuellement 69 wilayas. Chaque wilaya est dirigée par un Wali (gouverneur) nommé par le président, et possède une assemblée élue (l'APW).",
     realEstateImpact:
       'Détermine la Conservation Foncière de rattachement (Livret foncier, cadastre) et la juridiction notariale.',
   },

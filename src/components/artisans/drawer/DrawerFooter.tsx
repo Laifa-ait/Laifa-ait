@@ -31,7 +31,7 @@ export const DrawerFooter: React.FC<DrawerFooterProps> = ({ onLogout }) => {
       <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1 font-medium">
         <span className="flex items-center gap-1">
           <MapPin className="w-3 h-3 text-amber-500" />
-          <span>58 Wilayas d&apos;Algérie</span>
+          <span>69 Wilayas d&apos;Algérie</span>
         </span>
         <span>Olma Artisans v2.4</span>
       </div>

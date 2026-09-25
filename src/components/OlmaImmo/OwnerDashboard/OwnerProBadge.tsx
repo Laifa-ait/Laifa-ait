@@ -26,7 +26,7 @@ export const OwnerProBadge: React.FC<OwnerProBadgeProps> = ({
         </h3>
 
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-          Vos annonces bénéficient du badge de vérification officiel et d'une visibilité prioritaire auprès des acquéreurs et locataires des 58 wilayas.
+          Vos annonces bénéficient du badge de vérification officiel et d'une visibilité prioritaire auprès des acquéreurs et locataires des 69 wilayas.
         </p>
 
         <div className="flex items-center gap-4 flex-wrap text-xs text-blue-100 font-medium pt-1">

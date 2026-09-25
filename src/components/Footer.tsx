@@ -107,7 +107,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
               </div>
               <div className="flex flex-col">
                 <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                  {t("footer_trust_delivery_title") || "Livraison 58 Wilayas"}
+                  {t("footer_trust_delivery_title") || "Livraison 69 Wilayas"}
                 </span>
                 <span className="text-[11px] text-zinc-400">
                   {t("footer_trust_delivery_sub") || "À domicile ou en point relais"}
@@ -180,7 +180,7 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
           <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
             {t(
               "footer_marketplace_desc",
-              "La plateforme e-commerce multi-vendeurs de référence en Algérie. Découvrez des milliers de produits certifiés auprès de marchands indépendants répartis sur les 58 Wilayas."
+              "La plateforme e-commerce multi-vendeurs de référence en Algérie. Découvrez des milliers de produits certifiés auprès de marchands indépendants répartis sur les 69 Wilayas."
             )}
           </p>
 

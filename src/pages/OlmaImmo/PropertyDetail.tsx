@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { OlmaImmoShell } from '../../components/OlmaImmo/OlmaImmoShell';
 import { ImageGalleryLightbox } from '../../components/OlmaImmo/ImageGalleryLightbox';
 import { VisitRequestModal } from '../../components/OlmaImmo/VisitRequestModal';
@@ -20,6 +21,7 @@ import { DetailSimilar } from '../../components/OlmaImmo/PropertyDetail/DetailSi
 import { DetailMobileActionBar } from '../../components/OlmaImmo/PropertyDetail/DetailMobileActionBar';
 
 export const PropertyDetail: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<PublicPropertyDTO | null>(null);
   const [similarProperties, setSimilarProperties] = useState<PublicPropertyDTO[]>([]);
@@ -64,17 +66,17 @@ export const PropertyDetail: React.FC = () => {
             void 0;
           }
         } else {
-          toast.error('Annonce introuvable');
+          toast.error(t('immo_toast_not_found', 'Annonce introuvable'));
         }
       } catch {
-        toast.error("Erreur lors du chargement de l'annonce");
+        toast.error(t('immo_toast_load_error', "Erreur lors du chargement de l'annonce"));
       } finally {
         setIsLoading(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
     fetchPropertyData();
-  }, [id]);
+  }, [id, t]);
 
   if (isLoading) {
     return (
@@ -94,11 +96,15 @@ export const PropertyDetail: React.FC = () => {
           <div className="w-16 h-16 rounded-3xl bg-slate-100 text-[#1E3A8A] flex items-center justify-center mb-2 border border-slate-200">
             <Building2 className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">Annonce introuvable</h2>
-          <p className="text-sm text-slate-600">Cette annonce n'existe plus ou a été retirée.</p>
+          <h2 className="text-2xl font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
+            {t('immo_detail_not_found_title', 'Annonce introuvable')}
+          </h2>
+          <p className="text-sm text-slate-600">
+            {t('immo_detail_not_found_desc', "Cette annonce n'existe plus ou a été retirée.")}
+          </p>
           <Link to="/immo" className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer mt-2 uppercase tracking-wider">
-            <ArrowLeft className="w-4 h-4 text-[#F59E0B]" />
-            <span>Explorer les annonces</span>
+            <ArrowLeft className="w-4 h-4 text-[#F59E0B] rtl:rotate-180" />
+            <span>{t('immo_action_explore_listings', 'Explorer les annonces')}</span>
           </Link>
         </div>
       </OlmaImmoShell>
@@ -108,7 +114,7 @@ export const PropertyDetail: React.FC = () => {
   const handleFavoriteClick = () => {
     const updated = toggleFavoritePropertyId(property.id);
     setIsFav(updated);
-    toast.success(updated ? 'Ajouté à vos favoris' : 'Retiré des favoris');
+    toast.success(updated ? t('immo_toast_fav_added', 'Ajouté à vos favoris') : t('immo_toast_fav_removed', 'Retiré des favoris'));
   };
 
   const handleShare = () => {
@@ -116,7 +122,7 @@ export const PropertyDetail: React.FC = () => {
       navigator.share({ title: property.title, url: window.location.href }).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success("Lien copié !");
+      toast.success(t('immo_toast_link_copied', 'Lien copié !'));
     }
   };
 
@@ -223,7 +229,7 @@ export const PropertyDetail: React.FC = () => {
               referenceImageUrl: property.images?.[0],
               referencePriceDZD: property.price,
             },
-            initialMessage: `Bonjour, je suis intéressé par votre annonce "${property.title}".`,
+            initialMessage: t('immo_chat_initial_message', 'Bonjour, je suis intéressé par votre annonce "{{title}}".', { title: property.title }),
           }}
         />
       )}

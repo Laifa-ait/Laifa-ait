@@ -8,7 +8,7 @@ export interface WilayaOption {
   lng?: number;
 }
 
-// Map 58 Wilayas with representative central coordinates
+// Map 69 Wilayas with representative central coordinates
 export const ALGERIA_WILAYAS: WilayaOption[] = ALGERIA_WILAYAS_DATABASE.map((w) => ({
   code: w.code,
   name: w.name,

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="bg_selma" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#BE185D"/>
+    </linearGradient>
+    <linearGradient id="skin_selma" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE4E6"/>
+      <stop offset="100%" stop-color="#FECDD3"/>
+    </linearGradient>
+    <linearGradient id="hair_selma" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#831843"/>
+      <stop offset="100%" stop-color="#500724"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="40" fill="url(#bg_selma)"/>
+  <path d="M28 160 C28 122 48 116 80 116 C112 116 132 122 132 160 Z" fill="#FFE4E6"/>
+  <circle cx="80" cy="136" r="4" fill="#E11D48"/>
+  <path d="M40 50 C30 90 32 140 46 160 L114 160 C128 140 130 90 120 50 Z" fill="url(#hair_selma)"/>
+  <path d="M68 95 L68 118 C68 124 92 124 92 118 L92 95 Z" fill="#FDA4AF"/>
+  <path d="M52 64 C52 98 64 108 80 108 C96 108 108 98 108 64 C108 42 96 40 80 40 C64 40 52 42 52 64 Z" fill="url(#skin_selma)"/>
+  <path d="M48 48 C60 26 100 26 112 48 C100 38 60 38 48 48 Z" fill="url(#hair_selma)"/>
+  <path d="M48 52 C44 75 48 95 54 102 C50 85 50 65 52 52 Z" fill="url(#hair_selma)"/>
+  <circle cx="68" cy="72" r="3" fill="#831843"/>
+  <circle cx="92" cy="72" r="3" fill="#831843"/>
+  <path d="M62 66 Q68 62 74 66" stroke="#831843" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M86 66 Q92 62 98 66" stroke="#831843" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="60" cy="80" r="5" fill="#FB7185" opacity="0.4"/>
+  <circle cx="100" cy="80" r="5" fill="#FB7185" opacity="0.4"/>
+  <path d="M72 88 Q80 96 88 88" stroke="#E11D48" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="48" cy="74" r="3" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1"/>
+  <circle cx="112" cy="74" r="3" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1"/>
+</svg>

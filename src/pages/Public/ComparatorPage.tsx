@@ -131,7 +131,7 @@ export const ComparatorPage: React.FC = () => {
                   <strong>{bestProduct.rating ? `noté ${bestProduct.rating.toFixed(1)}/5` : "nouveau produit (aucun avis)"}</strong>
                   {t(" au tarif de ") || " au tarif de "}
                   <strong>{formatPrice(bestProduct.price)}</strong>
-                  {bestProduct.freeShipping ? " avec livraison gratuite offerte dans les 58 wilayas." : "."}
+                  {bestProduct.freeShipping ? " avec livraison gratuite offerte dans les 69 wilayas." : "."}
                 </p>
               </div>
             </div>

@@ -1,17 +1,18 @@
 import fs from "fs";
 import path from "path";
 import { safeLogger } from "../utils/logger";
+import { db, admin } from "../config/firebase-admin";
 
 export interface LocaleCacheEntry {
-  data: Record<string, unknown>;
+  data: Record<string, string>;
   timestamp: number;
 }
 
 export class LocaleStorageService {
   private static memoryCache = new Map<string, LocaleCacheEntry>();
-  private static CACHE_TTL_MS = 60_000; // 1 minute in-memory cache to absorb traffic spikes
+  private static CACHE_TTL_MS = 60_000; // 1 minute in-memory cache
 
-  static getCachedLocale(lang: string): Record<string, unknown> | null {
+  static getCachedLocale(lang: string): Record<string, string> | null {
     const cached = this.memoryCache.get(lang);
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL_MS) {
       return cached.data;
@@ -19,7 +20,7 @@ export class LocaleStorageService {
     return null;
   }
 
-  static setCachedLocale(lang: string, data: Record<string, unknown>): void {
+  static setCachedLocale(lang: string, data: Record<string, string>): void {
     this.memoryCache.set(lang, { data, timestamp: Date.now() });
   }
 
@@ -32,8 +33,157 @@ export class LocaleStorageService {
   }
 
   /**
+   * Retrieves merged translations for the requested language.
+   * Merges baseline static JSON (build-time bundle) with Firestore dynamic overrides (Cloud Run persistent truth).
+   */
+  static async getMergedLocale(lang: string): Promise<Record<string, string>> {
+    if (!["fr", "ar", "en"].includes(lang)) {
+      return {};
+    }
+
+    const cached = this.getCachedLocale(lang);
+    if (cached) {
+      return cached;
+    }
+
+    // 1. Read baseline from static files
+    const distPath = path.join(process.cwd(), "dist", "locales", `${lang}.json`);
+    const publicPath = path.join(process.cwd(), "public", "locales", `${lang}.json`);
+    const staticPath = fs.existsSync(distPath) ? distPath : publicPath;
+    const baseTranslations = (this.safeReadJson(staticPath, {}) || {}) as Record<string, string>;
+
+    // 2. Fetch authoritative dynamic translations from Firestore
+    let dynamicTranslations: Record<string, string> = {};
+    try {
+      if (db) {
+        const docSnap = await db.collection("translations").doc(lang).get();
+        if (docSnap.exists) {
+          const rawData = docSnap.data() || {};
+          const filtered: Record<string, string> = {};
+          for (const [key, value] of Object.entries(rawData)) {
+            if (typeof value === "string" && !["updatedAt", "updatedBy", "createdAt"].includes(key)) {
+              filtered[key] = value;
+            }
+          }
+          dynamicTranslations = filtered;
+        }
+      }
+    } catch (err: unknown) {
+      safeLogger.warn("[LocaleStorageService] ⚠️ Failed to fetch Firestore translations, falling back to static", {
+        lang,
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    // 3. Merge: Firestore dynamic overrides baseline static
+    const merged: Record<string, string> = {
+      ...baseTranslations,
+      ...dynamicTranslations,
+    };
+
+    this.setCachedLocale(lang, merged);
+    return merged;
+  }
+
+  /**
+   * Persists translation dictionary to Firestore (Cloud Run compliant) and invalidates in-memory cache.
+   */
+  static async saveBatchTranslations(
+    lang: string,
+    content: Record<string, string>,
+    adminUid?: string
+  ): Promise<boolean> {
+    if (!["fr", "ar", "en"].includes(lang)) {
+      safeLogger.error("[LocaleStorageService] ❌ Invalid language in saveBatchTranslations", { lang });
+      return false;
+    }
+
+    const sanitized: Record<string, string> = {};
+    for (const [key, val] of Object.entries(content)) {
+      if (typeof val === "string" && !["updatedAt", "updatedBy", "createdAt"].includes(key)) {
+        sanitized[key] = val;
+      }
+    }
+
+    try {
+      if (db) {
+        await db.collection("translations").doc(lang).set(
+          {
+            ...sanitized,
+            updatedAt: admin?.firestore?.FieldValue?.serverTimestamp?.() || new Date().toISOString(),
+            updatedBy: adminUid || "admin",
+          },
+          { merge: true }
+        );
+      }
+
+      // Invalidate memory cache for this lang
+      this.clearCache(lang);
+
+      // In dev environment or if filesystem is writable, update local files as best effort
+      const publicPath = path.join(process.cwd(), "public", "locales", `${lang}.json`);
+      const distPath = path.join(process.cwd(), "dist", "locales", `${lang}.json`);
+      this.safeWriteJsonAtomic(publicPath, sanitized);
+      if (fs.existsSync(path.join(process.cwd(), "dist", "locales"))) {
+        this.safeWriteJsonAtomic(distPath, sanitized);
+      }
+
+      return true;
+    } catch (err: unknown) {
+      safeLogger.error("[LocaleStorageService] ❌ Failed to save translations to Firestore", {
+        lang,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Persists a single translation key across languages in Firestore.
+   */
+  static async saveTranslation(
+    key: string,
+    values: { fr?: string; ar?: string; en?: string },
+    adminUid?: string
+  ): Promise<boolean> {
+    if (!key || typeof key !== "string") return false;
+
+    const langs: Array<"fr" | "ar" | "en"> = ["fr", "ar", "en"];
+    for (const lang of langs) {
+      const val = values[lang];
+      if (val !== undefined && typeof val === "string") {
+        try {
+          if (db) {
+            await db.collection("translations").doc(lang).set(
+              {
+                [key]: val,
+                updatedAt: admin?.firestore?.FieldValue?.serverTimestamp?.() || new Date().toISOString(),
+                updatedBy: adminUid || "admin",
+              },
+              { merge: true }
+            );
+          }
+          this.clearCache(lang);
+
+          // Best effort sync for local dev
+          const publicPath = path.join(process.cwd(), "public", "locales", `${lang}.json`);
+          const existing = this.safeReadJson(publicPath, {}) as Record<string, string>;
+          existing[key] = val;
+          this.safeWriteJsonAtomic(publicPath, existing);
+        } catch (err: unknown) {
+          safeLogger.error("[LocaleStorageService] ❌ Failed to save single translation key", {
+            lang,
+            key,
+            err: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
    * Reads JSON safely from primary path with automatic backup recovery and in-memory cache fallback.
-   * Eliminates unhandled SyntaxError crashes when files are read during high load or partial writes.
    */
   static safeReadJson(filePath: string, fallback: Record<string, unknown> = {}): Record<string, unknown> {
     try {
@@ -69,7 +219,6 @@ export class LocaleStorageService {
 
   /**
    * Atomically writes JSON to disk using a temporary file and atomic rename.
-   * Prevents corruption, empty files, and race conditions during high server load or sudden process termination.
    */
   static safeWriteJsonAtomic(targetPath: string, content: Record<string, unknown>): boolean {
     try {
@@ -108,10 +257,10 @@ export class LocaleStorageService {
         }
       }
 
-      // Ensure backup exists if previously absent
+      // Step 4: Ensure backup copy exists
       try {
         const bakPath = `${targetPath}.bak`;
-        if (!fs.existsSync(bakPath) && fs.existsSync(targetPath)) {
+        if (fs.existsSync(targetPath)) {
           fs.copyFileSync(targetPath, bakPath);
         }
       } catch {

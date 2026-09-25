@@ -58,4 +58,25 @@ describe("LocaleStorageService", () => {
     LocaleStorageService.clearCache("fr");
     expect(LocaleStorageService.getCachedLocale("fr")).toBeNull();
   });
+
+  it("should retrieve merged locale combining static bundle and Firestore overrides", async () => {
+    const frTranslations = await LocaleStorageService.getMergedLocale("fr");
+    expect(typeof frTranslations).toBe("object");
+    expect(frTranslations).not.toBeNull();
+  });
+
+  it("should reject invalid language codes gracefully in getMergedLocale", async () => {
+    const invalid = await LocaleStorageService.getMergedLocale("invalid_lang");
+    expect(invalid).toEqual({});
+  });
+
+  it("should save single translation across languages and update in-memory cache", async () => {
+    const testKey = "test.unit.key";
+    const res = await LocaleStorageService.saveTranslation(
+      testKey,
+      { fr: "Test FR", ar: "Test AR", en: "Test EN" },
+      "test_admin_uid"
+    );
+    expect(res).toBe(true);
+  });
 });

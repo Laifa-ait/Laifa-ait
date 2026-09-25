@@ -161,7 +161,7 @@ export const GrowthConfigTab: React.FC<GrowthConfigTabProps> = ({
 
             <div className="space-y-2">
               <strong className="text-xs font-bold text-zinc-700 block">
-                🔑 {t("Mots-clés chauds en Algérie (58 Wilayas) :")}
+                🔑 {t("Mots-clés chauds en Algérie (69 Wilayas) :", "Mots-clés chauds en Algérie (69 Wilayas) :")}
               </strong>
               <div className="flex flex-wrap gap-1.5">
                 {growthReport.topSearches?.map((tag, i) => (

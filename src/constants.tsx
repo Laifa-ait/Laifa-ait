@@ -648,6 +648,17 @@ export const ALGERIA_SHIPPING_DATA: Record<string, { price: number; delay: strin
   Djanet: { price: 1500, delay: "4-7 jours" },
   "In Salah": { price: 1500, delay: "4-7 jours" },
   "In Guezzam": { price: 1500, delay: "4-7 jours" },
+  Aflou: { price: 800, delay: "2-4 jours" },
+  Barika: { price: 700, delay: "2-3 jours" },
+  "El Kantara": { price: 800, delay: "2-4 jours" },
+  "El Abiodh Sidi Cheikh": { price: 900, delay: "3-5 jours" },
+  "Bou Saâda": { price: 700, delay: "2-4 jours" },
+  Messaad: { price: 700, delay: "2-4 jours" },
+  "Aïn Oussara": { price: 700, delay: "2-3 jours" },
+  "Bir El Ater": { price: 800, delay: "3-4 jours" },
+  "Ksar Chellala": { price: 700, delay: "2-4 jours" },
+  "Ksar El Boukhari": { price: 600, delay: "2-3 jours" },
+  "El Aricha": { price: 800, delay: "3-4 jours" },
   Default: { price: 900, delay: "3-5 jours" },
 };
 
@@ -710,6 +721,17 @@ export const ALGERIA_WILAYAS = [
   "56 Djanet",
   "57 In Salah",
   "58 In Guezzam",
+  "59 Aflou",
+  "60 Barika",
+  "61 El Kantara",
+  "62 El Abiodh Sidi Cheikh",
+  "63 Bou Saâda",
+  "64 Messaad",
+  "65 Aïn Oussara",
+  "66 Bir El Ater",
+  "67 Ksar Chellala",
+  "68 Ksar El Boukhari",
+  "69 El Aricha",
 ];
 
 import { Product } from "./domains/product/product.types";

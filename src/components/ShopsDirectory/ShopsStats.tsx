@@ -20,7 +20,7 @@ export const ShopsStats: React.FC<ShopsStatsProps> = ({ totalShops, wilayaCount 
     },
     {
       icon: MapPin,
-      title: wilayaCount > 0 ? `${wilayaCount} Wilayas` : "58 Wilayas",
+      title: wilayaCount > 0 ? `${wilayaCount} Wilayas` : "69 Wilayas",
       subtitle: isArabic ? "تغطية كامل التراب الوطني" : "Couverture Nationale",
       color: "text-emerald-600 bg-emerald-50 border-emerald-100",
     },

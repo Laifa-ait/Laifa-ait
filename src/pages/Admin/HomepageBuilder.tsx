@@ -43,7 +43,7 @@ export const HomepageBuilder: React.FC = () => {
               {t("Éditeur de Page d'Accueil Olmart")}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300">
-              {t("Personnalisez les rayons, ventes flash, sélections prestige et bannières avec synchronisation instantanée 58 wilayas.")}
+              {t("Personnalisez les rayons, ventes flash, sélections prestige et bannières avec synchronisation instantanée 69 wilayas.", "Personnalisez les rayons, ventes flash, sélections prestige et bannières avec synchronisation instantanée 69 wilayas.")}
             </p>
           </div>
 

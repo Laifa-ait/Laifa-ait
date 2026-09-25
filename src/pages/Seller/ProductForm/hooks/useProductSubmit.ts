@@ -148,6 +148,9 @@ export function useProductSubmit(
           sellerId: currentUser.uid,
           sellerName: userProfile?.displayName || userProfile?.name || "",
           sellerStoreName: userProfile?.shopName || "",
+          sellerLogo: userProfile?.logoUrl || userProfile?.photoURL || "",
+          sellerPhone: userProfile?.phone || userProfile?.phoneNumber || "",
+          sellerWilaya: formData.wilaya || userProfile?.wilaya || "",
         }
       );
 

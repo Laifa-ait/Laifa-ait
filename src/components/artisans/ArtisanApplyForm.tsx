@@ -218,7 +218,7 @@ export const ArtisanApplyForm: React.FC<ArtisanApplyFormProps> = ({
       {/* Section 3: Wilaya & Localisation */}
       <div className="space-y-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
-          3. Zone d'intervention (58 Wilayas)
+          3. Zone d'intervention (69 Wilayas)
         </h2>
         <WilayaCommuneSelector
           selectedWilaya={wilaya}

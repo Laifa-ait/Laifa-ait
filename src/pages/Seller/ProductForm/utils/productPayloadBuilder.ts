@@ -7,6 +7,8 @@ export interface BuildPayloadOptions {
   sellerName?: string;
   sellerStoreName?: string;
   sellerLogo?: string;
+  sellerPhone?: string;
+  sellerWilaya?: string;
 }
 
 export function buildProductPayload(
@@ -108,9 +110,19 @@ export function buildProductPayload(
   }
   if (options.sellerStoreName) {
     payload.storeName = options.sellerStoreName;
+    payload.sellerShopName = options.sellerStoreName;
   }
   if (options.sellerLogo) {
     payload.sellerLogo = options.sellerLogo;
+  }
+  if (options.sellerPhone) {
+    payload.sellerPhone = options.sellerPhone;
+  }
+  if (options.sellerWilaya) {
+    payload.sellerWilaya = options.sellerWilaya;
+    if (!payload.wilaya) {
+      payload.wilaya = options.sellerWilaya;
+    }
   }
 
   return payload;

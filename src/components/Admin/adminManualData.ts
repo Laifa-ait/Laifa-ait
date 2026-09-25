@@ -45,7 +45,7 @@ export const getGuideSections = (t: TFunction): GuideSection[] => [
   {
     title: t("7. Logistique Algérienne & Modèle Vendeur"),
     content: t(
-      "OLMART intègre la couverture logistique des 58 Wilayas algériennes :\n- Responsabilité Vendeur : Chaque vendeur assure la livraison de ses commandes (livreur propre ou transporteur externe de son choix).\n- Modes de Livraison : À Domicile (Home Delivery) ou En Point de Retrait (Desk Delivery) selon les options configurées par le vendeur.\n- Cash on Delivery (COD) : Recouvrement direct du montant en espèces à la livraison, suivi du déblocage automatique des fonds du vendeur après confirmation du statut Livré."
+      "OLMART intègre la couverture logistique des 69 Wilayas algériennes :\n- Responsabilité Vendeur : Chaque vendeur assure la livraison de ses commandes (livreur propre ou transporteur externe de son choix).\n- Modes de Livraison : À Domicile (Home Delivery) ou En Point de Retrait (Desk Delivery) selon les options configurées par le vendeur.\n- Cash on Delivery (COD) : Recouvrement direct du montant en espèces à la livraison, suivi du déblocage automatique des fonds du vendeur après confirmation du statut Livré."
     ),
   },
   {

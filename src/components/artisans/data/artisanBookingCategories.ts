@@ -11,6 +11,7 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { PlomberieChauffageArt } from '../art/PlomberieChauffageArt';
+import { ElectriciteBatimentArt } from '../art/ElectriciteBatimentArt';
 
 export interface BookingCategoryCard {
   id: string;
@@ -49,6 +50,7 @@ export const BOOKING_CATEGORIES: BookingCategoryCard[] = [
     badgeColor: 'bg-amber-500 text-slate-950 font-black',
     icon: Zap,
     image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+    artComponent: ElectriciteBatimentArt,
     summary: 'Court-circuit, tableau électrique, prises, spots LED & conformité',
     presets: [
       'Panne électrique / Court-circuit',

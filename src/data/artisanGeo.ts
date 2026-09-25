@@ -6,14 +6,18 @@ export interface WilayaOption {
   fullName: string; // e.g. "16 Alger"
 }
 
-// Generate full sorted list of 58 Wilayas
-export const ALGERIA_WILAYAS_58: WilayaOption[] = Object.entries(ALGERIA_REGIONS)
+// Generate full sorted list of 69 Wilayas
+export const ALGERIA_WILAYAS_69: WilayaOption[] = Object.entries(ALGERIA_REGIONS)
   .map(([fullName, data]) => ({
     code: data.code,
     name: data.name,
     fullName: fullName
   }))
   .sort((a, b) => parseInt(a.code, 10) - parseInt(b.code, 10));
+
+// Aliases for backward compatibility and clean naming
+export const ALGERIA_WILAYAS_58 = ALGERIA_WILAYAS_69;
+export const ALGERIA_WILAYAS = ALGERIA_WILAYAS_69;
 
 /**
  * Returns all unique communes belonging to a specific wilaya (by code or name)

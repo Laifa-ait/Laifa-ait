@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import {
   Star,
@@ -37,6 +38,7 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
   onRequestQuote,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isFav, setIsFav] = useState(false);
@@ -59,27 +61,22 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
     if (artisan.phone) {
       navigator.clipboard?.writeText(artisan.phone);
       setCopiedPhone(true);
-      toast.success(`Numéro copié : ${artisan.phone}`);
+      toast.success(`${t('artisan_card_copied', 'Numéro copié :')} ${artisan.phone}`);
       setTimeout(() => setCopiedPhone(false), 2500);
     }
   };
 
-  // Select banner cover image
   const tradeKey = (artisan.tradeName || '').toLowerCase();
   const matchedKey = Object.keys(TRADE_COVER_FALLBACKS).find((k) => tradeKey.includes(k)) || 'default';
   const coverImage =
     artisan.portfolio && artisan.portfolio.length > 0 && artisan.portfolio[0].imageUrl
       ? artisan.portfolio[0].imageUrl
       : TRADE_COVER_FALLBACKS[matchedKey];
-
-  const avatar =
-    artisan.avatarUrl ||
-    `https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=150&auto=format&fit=crop&q=80`;
-
+  const avatar = artisan.avatarUrl || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=150&auto=format&fit=crop&q=80';
   const startingPrice =
     artisan.services && artisan.services.length > 0 && artisan.services[0].priceStartingFrom
       ? `${new Intl.NumberFormat('fr-FR').format(artisan.services[0].priceStartingFrom)} DZD`
-      : 'Sur devis';
+      : t('artisan_card_on_quote', 'Sur devis');
 
   return (
     <>
@@ -120,11 +117,11 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
               {artisan.isAvailable ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md shadow-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  Disponible
+                  {t('artisan_card_available', 'Disponible')}
                 </span>
               ) : (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/40 text-white/90 backdrop-blur-md">
-                  Sur RDV
+                  {t('artisan_card_on_appointment', 'Sur RDV')}
                 </span>
               )}
             </div>
@@ -142,7 +139,7 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
                 {artisan.status === 'approved' && (
                   <div
                     className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-xs"
-                    title="Artisan vérifié Olmart"
+                    title={t('artisan_card_verified', 'Artisan vérifié Olmart')}
                   >
                     <ShieldCheck className="w-3 h-3 stroke-[2.5]" />
                   </div>
@@ -180,14 +177,16 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
 
               {/* Line 3: Experience & Specialties */}
               <p className="text-xs font-normal text-[#94A3B8] truncate mt-0.5">
-                {artisan.yearsOfExperience || 1} ans d'expérience
+                {artisan.yearsOfExperience || 1} {t('artisan_card_years_exp', 'ans d\'expérience')}
                 {artisan.specialties && artisan.specialties.length > 0 && ` • ${artisan.specialties.slice(0, 2).join(', ')}`}
               </p>
             </div>
 
             {/* Line 4: Pricing */}
             <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
-              <span className="text-[11px] font-medium text-slate-500">Tarif indicatif</span>
+              <span className="text-[11px] font-medium text-slate-500">
+                {t('artisan_card_indicative_price', 'Tarif indicatif')}
+              </span>
               <span className="text-sm font-bold text-[#1E293B] tracking-tight">
                 {startingPrice}
               </span>
@@ -203,7 +202,7 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
               type="button"
               onClick={handleCopyOrCallPhone}
               className="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              title={`Appeler ou copier : ${artisan.phone}`}
+              title={`${t('artisan_card_call_or_copy', 'Appeler ou copier :')} ${artisan.phone}`}
               aria-label="Contacter par téléphone"
             >
               {copiedPhone ? (
@@ -227,8 +226,8 @@ export const ArtisanCard: React.FC<ArtisanCardProps> = ({
             }}
             className="flex-1 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs hover:shadow-md cursor-pointer select-none"
           >
-            <span>Devis gratuit</span>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-950 stroke-[2.2] group-hover:translate-x-0.5 transition-transform" />
+            <span>{t('artisan_card_quote_free', 'Devis gratuit')}</span>
+            <ArrowRight className="w-3.5 h-3.5 text-slate-950 stroke-[2.2] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180 transition-transform" />
           </button>
         </div>
       </motion.article>

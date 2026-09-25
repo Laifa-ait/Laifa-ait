@@ -216,7 +216,18 @@ export const SellerShipping: React.FC = () => {
     { code: "55", name: "Touggourt", desk: 600, home: 900 },
     { code: "56", name: "Djanet", desk: 900, home: 1300 },
     { code: "57", name: "El M'Ghair", desk: 600, home: 900 },
-    { code: "58", name: "El Meniaa", desk: 650, home: 950 }
+    { code: "58", name: "El Meniaa", desk: 650, home: 950 },
+    { code: "59", name: "Aflou", desk: 450, home: 700 },
+    { code: "60", name: "Barika", desk: 400, home: 650 },
+    { code: "61", name: "El Kantara", desk: 450, home: 700 },
+    { code: "62", name: "El Abiodh Sidi Cheikh", desk: 600, home: 900 },
+    { code: "63", name: "Bou Saâda", desk: 450, home: 700 },
+    { code: "64", name: "Messaad", desk: 450, home: 700 },
+    { code: "65", name: "Aïn Oussara", desk: 400, home: 650 },
+    { code: "66", name: "Bir El Ater", desk: 500, home: 750 },
+    { code: "67", name: "Ksar Chellala", desk: 450, home: 700 },
+    { code: "68", name: "Ksar El Boukhari", desk: 350, home: 550 },
+    { code: "69", name: "El Aricha", desk: 500, home: 750 }
   ];
 
   const currentWilaya = algeriaWilayas.find((w) => w.code === selectedWilayaId) || algeriaWilayas[15];
@@ -291,7 +302,7 @@ export const SellerShipping: React.FC = () => {
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>{t("shipping_coverage")}</span>
             </div>
-            <p className="text-2xl font-sans font-bold text-white">58 Wilayas</p>
+            <p className="text-2xl font-sans font-bold text-white">69 Wilayas</p>
           </div>
         </div>
       </div>
@@ -493,7 +504,7 @@ export const SellerShipping: React.FC = () => {
             )}
           </div>
 
-          {/* Tariff Simulator (58 Wilayas) */}
+          {/* Tariff Simulator (69 Wilayas) */}
           <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">

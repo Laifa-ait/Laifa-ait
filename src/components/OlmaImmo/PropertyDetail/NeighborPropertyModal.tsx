@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PublicPropertyDTO, PropertyMapResult } from '../../../types/realEstate';
 import { X, ExternalLink, BedDouble, Maximize2, Tag, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatPriceAlgeria } from '../mapStyles';
@@ -15,6 +16,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
   referencePrice,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const price = property.price;
@@ -36,7 +38,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/70 text-[10px] font-extrabold uppercase tracking-wider">
             <Tag className="w-3 h-3 text-amber-600" />
-            <span>Bien Voisin</span>
+            <span>{t('immo_neighbor_badge', 'Bien Voisin')}</span>
           </span>
           <span className="text-[11px] font-semibold text-stone-500">
             {property.commune || ('location' in property && property.location?.commune) || 'Alger'}, {property.wilaya || ('location' in property && property.location?.wilaya) || 'Alger'}
@@ -67,7 +69,7 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
             {rooms > 0 && (
               <span className="flex items-center gap-0.5">
                 <BedDouble className="w-3 h-3 text-emerald-700" />
-                <span>{rooms} pces</span>
+                <span>{rooms} {t('immo_neighbor_pieces', 'pces')}</span>
               </span>
             )}
             {area > 0 && (
@@ -88,18 +90,18 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
 
       {/* Comparison badge */}
       <div className="p-2 rounded-xl bg-stone-50 border border-stone-200/70 flex items-center justify-between text-[11px]">
-        <span className="text-stone-600 font-medium">Écart vs ce logement :</span>
+        <span className="text-stone-600 font-medium">{t('immo_neighbor_diff_label', 'Écart vs ce logement :')}</span>
         {pctDiff === 0 ? (
-          <span className="font-bold text-stone-700">Même niveau de prix</span>
+          <span className="font-bold text-stone-700">{t('immo_neighbor_same_level', 'Même niveau de prix')}</span>
         ) : pctDiff < 0 ? (
           <span className="inline-flex items-center gap-1 font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
             <TrendingDown className="w-3 h-3 text-emerald-600" />
-            <span>{Math.abs(pctDiff)}% plus abordable</span>
+            <span>{Math.abs(pctDiff)}% {t('immo_neighbor_more_affordable', 'plus abordable')}</span>
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
             <TrendingUp className="w-3 h-3 text-amber-700" />
-            <span>+{pctDiff}% supérieur</span>
+            <span>+{pctDiff}% {t('immo_neighbor_higher', 'supérieur')}</span>
           </span>
         )}
       </div>
@@ -110,8 +112,8 @@ export const NeighborPropertyModal: React.FC<NeighborPropertyModalProps> = ({
         onClick={() => navigate(`/immo/property/${property.id}`)}
         className="w-full py-2 px-3 rounded-xl bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
       >
-        <span>Consulter cette annonce</span>
-        <ExternalLink className="w-3.5 h-3.5" />
+        <span>{t('immo_neighbor_view_listing', 'Consulter cette annonce')}</span>
+        <ExternalLink className="w-3.5 h-3.5 rtl:rotate-180" />
       </button>
     </div>
   );

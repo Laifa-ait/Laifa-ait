@@ -6,7 +6,7 @@ export const onboardingSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères.").max(100, "Nom trop long."),
   phone: z.string().regex(/^(05|06|07)[0-9]{8}$/, "Numéro de téléphone algérien invalide (ex: 0555123456)."),
   wilaya: z.string().refine((val) => ALGERIA_WILAYAS.includes(val), {
-    message: "Wilaya invalide. Veuillez sélectionner une wilaya parmi les 58 wilayas d'Algérie."
+    message: "Wilaya invalide. Veuillez sélectionner une wilaya parmi les 69 wilayas d'Algérie."
   }),
   address: z.string().min(5, "L'adresse doit être plus précise (min 5 caractères).").max(300),
   role: z.enum(["buyer", "seller"]),

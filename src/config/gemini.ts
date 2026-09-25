@@ -19,12 +19,12 @@ export const setInternalGenerateContentForTesting = (fn?: typeof originalGenerat
   delegateGenerateContent = fn || originalGenerateContent;
 };
 
-export const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
+export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 
 export const FALLBACK_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
+  "gemini-2.5-flash",
+  "gemini-flash-latest",
+  "gemini-3.8-flash",
 ];
 
 export const GEMINI_TOTAL_DEADLINE_MS = 25000; // 25s max for full retry/fallback sequence

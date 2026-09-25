@@ -58,28 +58,29 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
 
   // Dedicated, fail-safe /locales/:lang.json handler: registered FIRST so it works in both dev & prod
   // and NEVER falls through to Vite middlewares or SPA HTML serving.
-  app.get("/locales/:lang.json", (req, res) => {
+  app.get("/locales/:lang.json", async (req, res) => {
     const lang = req.params.lang;
     if (!["fr", "ar", "en"].includes(lang)) {
       return res.status(404).json({ error: `Langue non supportée: ${lang}` });
     }
 
-    const cached = LocaleStorageService.getCachedLocale(lang);
-    if (cached) {
+    try {
+      const data = await LocaleStorageService.getMergedLocale(lang);
       res.setHeader("Content-Type", "application/json; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
-      return res.json(cached);
+      res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+      return res.json(data);
+    } catch (err: unknown) {
+      safeLogger.error("[Olmart Locales] Error serving merged locale, falling back to disk", {
+        lang,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      const distLocale = path.join(distLocalesPath, `${lang}.json`);
+      const publicLocale = path.join(publicLocalesPath, `${lang}.json`);
+      const targetPath = existsSync(distLocale) ? distLocale : publicLocale;
+      const data = LocaleStorageService.safeReadJson(targetPath, {});
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.json(data);
     }
-
-    const distLocale = path.join(distLocalesPath, `${lang}.json`);
-    const publicLocale = path.join(publicLocalesPath, `${lang}.json`);
-    const targetPath = existsSync(distLocale) ? distLocale : publicLocale;
-
-    const data = LocaleStorageService.safeReadJson(targetPath, {});
-    LocaleStorageService.setCachedLocale(lang, data);
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
-    return res.json(data);
   });
 
   if (process.env.NODE_ENV !== "production") {
@@ -121,6 +122,8 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
 
   app.use("/locales", express.static(path.join(distPath, "locales"), { maxAge: "1h", immutable: false, setHeaders: (res) => { res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate"); } }));
   app.use("/locales", express.static(path.join(process.cwd(), "public", "locales"), { maxAge: "1h", immutable: false, setHeaders: (res) => { res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate"); } }));
+  app.use("/avatars", express.static(path.join(distPath, "avatars"), { maxAge: "7d" }));
+  app.use("/avatars", express.static(path.join(process.cwd(), "public", "avatars"), { maxAge: "7d" }));
   app.use(
     express.static(distPath, {
       index: false,

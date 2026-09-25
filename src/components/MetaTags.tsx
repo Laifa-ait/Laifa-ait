@@ -13,7 +13,7 @@ interface MetaTagsProps {
 
 export const MetaTags: React.FC<MetaTagsProps> = ({
   title = "Olma Marketplace - Le meilleur de l'Algérie",
-  description = "Découvrez nos artisans et vendeurs de confiance à travers les 58 wilayas d'Algérie.",
+  description = "Découvrez nos artisans et vendeurs de confiance à travers les 69 wilayas d'Algérie.",
   image = "/assets/icon.png",
   url = typeof window !== 'undefined' ? window.location.href : "https://olma-dz.com",
   type = "website",

@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeAdmin, require2FA, AuthenticatedRequest } from "../../../middlewares/auth";
 import { safeLogger } from "../../../utils/logger";
+import { LocaleStorageService } from "../../../services/LocaleStorageService";
 
 const router = Router();
 
@@ -109,17 +110,15 @@ router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, requir
   }
 });
 
-// GET & POST Translations Management
+// GET & POST Translations Management (Authoritative Firestore backing for Cloud Run)
 router.get("/api/v1/translations", async (req: Request, res: Response) => {
   try {
     const lang = (req.query.lang as string) || "fr";
-    const snap = await db.collection("translations").doc(lang).get();
-
-    if (!snap.exists) {
-      return res.json({ success: true, translations: {} });
+    if (!["fr", "ar", "en"].includes(lang)) {
+      return res.status(400).json({ error: "Langue non supportée." });
     }
-
-    res.json({ success: true, translations: snap.data() });
+    const translations = await LocaleStorageService.getMergedLocale(lang);
+    res.json({ success: true, translations });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
@@ -127,22 +126,24 @@ router.get("/api/v1/translations", async (req: Request, res: Response) => {
 
 router.post("/admin/save-translation", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { lang, key, value } = req.body;
-    if (!lang || !key) {
-      return res.status(400).json({ error: "Langue et clé obligatoires." });
+    const { lang, key, value, fr, ar, en } = req.body;
+    
+    // Format 1: Single language { lang, key, value }
+    if (lang && key && value !== undefined) {
+      if (!["fr", "ar", "en"].includes(lang)) {
+        return res.status(400).json({ error: "Langue non supportée." });
+      }
+      await LocaleStorageService.saveTranslation(key, { [lang]: value }, req.user?.uid);
+      return res.json({ success: true, message: "Traduction enregistrée avec succès." });
     }
 
-    const ref = db.collection("translations").doc(lang);
-    await ref.set(
-      {
-        [key]: value,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedBy: req.user?.uid || "admin",
-      },
-      { merge: true }
-    );
+    // Format 2: Multi language { key, fr, ar, en }
+    if (key && (fr !== undefined || ar !== undefined || en !== undefined)) {
+      await LocaleStorageService.saveTranslation(key, { fr, ar, en }, req.user?.uid);
+      return res.json({ success: true, message: "Traductions enregistrées avec succès." });
+    }
 
-    res.json({ success: true });
+    return res.status(400).json({ error: "Paramètres de traduction manquants ou invalides." });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }

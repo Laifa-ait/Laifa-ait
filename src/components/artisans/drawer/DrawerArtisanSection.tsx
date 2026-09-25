@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -23,6 +24,7 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
   onClose,
   isLoggedIn,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (loading) {
@@ -66,7 +68,7 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
             <LayoutDashboard className="w-3.5 h-3.5" />
             Accéder à mon Dashboard Artisan
           </span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 rtl:rotate-180" />
         </button>
       </div>
     );
@@ -79,11 +81,11 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
         <div className="flex items-center gap-2 text-blue-900">
           <Clock className="w-4 h-4 text-blue-600 animate-spin" />
           <h4 className="text-xs font-bold uppercase tracking-wider">
-            Candidature en cours d&apos;examen
+            {t('artisan_drawer_application_review', 'Candidature en cours d\'examen')}
           </h4>
         </div>
         <p className="text-[11px] text-blue-700">
-          Votre dossier d&apos;artisan est actuellement vérifié par l&apos;équipe Olmart.
+          {t('artisan_drawer_application_desc', 'Votre dossier d\'artisan est actuellement vérifié par l\'équipe Olmart.')}
         </p>
         <button
           onClick={() => {
@@ -92,7 +94,7 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
           }}
           className="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
         >
-          Voir les détails de mon dossier
+          {t('artisan_drawer_see_dossier', 'Voir les détails de mon dossier')}
         </button>
       </div>
     );
@@ -107,16 +109,16 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
         </span>
         <div>
           <h4 className="text-xs font-black uppercase tracking-wider text-amber-400">
-            Vous êtes Artisan ?
+            {t('artisan_drawer_are_you_artisan', 'Vous êtes Artisan ?')}
           </h4>
           <p className="text-[10px] text-slate-300">
-            Rejoignez le réseau leader en Algérie
+            {t('artisan_drawer_join_network', 'Rejoignez le réseau leader en Algérie')}
           </p>
         </div>
       </div>
 
       <p className="text-[11px] text-slate-300 leading-relaxed">
-        Développez votre clientèle dans votre wilaya et recevez des demandes de devis qualifiées.
+        {t('artisan_drawer_grow_clientele', 'Développez votre clientèle dans votre wilaya et recevez des demandes de devis qualifiées.')}
       </p>
 
       <button
@@ -126,8 +128,8 @@ export const DrawerArtisanSection: React.FC<DrawerArtisanSectionProps> = ({
         }}
         className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-black flex items-center justify-between transition-all cursor-pointer"
       >
-        <span>Postuler comme Artisan Partenaire</span>
-        <ChevronRight className="w-4 h-4" />
+        <span>{t('artisan_drawer_apply_partner', 'Postuler comme Artisan Partenaire')}</span>
+        <ChevronRight className="w-4 h-4 rtl:rotate-180" />
       </button>
     </div>
   );

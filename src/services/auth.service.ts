@@ -26,9 +26,49 @@ export async function reloadUser(user: FirebaseUser): Promise<void> {
 
 export async function updateUserProfile(
   user: FirebaseUser,
-  profile: { displayName?: string; photoURL?: string }
+  profile: { displayName?: string; photoURL?: string | null }
 ): Promise<void> {
-  await fbUpdateProfile(user, profile);
+  const sanitizedProfile: { displayName?: string; photoURL?: string | null } = {};
+  if (profile.displayName !== undefined) {
+    sanitizedProfile.displayName = profile.displayName.trim();
+  }
+
+  // Firebase Auth enforces strict constraints on photoURL:
+  // Must not be an oversized string (reject data URIs or strings > 500 chars),
+  // and must be a valid URL format or null/empty.
+  if (profile.photoURL !== undefined) {
+    const raw = profile.photoURL;
+    if (!raw || raw.trim() === "") {
+      sanitizedProfile.photoURL = null;
+    } else if (raw.startsWith("data:") || raw.length > 500) {
+      // Legacy oversized base64/data URIs fail Firebase Auth attribute validation.
+      // Fallback to safe static SVG avatar.
+      sanitizedProfile.photoURL = "/avatars/avatar-1.svg";
+    } else {
+      sanitizedProfile.photoURL = raw;
+    }
+  }
+
+  try {
+    await fbUpdateProfile(user, sanitizedProfile);
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    // If Firebase Auth rejects the photoURL attribute (e.g. invalid attribute format or URL length),
+    // fallback gracefully to null so the user's name/profile update succeeds without failure.
+    if (
+      errMsg.includes("invalid-profile-attribute") ||
+      errMsg.includes("Photo URL") ||
+      errMsg.includes("photoURL") ||
+      errMsg.includes("auth/invalid-profile-attribute")
+    ) {
+      await fbUpdateProfile(user, {
+        displayName: sanitizedProfile.displayName,
+        photoURL: null,
+      });
+    } else {
+      throw err;
+    }
+  }
 }
 
 export async function createEmailUser(email: string, pass: string): Promise<{ user: FirebaseUser }> {

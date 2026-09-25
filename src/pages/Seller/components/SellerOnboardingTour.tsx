@@ -85,7 +85,7 @@ export const SellerOnboardingTour: React.FC<SellerOnboardingTourProps> = ({
       content: (
         <div>
           <h4 className="font-bold text-zinc-900 text-base mb-1">
-            {t("seller.tour.shipping_title", "🚚 Expéditions & 58 Wilayas")}
+            {t("seller.tour.shipping_title", "🚚 Expéditions & 69 Wilayas")}
           </h4>
           <p className="text-zinc-600 text-sm">
             {t(

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FileCheck2, FileQuestion, ShieldCheck, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { PublicPropertyDTO, LegalPaperType } from '../../../types/realEstate';
+import { LEGAL_PAPER_CONFIGS } from './legalPaperConfigs';
 
 interface DetailLegalStatusProps {
   property: PublicPropertyDTO;
@@ -8,75 +10,12 @@ interface DetailLegalStatusProps {
   onToggleOpen?: () => void;
 }
 
-interface LegalDocConfig {
-  title: string;
-  short: string;
-  scope: string;
-  buyerAdvice: string;
-}
-
-const LEGAL_PAPER_CONFIGS: Record<LegalPaperType, LegalDocConfig> = {
-  acte_notarie: {
-    title: "Acte Notarié",
-    short: 'Acte Notarié',
-    scope: 'Pleine propriété authentifiée par devant notaire et enregistrée.',
-    buyerAdvice: "Titre de propriété formel. Vérifier l'identité du vendeur par rapport à l'acte.",
-  },
-  acte_notarie_individuel: {
-    title: "Acte Notarié dans l'Individuel",
-    short: 'Acte Individuel',
-    scope: 'Pleine propriété individuelle enregistrée et publiée à la conservation foncière.',
-    buyerAdvice: "Titre de propriété inattaquable. Vérifier l'identité du vendeur par rapport à l'acte.",
-  },
-  livret_foncier: {
-    title: 'Livret Foncier Individuel',
-    short: 'Livret Foncier',
-    scope: 'Document officiel délivré par le cadastre certifiant la délimitation et la propriété du bien.',
-    buyerAdvice: 'Garantie maximale en droit foncier algérien. Permet une transaction rapide chez le notaire.',
-  },
-  acte_dans_indivision: {
-    title: "Acte Notarié dans l'Indivision (Chiyou3)",
-    short: 'Indivision (Chiyou3)',
-    scope: 'Part de propriété indivise au sein d’une assiette foncière partagée entre plusieurs copropriétaires.',
-    buyerAdvice: 'Exiger la renonciation au droit de préemption des autres indivisaires avant la vente.',
-  },
-  permis_construire: {
-    title: 'Permis de Construire',
-    short: 'Permis de Construire',
-    scope: 'Autorisation administrative délivrée par l’APC autorisant l’édification de la bâtisse.',
-    buyerAdvice: 'S’assurer de la conformité des plans réalisés par rapport au permis initial déposé.',
-  },
-  papier_timbre: {
-    title: 'Papier Timbré / Acte Sous Seing Privé (Orfi)',
-    short: 'Papier Timbré (Orfi)',
-    scope: 'Document rédigé sous seing privé sans publication cadastrale formelle.',
-    buyerAdvice: 'Régularisation recommandée via la loi 08-15 ou procédure de certificat de possession.',
-  },
-  decision_attribution: {
-    title: 'Décision d’Attribution / Arrêté Administratif',
-    short: 'Décision Attribution',
-    scope: 'Attribution légale par un organisme étatique (ex: OPGI, AADL, Agence Foncière).',
-    buyerAdvice: 'Vérifier la levée de la clause d’incessibilité avant tout engagement financier.',
-  },
-  promesse_vente: {
-    title: 'Promesse de Vente Notariée',
-    short: 'Promesse Notariée',
-    scope: 'Engagement synallagmatique authentifié chez le notaire avant régularisation définitive.',
-    buyerAdvice: 'Respecter scrupuleusement les délais et conditions suspensives prévues à l’acte.',
-  },
-  certificat_conformite: {
-    title: 'Certificat de Conformité',
-    short: 'Certificat Conformité',
-    scope: 'Attestation de l’APC confirmant l’achèvement des travaux conformément aux normes d’urbanisme.',
-    buyerAdvice: 'Facilite l’obtention du livret foncier individuel pour les constructions récentes.',
-  },
-};
-
 export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
   property,
   isOpen: controlledIsOpen,
   onToggleOpen,
 }) => {
+  const { t } = useTranslation();
   const [internalIsOpen, setInternalIsOpen] = useState(true);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
@@ -113,10 +52,10 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
           </div>
           <div>
             <h2 className="text-base font-bold text-[#1E3A8A] font-['Playfair_Display',serif]">
-              Documents & Statut Foncier
+              {t('immo_legal_title', 'Documents & Statut Foncier')}
             </h2>
             <p className="text-[11px] text-slate-500">
-              {paperKeys.length} document{paperKeys.length > 1 ? 's' : ''} déclaré{paperKeys.length > 1 ? 's' : ''} au dossier
+              {t('immo_legal_declared_count', '{{count}} document(s) déclaré(s) au dossier', { count: paperKeys.length })}
             </p>
           </div>
         </div>
@@ -126,12 +65,12 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
           {isVerified ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
               <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Vérifié</span>
+              <span>{t('immo_legal_verified', 'Vérifié')}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-bold">
               <FileQuestion className="w-3.5 h-3.5 text-amber-600" />
-              <span>Déclaratif</span>
+              <span>{t('immo_legal_declarative', 'Déclaratif')}</span>
             </span>
           )}
 
@@ -139,9 +78,9 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
             type="button"
             onClick={handleToggle}
             className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 active:scale-95"
-            aria-label={isOpen ? 'Masquer la catégorie Statut Foncier' : 'Afficher la catégorie Statut Foncier'}
+            aria-label={isOpen ? t('immo_finance_hide', 'Masquer') : t('immo_finance_show', 'Afficher')}
           >
-            <span>{isOpen ? 'Masquer' : 'Afficher'}</span>
+            <span>{isOpen ? t('immo_finance_hide', 'Masquer') : t('immo_finance_show', 'Afficher')}</span>
             {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-slate-500" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500" />}
           </button>
         </div>
@@ -168,10 +107,10 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                        {config.short}
+                        {t(`immo_doc_${paperKey}_short`, config.short)}
                       </span>
                       <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
-                        {config.title}
+                        {t(`immo_doc_${paperKey}_title`, config.title)}
                       </h3>
                     </div>
 
@@ -182,7 +121,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
                           : 'bg-amber-100 text-amber-800'
                       }`}
                     >
-                      {isVerified ? 'Vérifié' : 'Déclaratif'}
+                      {isVerified ? t('immo_legal_verified', 'Vérifié') : t('immo_legal_declarative', 'Déclaratif')}
                     </span>
                   </div>
 
@@ -190,12 +129,12 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
                   {isItemExpanded ? (
                     <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-2 text-xs">
                       <p className="text-slate-600 leading-relaxed text-[11px]">
-                        <strong className="text-slate-800">Portée légale : </strong>
-                        {config.scope}
+                        <strong className="text-slate-800">{t('immo_legal_scope_label', 'Portée légale :')} </strong>
+                        {t(`immo_doc_${paperKey}_scope`, config.scope)}
                       </p>
                       <div className="p-2 rounded-xl bg-emerald-50/80 border border-emerald-100 text-emerald-900 text-[11px] leading-tight">
-                        <strong>Conseil aux acquéreurs : </strong>
-                        {config.buyerAdvice}
+                        <strong>{t('immo_legal_advice_label', 'Conseil aux acquéreurs :')} </strong>
+                        {t(`immo_doc_${paperKey}_advice`, config.buyerAdvice)}
                       </div>
                     </div>
                   ) : null}
@@ -205,7 +144,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
                     onClick={() => togglePaper(paperKey)}
                     className="mt-2 text-[11px] font-bold text-[#1E3A8A] hover:text-[#F59E0B] flex items-center gap-1 cursor-pointer"
                   >
-                    <span>{isItemExpanded ? 'Masquer détails' : 'Détails juridiques'}</span>
+                    <span>{isItemExpanded ? t('immo_legal_hide_details', 'Masquer détails') : t('immo_legal_details', 'Détails juridiques')}</span>
                     {isItemExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -220,7 +159,7 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
               onClick={() => setShowAllPapers(!showAllPapers)}
               className="text-xs font-bold text-[#1E3A8A] hover:text-[#F59E0B] hover:underline flex items-center gap-1 cursor-pointer pt-1"
             >
-              <span>{showAllPapers ? 'Afficher moins de documents' : `Voir les ${paperKeys.length} documents déclarés`}</span>
+              <span>{showAllPapers ? t('immo_legal_show_less', 'Afficher moins de documents') : t('immo_legal_see_all_docs', 'Voir les {{count}} documents déclarés', { count: paperKeys.length })}</span>
               {showAllPapers ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           )}
@@ -229,9 +168,11 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
           <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-xs text-slate-600">
             <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <span className="font-bold text-slate-800 block text-[11px]">Cadre Légal Notarié & Code civil algérien</span>
+              <span className="font-bold text-slate-800 block text-[11px]">
+                {t('immo_legal_framework_title', 'Cadre Légal Notarié & Code civil algérien')}
+              </span>
               <p className="text-[11px] text-slate-500 leading-snug">
-                En Algérie, tout transfert de propriété immobilière doit obligatoirement être instrumenté par acte notarié et publié à la conservation foncière (Loi 75-74).
+                {t('immo_legal_framework_desc', 'En Algérie, tout transfert de propriété immobilière doit obligatoirement être instrumenté par acte notarié et publié à la conservation foncière (Loi 75-74).')}
               </p>
             </div>
           </div>
@@ -239,14 +180,14 @@ export const DetailLegalStatus: React.FC<DetailLegalStatusProps> = ({
       ) : (
         <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-600">
           <span className="font-semibold text-slate-700 truncate max-w-[80%]">
-            {paperKeys.map((k) => LEGAL_PAPER_CONFIGS[k]?.short).filter(Boolean).join(', ')} • {isVerified ? 'Vérifié par l’équipe' : 'Déclaratif propriétaire'}
+            {paperKeys.map((k) => LEGAL_PAPER_CONFIGS[k] ? t(`immo_doc_${k}_short`, LEGAL_PAPER_CONFIGS[k].short) : null).filter(Boolean).join(', ')} • {isVerified ? t('immo_legal_verified_by_team', 'Vérifié par l’équipe') : t('immo_legal_owner_declarative', 'Déclaratif propriétaire')}
           </span>
           <button
             type="button"
             onClick={handleToggle}
             className="text-xs font-bold text-[#1E3A8A] hover:text-[#F59E0B] hover:underline cursor-pointer shrink-0 ml-2"
           >
-            Déplier
+            {t('immo_finance_unfold', 'Déplier')}
           </button>
         </div>
       )}

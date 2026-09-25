@@ -144,7 +144,7 @@ export const CurationMobilePreview: React.FC<CurationMobilePreviewProps> = ({
                     {t("Logistique & Expédition Algérie")}
                   </h4>
                   <p className="text-[8px] text-zinc-500 font-medium">
-                    {t("Paiement à la livraison (Cash on Delivery) supporté dans")} <strong>58 wilayas</strong>.
+                    {t("Paiement à la livraison (Cash on Delivery) supporté dans")} <strong>69 wilayas</strong>.
                   </p>
                 </div>
 

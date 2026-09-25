@@ -154,7 +154,7 @@ export const ShippingCalculatorPage: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               {t("Retour")}</button>
             <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter rtl:tracking-normal uppercase leading-none">
-              {t("Calculateur National 58 Wilayas")}</h1>
+              {t("Calculateur National 69 Wilayas", "Calculateur National 69 Wilayas")}</h1>
             <p className="text-sm text-zinc-300 font-bold max-w-2xl uppercase tracking-wider rtl:tracking-normal">
               {t("Simulez vos frais de port par wilaya, estimez le poids de votre colis et le montant de vos livraisons avant de commander.")}</p>
           </div>

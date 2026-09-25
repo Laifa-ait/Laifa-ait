@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   FileText,
   Search,
@@ -30,6 +31,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
   onClose,
   isLoggedIn,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [history, setHistory] = useState<ArtisanSearchHistoryItem[]>([]);
   const [favorites, setFavorites] = useState<ArtisanFavoriteItem[]>([]);
@@ -69,18 +71,18 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
               <FileText className="w-4 h-4" />
             </span>
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
-              Mes Demandes de Devis
+              {t('artisan_drawer_my_requests_title', 'Mes Demandes de Devis')}
             </h4>
           </div>
           {myQuotes.length > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black">
-              {myQuotes.length} active{myQuotes.length > 1 ? 's' : ''}
+              {myQuotes.length} {t('artisan_drawer_active', 'active')}{myQuotes.length > 1 ? 's' : ''}
             </span>
           )}
         </div>
 
         <p className="text-[11px] text-slate-600 mb-3">
-          Suivez l&apos;état d&apos;avancement de vos demandes et contacts avec les artisans.
+          {t('artisan_drawer_my_requests_desc', 'Suivez l\'état d\'avancement de vos demandes et contacts avec les artisans.')}
         </p>
 
         <button
@@ -90,8 +92,8 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
           }}
           className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-black flex items-center justify-between shadow-xs transition-all cursor-pointer"
         >
-          <span>Consulter mes devis ({myQuotes.length})</span>
-          <ChevronRight className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+          <span>{t('artisan_drawer_my_requests_cta', 'Consulter mes devis')} ({myQuotes.length})</span>
+          <ChevronRight className="w-4 h-4 text-slate-950 stroke-[2.5] rtl:rotate-180" />
         </button>
       </div>
 
@@ -101,7 +103,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
           <div className="flex items-center gap-1.5 text-slate-800">
             <Search className="w-3.5 h-3.5 text-amber-600" />
             <h4 className="text-xs font-bold uppercase tracking-wider">
-              Recherches Récentes
+              {t('artisan_drawer_recent_searches', 'Recherches Récentes')}
             </h4>
           </div>
           {history.length > 0 && (
@@ -110,7 +112,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
               className="text-[10px] text-slate-400 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3 h-3" />
-              <span>Effacer</span>
+              <span>{t('artisan_drawer_clear', 'Effacer')}</span>
             </button>
           )}
         </div>
@@ -118,7 +120,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
         {history.length === 0 ? (
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center text-slate-400 text-[11px]">
             <Clock className="w-4 h-4 mx-auto mb-1 opacity-50" />
-            <span>Aucune recherche mémorisée</span>
+            <span>{t('artisan_drawer_no_searches', 'Aucune recherche mémorisée')}</span>
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -131,7 +133,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
                 <div className="flex items-center gap-2 truncate">
                   <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
                   <span className="font-semibold text-slate-800 truncate">
-                    {h.tradeName || h.term || 'Tous les artisans'}
+                    {h.tradeName || h.term || t('artisan_drawer_all_artisans', 'Tous les artisans')}
                   </span>
                   {h.wilaya && (
                     <span className="text-[10px] text-slate-500 flex items-center gap-0.5 shrink-0">
@@ -140,7 +142,7 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
                     </span>
                   )}
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180 transition-transform" />
               </button>
             ))}
           </div>
@@ -153,14 +155,14 @@ export const DrawerClientSection: React.FC<DrawerClientSectionProps> = ({
           <div className="flex items-center gap-1.5 text-slate-800">
             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
             <h4 className="text-xs font-bold uppercase tracking-wider">
-              Artisans Enregistrés ({favorites.length})
+              {t('artisan_drawer_saved_artisans', 'Artisans Enregistrés')} ({favorites.length})
             </h4>
           </div>
         </div>
 
         {favorites.length === 0 ? (
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center text-slate-400 text-[11px]">
-            <span>Enregistrez des artisans favoris pour les retrouver ici en 1 clic.</span>
+            <span>{t('artisan_drawer_saved_hint', 'Enregistrez des artisans favoris pour les retrouver ici en 1 clic.')}</span>
           </div>
         ) : (
           <div className="space-y-2">

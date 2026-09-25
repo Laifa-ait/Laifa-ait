@@ -298,7 +298,7 @@ export const BuyerDashboard: React.FC = () => {
                       
                       <h4 className="text-xl md:text-2xl font-sans font-bold text-slate-900 tracking-tight rtl:tracking-normal relative z-10">{t("dashboard.no_purchases")}</h4>
                       <p className="text-xs text-slate-500 mt-3 max-w-md mx-auto font-medium leading-relaxed relative z-10">
-                        {t("dashboard.no_purchases_desc") || "Vous n'avez pas encore passé de commande sur notre plateforme. Nos vendeurs des 58 Wilayas proposent des produits uniques."}
+                        {t("dashboard.no_purchases_desc") || "Vous n'avez pas encore passé de commande sur notre plateforme. Nos vendeurs des 69 Wilayas proposent des produits uniques."}
                       </p>
                       
                       <button 

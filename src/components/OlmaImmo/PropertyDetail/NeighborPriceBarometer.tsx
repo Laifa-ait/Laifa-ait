@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PublicPropertyDTO, PropertyMapResult } from '../../../types/realEstate';
 import { TrendingUp, BarChart2, Eye, EyeOff } from 'lucide-react';
 import { formatPriceAlgeria } from '../mapStyles';
@@ -22,6 +23,8 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
   onToggleShowNeighbors,
   onSelectNeighbor,
 }) => {
+  const { t } = useTranslation();
+
   if (neighbors.length === 0) {
     return null;
   }
@@ -32,15 +35,15 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
   const maxPrice = Math.max(...allPrices);
 
   const priceRatio = avgPrice > 0 ? (currentPrice / avgPrice) : 1;
-  let statusText = 'Prix aligné avec la moyenne du quartier';
+  let statusText = t('immo_barometer_aligned', 'Prix aligné avec la moyenne du quartier');
   let statusBadgeColor = 'bg-emerald-50 text-emerald-800 border-emerald-200';
 
   if (priceRatio < 0.9) {
     const savingPct = Math.round((1 - priceRatio) * 100);
-    statusText = `Offre très compétitive (${savingPct}% sous la moyenne)`;
+    statusText = t('immo_barometer_competitive', 'Offre très compétitive ({{savingPct}}% sous la moyenne)', { savingPct });
     statusBadgeColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
   } else if (priceRatio > 1.15) {
-    statusText = 'Bien de standing supérieur (Prestation haut de gamme)';
+    statusText = t('immo_barometer_superior', 'Bien de standing supérieur (Prestation haut de gamme)');
     statusBadgeColor = 'bg-amber-50 text-amber-900 border-amber-200';
   }
 
@@ -54,10 +57,10 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
           </span>
           <div>
             <h4 className="text-xs sm:text-sm font-bold text-[#1E3A8A]">
-              Prix comparés dans le secteur ({commune || wilaya})
+              {t('immo_barometer_sector_prices', 'Prix comparés dans le secteur ({{location}})', { location: commune || wilaya })}
             </h4>
             <p className="text-[11px] text-stone-500 font-medium">
-              {neighbors.length} autre{neighbors.length > 1 ? 's' : ''} logement{neighbors.length > 1 ? 's' : ''} géolocalisé{neighbors.length > 1 ? 's' : ''} à proximité immédiate
+              {t('immo_barometer_nearby_count', '{{count}} autres logements géolocalisés à proximité immédiate', { count: neighbors.length })}
             </p>
           </div>
         </div>
@@ -74,12 +77,12 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
           {showNeighborsOnMap ? (
             <>
               <EyeOff className="w-3.5 h-3.5 text-stone-500" />
-              <span>Masquer repères voisins</span>
+              <span>{t('immo_barometer_hide_neighbors', 'Masquer repères voisins')}</span>
             </>
           ) : (
             <>
               <Eye className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Afficher voisins sur la carte ({neighbors.length})</span>
+              <span>{t('immo_barometer_show_neighbors', 'Afficher voisins sur la carte ({{count}})', { count: neighbors.length })}</span>
             </>
           )}
         </button>
@@ -88,21 +91,27 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
       {/* Metrics Grid */}
       <div className="grid grid-cols-3 gap-2 pt-1 border-t border-stone-200/60">
         <div className="bg-white p-2.5 rounded-xl border border-stone-200/80">
-          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">Prix ce logement</span>
+          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">
+            {t('immo_barometer_this_price', 'Prix ce logement')}
+          </span>
           <span className="text-xs sm:text-sm font-black text-[#1E3A8A] block mt-0.5">
             {formatPriceAlgeria(currentPrice)}
           </span>
         </div>
 
         <div className="bg-white p-2.5 rounded-xl border border-stone-200/80">
-          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">Moyenne du quartier</span>
+          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">
+            {t('immo_barometer_neighborhood_avg', 'Moyenne du quartier')}
+          </span>
           <span className="text-xs sm:text-sm font-bold text-stone-800 block mt-0.5">
             {formatPriceAlgeria(avgPrice)}
           </span>
         </div>
 
         <div className="bg-white p-2.5 rounded-xl border border-stone-200/80">
-          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">Fourchette secteur</span>
+          <span className="text-[10px] uppercase font-bold text-stone-400 block truncate">
+            {t('immo_barometer_sector_range', 'Fourchette secteur')}
+          </span>
           <span className="text-[11px] sm:text-xs font-semibold text-stone-700 block mt-0.5 truncate">
             {formatPriceAlgeria(minPrice)} - {formatPriceAlgeria(maxPrice)}
           </span>
@@ -118,7 +127,9 @@ export const NeighborPriceBarometer: React.FC<NeighborPriceBarometerProps> = ({
 
         {onSelectNeighbor && neighbors.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full">
-            <span className="text-[10px] text-stone-500 font-bold uppercase shrink-0">Accès rapide :</span>
+            <span className="text-[10px] text-stone-500 font-bold uppercase shrink-0">
+              {t('immo_barometer_quick_access', 'Accès rapide :')}
+            </span>
             {neighbors.slice(0, 4).map((n) => (
               <button
                 key={n.id}

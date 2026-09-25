@@ -177,7 +177,7 @@ export const ProductCard = React.memo(
             {/* Fast Delivery mini indicator */}
             <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-emerald-700 font-medium">
               <Truck className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
-              <span className="truncate">Livraison 58 Wilayas</span>
+              <span className="truncate">Livraison 69 Wilayas</span>
             </div>
           </div>
         </div>

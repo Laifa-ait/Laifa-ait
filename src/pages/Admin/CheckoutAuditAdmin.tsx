@@ -181,7 +181,7 @@ export const CheckoutAuditAdmin: React.FC = () => {
 
       addLog("info", "Audit de la couverture logistique de l'Algérie (Wilayas/Régions)...");
       await new Promise((r) => setTimeout(r, 500));
-      addLog("success", "58 Wilayas d'Algérie répertoriées. Intégration de la saisie libre de commune ('Autre') pour les zones reculées active.");
+      addLog("success", "69 Wilayas d'Algérie répertoriées. Intégration de la saisie libre de commune ('Autre') pour les zones reculées active.");
       addLog("success", "Matrice tarifaire dynamique configurée avec StopDesk/Domicile.");
 
       addLog("info", "Contrôle de sécurité: Masquage et nettoyage des logs d'erreurs...");

@@ -319,20 +319,14 @@ service cloud.firestore {
     // =========================================================================
     match /order_masters/{masterId} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.buyerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && (incoming().userId == request.auth.uid || incoming().buyerId == request.auth.uid);
+      // Création directe client STRICTEMENT INTERDITE : passe exclusivement par les transactions serveur ACID
+      allow create: if false;
       allow update, delete: if isAdmin();
     }
 
     match /orders/{orderId} {
-      // Création : autorisée pour l'acheteur authentifié lié à son propre identifiant avec statut initial pending
-      allow create: if isSignedIn() && (
-        incoming().buyerId == request.auth.uid ||
-        incoming().userId == request.auth.uid
-      ) && (
-        !('paymentStatus' in incoming()) || incoming().paymentStatus == 'pending'
-      ) && (
-        !('status' in incoming()) || incoming().status == 'pending'
-      );
+      // Création directe client STRICTEMENT INTERDITE : la commande financière est server-only (/api/v1/place-order)
+      allow create: if false;
 
       // Lecture : autorisée pour l'acheteur, les vendeurs de la commande ou l'administrateur
       allow read: if isSignedIn() && (
@@ -747,6 +741,14 @@ service cloud.firestore {
         );
         allow update, delete: if isAdmin();
       }
+    }
+
+    // =========================================================================
+    // 17. TRANSLATIONS (Dictionnaire dynamique multilingue pour Cloud Run)
+    // =========================================================================
+    match /translations/{lang} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
   }

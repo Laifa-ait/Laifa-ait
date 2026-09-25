@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar, Phone, MessageSquare } from 'lucide-react';
 import { PublicPropertyDTO, PublicOwnerProfile } from '../../../types/realEstate';
 import { OwnerTrustCard } from '../OwnerTrustCard';
@@ -38,6 +39,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
   onOpenDirectChat,
   onBookingSummaryChange,
 }) => {
+  const { t } = useTranslation();
   const isShortTerm = property.listingType === 'rent_short' || (property.listingType as string) === 'short_term';
 
   return (
@@ -54,7 +56,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
               variant="mineral"
             />
             <span className="px-3 py-1 bg-emerald-50 text-emerald-800 font-bold text-xs rounded-full border border-emerald-200">
-              Réservation directe
+              {t('immo_sidebar_direct_booking', 'Réservation directe')}
             </span>
           </div>
 
@@ -72,11 +74,11 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
             className="w-full py-4 px-6 bg-[#F59E0B] hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
             <Calendar className="w-4 h-4 text-slate-900" />
-            <span>Demande de réservation</span>
+            <span>{t('immo_sidebar_booking_request', 'Demande de réservation')}</span>
           </button>
 
           <p className="text-[11px] text-stone-500 text-center font-medium">
-            Règlement direct lors de l'arrivée ou selon accord avec l'hôte. Aucun prélèvement bancaire en ligne sur Olmart.
+            {t('immo_sidebar_short_term_disclaimer', "Règlement direct lors de l'arrivée ou selon accord avec l'hôte. Aucun prélèvement bancaire en ligne sur Olmart.")}
           </p>
         </div>
       ) : (
@@ -84,7 +86,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
         <div className="hidden lg:block bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-4">
           <div className="space-y-1 pb-4 border-b border-slate-100">
             <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
-              Mise en relation directe
+              {t('immo_sidebar_direct_contact', 'Mise en relation directe')}
             </span>
             <div>
               <PropertyPrice
@@ -103,7 +105,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
             className="w-full py-3.5 px-5 bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold text-xs rounded-2xl uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
             <Calendar className="w-4 h-4 text-white" />
-            <span>Planifier une visite</span>
+            <span>{t('immo_action_plan_visit', 'Planifier une visite')}</span>
           </button>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -113,7 +115,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
                 className="py-3 px-3 bg-amber-50 hover:bg-amber-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-amber-200 transition text-center"
               >
                 <Phone className="w-3.5 h-3.5" />
-                <span>Appeler</span>
+                <span>{t('immo_action_call', 'Appeler')}</span>
               </a>
             ) : (
               <button
@@ -122,7 +124,7 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
                 className="py-3 px-3 bg-amber-50 hover:bg-amber-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-amber-200 transition cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span>Message</span>
+                <span>{t('immo_action_message', 'Message')}</span>
               </button>
             )}
 
@@ -132,12 +134,12 @@ export const DetailSidebar: React.FC<DetailSidebarProps> = ({
               className="py-3 px-3 bg-slate-50 hover:bg-slate-100 text-[#1E3A8A] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-slate-200 transition cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Message Olmart</span>
+              <span>{t('immo_sidebar_message_olmart', 'Message Olmart')}</span>
             </button>
           </div>
 
           <p className="text-[11px] text-stone-500 text-center font-medium pt-1">
-            Les transactions immobilières s'effectuent par acte notarié ou bail légal. Olmart ne perçoit aucun paiement de loyer ou de vente en ligne.
+            {t('immo_sidebar_legal_disclaimer', "Les transactions immobilières s'effectuent par acte notarié ou bail légal. Olmart ne perçoit aucun paiement de loyer ou de vente en ligne.")}
           </p>
         </div>
       )}

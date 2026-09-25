@@ -91,6 +91,10 @@ export const ProductDetails: React.FC = () => {
     loadRecommendations();
   }, [product, fetchCrossSellProducts]);
 
+  const currentLang = (i18n.language || "fr").split("-")[0].toLowerCase();
+  const translatedTitle = product?.translations?.[currentLang]?.name || product?.name || "";
+  const translatedDescription = product?.translations?.[currentLang]?.description || product?.description || "";
+
   const breadcrumbItems = React.useMemo(() => {
     if (!product) return [];
     const items = [
@@ -117,12 +121,12 @@ export const ProductDetails: React.FC = () => {
     }
     if (product.name) {
       items.push({
-        label: product.name,
+        label: translatedTitle,
         link: ""
       });
     }
     return items;
-  }, [product, t]);
+  }, [product, t, translatedTitle]);
 
   const calculatedVariantKey = React.useMemo(() => {
     return [selectedColor, selectedSize].filter(Boolean).join(' - ').toUpperCase();
@@ -230,10 +234,10 @@ export const ProductDetails: React.FC = () => {
   return (
     <div className="bg-transparent min-h-screen pb-32 selection:bg-black selection:text-white">
       <Helmet>
-        <title>{product?.name ? `${product.name} | OLMART` : 'Produit | OLMART'}</title>
-        <meta name="description" content={product?.description?.substring(0, 160)} />
-        <meta property="og:title" content={product?.name} />
-        <meta property="og:description" content={product?.description?.substring(0, 200)} />
+        <title>{translatedTitle ? `${translatedTitle} | OLMART` : 'Produit | OLMART'}</title>
+        <meta name="description" content={translatedDescription?.substring(0, 160)} />
+        <meta property="og:title" content={translatedTitle} />
+        <meta property="og:description" content={translatedDescription?.substring(0, 200)} />
         <meta property="og:image" content={images?.[0] || product?.images?.[0]} />
         <meta property="og:type" content="product" />
         <meta property="product:price:amount" content={String(displayedPrice)} />
@@ -243,9 +247,9 @@ export const ProductDetails: React.FC = () => {
             {JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Product",
-              "name": product.name,
+              "name": translatedTitle || product.name,
               "image": images?.[0] || product.images?.[0],
-              "description": product.description,
+              "description": translatedDescription || product.description,
               "sku": product.id,
               "offers": {
                 "@type": "Offer",
@@ -271,7 +275,7 @@ export const ProductDetails: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 pb-16">
           <div className="lg:col-span-6 h-max lg:sticky lg:top-28">
-            <ProductGallery images={images} selectedIndex={selectedImageIndex} productName={product.name} onSelectImage={setSelectedImageIndex} showVideo={showVideo} setShowVideo={setShowVideo} productVideoUrl={product.video} onOpenLightbox={() => setIsLightboxOpen(true)} />
+            <ProductGallery images={images} selectedIndex={selectedImageIndex} productName={translatedTitle || product.name} onSelectImage={setSelectedImageIndex} showVideo={showVideo} setShowVideo={setShowVideo} productVideoUrl={product.video} onOpenLightbox={() => setIsLightboxOpen(true)} />
           </div>
 
           <div className="lg:col-span-6 space-y-6">
@@ -291,7 +295,7 @@ export const ProductDetails: React.FC = () => {
           isOpen={isLightboxOpen} 
           onClose={() => setIsLightboxOpen(false)} 
           imageUrl={images[selectedImageIndex]} 
-          title={product.name} 
+          title={translatedTitle || product.name} 
         />
 
         {/* Cohesive Recommended Products Module */}

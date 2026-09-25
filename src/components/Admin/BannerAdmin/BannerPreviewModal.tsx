@@ -278,7 +278,7 @@ export const BannerPreviewModal: React.FC<BannerPreviewModalProps> = ({
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-zinc-500 uppercase font-bold">{t("Toutes les Wilayas (58)")}</span>
+                      <span className="text-xs text-zinc-500 uppercase font-bold">{t("Toutes les Wilayas (69)", "Toutes les Wilayas (69)")}</span>
                     )}
                   </div>
                 </div>

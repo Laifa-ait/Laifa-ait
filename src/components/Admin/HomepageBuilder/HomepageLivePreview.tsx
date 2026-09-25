@@ -153,7 +153,7 @@ export const HomepageLivePreview: React.FC<HomepageLivePreviewProps> = ({
                   Édition 2026
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold">Le Meilleur du Commerce Algérien</h2>
-                <p className="text-xs text-zinc-300">Livraison 58 wilayas garantie & paiement à la livraison</p>
+                <p className="text-xs text-zinc-300">Livraison 69 wilayas garantie & paiement à la livraison</p>
               </div>
             </div>
 

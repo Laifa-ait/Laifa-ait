@@ -281,7 +281,7 @@ export const GlobalSearchModal: React.FC = () => {
                   >
                     <div className="flex items-center gap-3">
                       <Truck className="w-4 h-4 text-teal-500" />
-                      <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{t("nav_shipping_calc") || "Calculateur de frais de livraison 58 Wilayas"}</span>
+                      <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{t("nav_shipping_calc") || "Calculateur de frais de livraison 69 Wilayas"}</span>
                     </div>
                   </Command.Item>
                   <Command.Item

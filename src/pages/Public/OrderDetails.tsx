@@ -634,7 +634,7 @@ export const OrderDetails: React.FC = () => {
                   <div className="p-4 bg-orange-50/50 border border-orange-100/50 rounded-2xl">
                      <p className="text-[10px] font-sans font-bold uppercase text-[var(--color-orange-600, #ea580c)] tracking-wider rtl:tracking-normal mb-1">{t("ℹ️ Paiement à la livraison")}</p>
                      <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
-                        {t("Le livreur des 58 Wilayas vous contactera par téléphone pour valider l'heure de passage. Merci de préparer la somme exacte en espèces.")}</p>
+                        {t("Le livreur des 69 Wilayas vous contactera par téléphone pour valider l'heure de passage. Merci de préparer la somme exacte en espèces.", "Le livreur des 69 Wilayas vous contactera par téléphone pour valider l'heure de passage. Merci de préparer la somme exacte en espèces.")}</p>
                   </div>
                </div>
 

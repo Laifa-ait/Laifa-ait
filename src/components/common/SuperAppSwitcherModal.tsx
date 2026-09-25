@@ -176,7 +176,7 @@ export const SuperAppSwitcherModal: React.FC<SuperAppSwitcherModalProps> = ({
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Compte Unique & Session Unifiée
               </span>
-              <span className="text-slate-800 font-extrabold">58 Wilayas d'Algérie</span>
+              <span className="text-slate-800 font-extrabold">69 Wilayas d'Algérie</span>
             </div>
           </motion.div>
         </div>

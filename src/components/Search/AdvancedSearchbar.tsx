@@ -363,7 +363,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                 setShowDropdown(true);
               }}
               onKeyDown={handleKeyDown}
-              placeholder={localQuery ? "" : ROTATING_HINTS[hintIndex]}
+              placeholder={localQuery ? "" : t(ROTATING_HINTS[hintIndex], ROTATING_HINTS[hintIndex])}
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
@@ -389,7 +389,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
             onClick={handleSearchSubmit}
             className="h-full px-3.5 sm:px-5 bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] text-white font-bold text-xs sm:text-[13px] rounded-full shadow-xs flex items-center justify-center gap-1 active:scale-95 transition-all duration-150 shrink-0 cursor-pointer border-none"
           >
-            <span>{isMobileView ? "Recherche" : "Rechercher"}</span>
+            <span>{isMobileView ? t("Recherche", "Recherche") : t("Rechercher", "Rechercher")}</span>
           </button>
         </div>
 
@@ -400,7 +400,9 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
               {/* Overlay Header with Close Button for Mobile */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  {localQuery.trim() ? "Résultats de recherche" : "Explorer sur Olmart"}
+                  {localQuery.trim()
+                    ? t("search_results", "Résultats de recherche")
+                    : t("search_explore_olmart", "Explorer sur Olmart")}
                 </span>
                 <button
                   onClick={() => {
@@ -422,7 +424,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
                         <History className="w-3.5 h-3.5 text-orange-500" />
-                        <span>{t("recent_searches") || "Recherches récentes"}</span>
+                        <span>{t("recent_searches", "Recherches récentes")}</span>
                       </h4>
                       {recentSearches.length > 0 && (
                         <button
@@ -430,7 +432,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                           className="text-[11px] text-slate-400 hover:text-red-500 font-medium flex items-center gap-1 bg-transparent border-none cursor-pointer transition-colors"
                         >
                           <Trash2 className="w-3 h-3" />
-                          <span>Effacer</span>
+                          <span>{t("clear", "Effacer")}</span>
                         </button>
                       )}
                     </div>
@@ -457,7 +459,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                       </ul>
                     ) : (
                       <p className="text-slate-400 text-xs px-2 py-3 italic">
-                        {t("no_search_history") || "Aucun historique pour le moment."}
+                        {t("no_search_history", "Aucun historique pour le moment.")}
                       </p>
                     )}
                   </div>
@@ -466,7 +468,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
                       <Flame className="w-3.5 h-3.5 text-orange-500" />
-                      <span>{t("trending_searches") || "Tendances populaires"}</span>
+                      <span>{t("trending_searches", "Tendances populaires")}</span>
                     </h4>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {trendingSearches.map((tag, i) => (
@@ -476,7 +478,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                           className="px-3 py-1.5 text-xs font-semibold border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 active:scale-95 text-slate-700 rounded-full transition-all cursor-pointer flex items-center gap-1.5"
                         >
                           <TrendingUp className="w-3 h-3 text-orange-500/70" />
-                          <span>{tag}</span>
+                          <span>{t(tag, tag)}</span>
                         </button>
                       ))}
                     </div>
@@ -496,7 +498,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                         <div className="space-y-3">
                           <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
                             <Store className="w-3.5 h-3.5 text-orange-500" />
-                            <span>{t("matching_stores") || "Boutiques certifiées"}</span>
+                            <span>{t("matching_stores", "Boutiques certifiées")}</span>
                           </h4>
                           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {matchedStores.map((store) => (
@@ -529,7 +531,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                       {store.shopName || store.displayName}
                                     </span>
                                     <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
-                                      {t("Wilaya")} {store.wilaya ? store.wilaya : "58"}
+                                      {t("Wilaya", "Wilaya")} {store.wilaya ? store.wilaya : "69"}
                                     </span>
                                   </div>
                                   <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
@@ -545,11 +547,11 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                         <div className="space-y-3">
                           <div className="flex items-center justify-between pb-1">
                             <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
-                              {t("matching_creations") || "Produits correspondants"}
+                              {t("matching_creations", "Produits correspondants")}
                             </h4>
                             {totalProductsCount > 5 && (
                               <span className="text-[11px] text-slate-400 font-medium">
-                                {t("showing_5_of_total", { count: totalProductsCount }) || `5 sur ${totalProductsCount} résultats`}
+                                {t("showing_5_of_total", { count: totalProductsCount }) || `${5} ${t("on")} ${totalProductsCount} ${t("results")}`}
                               </span>
                             )}
                           </div>
@@ -574,7 +576,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                         {highlightMatch(product.name, localQuery)}
                                       </span>
                                       <span className="text-[10.5px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
-                                        {product.category} {product.wilaya ? `• W.${product.wilaya}` : ""}
+                                        {t(product.category, product.category)} {product.wilaya ? `• W.${product.wilaya}` : ""}
                                       </span>
                                       <span className="text-xs font-bold text-orange-600 mt-1">
                                         {formatPrice(product.price)}
@@ -594,7 +596,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                           onClick={handleSearchSubmit}
                           className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] rounded-full shadow-xs transition-all cursor-pointer border-none flex items-center gap-1.5"
                         >
-                          <span>{t("see_all_results") || "Voir tous les résultats"}</span>
+                          <span>{t("see_all_results", "Voir tous les résultats")}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -605,18 +607,17 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                       <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2">
                         <Search className="w-6 h-6 text-slate-300" />
                         <span className="text-sm font-bold text-slate-800">
-                          {t("no_results_for") || "Aucun résultat pour"} "{localQuery}"
+                          {t("no_results_for", "Aucun résultat pour")} "{localQuery}"
                         </span>
                         <p className="text-xs text-slate-400 max-w-sm">
-                          {t("no_exact_match_fallback") ||
-                            "Vérifiez l'orthographe ou essayez d'autres mots-clés."}
+                          {t("no_exact_match_fallback", "Vérifiez l'orthographe ou essayez d'autres mots-clés.")}
                         </p>
                       </div>
 
                       {fallbackProducts.length > 0 && (
                         <div className="space-y-3">
                           <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
-                            {t("recommended_creations") || "Suggestions populaires"}
+                            {t("recommended_creations", "Suggestions populaires")}
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                             {fallbackProducts.map((p) => (

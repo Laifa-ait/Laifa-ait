@@ -279,7 +279,7 @@ export const NotificationCenter: React.FC = () => {
           id: "welcome-off",
           title: t("notif.welcome_title") || "Bienvenue sur Olma 🇩🇿",
           description:
-            t("notif.welcome_desc") || "La marketplace des créations de nos 58 Wilayas. Vos achats sont protégés.",
+            t("notif.welcome_desc") || "La marketplace des créations de nos 69 Wilayas. Vos achats sont protégés.",
           time: t("A l'instant"),
           createdAt: Date.now(),
           type: "system" as const,

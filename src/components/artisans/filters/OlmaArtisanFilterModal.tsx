@@ -105,7 +105,7 @@ export const OlmaArtisanFilterModal: React.FC<OlmaArtisanFilterModalProps> = ({
               onChange={(e) => setDraft((p) => ({ ...p, wilaya: e.target.value || undefined, commune: undefined }))}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:outline-none"
             >
-              <option value="">Toutes les 58 Wilayas</option>
+              <option value="">Toutes les 69 Wilayas</option>
               {ALGERIA_WILAYAS.map((w) => (
                 <option key={w.code} value={w.name}>{w.code} - {w.name} {w.name_ar ? `(${w.name_ar})` : ''}</option>
               ))}

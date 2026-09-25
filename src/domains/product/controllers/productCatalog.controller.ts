@@ -474,18 +474,107 @@ productCatalogRouter.get("/api/v1/products-by-id/:id", async (req, res) => {
     }
     const product = { id: docSnap.id, ...docSnap.data() } as { id: string; sellerId?: string; shopId?: string; [key: string]: unknown };
     
-    let shop = null;
+    let shop: Record<string, unknown> | null = null;
     const sellerId = product.sellerId || product.shopId;
     if (sellerId) {
-      const sellerSnap = await db.collection("sellers").doc(sellerId).get();
-      if (sellerSnap.exists) {
-        shop = { id: sellerSnap.id, ...sellerSnap.data() };
-      } else {
-        const shopSnap = await db.collection("shops").doc(sellerId).get();
-        if (shopSnap.exists) {
-          shop = { id: shopSnap.id, ...shopSnap.data() };
-        }
-      }
+      const [sellerSnap, shopSnap, pubSnap, userSnap] = await Promise.all([
+        db.collection("sellers").doc(sellerId).get().catch(() => null),
+        db.collection("shops").doc(sellerId).get().catch(() => null),
+        db.collection("publicProfiles").doc(sellerId).get().catch(() => null),
+        db.collection("users").doc(sellerId).get().catch(() => null),
+      ]);
+
+      const sData = sellerSnap && sellerSnap.exists ? sellerSnap.data() : {};
+      const shData = shopSnap && shopSnap.exists ? shopSnap.data() : {};
+      const pData = pubSnap && pubSnap.exists ? pubSnap.data() : {};
+      const uData = userSnap && userSnap.exists ? userSnap.data() : {};
+
+      const mergedShopName =
+        shData?.shopName ||
+        sData?.shopName ||
+        pData?.shopName ||
+        uData?.shopName ||
+        product.sellerShopName ||
+        product.storeName ||
+        product.sellerName ||
+        uData?.displayName ||
+        "Boutique Olmart";
+
+      const mergedPhone =
+        shData?.supportPhone ||
+        shData?.phone ||
+        sData?.phone ||
+        sData?.phoneNumber ||
+        pData?.phone ||
+        pData?.supportPhone ||
+        uData?.phone ||
+        uData?.phoneNumber ||
+        product.sellerPhone ||
+        null;
+
+      const mergedWilaya =
+        shData?.wilaya ||
+        sData?.wilaya ||
+        pData?.wilaya ||
+        uData?.wilaya ||
+        product.sellerWilaya ||
+        product.wilaya ||
+        "";
+
+      const mergedLogo =
+        shData?.logoUrl ||
+        sData?.logoUrl ||
+        pData?.logoUrl ||
+        uData?.logoUrl ||
+        uData?.photoURL ||
+        product.sellerLogo ||
+        null;
+
+      shop = {
+        id: sellerId,
+        shopName: mergedShopName,
+        phone: mergedPhone,
+        supportPhone: mergedPhone,
+        wilaya: mergedWilaya,
+        logoUrl: mergedLogo,
+        avgPreparationTime: shData?.avgPreparationTime || sData?.avgPreparationTime || pData?.avgPreparationTime || "24-48h",
+        ...uData,
+        ...pData,
+        ...sData,
+        ...shData,
+      };
+
+      shop.id = sellerId;
+      shop.shopName = mergedShopName;
+      shop.phone = mergedPhone;
+      shop.supportPhone = mergedPhone;
+      shop.wilaya = mergedWilaya;
+      shop.logoUrl = mergedLogo;
+    }
+
+    if (!shop && (product.sellerName || product.storeName || product.sellerId)) {
+      shop = {
+        id: sellerId || "boutique",
+        shopName: product.sellerShopName || product.storeName || product.sellerName || "Boutique Vendeur",
+        logoUrl: product.sellerLogo || null,
+        wilaya: product.wilaya || product.sellerWilaya || "",
+        phone: product.sellerPhone || null,
+        supportPhone: product.sellerPhone || null,
+      };
+    }
+
+    // Ensure product seller metadata is synced
+    if (!product.sellerPhone && shop?.phone) {
+      product.sellerPhone = shop.phone;
+    }
+    if (!product.sellerShopName && shop?.shopName) {
+      product.sellerShopName = shop.shopName;
+    }
+    if (!product.storeName && shop?.shopName) {
+      product.storeName = shop.shopName;
+    }
+    if (!product.wilaya && shop?.wilaya) {
+      product.wilaya = shop.wilaya;
     }
     
     return res.json({ product, shop });

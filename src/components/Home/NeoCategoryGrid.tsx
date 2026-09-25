@@ -114,11 +114,11 @@ export const NeoCategoryGrid: React.FC<{
                   )}
                   
                   <h3 className="font-sans font-bold text-white text-base sm:text-lg md:text-xl tracking-tight mb-0.5 group-hover:text-blue-200 transition-colors duration-300 leading-snug drop-shadow-sm">
-                    {card.title}
+                    {t(card.title, card.title)}
                   </h3>
                   
                   <p className="font-sans font-medium text-zinc-200/95 text-xs sm:text-sm tracking-wide line-clamp-1 mb-2.5 drop-shadow-sm">
-                    {card.subtitle}
+                    {card.subtitle ? t(card.subtitle, card.subtitle) : ""}
                   </p>
 
                   <div className="flex items-center gap-1 text-white/90 text-[10px] sm:text-xs font-bold tracking-wider uppercase group-hover:text-blue-300 transition-colors duration-300">

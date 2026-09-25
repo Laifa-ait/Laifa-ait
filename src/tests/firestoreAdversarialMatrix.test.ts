@@ -96,10 +96,10 @@ describe("PHASE 3 — Matrice de Sécurité Adversariale Firestore & Storage", (
     });
   });
 
-  describe("5. Collection /orders/{orderId} — Protection Financière et Isolation des Commandes", () => {
-    it("interdit à l'acheteur de créer une commande avec un statut autre que pending", () => {
-      expect(firestoreRules).toContain("!('paymentStatus' in incoming()) || incoming().paymentStatus == 'pending'");
-      expect(firestoreRules).toContain("!('status' in incoming()) || incoming().status == 'pending'");
+  describe("5. Collection /orders/{orderId} & /order_masters/{masterId} — Protection Financière et Isolation des Commandes", () => {
+    it("interdit formellement la création directe côté client de /orders/{orderId} et /order_masters/{masterId} (server-only ACID)", () => {
+      expect(firestoreRules).toMatch(/match\s+\/order_masters\/\{masterId\}\s*\{[\s\S]*?allow\s+create:\s*if\s+false;/);
+      expect(firestoreRules).toMatch(/match\s+\/orders\/\{orderId\}\s*\{[\s\S]*?allow\s+create:\s*if\s+false;/);
     });
 
     it("interdit la modification directe des montants, items, prix et statuts de paiement par le client ou vendeur", () => {

@@ -36,7 +36,8 @@ router.post("/api/v1/seller/products", authenticateToken, authorizeSeller, async
 
     const shopName = (pData?.shopName || uData?.shopName || uData?.storeName || uData?.displayName || "Boutique Olmart") as string;
     const logoUrl = (pData?.logoUrl || uData?.logoUrl || uData?.photoURL || "") as string;
-    const wilaya = (pData?.wilaya || uData?.wilaya || "16 - Alger") as string;
+    const phone = (pData?.phone || uData?.phone || uData?.phoneNumber || pData?.supportPhone || body.sellerPhone || "") as string;
+    const wilaya = (safeProductData.wilaya || pData?.wilaya || uData?.wilaya || "16 - Alger") as string;
 
     // Sanitize protected fields - Never trust client
     const protectedFields = new Set([
@@ -62,8 +63,11 @@ router.post("/api/v1/seller/products", authenticateToken, authorizeSeller, async
       sellerId: uid,
       sellerName: safeProductData.sellerName || shopName,
       storeName: safeProductData.storeName || shopName,
+      sellerShopName: safeProductData.storeName || safeProductData.sellerShopName || shopName,
       sellerLogo: safeProductData.sellerLogo || logoUrl,
+      sellerPhone: phone || (safeProductData.sellerPhone as string) || "",
       wilaya: safeProductData.wilaya || wilaya,
+      sellerWilaya: safeProductData.wilaya || wilaya,
       status: safeProductData.status || "active",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()

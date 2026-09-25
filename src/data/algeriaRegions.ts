@@ -661,9 +661,104 @@ export const ALGERIA_REGIONS: Record<string, WilayaData> = {
       "Tin Zaouatine": ["Tin Zaouatine"],
     },
   },
+  "59 Aflou": {
+    code: "59",
+    name: "Aflou",
+    dairas: {
+      Aflou: ["Aflou", "Sebgag", "Sidi Bouzid"],
+      Brida: ["Brida", "Taouiala", "Hadj Mechri"],
+      "El Ghicha": ["El Ghicha"],
+    },
+  },
+  "60 Barika": {
+    code: "60",
+    name: "Barika",
+    dairas: {
+      Barika: ["Barika", "M'doukal", "Bitam"],
+      Seggana: ["Seggana", "Tilatou"],
+    },
+  },
+  "61 El Kantara": {
+    code: "61",
+    name: "El Kantara",
+    dairas: {
+      "El Kantara": ["El Kantara", "Ain Zaatout"],
+      Djemorah: ["Djemorah", "Branis"],
+    },
+  },
+  "62 El Abiodh Sidi Cheikh": {
+    code: "62",
+    name: "El Abiodh Sidi Cheikh",
+    dairas: {
+      "El Abiodh Sidi Cheikh": ["El Abiodh Sidi Cheikh", "Ain El Orak", "Arbaouat", "El Bnoud"],
+      Brezina: ["Brezina", "Kraakda", "Ghassoul"],
+    },
+  },
+  "63 Bou Saâda": {
+    code: "63",
+    name: "Bou Saâda",
+    dairas: {
+      "Bou Saâda": ["Bou Saâda", "El Hamel", "Oulteme"],
+      "Ben Srour": ["Ben Srour", "Mohamed Boudiaf", "Ouled Slimane", "Zarzour"],
+      "Ain El Melh": ["Ain El Melh", "Ain Fares", "Ain Errich", "Bir Foda", "Sidi M'Hamed"],
+    },
+  },
+  "64 Messaad": {
+    code: "64",
+    name: "Messaad",
+    dairas: {
+      Messaad: ["Messaad", "Deldoul", "Selmana"],
+      "Faidh El Botma": ["Faidh El Botma", "Amourah", "Oum Laadham"],
+      "Ain El Ibel": ["Ain El Ibel", "Tadmit", "Zaccar"],
+    },
+  },
+  "65 Aïn Oussara": {
+    code: "65",
+    name: "Aïn Oussara",
+    dairas: {
+      "Aïn Oussara": ["Aïn Oussara", "Guernini"],
+      Birine: ["Birine", "Benhar"],
+      "Sidi Ladjel": ["Sidi Ladjel", "Hassi Fedoul", "El Khemis"],
+    },
+  },
+  "66 Bir El Ater": {
+    code: "66",
+    name: "Bir El Ater",
+    dairas: {
+      "Bir El Ater": ["Bir El Ater", "El Ogla"],
+      Negrine: ["Negrine", "Ferkane"],
+      Ouenza: ["Ouenza", "Ain Zerga", "Mridjed"],
+    },
+  },
+  "67 Ksar Chellala": {
+    code: "67",
+    name: "Ksar Chellala",
+    dairas: {
+      "Ksar Chellala": ["Ksar Chellala", "Serghine", "Zmalet El Emir Abdelkader"],
+      Hamadia: ["Hamadia", "Rechaiga", "Bougara"],
+    },
+  },
+  "68 Ksar El Boukhari": {
+    code: "68",
+    name: "Ksar El Boukhari",
+    dairas: {
+      "Ksar El Boukhari": ["Ksar El Boukhari", "Meftaha", "Saneg"],
+      "Ouled Antar": ["Ouled Antar", "Boghar", "Oum El Djalil"],
+      Aziz: ["Aziz", "Derrag"],
+    },
+  },
+  "69 El Aricha": {
+    code: "69",
+    name: "El Aricha",
+    dairas: {
+      "El Aricha": ["El Aricha", "El Bouihi"],
+      Sebdou: ["Sebdou", "El Gor"],
+      "Sidi Djillali": ["Sidi Djillali", "Ain Ghoraba"],
+    },
+  },
 };
 
-// Formatted array of all 58 Wilayas (e.g. "01 - Adrar", "02 - Chlef", ..., "16 - Alger", ..., "58 - In Guezzam")
+// Formatted array of all 69 Wilayas (e.g. "01 - Adrar", "02 - Chlef", ..., "16 - Alger", ..., "69 - El Aricha")
 export const ALGERIAN_WILAYAS_LIST: string[] = Object.values(ALGERIA_REGIONS).map(
   (w) => `${w.code} - ${w.name}`
 );

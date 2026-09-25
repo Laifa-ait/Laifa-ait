@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AuthUser as User } from "../../../../domains/user/user.types";
 import { uploadFileWithProgress } from "../../../../services/storage.service";
 import toast from "react-hot-toast";
@@ -9,12 +10,14 @@ import { generateClientUUID } from "../../../../utils/secureCrypto";
 const MAX_IMAGES = 8;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // Permet jusqu'à 15MB grâce à la compression client
+export const MAX_VIDEO_FILE_SIZE = 5 * 1024 * 1024; // 5 Mo maximum (norme média Olmart)
 
 export function useProductMediaUpload(
   formData: ProductFormData,
   setFormData: React.Dispatch<React.SetStateAction<ProductFormData>>,
   currentUser: User | null
 ) {
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [draggedImageIdx, setDraggedImageIdx] = useState<number | null>(null);
@@ -81,15 +84,15 @@ export function useProductMediaUpload(
     }
     if (type === "video") {
       if (!file.type.startsWith("video/")) {
-        toast.error("Format non supporté. Veuillez uploader une vidéo valide.");
+        toast.error(t("Format non supporté. Veuillez uploader une vidéo valide."));
         return;
       }
       if (file.name.match(/\.(exe|js|php|html|sh|bat)$/i)) {
-        toast.error("Fichier exécutable interdit.");
+        toast.error(t("Fichier exécutable interdit."));
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("Vidéo trop lourde (Max 10Mo)");
+      if (file.size > MAX_VIDEO_FILE_SIZE) {
+        toast.error(t("Vidéo trop lourde (Max 5Mo)"));
         return;
       }
     }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Grid } from 'lucide-react';
 
 interface DetailGalleryProps {
@@ -16,6 +17,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
   onSelectImage,
   onOpenLightbox,
 }) => {
+  const { t } = useTranslation();
   const safeImages = images.length > 0
     ? images
     : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80'];
@@ -28,7 +30,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
         <div
           role="button"
           tabIndex={0}
-          aria-label={`Agrandir la photo principale : ${title}`}
+          aria-label={t('immo_gallery_enlarge_main', 'Agrandir la photo principale : {{title}}', { title })}
           onClick={() => {
             onSelectImage(0);
             onOpenLightbox();
@@ -64,7 +66,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
                 key={idx}
                 role="button"
                 tabIndex={0}
-                aria-label={`Agrandir la photo ${idx + 1}`}
+                aria-label={t('immo_gallery_enlarge_photo', 'Agrandir la photo {{num}}', { num: idx + 1 })}
                 onClick={() => {
                   onSelectImage(idx < safeImages.length ? idx : 0);
                   onOpenLightbox();
@@ -91,9 +93,11 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white p-2 text-center">
                     <Grid className="w-6 h-6 mb-1 text-[#F59E0B]" />
                     <span className="font-bold text-sm sm:text-base">
-                      +{safeImages.length - 4} photos
+                      {t('immo_gallery_more_photos', '+{{count}} photos', { count: safeImages.length - 4 })}
                     </span>
-                    <span className="text-xs text-slate-300">Voir tout</span>
+                    <span className="text-xs text-slate-300">
+                      {t('immo_gallery_view_all', 'Voir tout')}
+                    </span>
                   </div>
                 )}
               </div>
@@ -119,7 +123,7 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
           className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-xs text-[#1E3A8A] px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
         >
           <Grid className="w-3.5 h-3.5 text-[#1E3A8A]" />
-          <span>Voir les {safeImages.length} photos</span>
+          <span>{t('immo_gallery_view_all_count', 'Voir les {{count}} photos', { count: safeImages.length })}</span>
         </button>
       </div>
 
@@ -137,7 +141,13 @@ export const DetailGallery: React.FC<DetailGalleryProps> = ({
                   : 'border-transparent opacity-60'
               }`}
             >
-              <img loading="lazy" decoding="async" src={img} alt={`Miniature ${idx + 1}`} className="w-full h-full object-cover" />
+              <img
+                loading="lazy"
+                decoding="async"
+                src={img}
+                alt={t('immo_gallery_thumbnail_alt', 'Miniature {{num}}', { num: idx + 1 })}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>

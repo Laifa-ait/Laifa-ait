@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BedDouble, Bath, Maximize2, Building2, Eye } from 'lucide-react';
 
 export type PropertyMetaLayout = 'bar' | 'grid' | 'inline';
@@ -16,16 +17,16 @@ export interface PropertyMetaProps {
   id?: string;
 }
 
-const formatPropertyType = (type?: string): string => {
+const formatPropertyType = (type?: string, t?: (k: string, d?: string) => string): string => {
   if (!type) return '';
   switch (type.toLowerCase()) {
-    case 'apartment': return 'Appartement';
-    case 'villa': return 'Villa';
-    case 'studio': return 'Studio';
-    case 'commercial': return 'Local commercial';
-    case 'land': return 'Terrain';
-    case 'office': return 'Bureau';
-    case 'duplex': return 'Duplex';
+    case 'apartment': return t ? t('property_type_apartment', 'Appartement') : 'Appartement';
+    case 'villa': return t ? t('property_type_villa', 'Villa') : 'Villa';
+    case 'studio': return t ? t('property_type_studio', 'Studio') : 'Studio';
+    case 'commercial': return t ? t('property_type_commercial', 'Local commercial') : 'Local commercial';
+    case 'land': return t ? t('property_type_land', 'Terrain') : 'Terrain';
+    case 'office': return t ? t('property_type_office', 'Bureau') : 'Bureau';
+    case 'duplex': return t ? t('property_type_duplex', 'Duplex') : 'Duplex';
     default: return type;
   }
 };
@@ -41,7 +42,8 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
   className = '',
   id,
 }) => {
-  const formattedType = React.useMemo(() => formatPropertyType(propertyType), [propertyType]);
+  const { t } = useTranslation();
+  const formattedType = React.useMemo(() => formatPropertyType(propertyType, t), [propertyType, t]);
 
   // Layout: Grid (Used in Property Detail specs)
   if (layout === 'grid') {
@@ -53,7 +55,9 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
         {typeof rooms === 'number' && rooms > 0 && (
           <div className="space-y-1 p-2">
             <BedDouble className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
-            <span className="block text-xs text-stone-500 font-medium">Pièces</span>
+            <span className="block text-xs text-stone-500 font-medium">
+              {t('immo_meta_rooms', 'Pièces')}
+            </span>
             <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">F{rooms}</span>
           </div>
         )}
@@ -61,7 +65,9 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
         {typeof areaSquareMeters === 'number' && areaSquareMeters > 0 && (
           <div className="space-y-1 p-2 sm:border-l border-slate-100">
             <Maximize2 className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
-            <span className="block text-xs text-stone-500 font-medium">Superficie</span>
+            <span className="block text-xs text-stone-500 font-medium">
+              {t('immo_meta_area', 'Superficie')}
+            </span>
             <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">{areaSquareMeters} m²</span>
           </div>
         )}
@@ -69,7 +75,9 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
         {typeof bathrooms === 'number' && bathrooms > 0 && (
           <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-slate-100">
             <Bath className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
-            <span className="block text-xs text-stone-500 font-medium">Salles de bain</span>
+            <span className="block text-xs text-stone-500 font-medium">
+              {t('immo_meta_bathrooms', 'Salles de bain')}
+            </span>
             <span className="font-bold text-[#1E3A8A] text-base sm:text-lg">{bathrooms}</span>
           </div>
         )}
@@ -77,7 +85,9 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
         {formattedType && (
           <div className="space-y-1 p-2 border-t sm:border-t-0 sm:border-l border-slate-100">
             <Building2 className="w-5 h-5 text-[#1E3A8A] mx-auto" aria-hidden="true" />
-            <span className="block text-xs text-stone-500 font-medium">Catégorie</span>
+            <span className="block text-xs text-stone-500 font-medium">
+              {t('immo_meta_category', 'Catégorie')}
+            </span>
             <span className="font-bold text-[#1E3A8A] text-sm sm:text-base capitalize line-clamp-1">
               {formattedType}
             </span>
@@ -100,7 +110,7 @@ export const PropertyMeta: React.FC<PropertyMetaProps> = ({
       items.push({ key: 'baths', icon: <Bath className="w-3.5 h-3.5" />, text: `${bathrooms} sdb` });
     }
     if (typeof viewsCount === 'number') {
-      items.push({ key: 'views', icon: <Eye className="w-3.5 h-3.5" />, text: `${viewsCount} vues` });
+      items.push({ key: 'views', icon: <Eye className="w-3.5 h-3.5" />, text: `${viewsCount} ${t('immo_meta_views', 'vues')}` });
     }
 
     return (

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="bg_lina" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="skin_lina" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1F2"/>
+      <stop offset="100%" stop-color="#FFE4E6"/>
+    </linearGradient>
+    <linearGradient id="hair_lina" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350F"/>
+      <stop offset="100%" stop-color="#451A03"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="40" fill="url(#bg_lina)"/>
+  <path d="M28 160 C28 122 48 116 80 116 C112 116 132 122 132 160 Z" fill="#FFFBEB"/>
+  <circle cx="80" cy="132" r="4" fill="#F59E0B"/>
+  <circle cx="48" cy="72" r="20" fill="url(#hair_lina)"/>
+  <circle cx="112" cy="72" r="20" fill="url(#hair_lina)"/>
+  <path d="M68 95 L68 118 C68 124 92 124 92 118 L92 95 Z" fill="#FECDD3"/>
+  <path d="M52 64 C52 98 64 108 80 108 C96 108 108 98 108 64 C108 42 96 40 80 40 C64 40 52 42 52 64 Z" fill="url(#skin_lina)"/>
+  <path d="M48 48 C60 28 100 28 112 48 C100 36 60 36 48 48 Z" fill="url(#hair_lina)"/>
+  <circle cx="68" cy="70" r="3" fill="#451A03"/>
+  <circle cx="92" cy="70" r="3" fill="#451A03"/>
+  <circle cx="69" cy="69" r="1" fill="#FFFFFF"/>
+  <circle cx="93" cy="69" r="1" fill="#FFFFFF"/>
+  <circle cx="58" cy="78" r="6" fill="#F43F5E" opacity="0.35"/>
+  <circle cx="102" cy="78" r="6" fill="#F43F5E" opacity="0.35"/>
+  <path d="M70 86 Q80 98 90 86" stroke="#BE123C" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="46" cy="76" r="5" fill="none" stroke="#FBBF24" stroke-width="2"/>
+  <circle cx="114" cy="76" r="5" fill="none" stroke="#FBBF24" stroke-width="2"/>
+</svg>

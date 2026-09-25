@@ -266,7 +266,7 @@ export const Auth: React.FC = () => {
                   {t("OLMA")}<br/><span className="text-pink-600 text-3xl font-serif italic">{t("Marketplace")}</span>
                </h1>
                <p className="text-lg text-cyan-900/70 font-medium leading-relaxed">
-                  {t("auth.sidebar.description") || "Découvrez la plus grande marketplace des 58 Wilayas. Rejoignez notre communauté !"}
+                  {t("auth.sidebar.description") || "Découvrez la plus grande marketplace des 69 Wilayas. Rejoignez notre communauté !"}
                </p>
 
                <div className="mt-8 space-y-4">

@@ -129,7 +129,7 @@ export const MobileMenu: React.FC = () => {
                       Univers & Services Olmart
                     </span>
                     <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                      58 Wilayas
+                      69 Wilayas
                     </span>
                   </div>
 

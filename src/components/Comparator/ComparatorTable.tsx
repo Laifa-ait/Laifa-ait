@@ -71,7 +71,7 @@ export const ComparatorTable: React.FC<ComparatorTableProps> = ({
       "Marque": p.brand || "Marque Officielle",
       "Disponibilité": (p.stock || 0) > 0 ? "En Stock Direct" : "Sur Commande",
       "Garantie": p.warranty || "12 Mois Garantie Olmart",
-      "Livraison Wilayas": p.freeShipping ? "Gratuite (58 Wilayas)" : "Standard Rapide",
+      "Livraison Wilayas": p.freeShipping ? "Gratuite (69 Wilayas)" : "Standard Rapide",
       "Paiement": "À la livraison (Cash / CIB)",
       "État": "Neuf sous emballage",
       "Support Client": "24/7 Assistance dédiée",

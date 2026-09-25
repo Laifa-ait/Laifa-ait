@@ -71,7 +71,7 @@ export class AdminAIService {
     const agentConfigs = await this.getAgentsConfigFromDb();
     const growthConfig = agentConfigs.growth;
 
-    const systemPrompt = `Vous êtes un analyste de croissance IA senior spécialisé dans l'e-commerce en Algérie (58 wilayas) pour Olma Marketplace.
+    const systemPrompt = `Vous êtes un analyste de croissance IA senior spécialisé dans l'e-commerce en Algérie (69 wilayas) pour Olma Marketplace.
 Votre objectif est de fournir une analyse commerciale détaillée et luxueuse basée sur les données fournies et le contexte configuré par l'administrateur.
 Contexte configuré : ${growthConfig.marketContext}
 Catégorie cible configurée : ${growthConfig.focusCategory}
@@ -218,13 +218,13 @@ Répondez STRICTEMENT au format JSON avec la structure suivante :
       "severity": "info",
       "title": "Optimisation du cache mémoire",
       "component": "Logistique Wilayas",
-      "rootCause": "Chargement répétitif du référentiel des 58 wilayas",
+      "rootCause": "Chargement répétitif du référentiel des 69 wilayas",
       "recommendedFix": "Activer le préchargement dans le ServiceWorker"
     }
   ],
   "systemChecks": [
     { "name": "Base de Données Firestore ACID", "status": "ok", "latencyMs": 42, "detail": "Transactions de stock impeccables" },
-    { "name": "API Livraisons Directes Logistique", "status": "ok", "latencyMs": 110, "detail": "Connecteur 58 Wilayas synchrone" },
+    { "name": "API Livraisons Directes Logistique", "status": "ok", "latencyMs": 110, "detail": "Connecteur 69 Wilayas synchrone" },
     { "name": "Gemini 2.5 Flash AI Engine", "status": "ok", "latencyMs": 280, "detail": "Clé API valide & quota actif" },
     { "name": "Tunnel de Commande & Autofill", "status": "ok", "latencyMs": 35, "detail": "Conformité WCAG & Autofill 100%" }
   ],

@@ -223,7 +223,7 @@ export const Navbar: React.FC = () => {
               className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
             >
               <Truck className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{t("shipping_calc") || "Tarifs Livraison 58 Wilayas"}</span>
+              <span>{t("shipping_calc") || "Tarifs Livraison 69 Wilayas"}</span>
             </Link>
 
             <span className="text-zinc-700">|</span>

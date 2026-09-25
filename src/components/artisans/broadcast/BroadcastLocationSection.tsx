@@ -1,6 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Clock, MapPin } from 'lucide-react';
-import { ALGERIA_WILAYAS_58 } from '../../../data/artisanGeo';
+import { ALGERIA_WILAYAS_69 } from '../../../data/artisanGeo';
 
 interface BroadcastLocationSectionProps {
   urgency: 'urgent' | 'standard' | 'flexible';
@@ -21,22 +22,23 @@ export const BroadcastLocationSection: React.FC<BroadcastLocationSectionProps> =
   setCommune,
   communes,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       {/* Degré d'urgence */}
       <div className="space-y-1">
         <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
           <Clock className="w-3.5 h-3.5 text-amber-600" />
-          Degré d&apos;urgence
+          <span>{t('artisan_broadcast_urgency_label', "Degré d'urgence")}</span>
         </label>
         <select
           value={urgency}
           onChange={(e) => setUrgency(e.target.value as 'urgent' | 'standard' | 'flexible')}
           className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 cursor-pointer"
         >
-          <option value="urgent">🔴 Urgent (Dans la journée / 24h)</option>
-          <option value="standard">🟡 Sous 48h</option>
-          <option value="flexible">🟢 Projet planifié / Flexible</option>
+          <option value="urgent">{t('artisan_broadcast_urgency_urgent', '🔴 Urgent (Dans la journée / 24h)')}</option>
+          <option value="standard">{t('artisan_broadcast_urgency_standard', '🟡 Sous 48h')}</option>
+          <option value="flexible">{t('artisan_broadcast_urgency_flexible', '🟢 Projet planifié / Flexible')}</option>
         </select>
       </div>
 
@@ -45,7 +47,7 @@ export const BroadcastLocationSection: React.FC<BroadcastLocationSectionProps> =
         <div className="space-y-1">
           <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 text-amber-600" />
-            Wilaya d&apos;intervention *
+            <span>{t('artisan_broadcast_wilaya_label', "Wilaya d'intervention *")}</span>
           </label>
           <select
             value={wilaya}
@@ -55,7 +57,7 @@ export const BroadcastLocationSection: React.FC<BroadcastLocationSectionProps> =
             }}
             className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 cursor-pointer"
           >
-            {ALGERIA_WILAYAS_58.map((w) => (
+            {ALGERIA_WILAYAS_69.map((w) => (
               <option key={w.code} value={w.fullName}>
                 {w.fullName}
               </option>
@@ -64,14 +66,14 @@ export const BroadcastLocationSection: React.FC<BroadcastLocationSectionProps> =
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Commune / Quartier *</label>
+          <label className="text-xs font-bold text-slate-700">{t('artisan_broadcast_commune_label', 'Commune / Quartier *')}</label>
           {communes.length > 0 ? (
             <select
               value={commune}
               onChange={(e) => setCommune(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 cursor-pointer"
             >
-              <option value="">Sélectionnez la commune...</option>
+              <option value="">{t('artisan_broadcast_select_commune', 'Sélectionnez la commune...')}</option>
               {communes.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -83,7 +85,7 @@ export const BroadcastLocationSection: React.FC<BroadcastLocationSectionProps> =
               type="text"
               value={commune}
               onChange={(e) => setCommune(e.target.value)}
-              placeholder="Nom de votre commune"
+              placeholder={t('artisan_broadcast_commune_placeholder', 'Nom de votre commune')}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500"
             />
           )}

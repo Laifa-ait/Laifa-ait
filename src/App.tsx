@@ -14,9 +14,13 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MetaTags } from "./components/MetaTags";
 import { GlobalSearchModal } from "./components/common/GlobalSearchModal";
 import { DataConsentBanner } from "./components/Consent/DataConsentBanner";
+import { useTranslationRealtimeSync } from "./hooks/useTranslationRealtimeSync";
 
 const App = () => {
   const { i18n } = useTranslation();
+
+  // Instant real-time Firestore synchronization for translations
+  useTranslationRealtimeSync();
 
   useEffect(() => {
     const handleLangChange = (lng: string) => {

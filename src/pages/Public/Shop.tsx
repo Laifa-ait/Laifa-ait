@@ -308,7 +308,7 @@ export const Shop: React.FC = () => {
     if (currentCat && currentCat !== "Tous") {
       desc = `Achetez des articles de la catégorie ${currentCat} sur OLMART.`;
       if (urlSubcategory) {
-        desc += ` Découvrez la collection de ${urlSubcategory} avec livraison sécurisée dans les 58 Wilayas.`;
+        desc += ` Découvrez la collection de ${urlSubcategory} avec livraison sécurisée dans les 69 Wilayas.`;
       }
     }
     if (searchQuery) {
@@ -319,7 +319,7 @@ export const Shop: React.FC = () => {
 
   const pageKeywords = useMemo(() => {
     const currentCat = urlCategory || activeCategory;
-    const baseKeywords = "olmart, catalogue, algérie, achat en ligne, 58 wilayas, livraison";
+    const baseKeywords = "olmart, catalogue, algérie, achat en ligne, 69 wilayas, livraison";
     if (currentCat && currentCat !== "Tous") {
       return `${currentCat.toLowerCase()}, ${urlSubcategory ? urlSubcategory.toLowerCase() + ", " : ""}${baseKeywords}`;
     }
@@ -374,7 +374,7 @@ export const Shop: React.FC = () => {
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight rtl:tracking-normal text-slate-900 uppercase">
                     {urlTag ? `Tag: ${urlTag}` : (urlSubsubcategory ? getCategoryTranslation(urlSubsubcategory, t) : urlSubcategory ? getCategoryTranslation(urlSubcategory, t) : activeCategory === "Tous" ? t("shop_collections", "Collections") : getCategoryTranslation(activeCategory, t))}
                   </h1>
-                  <p className="text-slate-500 text-sm">{t('shop_explore_treasures', "Explorez les trésors uniques des 58 Wilayas d'Algérie.")}</p>
+                  <p className="text-slate-500 text-sm">{t('shop_explore_treasures', "Explorez les trésors uniques des 69 Wilayas d'Algérie.")}</p>
                </div>
 
                {/* Right side: Modern Unified Compact Actions */}

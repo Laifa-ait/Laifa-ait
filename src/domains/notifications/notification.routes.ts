@@ -43,7 +43,7 @@ router.post(
       };
 
       try {
-        const prompt = `Vous êtes Mabrouk, l'expert traducteur e-commerce d'OLMART Algérie (58 wilayas).
+        const prompt = `Vous êtes Mabrouk, l'expert traducteur e-commerce d'OLMART Algérie (69 wilayas).
 Traduisez les chaînes de caractères e-commerce suivantes en Arabe d'Algérie littéraire (soigné, professionnel) et en Anglais :
 1. Titre: "${title}"
 2. Message: "${message}"

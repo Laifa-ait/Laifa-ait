@@ -35,8 +35,8 @@ export const ALGERIA_STOCK_BANNERS: StockBanner[] = [
     category: "Supermarché",
   },
   {
-    id: "livraison-58",
-    title: "Livraison 58 Wilayas Express",
+    id: "livraison-69",
+    title: "Livraison 69 Wilayas Express",
     url: "/images/placeholders/product.svg",
     category: "Logistique",
   },

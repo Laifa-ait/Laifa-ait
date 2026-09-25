@@ -17,7 +17,7 @@ export const StoreTrustBadges: React.FC<StoreTrustBadgesProps> = ({ storeInfo })
           <Truck className="w-4 h-4" />
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] font-black text-slate-900 leading-tight">58 Wilayas</p>
+          <p className="text-[11px] font-black text-slate-900 leading-tight">69 Wilayas</p>
           <p className="text-[10px] text-slate-500 truncate">Livraison à domicile</p>
         </div>
       </div>

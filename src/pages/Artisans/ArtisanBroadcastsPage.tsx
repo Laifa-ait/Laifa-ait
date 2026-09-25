@@ -17,7 +17,7 @@ import {
   BOOKING_CATEGORIES,
   BookingCategoryCard,
 } from '../../components/artisans/home/ArtisanCategoryBookingGrid';
-import { ALGERIA_WILAYAS_58 } from '../../data/artisanGeo';
+import { ALGERIA_WILAYAS_69 } from '../../data/artisanGeo';
 import {
   fetchArtisanJobBroadcasts,
   fetchMyArtisanProfile,
@@ -129,7 +129,7 @@ export const ArtisanBroadcastsPage: React.FC = () => {
               Annonces & Recherches d&apos;Artisans
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
-              Chantiers et interventions publiés en direct par les clients dans les 58 Wilayas d&apos;Algérie.
+              Chantiers et interventions publiés en direct par les clients dans les 69 Wilayas d&apos;Algérie.
             </p>
           </div>
 
@@ -171,8 +171,8 @@ export const ArtisanBroadcastsPage: React.FC = () => {
               onChange={(e) => setSelectedWilaya(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 cursor-pointer"
             >
-              <option value="">Toutes les 58 Wilayas</option>
-              {ALGERIA_WILAYAS_58.map((w) => (
+              <option value="">Toutes les 69 Wilayas</option>
+              {ALGERIA_WILAYAS_69.map((w) => (
                 <option key={w.code} value={w.fullName}>
                   {w.fullName}
                 </option>

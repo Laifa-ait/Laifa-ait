@@ -148,7 +148,7 @@ export const ProductInfo: React.FC<InfoProps> = ({
     }
   };
 
-  const currentLang = i18n.language || "fr";
+  const currentLang = (i18n.language || "fr").split("-")[0].toLowerCase();
   const isRTL = currentLang === "ar";
 
   const getTranslatedMaterials = () => {
@@ -175,18 +175,27 @@ export const ProductInfo: React.FC<InfoProps> = ({
   const productName = product.translations?.[currentLang]?.name || product.name;
   const productDescription = product.translations?.[currentLang]?.description || product.description;
 
+  // Check if apparel/fashion item
+  const isClothing =
+    (product.category || "").toLowerCase().includes("mode") ||
+    (product.category || "").toLowerCase().includes("vêtement") ||
+    (product.category || "").toLowerCase().includes("habit") ||
+    (product.category || "").toLowerCase().includes("chaussure") ||
+    (product.category || "").toLowerCase().includes("textile") ||
+    Boolean(product.sizeType && product.sizeType === "clothing");
+
   // Extract custom attributes based on category
   const categoryDef = DYNAMIC_CATEGORIES[product.category || ""];
-  const detailedAttributes: unknown[] = [];
+  const detailedAttributes: Array<{ label: string; value: string; unit?: string }> = [];
 
   if (categoryDef && categoryDef.allowed_filters && product?.attributes) {
-    const attrs = product.attributes;
+    const attrs = product.attributes as Record<string, unknown>;
     categoryDef.allowed_filters.forEach((filter) => {
       const val = attrs[filter.id];
-      if (val) {
+      if (val !== undefined && val !== null && val !== "") {
         detailedAttributes.push({
           label: filter.label,
-          value: Array.isArray(val) ? val.join(", ") : val,
+          value: Array.isArray(val) ? val.join(", ") : String(val),
           unit: filter.unit,
         });
       }
@@ -357,31 +366,35 @@ export const ProductInfo: React.FC<InfoProps> = ({
           </div>
 
           {/* Direct Free Contact Bar */}
-          <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-              ⚡ Contact Direct Gratuit (0% Commission)
-            </span>
+          {Boolean(shop.supportPhone || shop.phone || product.sellerPhone) && (
+            <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                ⚡ Contact Direct Vendeur
+              </span>
 
-            {(shop.supportPhone || shop.phone) && (
-              <a
-                href={`tel:${shop.supportPhone || shop.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white hover:bg-stone-800 rounded-full text-[11px] font-bold transition-all shadow-xs"
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{shop.supportPhone || shop.phone}</span>
-              </a>
-            )}
+              {(shop.supportPhone || shop.phone || product.sellerPhone) && (
+                <a
+                  href={`tel:${shop.supportPhone || shop.phone || product.sellerPhone}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white hover:bg-stone-800 rounded-full text-[11px] font-bold transition-all shadow-xs"
+                >
+                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{shop.supportPhone || shop.phone || product.sellerPhone}</span>
+                </a>
+              )}
 
-            <a
-              href={`https://wa.me/213${(shop.supportPhone || shop.phone || '0550000000').replace(/^0/, '').replace(/[^0-9]/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[11px] font-bold transition-all shadow-xs"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span>WhatsApp Direct</span>
-            </a>
-          </div>
+              {(shop.supportPhone || shop.phone || product.sellerPhone) && (
+                <a
+                  href={`https://wa.me/213${String(shop.supportPhone || shop.phone || product.sellerPhone).replace(/^0/, '').replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[11px] font-bold transition-all shadow-xs"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>WhatsApp Vendeur</span>
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Discrete Seller Promo Coupon Banner */}
           <SellerCouponBanner
@@ -536,25 +549,27 @@ export const ProductInfo: React.FC<InfoProps> = ({
                       {productDescription}
                     </p>
                   )}
-                  <div className="flex items-center justify-between pt-3 border-t border-[#EAE3D5]">
-                    <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">
-                      {t("Coupe standard / Regular Fit")}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsSizeGuideOpen(true)}
-                      className="text-[9px] font-bold text-[#008BB5] hover:underline uppercase tracking-wider flex items-center gap-1 cursor-pointer"
-                    >
-                      {t("Guide des tailles")}
-                    </button>
-                  </div>
+                  {isClothing && (
+                    <div className="flex items-center justify-between pt-3 border-t border-[#EAE3D5]">
+                      <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">
+                        {t("Coupe standard / Regular Fit")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsSizeGuideOpen(true)}
+                        className="text-[9px] font-bold text-[#008BB5] hover:underline uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                      >
+                        {t("Guide des tailles")}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Accordion 2: Composition */}
+        {/* Accordion 2: Caractéristiques & Détails */}
         <div className="border-b border-[#EAE3D5]">
           <button
             onClick={() => toggleAccordion("composition")}
@@ -562,7 +577,7 @@ export const ProductInfo: React.FC<InfoProps> = ({
           >
             <span className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-[#008BB5]" />
-              {t("Composition / entretien")}
+              {t("Caractéristiques & Détails") || "Caractéristiques & Détails"}
             </span>
             <span className={`text-stone-400 font-light text-base transition-transform duration-300 ${openAccordion === "composition" ? "rotate-180" : ""}`}>
               ▼
@@ -584,6 +599,30 @@ export const ProductInfo: React.FC<InfoProps> = ({
                       <span className="font-mono text-xs text-[#2C2C28] font-bold select-all">{product.sku}</span>
                     </div>
                   )}
+                  {product.brand && (
+                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Marque")}</span>
+                      <span className="text-[#2C2C28] font-bold">{product.brand}</span>
+                    </div>
+                  )}
+                  {product.condition && (
+                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("État")}</span>
+                      <span className="text-[#2C2C28] font-bold">{product.condition}</span>
+                    </div>
+                  )}
+                  {product.gender && (
+                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Public cible / Genre")}</span>
+                      <span className="text-[#2C2C28] font-bold">{product.gender}</span>
+                    </div>
+                  )}
+                  {product.warranty && (
+                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Garantie")}</span>
+                      <span className="text-emerald-700 font-bold">{product.warranty}</span>
+                    </div>
+                  )}
                   {product.materials && product.materials.length > 0 && (
                     <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
                       <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Matière principale")}</span>
@@ -603,21 +642,25 @@ export const ProductInfo: React.FC<InfoProps> = ({
                       </span>
                     </div>
                   )}
-                  {product.brand && (
-                    <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
-                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Marque")}</span>
-                      <span className="text-[#2C2C28] font-bold">{product.brand}</span>
-                    </div>
-                  )}
                   {product.season && (
                     <div className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
                       <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{t("Saison")}</span>
                       <span className="text-[#2C2C28] font-bold">{getTranslatedSeason()}</span>
                     </div>
                   )}
-                  <div className="pt-2 text-[10px] text-stone-500 italic">
-                    {t("Conseil d'entretien : Laver sur l'envers à 30°C avec des coloris similaires. Repassage doux recommandé.")}
-                  </div>
+                  {detailedAttributes.map((attr, idx) => (
+                    <div key={idx} className="flex justify-between border-b border-[#EAE3D5]/40 pb-2">
+                      <span className="text-stone-400 font-bold text-[9px] uppercase tracking-wider">{attr.label}</span>
+                      <span className="text-[#2C2C28] font-bold">
+                        {attr.value}{attr.unit ? ` ${attr.unit}` : ""}
+                      </span>
+                    </div>
+                  ))}
+                  {isClothing && (
+                    <div className="pt-2 text-[10px] text-stone-500 italic">
+                      {t("Conseil d'entretien : Laver sur l'envers à 30°C avec des coloris similaires. Repassage doux recommandé.")}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -651,10 +694,27 @@ export const ProductInfo: React.FC<InfoProps> = ({
                   <div className="flex gap-2.5 items-start">
                     <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">✓</div>
                     <div>
-                      <p className="font-bold text-[#2C2C28]">{t("Livraison sur les 58 Wilayas d'Algérie")}</p>
-                      <p className="text-[10px] text-stone-500">{t("Paiement sécurisé en espèces à la livraison.")}</p>
+                      <p className="font-bold text-[#2C2C28]">{t("Livraison sur les 69 Wilayas d'Algérie")}</p>
+                      <p className="text-[10px] text-stone-500">
+                        {product.deliveryPrice !== undefined && product.deliveryPrice !== null
+                          ? (Number(product.deliveryPrice) === 0
+                              ? "Livraison gratuite offerte par le vendeur !"
+                              : `Frais de livraison estimés : ${formatPrice(Number(product.deliveryPrice))}`)
+                          : t("Paiement sécurisé en espèces à la livraison.")}
+                      </p>
                     </div>
                   </div>
+                  {(product.wilaya || shop?.wilaya) && (
+                    <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
+                      <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">📍</div>
+                      <div>
+                        <p className="font-bold text-[#2C2C28]">{t("Origine d'expédition")}</p>
+                        <p className="text-[10px] text-stone-500">
+                          {t("Expédié depuis")} : <span className="font-semibold text-stone-800">{product.wilaya || shop?.wilaya}</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   {(product.preparationTime || shop?.avgPreparationTime) && (
                     <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
                       <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">⏱</div>

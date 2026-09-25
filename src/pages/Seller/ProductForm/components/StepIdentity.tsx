@@ -6,6 +6,7 @@ import { AdminTag, ProductFormData } from "../../../../types/seller";
 import { CategoryStructure } from "../../../../config/dynamicFilters";
 import { FieldHelp } from "./FieldHelp";
 import { StepIdentityTagsInput } from "./StepIdentityTagsInput";
+import { StepIdentityTranslation } from "./StepIdentityTranslation";
 
 interface StepIdentityProps {
   formData: ProductFormData;
@@ -21,6 +22,10 @@ interface StepIdentityProps {
   showAdminTagsList: boolean;
   setShowAdminTagsList: (val: boolean) => void;
   adminTags: AdminTag[];
+  translating?: boolean;
+  activeLangTab?: "fr" | "ar" | "en";
+  setActiveLangTab?: (tab: "fr" | "ar" | "en") => void;
+  handleFreeTranslateProduct?: () => Promise<void>;
 }
 
 export const StepIdentity: React.FC<StepIdentityProps> = ({
@@ -37,6 +42,10 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
   showAdminTagsList,
   setShowAdminTagsList,
   adminTags,
+  translating = false,
+  activeLangTab = "fr",
+  setActiveLangTab,
+  handleFreeTranslateProduct,
 }) => {
   const { t } = useTranslation();
 
@@ -209,6 +218,16 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
             onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
           />
         </div>
+
+        {/* TRADUCTION MULTILINGUE 100% GRATUITE */}
+        <StepIdentityTranslation
+          formData={formData}
+          setFormData={setFormData}
+          translating={translating}
+          activeLangTab={activeLangTab}
+          setActiveLangTab={setActiveLangTab}
+          handleFreeTranslateProduct={handleFreeTranslateProduct}
+        />
 
         <StepIdentityTagsInput
           formData={formData}

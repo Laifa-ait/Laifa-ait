@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { X } from "lucide-react";
+import { X, Eye } from "lucide-react";
 import { User } from "firebase/auth";
 import { ALGERIA_WILAYAS } from "../../constants";
 import { ProductCard } from "../../components/Product/ProductCard";
@@ -81,6 +81,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     handleGenerateVariants, subCategories, subSubCategories, handleGenerateAiDescription,
     handleGenerateSku, activeSizeList, toggleSize, handleFileUpload, updateImage,
     handleSubmitProduct, mg,
+    translating, activeLangTab, setActiveLangTab, handleFreeTranslateProduct,
   } = useProductForm(editingProduct, userProfile, currentUser, onClose, onSaveSuccess, CATEGORY_TREE);
 
   const previewProduct: Product = {
@@ -93,7 +94,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     images: formData.images.filter(Boolean),
     sellerId: currentUser?.uid || "preview_seller",
     sellerName: userProfile?.shopName || userProfile?.name || "Votre boutique",
-    wilaya: userProfile?.wilaya || "16 - Alger",
+    wilaya: formData.wilaya || userProfile?.wilaya || "Algérie",
     description: formData.description || "",
     rating: 5,
     qualityScore: 100,
@@ -113,8 +114,40 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative bg-[#FFFBF5] w-full h-full md:max-w-6xl md:max-h-[90vh] md:rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border-t md:border border-[#E5DED4] mt-safe-top md:mt-0 pb-safe md:pb-0"
+        className="relative bg-[#FFFBF5] w-full h-[100dvh] md:h-[90vh] md:max-w-6xl md:rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border-t md:border border-[#E5DED4]"
       >
+        {/* Mobile Top App Bar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[#E5DED4] pt-safe shrink-0 z-20">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 active:scale-95 transition-transform shrink-0 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 truncate">
+                {editingProduct ? t("Modifier Produit") : t("Ajouter un Produit")}
+              </h3>
+              <p className="text-[10px] text-slate-500 font-medium">
+                {t("Étape")} {activeStep + 1}/7 • {STEPS[activeStep]?.title}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="px-3 py-1.5 bg-[#FFFBF5] border border-[#E5DED4] text-[#C75C1A] rounded-xl text-xs font-bold flex items-center gap-1 active:scale-95 transition-all shadow-xs cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{t("Aperçu")}</span>
+            </button>
+          </div>
+        </div>
+
         <StepSidebar
           editingProduct={editingProduct}
           onClose={onClose}
@@ -125,7 +158,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
         {/* Content Area */}
         <div className="flex-1 flex flex-col h-full bg-white overflow-hidden relative">
-          <div className="flex-1 overflow-y-auto p-4 md:p-10 pb-48 md:pb-32">
+          <div className="flex-1 overflow-y-auto p-4 md:p-10 pb-36 md:pb-32 overscroll-contain">
             {/* Visual Progress Bar */}
             <div className="tour-step-progress w-full max-w-3xl mx-auto h-1.5 bg-[#E5DED4] rounded-full overflow-hidden mb-6">
               <motion.div
@@ -136,7 +169,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               />
             </div>
 
-            <form id="productForm" className="max-w-3xl mx-auto space-y-10" onSubmit={(e) => e.preventDefault()}>
+            <form id="productForm" className="max-w-3xl mx-auto space-y-8" onSubmit={(e) => e.preventDefault()}>
               {activeStep === 0 && (
                 <StepIdentity
                   formData={formData}
@@ -152,6 +185,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   showAdminTagsList={showAdminTagsList}
                   setShowAdminTagsList={setShowAdminTagsList}
                   adminTags={adminTags}
+                  translating={translating}
+                  activeLangTab={activeLangTab}
+                  setActiveLangTab={setActiveLangTab}
+                  handleFreeTranslateProduct={handleFreeTranslateProduct}
                 />
               )}
 

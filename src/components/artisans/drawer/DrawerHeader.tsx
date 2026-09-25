@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { X, User, LogIn, ShieldCheck, Wrench, UserCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { ArtisanProfile } from '../../../types/artisan';
@@ -13,6 +14,7 @@ export const DrawerHeader: React.FC<DrawerHeaderProps> = ({
   onClose,
   artisanProfile,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, currentUser } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
@@ -36,7 +38,7 @@ export const DrawerHeader: React.FC<DrawerHeaderProps> = ({
               </span>
             </div>
             <p className="text-[10px] text-slate-400 font-medium">
-              Travaux & Dépannage • 58 Wilayas
+              Travaux & Dépannage • {t('artisan_drawer_58_wilayas', '69 Wilayas')}
             </p>
           </div>
         </div>
@@ -95,7 +97,7 @@ export const DrawerHeader: React.FC<DrawerHeaderProps> = ({
               className="text-slate-300 hover:text-white flex items-center gap-1 font-medium transition-colors cursor-pointer"
             >
               <UserCircle className="w-3.5 h-3.5 text-amber-400" />
-              <span>Gérer mon profil & adresses</span>
+              <span>{t('artisan_drawer_manage_profile', 'Gérer mon profil & adresses')}</span>
             </button>
           </div>
         </div>
@@ -103,10 +105,10 @@ export const DrawerHeader: React.FC<DrawerHeaderProps> = ({
         <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2.5">
           <div className="flex items-center gap-2 text-slate-300 text-xs">
             <User className="w-4 h-4 text-amber-400" />
-            <span className="font-semibold text-white">Espace Utilisateur</span>
+            <span className="font-semibold text-white">{t('artisan_drawer_user_space', 'Espace Utilisateur')}</span>
           </div>
           <p className="text-[11px] text-slate-400 leading-snug">
-            Connectez-vous pour suivre vos demandes de devis et enregistrer vos artisans favoris.
+            {t('artisan_drawer_user_space_desc', 'Connectez-vous pour suivre vos demandes de devis et enregistrer vos artisans favoris.')}
           </p>
           <button
             type="button"
@@ -117,7 +119,7 @@ export const DrawerHeader: React.FC<DrawerHeaderProps> = ({
             className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
           >
             <LogIn className="w-4 h-4 text-slate-950" />
-            <span>Se connecter / S&apos;inscrire</span>
+            <span>{t('artisan_drawer_login_signup', 'Se connecter / S\'inscrire')}</span>
           </button>
         </div>
       )}

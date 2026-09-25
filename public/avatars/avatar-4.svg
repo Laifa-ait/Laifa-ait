@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="bg_karim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="skin_karim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FED7AA"/>
+      <stop offset="100%" stop-color="#FDBA74"/>
+    </linearGradient>
+    <linearGradient id="beanie_karim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1B4B"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="40" fill="url(#bg_karim)"/>
+  <path d="M26 160 C26 118 46 112 80 112 C114 112 134 118 134 160 Z" fill="#1E1B4B"/>
+  <path d="M58 120 Q80 142 102 120" stroke="#06B6D4" stroke-width="3" fill="none"/>
+  <path d="M68 95 L68 118 C68 124 92 124 92 118 L92 95 Z" fill="#F59E0B" opacity="0.6"/>
+  <path d="M50 66 C50 100 62 110 80 110 C98 110 110 100 110 66 C110 44 98 42 80 42 C62 42 50 44 50 66 Z" fill="url(#skin_karim)"/>
+  <path d="M46 58 C44 26 116 26 114 58 Z" fill="url(#beanie_karim)"/>
+  <rect x="42" y="52" width="76" height="12" rx="4" fill="#4338CA"/>
+  <circle cx="68" cy="74" r="3" fill="#1E1B4B"/>
+  <circle cx="92" cy="74" r="3" fill="#1E1B4B"/>
+  <circle cx="68" cy="74" r="11" fill="none" stroke="#06B6D4" stroke-width="2.5"/>
+  <circle cx="92" cy="74" r="11" fill="none" stroke="#06B6D4" stroke-width="2.5"/>
+  <path d="M79 74 H81" stroke="#06B6D4" stroke-width="2.5"/>
+  <path d="M73 94 Q80 100 87 94" stroke="#9A3412" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>

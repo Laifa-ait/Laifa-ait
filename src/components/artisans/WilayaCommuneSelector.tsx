@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { MapPin, Building } from 'lucide-react';
-import { ALGERIA_WILAYAS_58, getCommunesForWilaya } from '../../data/artisanGeo';
+import { ALGERIA_WILAYAS_69, getCommunesForWilaya } from '../../data/artisanGeo';
 
 interface WilayaCommuneSelectorProps {
   selectedWilaya: string;
@@ -24,7 +24,7 @@ export const WilayaCommuneSelector: React.FC<WilayaCommuneSelectorProps> = ({
   onCommuneChange,
   required = false,
   disabled = false,
-  wilayaLabel = 'Wilaya (58 Wilayas)',
+  wilayaLabel = 'Wilaya (69 Wilayas)',
   communeLabel = 'Commune',
   layout = 'horizontal',
   className = '',
@@ -44,7 +44,7 @@ export const WilayaCommuneSelector: React.FC<WilayaCommuneSelectorProps> = ({
       return;
     }
 
-    const found = ALGERIA_WILAYAS_58.find((w) => w.fullName === value || w.name === value);
+    const found = ALGERIA_WILAYAS_69.find((w) => w.fullName === value || w.name === value);
     const code = found ? found.code : '';
     const name = found ? found.name : value;
     onWilayaChange(name, code);
@@ -74,7 +74,7 @@ export const WilayaCommuneSelector: React.FC<WilayaCommuneSelectorProps> = ({
             className="w-full h-11 px-3.5 pr-8 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all appearance-none cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed"
           >
             <option value="">{allowAllOption ? allOptionLabel : 'Sélectionner une wilaya...'}</option>
-            {ALGERIA_WILAYAS_58.map((w) => (
+            {ALGERIA_WILAYAS_69.map((w) => (
               <option key={w.code} value={w.name}>
                 {w.fullName}
               </option>

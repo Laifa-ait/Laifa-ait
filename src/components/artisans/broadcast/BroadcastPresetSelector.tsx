@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 
 interface BroadcastPresetSelectorProps {
@@ -12,11 +13,12 @@ export const BroadcastPresetSelector: React.FC<BroadcastPresetSelectorProps> = (
   selectedPreset,
   onSelectPreset,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
       <label className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
         <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-        Sélectionnez un besoin fréquent (en 1 clic) :
+        {t('artisan_broadcast_presets_title', 'Sélectionnez un besoin fréquent (en 1 clic) :')}
       </label>
       <div className="flex flex-wrap gap-1.5">
         {presets.map((preset) => {

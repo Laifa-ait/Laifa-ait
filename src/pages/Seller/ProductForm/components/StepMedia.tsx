@@ -35,6 +35,19 @@ export const StepMedia: React.FC<StepMediaProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const moveImage = (fromIdx: number, toIdx: number) => {
+    if (toIdx < 0 || toIdx >= formData.images.length) return;
+    const newImages = [...formData.images];
+    const temp = newImages[fromIdx];
+    newImages[fromIdx] = newImages[toIdx];
+    newImages[toIdx] = temp;
+    setFormData((prev) => ({
+      ...prev,
+      images: newImages,
+      image: newImages.find((img) => Boolean(img)) || "",
+    }));
+  };
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
       <div className="space-y-1">
@@ -53,74 +66,109 @@ export const StepMedia: React.FC<StepMediaProps> = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block text-xs font-semibold text-slate-900">{t("Galerie Photos")}</label>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{t("PNG/JPG • Max 5Mo")}</span>
+            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded inline-flex items-center">
+              <bdi>{t("PNG/JPG • Max 5Mo")}</bdi>
+            </span>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {formData.images.map((img: string, i: number) => {
               return (
-                <label
+                <div
                   key={i}
+                  className={`relative group bg-[#FFFBF5] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden transition-all ${
+                    i === 0 ? "aspect-square md:col-span-2 md:row-span-2" : "aspect-square"
+                  } ${img ? "border-[#E5DED4] shadow-sm" : "border-[#E5DED4] hover:border-[#C75C1A] hover:bg-[#C75C1A]/5"} ${
+                    dragOverImageIdx === i ? "border-[#C75C1A] bg-[#C75C1A]/10 scale-[1.02]" : ""
+                  } ${draggedImageIdx === i ? "opacity-50" : ""}`}
                   draggable={!!img}
                   onDragStart={(e) => (img ? handleDragStart(e, i) : undefined)}
                   onDragOver={(e) => handleDragOver(e, i)}
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
-                  className={`relative cursor-pointer group bg-[#FFFBF5] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden transition-all ${
-                    i === 0 ? "aspect-square md:col-span-2 md:row-span-2" : "aspect-square"
-                  } ${img ? "border-[#E5DED4] shadow-sm" : "border-[#E5DED4] hover:border-[#C75C1A] hover:bg-[#C75C1A]/5"} ${
-                    dragOverImageIdx === i ? "border-[#C75C1A] bg-[#C75C1A]/10 scale-[1.02]" : ""
-                  } ${draggedImageIdx === i ? "opacity-50" : ""}`}
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileUpload(e, "image", i)}
-                    disabled={uploading[`image-${i}`]}
-                  />
-                  {uploading[`image-${i}`] ? (
-                    <div className="flex flex-col items-center">
-                      <Loader2 className="w-6 h-6 text-[#C75C1A] animate-spin mb-2" />
-                      <span className="text-[10px] font-bold text-[#C75C1A]">{uploadProgress[`image-${i}`] || 0}%</span>
-                    </div>
-                  ) : img ? (
-                    <>
-                      <img loading="lazy" alt="" src={img} className="w-full h-full object-cover" />
-                      {i === 0 && (
-                        <span className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded">
-                          {t("Vignette Principale")}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-500 group-hover:text-[#C75C1A] p-4 text-center">
-                      <Upload className={i === 0 ? "w-8 h-8" : "w-5 h-5"} />
-                      {i === 0 ? (
-                        <div>
-                          <p className="font-bold text-sm">{t("Image Principale")}</p>
-                          <p className="text-xs opacity-70">{t("Sera utilisée comme miniature")}</p>
-                        </div>
-                      ) : (
-                        <p className="font-bold text-xs">
-                          {t("Image")}
-                          {i + 1}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, "image", i)}
+                      disabled={uploading[`image-${i}`]}
+                    />
+                    {uploading[`image-${i}`] ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="w-6 h-6 text-[#C75C1A] animate-spin mb-2" />
+                        <span className="text-[10px] font-bold text-[#C75C1A]">{uploadProgress[`image-${i}`] || 0}%</span>
+                      </div>
+                    ) : img ? (
+                      <>
+                        <img loading="lazy" alt="" src={img} className="w-full h-full object-cover" />
+                        {i === 0 && (
+                          <span className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded">
+                            {t("Miniature Principale")}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-slate-500 group-hover:text-[#C75C1A] p-4 text-center">
+                        <Upload className={i === 0 ? "w-8 h-8" : "w-5 h-5"} />
+                        {i === 0 ? (
+                          <div>
+                            <p className="font-bold text-sm">{t("Image Principale")}</p>
+                            <p className="text-xs opacity-70">{t("Sera utilisée comme miniature")}</p>
+                          </div>
+                        ) : (
+                          <p className="font-bold text-xs">
+                            {t("Image")} {i + 1}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </label>
+
                   {img && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        updateImage(i, "");
-                      }}
-                      className="absolute top-2 right-2 w-8 h-8 bg-white/90 backdrop-blur border border-[#E5DED4] rounded-full flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-white shadow-sm transition-all z-10 cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          title={t("Déplacer vers la gauche")}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            moveImage(i, i - 1);
+                          }}
+                          className="w-7 h-7 bg-white/95 backdrop-blur border border-[#E5DED4] rounded-full flex items-center justify-center text-slate-700 hover:text-[#C75C1A] shadow-xs active:scale-95 transition-all text-xs font-bold"
+                        >
+                          ←
+                        </button>
+                      )}
+                      {i < formData.images.length - 1 && formData.images[i + 1] && (
+                        <button
+                          type="button"
+                          title={t("Déplacer vers la droite")}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            moveImage(i, i + 1);
+                          }}
+                          className="w-7 h-7 bg-white/95 backdrop-blur border border-[#E5DED4] rounded-full flex items-center justify-center text-slate-700 hover:text-[#C75C1A] shadow-xs active:scale-95 transition-all text-xs font-bold"
+                        >
+                          →
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          updateImage(i, "");
+                        }}
+                        className="w-7 h-7 bg-white/95 backdrop-blur border border-[#E5DED4] rounded-full flex items-center justify-center text-slate-600 hover:text-red-500 shadow-xs active:scale-95 transition-all cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
-                </label>
+                </div>
               );
             })}
           </div>
@@ -129,7 +177,9 @@ export const StepMedia: React.FC<StepMediaProps> = ({
         <div className="pt-6 border-t border-slate-100">
           <div className="flex items-center justify-between mb-3">
             <label className="block text-xs font-semibold text-slate-900">{t("Vidéo de Présentation")}</label>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{t("MP4 • Max 10Mo")}</span>
+            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded inline-flex items-center">
+              <bdi>{t("MP4 • Max 5Mo")}</bdi>
+            </span>
           </div>
           <label className="relative block w-full py-8 cursor-pointer overflow-hidden border-2 border-[#E5DED4] bg-[#FFFBF5] rounded-2xl group border-dashed hover:border-[#C75C1A] hover:bg-[#C75C1A]/5 transition-all text-center">
             <input type="file" accept="video/*" className="hidden" onChange={(e) => handleFileUpload(e, "video")} disabled={uploading.video} />

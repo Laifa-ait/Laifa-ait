@@ -384,7 +384,7 @@ export const OrdersAdmin: React.FC = () => {
     let labelsHtml = "";
     selectedOrders.forEach((o, index) => {
       const tracking = o.trackingId || o.trackingNumber || `OLM-REF-${o.id.slice(-6).toUpperCase()}`;
-      const remarks = t("Notes Admin : Livraison standard rapide 58 Wilayas d'Algérie.");
+      const remarks = t("Notes Admin : Livraison standard rapide 69 Wilayas d'Algérie.");
       const itemsList = (o.items || [])
         .map((it) => `• ${it.productName || it.name || "Produit"} x ${it.quantity}`)
         .join("<br/>");
@@ -395,7 +395,7 @@ export const OrdersAdmin: React.FC = () => {
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
               <div>
                 <strong style="font-size: 16px; font-weight: 900; color: #ea580c; text-transform: uppercase;">⚡ OLMART LOGISTICS</strong>
-                <p style="font-size: 9px; margin: 2px 0 0 0; font-weight: bold; color: #555;">Co-partenaire Algérie 58 Wilayas</p>
+                <p style="font-size: 9px; margin: 2px 0 0 0; font-weight: bold; color: #555;">Co-partenaire Algérie 69 Wilayas</p>
               </div>
               <div style="border: 1px solid #000; padding: 4px; font-weight: bold; font-size: 10px;">
                 QR SCAN
@@ -563,7 +563,7 @@ export const OrdersAdmin: React.FC = () => {
           </h2>
           <p className="text-zinc-500 font-bold text-sm">
             {t(
-              "Comptabilité instantanée, filtrage multidimensionnel des 58 Wilayas et impression de bordereaux groupés."
+              "Comptabilité instantanée, filtrage multidimensionnel des 69 Wilayas et impression de bordereaux groupés."
             )}
           </p>
         </div>

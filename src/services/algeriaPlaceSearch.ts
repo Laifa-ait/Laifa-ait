@@ -109,7 +109,7 @@ export function searchLocalAlgerianPlaces(query: string, preferredWilaya?: strin
     }
   }
 
-  // 3. Search in Algerian 58 Wilayas
+  // 3. Search in Algerian 69 Wilayas
   for (const w of ALGERIA_WILAYAS_DATABASE) {
     const normW = normalizeGeoText(w.name);
     const normWAr = normalizeGeoText(w.name_ar || '');

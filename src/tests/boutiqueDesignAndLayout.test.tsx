@@ -171,7 +171,7 @@ describe('Boutique Design & Layout Isolation Suite', () => {
     expect(container?.textContent).toContain('2');
   });
 
-  it('5. StoreTrustBadges renders 58 wilayas and verified merchant guarantees', () => {
+  it('5. StoreTrustBadges renders 69 wilayas and verified merchant guarantees', () => {
     const mockStore: PublicStoreInfo = {
       id: 'store_1',
       sellerId: 'seller_alpha',
@@ -183,7 +183,7 @@ describe('Boutique Design & Layout Isolation Suite', () => {
       root?.render(<StoreTrustBadges storeInfo={mockStore} />);
     });
 
-    expect(container?.textContent).toContain('58 Wilayas');
+    expect(container?.textContent).toContain('69 Wilayas');
     expect(container?.textContent).toContain('Livraison à domicile');
     expect(container?.textContent).toContain('Vendeur Vérifié');
     expect(container?.textContent).toContain('Paiement à la livraison');

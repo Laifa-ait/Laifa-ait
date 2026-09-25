@@ -10,9 +10,9 @@ export const DEFAULT_OLMA_APPS: OlmaAppModule[] = [
       en: 'Olma Express'
     },
     description: {
-      fr: 'Livraison ultra-rapide 24-48h garantie dans les 58 Wilayas d\'Algérie.',
-      ar: 'توصيل سريع مضمون خلال 24-48 ساعة عبر 58 ولاية.',
-      en: 'Ultra-fast 24-48h guaranteed shipping across 58 Wilayas.'
+      fr: 'Livraison ultra-rapide 24-48h garantie dans les 69 Wilayas d\'Algérie.',
+      ar: 'توصيل سريع مضمون خلال 24-48 ساعة عبر 69 ولاية.',
+      en: 'Ultra-fast 24-48h guaranteed shipping across 69 Wilayas.'
     },
     icon: 'Truck',
     gradient: 'from-sky-400 via-blue-500 to-indigo-600',
@@ -28,7 +28,7 @@ export const DEFAULT_OLMA_APPS: OlmaAppModule[] = [
     targetRoute: '/shop?express=true',
     actionType: 'route',
     order: 1,
-    tags: ['Livraison', 'Express', '58 Wilayas'],
+    tags: ['Livraison', 'Express', '69 Wilayas'],
     showInHomeShortcuts: true
   },
   {

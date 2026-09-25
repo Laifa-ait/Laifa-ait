@@ -21,6 +21,15 @@
       },
       "required": ["uid", "email", "role"]
     },
+    "Translation": {
+      "title": "Translation Dictionary",
+      "description": "Multilingual key-value dictionary and dynamic overrides",
+      "type": "object",
+      "properties": {
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      }
+    },
     "Product": {
       "title": "Product",
       "description": "Seller product listing",
@@ -422,6 +431,10 @@
     "/audit_logs/{logId}": {
       "schema": "AuditLog",
       "description": "Administrative system and security audit entries"
+    },
+    "/translations/{lang}": {
+      "schema": "Translation",
+      "description": "Dynamic multilingual localization dictionary and overrides"
     }
   }
 }

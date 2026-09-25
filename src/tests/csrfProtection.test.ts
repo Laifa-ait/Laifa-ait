@@ -365,4 +365,31 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
       });
     });
   });
+
+  describe("Cloud Run Multi-Instance Server Startup CSRF Invariant", () => {
+    it("fails closed in production during startServer() if CSRF_SECRET is missing, with zero ephemeral secret fallback", async () => {
+      process.env.NODE_ENV = "production";
+      delete process.env.CSRF_SECRET;
+
+      const { startServer } = await import("../../server");
+
+      await expect(startServer(0)).rejects.toThrowError(
+        "CSRF_SECRET is required and must be at least 32 characters in production"
+      );
+
+      // Verify that process.env.CSRF_SECRET was NOT populated with an ephemeral random secret
+      expect(process.env.CSRF_SECRET).toBeUndefined();
+    });
+
+    it("fails closed in production during startServer() if CSRF_SECRET is weak", async () => {
+      process.env.NODE_ENV = "production";
+      process.env.CSRF_SECRET = "changeit";
+
+      const { startServer } = await import("../../server");
+
+      await expect(startServer(0)).rejects.toThrowError(
+        "CSRF_SECRET is required and must be at least 32 characters in production"
+      );
+    });
+  });
 });

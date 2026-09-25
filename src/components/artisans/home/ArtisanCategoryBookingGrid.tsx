@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -40,17 +41,20 @@ export const ArtisanCategoryBookingGrid: React.FC<ArtisanCategoryBookingGridProp
         </div>
       </div>
 
-      {/* Grid of Thematic Framed Buttons */}
+      {/* Grid of Thematic Framed Buttons with Tactile Elastic Motion */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         {BOOKING_CATEGORIES.map((category) => {
           const Icon = category.icon;
           const ArtComponent = category.artComponent;
 
           return (
-            <div
+            <motion.div
               key={category.id}
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
               onClick={() => onSelectCategory(category)}
-              className="group relative bg-white rounded-3xl border border-slate-200/90 hover:border-amber-400 p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:-translate-y-1"
+              className="group relative bg-white rounded-3xl border border-slate-200/90 hover:border-amber-400 p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs hover:shadow-xl transition-shadow duration-300 cursor-pointer overflow-hidden"
             >
               {/* Image / Artistic Model Frame Container */}
               <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 bg-slate-950">
@@ -101,11 +105,11 @@ export const ArtisanCategoryBookingGrid: React.FC<ArtisanCategoryBookingGridProp
                   type="button"
                   className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs flex items-center justify-between shadow-xs transition-all"
                 >
-                  <span>Réserver / Publier l&apos;annonce</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>{t('artisan_grid_book_cta', 'Réserver / Publier l\'annonce')}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

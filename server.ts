@@ -1,5 +1,6 @@
 import "dotenv/config";
 import http from "http";
+import crypto from "crypto";
 import { app } from "./app";
 import { verifyAndFixDb } from "./src/config/firebase-admin";
 import { startProductPublisherWorker, stopProductPublisherWorker } from "./src/workers/productPublisher";
@@ -10,10 +11,23 @@ import { validateCsrfConfiguration } from "./src/middlewares/csrf";
 import { TrendingSearchesService } from "./src/services/TrendingSearchesService";
 import { safeLogger } from "./src/utils/logger";
 
-const PORT = 3000;
+const getEffectivePort = (): number => {
+  // In production (Cloud Run), bind to process.env.PORT (e.g. 8080 or 3000)
+  if (process.env.NODE_ENV === "production" && process.env.PORT) {
+    const parsed = parseInt(process.env.PORT, 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  // In development, port 3000 is required for dev server & iframe ingress
+  return 3000;
+};
+
+const PORT = getEffectivePort();
 const bootStartTime = Date.now();
 
 export const httpServer = http.createServer(app);
+export let secondaryHttpServer: http.Server | null = null;
 
 let isShuttingDown = false;
 let startServerPromise: Promise<http.Server> | null = null;
@@ -42,6 +56,15 @@ export const shutdown = (signal: string): void => {
     stopVelocityWorker();
   } catch (err) {
     safeLogger.warn("[Shutdown] Error stopping velocity worker", { err: String(err) });
+  }
+
+  if (secondaryHttpServer && secondaryHttpServer.listening) {
+    try {
+      secondaryHttpServer.close();
+    } catch (err) {
+      safeLogger.warn("[Shutdown] Error closing secondary HTTP server", { err: String(err) });
+    }
+    secondaryHttpServer = null;
   }
 
   if (httpServer.listening) {
@@ -106,6 +129,20 @@ export async function stopServerForTesting(): Promise<void> {
     // Safe no-op in test teardown
   }
 
+  if (secondaryHttpServer && secondaryHttpServer.listening) {
+    if (typeof secondaryHttpServer.closeAllConnections === "function") {
+      secondaryHttpServer.closeAllConnections();
+    }
+    await new Promise<void>((resolve) => {
+      if (secondaryHttpServer) {
+        secondaryHttpServer.close(() => resolve());
+      } else {
+        resolve();
+      }
+    });
+    secondaryHttpServer = null;
+  }
+
   if (httpServer && httpServer.listening) {
     if (typeof httpServer.closeAllConnections === "function") {
       httpServer.closeAllConnections();
@@ -127,13 +164,23 @@ export function startServer(portOverride?: number): Promise<http.Server> {
   const bindPort = typeof portOverride === "number" ? portOverride : PORT;
 
   startServerPromise = (async () => {
-    const logDev = (msg: string) => {
-      if (process.env.NODE_ENV !== "production") {
-        safeLogger.info(msg);
-      }
-    };
+    try {
+      const logDev = (msg: string) => {
+        if (process.env.NODE_ENV !== "production") {
+          safeLogger.info(msg);
+        }
+      };
 
-    // 0. Security Configuration Guard: Fail-closed CSRF validation in production
+    // 0. Security Configuration Guard: Validate CSRF configuration.
+    // In development/test environments: generate an ephemeral 256-bit secret if not configured.
+    // In production (Cloud Run multi-instance): NEVER generate an ephemeral random secret!
+    // A shared secret across all instances (via Google Cloud Secret Manager or environment variable) is strictly required.
+    // Fails closed immediately if missing or insecure to prevent desynchronized multi-instance HMAC verification failures.
+    if (process.env.NODE_ENV !== "production") {
+      if (!process.env.CSRF_SECRET || process.env.CSRF_SECRET.trim().length < 32) {
+        process.env.CSRF_SECRET = crypto.randomBytes(32).toString("hex");
+      }
+    }
     validateCsrfConfiguration();
 
     try {
@@ -163,14 +210,14 @@ export function startServer(portOverride?: number): Promise<http.Server> {
       }
     }
 
-    // 4. Background workers & Reconciliation
-    try {
-      startVelocityWorker();
-    } catch (err: unknown) {
-      safeLogger.error("[Olmart Workers] ❌ Failed to initialize velocity reconciliation worker", { err: String(err) });
-    }
+    // 4. Background workers & Reconciliation (Dedicated worker instances only)
+    if (process.env.ENABLE_WORKERS === "true" || process.env.ENABLE_BACKGROUND_WORKERS === "true") {
+      try {
+        startVelocityWorker();
+      } catch (err: unknown) {
+        safeLogger.error("[Olmart Workers] ❌ Failed to initialize velocity reconciliation worker", { err: String(err) });
+      }
 
-    if (process.env.ENABLE_WORKERS === "true") {
       try {
         startProductPublisherWorker();
       } catch (err: unknown) {
@@ -208,6 +255,21 @@ export function startServer(portOverride?: number): Promise<http.Server> {
         const startupDuration = ((Date.now() - bootStartTime) / 1000).toFixed(2);
         safeLogger.info(`OLMART STARTUP READY - Port: ${bindPort}, Environment: ${process.env.NODE_ENV || "development"}, Startup Time: ${startupDuration}s`);
 
+        // If bound to a non-3000 port in production (e.g. Cloud Run 8080), also bind secondary listener on 3000 for dual-ingress compatibility
+        if (process.env.NODE_ENV === "production" && bindPort !== 3000) {
+          try {
+            secondaryHttpServer = http.createServer(app);
+            secondaryHttpServer.listen(3000, "0.0.0.0", () => {
+              safeLogger.info(`[Olmart Gateway] 🚀 Also listening on secondary port 3000 for dual-ingress compatibility`);
+            });
+            secondaryHttpServer.on("error", (secErr: unknown) => {
+              safeLogger.warn("[Olmart Gateway] Secondary port 3000 listener non-fatal error", { err: String(secErr) });
+            });
+          } catch (secErr) {
+            safeLogger.warn("[Olmart Gateway] Could not bind secondary port 3000", { err: String(secErr) });
+          }
+        }
+
         // Asynchronously warm-up trending searches cache without blocking the HTTP server or readiness probe
         TrendingSearchesService.warmupTrendingSearches().catch((warmupErr: unknown) => {
           safeLogger.warn("[Startup] Trending searches warm-up non-fatal failure", {
@@ -218,6 +280,10 @@ export function startServer(portOverride?: number): Promise<http.Server> {
         resolve(httpServer);
       });
     });
+    } catch (bootErr: unknown) {
+      startServerPromise = null;
+      throw bootErr;
+    }
   })();
 
   return startServerPromise;

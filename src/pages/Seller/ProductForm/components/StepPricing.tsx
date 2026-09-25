@@ -38,10 +38,26 @@ export const StepPricing: React.FC<StepPricingProps> = ({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2 flex justify-between items-center">
-              {t("Prix comparé / Promo (DA)")}
-              <span className="text-[9px] font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded">{t("Optionnel")}</span>
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                {t("Prix promo / réduit (DA)")}
+              </label>
+              {(() => {
+                const base = parseFloat(formData.price || "0");
+                const promo = parseFloat(formData.promoPrice || "0");
+                if (base > 0 && promo > 0 && promo < base) {
+                  const discount = Math.round(((base - promo) / base) * 100);
+                  return (
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      -{discount}% {t("de remise")}
+                    </span>
+                  );
+                }
+                return (
+                  <span className="text-[9px] font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded">{t("Optionnel")}</span>
+                );
+              })()}
+            </div>
             <input
               type="number"
               className="w-full px-4 py-3 bg-white border border-orange-200 rounded-xl outline-none text-xl font-sans font-bold text-orange-600 focus:border-orange-500 placeholder:text-orange-200 transition-colors"
@@ -49,6 +65,18 @@ export const StepPricing: React.FC<StepPricingProps> = ({
               value={formData.promoPrice || ""}
               onChange={(e) => setFormData((prev) => ({ ...prev, promoPrice: e.target.value }))}
             />
+            {(() => {
+              const base = parseFloat(formData.price || "0");
+              const promo = parseFloat(formData.promoPrice || "0");
+              if (base > 0 && promo >= base) {
+                return (
+                  <p className="text-[11px] text-red-500 font-medium mt-1">
+                    ⚠️ {t("Le prix promotionnel doit être inférieur au prix de base.")}
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
 

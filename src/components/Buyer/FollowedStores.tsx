@@ -221,7 +221,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
             {t("Réseau Vendeurs")}
           </h2>
           <p className="text-zinc-500 font-medium text-sm">
-            {t("Suivez vos favoris et explorez les pépites des 58 Wilayas.")}
+            {t("Suivez vos favoris et explorez les pépites des 69 Wilayas.")}
           </p>
         </div>
 
@@ -403,7 +403,7 @@ export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | nu
                     onClick={() => setShowAllWilayas(!showAllWilayas)}
                     className="text-zinc-600 hover:underline"
                   >
-                    {showAllWilayas ? t("Masquer") : t("Voir les 58 Wilayas")}
+                    {showAllWilayas ? t("Masquer") : t("Voir les 69 Wilayas")}
                   </button>
                 </div>
 

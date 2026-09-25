@@ -4,7 +4,6 @@ import { ai, DEFAULT_GEMINI_MODEL } from "../../config/gemini";
 import { AiService } from "../../services/AiService";
 import { safeLogger } from "../../utils/logger";
 import { LocaleStorageService } from "../../services/LocaleStorageService";
-import path from "path";
 import rateLimit from "express-rate-limit";
 import NodeCache from "node-cache";
 
@@ -65,7 +64,7 @@ router.post(
   authorizeAdmin,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const count = await AiService.fixFictiveTranslations();
+      const count = await AiService.fixFictiveTranslations(req.user?.uid);
       res.json({ message: "Success", count });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erreur serveur";
@@ -80,13 +79,9 @@ router.post(
   authorizeAdmin,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const frPath = path.join(process.cwd(), "public/locales/fr.json");
-      const arPath = path.join(process.cwd(), "public/locales/ar.json");
-      const enPath = path.join(process.cwd(), "public/locales/en.json");
-
-      const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
-      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
-      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
+      const frContent = await LocaleStorageService.getMergedLocale("fr");
+      const arContent = await LocaleStorageService.getMergedLocale("ar");
+      const enContent = await LocaleStorageService.getMergedLocale("en");
 
       const clientHarvested: string[] = req.body.harvestedKeys || [];
       const harvested = new Set<string>(clientHarvested);
@@ -100,7 +95,7 @@ router.post(
       });
 
       if (frModified) {
-        AiService.dualWrite("fr", frContent);
+        await AiService.dualWrite("fr", frContent, req.user?.uid);
       }
 
       const keysToTranslate: string[] = [];
@@ -199,8 +194,8 @@ router.post(
         }
       }
 
-      AiService.dualWrite("ar", arContent);
-      AiService.dualWrite("en", enContent);
+      await AiService.dualWrite("ar", arContent, req.user?.uid);
+      await AiService.dualWrite("en", enContent, req.user?.uid);
 
       res.json({
         message:
@@ -258,11 +253,8 @@ router.post(
         return res.status(400).json({ error: "Liste de termes requise" });
       }
 
-      const arPath = path.join(process.cwd(), "public/locales/ar.json");
-      const enPath = path.join(process.cwd(), "public/locales/en.json");
-
-      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
-      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
+      const arContent = await LocaleStorageService.getMergedLocale("ar");
+      const enContent = await LocaleStorageService.getMergedLocale("en");
 
       const result: Record<string, { ar: string; en: string; isNew: boolean }> = {};
       const termsToTranslate: string[] = [];
@@ -339,13 +331,9 @@ router.post(
         return res.status(400).json({ error: "Traductions requises" });
       }
 
-      const frPath = path.join(process.cwd(), "public/locales/fr.json");
-      const arPath = path.join(process.cwd(), "public/locales/ar.json");
-      const enPath = path.join(process.cwd(), "public/locales/en.json");
-
-      const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
-      const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
-      const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
+      const frContent = await LocaleStorageService.getMergedLocale("fr");
+      const arContent = await LocaleStorageService.getMergedLocale("ar");
+      const enContent = await LocaleStorageService.getMergedLocale("en");
 
       let modified = false;
 
@@ -360,10 +348,10 @@ router.post(
       });
 
       if (modified) {
-        AiService.dualWrite("fr", frContent);
+        await AiService.dualWrite("fr", frContent, req.user?.uid);
       }
-      AiService.dualWrite("ar", arContent);
-      AiService.dualWrite("en", enContent);
+      await AiService.dualWrite("ar", arContent, req.user?.uid);
+      await AiService.dualWrite("en", enContent, req.user?.uid);
 
       res.json({ message: "Traductions appliquées et enregistrées avec succès !" });
     } catch (error: unknown) {
@@ -470,23 +458,59 @@ router.post(
     try {
       const response = await ai.models.generateContent({
         model: DEFAULT_GEMINI_MODEL,
-        contents: `Translate the following product information from French to Arabic and English. Return ONLY a pure JSON object. Format strictly as: { "name": {"ar": "...", "en": "..."}, "description": {"ar": "...", "en": "..."} }\n\n{"name": "${name}", "description": "${description}"}`,
+        contents: `You are Mabrouk, Olmart's Algerian e-commerce translation and copywriting specialist.
+Translate and adapt the product title and description into 3 languages: French (fr), Modern Standard Arabic (ar), and English (en).
+
+Input Name: "${name}"
+Input Description: "${description}"
+
+Rules:
+1. "ar" MUST be real Arabic words (اللغة العربية الفصحى الواضحة للتجارة الإلكترونية).
+2. "en" MUST be real English words for e-commerce.
+3. "fr" MUST be clean, natural French.
+4. Return ONLY a valid JSON object matching this structure:
+{
+  "name": { "fr": "...", "ar": "...", "en": "..." },
+  "description": { "fr": "...", "ar": "...", "en": "..." }
+}`,
         config: { responseMimeType: "application/json" }
       });
 
       const resultText = response.text || "{}";
       const jsonStr = resultText.match(/\{[\s\S]*\}/)?.[0] || resultText;
-      const parsed: Record<string, { ar?: string; en?: string }> = JSON.parse(jsonStr);
+      const parsed: {
+        name?: { fr?: string; ar?: string; en?: string };
+        description?: { fr?: string; ar?: string; en?: string };
+      } = JSON.parse(jsonStr);
 
-      res.json({
-        name: { fr: name, ar: parsed.name?.ar || name, en: parsed.name?.en || name },
-        description: { fr: description, ar: parsed.description?.ar || description, en: parsed.description?.en || description },
+      const frName = parsed.name?.fr?.trim() || name;
+      const arName = parsed.name?.ar?.trim() || name;
+      const enName = parsed.name?.en?.trim() || name;
+
+      const frDesc = parsed.description?.fr?.trim() || description;
+      const arDesc = parsed.description?.ar?.trim() || description;
+      const enDesc = parsed.description?.en?.trim() || description;
+
+      return res.json({
+        success: true,
+        isFree: true,
+        costDZD: 0,
+        name: {
+          fr: frName,
+          ar: arName,
+          en: enName,
+        },
+        description: {
+          fr: frDesc,
+          ar: arDesc,
+          en: enDesc,
+        },
       });
     } catch (error: unknown) {
-      safeLogger.error("Gemini Translation API Error", { err: error instanceof Error ? error.message : String(error) });
-      return res.json({
-        name: { fr: name, en: name, ar: name },
-        description: { fr: description, en: description, ar: description },
+      safeLogger.error("Gemini Free Translation Error", { err: error instanceof Error ? error.message : String(error) });
+      return res.status(500).json({
+        success: false,
+        error: "Erreur lors de la traduction automatique",
       });
     }
   }

@@ -79,9 +79,10 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
     if (typeof flatVal === "string" && flatVal) {
       return flatVal;
     }
-    if (key === "title") return banner.title || banner.name || "";
-    if (key === "subtitle") return banner.subtitle || "";
-    if (key === "button_text") return banner.button_text || banner.ctaText || banner.buttonText || "";
+    const rawVal = (key === "title" ? banner.title || banner.name : key === "subtitle" ? banner.subtitle : banner.button_text || banner.ctaText || banner.buttonText) || "";
+    if (rawVal) {
+      return t(rawVal, rawVal);
+    }
     return "";
   };
 
@@ -215,13 +216,13 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                 >
                   {isDefault1 || isDefault2 ? (
                     <span className="font-sans font-black text-[9px] sm:text-[10px] uppercase tracking-wider text-white">
-                      {isDefault1 ? "Limited Offer" : "Special Selection"}
+                      {isDefault1 ? t("home.hero.limited_offer", "Offre Limitée") : t("home.hero.special_selection", "Sélection Spéciale")}
                     </span>
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5 text-white" />
                       <span className="font-sans font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white">
-                        {t("home.hero.exclusive_selection")}
+                        {t("home.hero.exclusive_selection", "Sélection exclusive")}
                       </span>
                     </>
                   )}
@@ -233,12 +234,9 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                     isDefault1 || isDefault2 ? "text-zinc-950 font-extrabold" : "text-white"
                   }`}
                 >
-                  {isDefault1 ? (
-                    <>
-                      First Purchase Enjoy <br className="hidden md:inline" />
-                      a Special Offer
-                    </>
-                  ) : title || "VOTRE UNIVERS SHOPPING"}
+                  {isDefault1
+                    ? t("home.hero.first_purchase_title", "Premier Achat Profitez d'une Offre Spéciale")
+                    : title || t("home.hero.default_title", "VOTRE UNIVERS SHOPPING")}
                 </h2>
 
                 {/* Subtitle */}
@@ -249,7 +247,7 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                     }`}
                   >
                     {isDefault1 
-                      ? "Bénéficiez d'une réduction exclusive de bienvenue pour toute nouvelle inscription." 
+                      ? t("home.hero.first_purchase_subtitle", "Bénéficiez d'une réduction exclusive de bienvenue pour toute nouvelle inscription.") 
                       : subtitle}
                   </p>
                 )}
@@ -266,7 +264,7 @@ export const BentoHero: React.FC<{ banners: Banner[] }> = ({ banners }) => {
                       : "bg-white text-zinc-900 hover:bg-zinc-100"
                   }`}
                 >
-                  <span>{isDefault1 ? "Shop Now" : buttonText || t("cat_explore")}</span>
+                  <span>{isDefault1 ? t("home.hero.shop_now", "Acheter maintenant") : buttonText || t("cat_explore", "Découvrir")}</span>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                     isDefault1 || isDefault2 ? "bg-white text-zinc-950" : "bg-zinc-900 text-white"
                   }`}>

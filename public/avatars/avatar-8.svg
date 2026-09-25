@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="bg_malik" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#115E59"/>
+    </linearGradient>
+    <linearGradient id="skin_malik" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCD5B5"/>
+      <stop offset="100%" stop-color="#EAA680"/>
+    </linearGradient>
+    <linearGradient id="chechia_malik" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#991B1B"/>
+      <stop offset="100%" stop-color="#7F1D1D"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="40" fill="url(#bg_malik)"/>
+  <path d="M26 160 C26 118 46 112 80 112 C114 112 134 118 134 160 Z" fill="#F8FAFC"/>
+  <path d="M78 120 L80 160 L82 120 Z" stroke="#0F766E" stroke-width="3"/>
+  <path d="M68 95 L68 118 C68 124 92 124 92 118 L92 95 Z" fill="#DFA07B"/>
+  <path d="M50 64 C50 98 62 108 80 108 C98 108 110 98 110 64 C110 42 98 40 80 40 C62 40 50 42 50 64 Z" fill="url(#skin_malik)"/>
+  <path d="M54 44 C54 24 106 24 106 44 Z" fill="url(#chechia_malik)"/>
+  <circle cx="80" cy="24" r="3" fill="#18181B"/>
+  <path d="M66 84 Q80 80 94 84 Q80 90 66 84 Z" fill="#18181B"/>
+  <path d="M72 94 Q80 98 88 94" stroke="#7C2D12" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="68" cy="68" r="3" fill="#18181B"/>
+  <circle cx="92" cy="68" r="3" fill="#18181B"/>
+  <path d="M62 62 Q68 58 74 62" stroke="#18181B" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M86 62 Q92 58 98 62" stroke="#18181B" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

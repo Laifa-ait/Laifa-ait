@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, AlertCircle } from 'lucide-react';
 import { BookingCategoryCard } from '../home/ArtisanCategoryBookingGrid';
@@ -22,6 +23,7 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const {
     selectedPreset,
     title,
@@ -84,7 +86,7 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center cursor-pointer transition-colors"
+              className="absolute top-3 right-3 rtl:right-auto rtl:left-3 w-8 h-8 rounded-full bg-black/50 text-white hover:bg-black/80 flex items-center justify-center cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -94,7 +96,7 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
               </span>
               <h3 className="text-lg font-black">{category.name}</h3>
               <p className="text-xs text-slate-300">
-                Publier une annonce de recherche auprès des artisans vérifiés
+                {t('artisan_broadcast_subtitle', 'Publier une annonce de recherche auprès des artisans vérifiés')}
               </p>
             </div>
           </div>
@@ -119,13 +121,13 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
 
               {/* 2. Titre */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Titre de l&apos;annonce *</label>
+                <label className="text-xs font-bold text-slate-700">{t('artisan_broadcast_title_label', "Titre de l'annonce *")}</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Réparation fuite d'eau urgente"
+                  placeholder={t('artisan_broadcast_title_placeholder', "Ex: Réparation fuite d'eau urgente")}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500"
                 />
               </div>
@@ -143,13 +145,13 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
 
               {/* 4. Description */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Détails des travaux *</label>
+                <label className="text-xs font-bold text-slate-700">{t('artisan_broadcast_desc_label', 'Détails des travaux *')}</label>
                 <textarea
                   required
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Décrivez l'état des lieux, les symptômes, les dimensions, l'étage..."
+                  placeholder={t('artisan_broadcast_desc_placeholder', "Décrivez l'état des lieux, les symptômes, les dimensions, l'étage...")}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-amber-500"
                 />
               </div>
@@ -170,8 +172,8 @@ export const ArtisanJobBroadcastModal: React.FC<ArtisanJobBroadcastModalProps> =
                 disabled={loading}
                 className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
-                <Send className="w-4 h-4 text-slate-950" />
-                <span>{loading ? 'Publication en cours...' : 'Publier mon annonce aux artisans vérifiés'}</span>
+                <Send className="w-4 h-4 text-slate-950 rtl:rotate-180" />
+                <span>{loading ? t('artisan_broadcast_submit_loading', 'Publication en cours...') : t('artisan_broadcast_submit_cta', 'Publier mon annonce aux artisans vérifiés')}</span>
               </button>
             </form>
           )}

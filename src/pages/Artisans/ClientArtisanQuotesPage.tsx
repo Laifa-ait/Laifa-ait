@@ -150,7 +150,7 @@ export const ClientArtisanQuotesPage: React.FC = () => {
                 Aucune demande de devis dans cette catégorie
               </h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
-                Trouvez un professionnel qualifié parmi nos artisans partenaires vérifiés dans les 58 wilayas.
+                Trouvez un professionnel qualifié parmi nos artisans partenaires vérifiés dans les 69 wilayas.
               </p>
             </div>
             <button

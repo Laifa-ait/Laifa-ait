@@ -69,8 +69,12 @@ export const DrawerQuickActions: React.FC<DrawerQuickActionsProps> = ({
           className="p-2.5 rounded-xl bg-slate-50 hover:bg-amber-50/70 border border-slate-200/70 hover:border-amber-300 transition-all flex flex-col items-center text-center cursor-pointer group"
         >
           <Compass className="w-4 h-4 text-slate-700 group-hover:text-amber-600 mb-1 transition-colors" />
-          <span className="text-[11px] font-bold text-slate-800">Explorer</span>
-          <span className="text-[10px] text-slate-500 font-medium">58 Wilayas</span>
+          <span className="text-[11px] font-bold text-slate-800">
+            {t('artisan_drawer_explorer', 'Explorer')}
+          </span>
+          <span className="text-[10px] text-slate-500 font-medium">
+            {t('artisan_drawer_58_wilayas', '69 Wilayas')}
+          </span>
         </button>
 
         <button
@@ -82,9 +86,13 @@ export const DrawerQuickActions: React.FC<DrawerQuickActionsProps> = ({
           className="p-2.5 rounded-xl bg-slate-50 hover:bg-amber-50/70 border border-slate-200/70 hover:border-amber-300 transition-all flex flex-col items-center text-center cursor-pointer group relative"
         >
           <FileText className="w-4 h-4 text-slate-700 group-hover:text-amber-600 mb-1 transition-colors" />
-          <span className="text-[11px] font-bold text-slate-800">Mes Devis</span>
+          <span className="text-[11px] font-bold text-slate-800">
+            {t('artisan_drawer_my_quotes', 'Mes Devis')}
+          </span>
           <span className="text-[10px] text-amber-700 font-black">
-            {quotesCount > 0 ? `${quotesCount} actif${quotesCount > 1 ? 's' : ''}` : '0 actif'}
+            {quotesCount > 0
+              ? `${quotesCount} ${t('artisan_drawer_active', 'actif')}${quotesCount > 1 ? 's' : ''}`
+              : `0 ${t('artisan_drawer_active', 'actif')}`}
           </span>
         </button>
 
@@ -97,8 +105,12 @@ export const DrawerQuickActions: React.FC<DrawerQuickActionsProps> = ({
           className="p-2.5 rounded-xl bg-slate-50 hover:bg-amber-50/70 border border-slate-200/70 hover:border-amber-300 transition-all flex flex-col items-center text-center cursor-pointer group"
         >
           <Star className="w-4 h-4 text-amber-500 fill-amber-500 mb-1" />
-          <span className="text-[11px] font-bold text-slate-800">Favoris</span>
-          <span className="text-[10px] text-slate-500 font-medium">{favCount} sauv.</span>
+          <span className="text-[11px] font-bold text-slate-800">
+            {t('artisan_drawer_favorites', 'Favoris')}
+          </span>
+          <span className="text-[10px] text-slate-500 font-medium">
+            {favCount} {t('artisan_drawer_saved', 'sauv.')}
+          </span>
         </button>
       </div>
     </div>

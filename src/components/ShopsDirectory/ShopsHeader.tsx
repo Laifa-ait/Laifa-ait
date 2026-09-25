@@ -64,7 +64,7 @@ export const ShopsHeader: React.FC<ShopsHeaderProps> = ({
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-semibold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span>{isArabic ? "دليل المتاجر المعتمدة 58 ولاية" : "Annuaire des Boutiques 58 Wilayas"}</span>
+            <span>{isArabic ? "دليل المتاجر المعتمدة 69 ولاية" : "Annuaire des Boutiques 69 Wilayas"}</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight font-serif">

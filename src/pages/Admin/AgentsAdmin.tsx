@@ -687,7 +687,7 @@ export const AgentsAdmin: React.FC = () => {
           <strong>Sécurité / Validation Serveur :</strong> Conforme à 100%. Tout appel ou test de diagnostic IA (analyse de croissance, modèle d'e-mail de panier, audit de modération, assistant support) transite exclusivement par des requêtes d'API sécurisées côté serveur avec l'authentification Admin validée par token Firebase. Aucun secret ni clé API Gemini n'est exposé au client.
         </p>
         <p className="mb-2 leading-relaxed">
-          <strong>Conformité OLMART :</strong> Les règles d'interdiction de WhatsApp/canaux externes et la matrice logistique des 58 wilayas sont pleinement respectées. L'agent modérateur est configuré pour détecter et bloquer automatiquement ces infractions, et l'assistant support est instruit avec une base de connaissances claire et véridique de livraison et retours.
+          <strong>Conformité OLMART :</strong> Les règles d'interdiction de WhatsApp/canaux externes et la matrice logistique des 69 wilayas sont pleinement respectées. L'agent modérateur est configuré pour détecter et bloquer automatiquement ces infractions, et l'assistant support est instruit avec une base de connaissances claire et véridique de livraison et retours.
         </p>
         <p className="leading-relaxed">
           <strong>Dette Technique & Hardcoding :</strong> Résolu. Les configurations des agents sont récupérées et enregistrées dynamiquement dans Firestore. Les prompts de test utilisent des données structurées réelles et la modularité est irréprochable.

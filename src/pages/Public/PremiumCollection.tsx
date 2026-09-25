@@ -294,7 +294,7 @@ export const PremiumCollection: React.FC = () => {
             </h1>
 
             <p className="text-amber-50 text-xs sm:text-sm font-normal tracking-wide max-w-xl leading-relaxed hidden sm:block mb-4 drop-shadow">
-              Explorez une collection d'exception soigneusement sélectionnée, alliant qualité supérieure, authenticité et livraison prioritaire sur 58 Wilayas.
+              Explorez une collection d'exception soigneusement sélectionnée, alliant qualité supérieure, authenticité et livraison prioritaire sur 69 Wilayas.
             </p>
           </motion.div>
 
@@ -558,7 +558,7 @@ export const PremiumCollection: React.FC = () => {
                       onChange={(e) => setSelectedWilaya(e.target.value)}
                       className="w-full px-4 py-3 bg-white border border-zinc-300 rounded-xl outline-none focus:border-amber-600 transition-colors text-xs font-bold text-zinc-900 cursor-pointer appearance-none shadow-sm"
                     >
-                      <option value="all">{t("Toutes les Wilayas (58 Wilayas)")}</option>
+                      <option value="all">{t("Toutes les Wilayas (69 Wilayas)", "Toutes les Wilayas (69 Wilayas)")}</option>
                       {ALGERIA_WILAYAS.map((wilaya) => (
                         <option key={wilaya} value={wilaya}>{wilaya}</option>
                       ))}

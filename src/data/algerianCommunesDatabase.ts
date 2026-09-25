@@ -12871,6 +12871,737 @@ export const ALGERIA_WILAYAS_DATABASE: WilayaInfo[] = [
         "lng": 2.966667
       }
     ]
+  },
+  {
+    "code": "59",
+    "name": "Aflou",
+    "name_ar": "أفلو",
+    "lat": 34.116667,
+    "lng": 2.1,
+    "communes": [
+      {
+        "name": "Aflou",
+        "name_ar": "أفلو",
+        "daira": "Aflou",
+        "postal_code": "59001",
+        "lat": 34.116667,
+        "lng": 2.1
+      },
+      {
+        "name": "Sebgag",
+        "name_ar": "سبقاق",
+        "daira": "Aflou",
+        "postal_code": "59002",
+        "lat": 34.233333,
+        "lng": 2.166667
+      },
+      {
+        "name": "Sidi Bouzid",
+        "name_ar": "سيدي بوزيد",
+        "daira": "Aflou",
+        "postal_code": "59003",
+        "lat": 34.05,
+        "lng": 2.0
+      },
+      {
+        "name": "Brida",
+        "name_ar": "بريدة",
+        "daira": "Brida",
+        "postal_code": "59004",
+        "lat": 34.1,
+        "lng": 1.833333
+      },
+      {
+        "name": "Taouiala",
+        "name_ar": "تاويالة",
+        "daira": "Brida",
+        "postal_code": "59005",
+        "lat": 33.95,
+        "lng": 1.95
+      },
+      {
+        "name": "Hadj Mechri",
+        "name_ar": "الحاج مشري",
+        "daira": "Brida",
+        "postal_code": "59006",
+        "lat": 34.25,
+        "lng": 1.883333
+      },
+      {
+        "name": "El Ghicha",
+        "name_ar": "الغيشة",
+        "daira": "El Ghicha",
+        "postal_code": "59007",
+        "lat": 33.933333,
+        "lng": 2.15
+      }
+    ]
+  },
+  {
+    "code": "60",
+    "name": "Barika",
+    "name_ar": "بريكة",
+    "lat": 35.389444,
+    "lng": 5.365833,
+    "communes": [
+      {
+        "name": "Barika",
+        "name_ar": "بريكة",
+        "daira": "Barika",
+        "postal_code": "60001",
+        "lat": 35.389444,
+        "lng": 5.365833
+      },
+      {
+        "name": "M'doukal",
+        "name_ar": "إمدوكال",
+        "daira": "Barika",
+        "postal_code": "60002",
+        "lat": 35.15,
+        "lng": 5.2
+      },
+      {
+        "name": "Bitam",
+        "name_ar": "بيطام",
+        "daira": "Barika",
+        "postal_code": "60003",
+        "lat": 35.433333,
+        "lng": 5.233333
+      },
+      {
+        "name": "Seggana",
+        "name_ar": "سقانة",
+        "daira": "Seggana",
+        "postal_code": "60004",
+        "lat": 35.366667,
+        "lng": 5.583333
+      },
+      {
+        "name": "Tilatou",
+        "name_ar": "تيلاطو",
+        "daira": "Seggana",
+        "postal_code": "60005",
+        "lat": 35.416667,
+        "lng": 5.616667
+      }
+    ]
+  },
+  {
+    "code": "61",
+    "name": "El Kantara",
+    "name_ar": "القنطرة",
+    "lat": 35.225556,
+    "lng": 5.702778,
+    "communes": [
+      {
+        "name": "El Kantara",
+        "name_ar": "القنطرة",
+        "daira": "El Kantara",
+        "postal_code": "61001",
+        "lat": 35.225556,
+        "lng": 5.702778
+      },
+      {
+        "name": "Ain Zaatout",
+        "name_ar": "عين زعطوط",
+        "daira": "El Kantara",
+        "postal_code": "61002",
+        "lat": 35.166667,
+        "lng": 5.866667
+      },
+      {
+        "name": "Djemorah",
+        "name_ar": "جمورة",
+        "daira": "Djemorah",
+        "postal_code": "61003",
+        "lat": 35.066667,
+        "lng": 5.85
+      },
+      {
+        "name": "Branis",
+        "name_ar": "برانيس",
+        "daira": "Djemorah",
+        "postal_code": "61004",
+        "lat": 35.033333,
+        "lng": 5.75
+      }
+    ]
+  },
+  {
+    "code": "62",
+    "name": "El Abiodh Sidi Cheikh",
+    "name_ar": "الأبيض سيدي الشيخ",
+    "lat": 32.894444,
+    "lng": 0.547222,
+    "communes": [
+      {
+        "name": "El Abiodh Sidi Cheikh",
+        "name_ar": "الأبيض سيدي الشيخ",
+        "daira": "El Abiodh Sidi Cheikh",
+        "postal_code": "62001",
+        "lat": 32.894444,
+        "lng": 0.547222
+      },
+      {
+        "name": "Ain El Orak",
+        "name_ar": "عين العراك",
+        "daira": "El Abiodh Sidi Cheikh",
+        "postal_code": "62002",
+        "lat": 33.05,
+        "lng": 0.716667
+      },
+      {
+        "name": "Arbaouat",
+        "name_ar": "أربوات",
+        "daira": "El Abiodh Sidi Cheikh",
+        "postal_code": "62003",
+        "lat": 32.933333,
+        "lng": 0.4
+      },
+      {
+        "name": "El Bnoud",
+        "name_ar": "البنود",
+        "daira": "El Abiodh Sidi Cheikh",
+        "postal_code": "62004",
+        "lat": 32.333333,
+        "lng": 0.5
+      },
+      {
+        "name": "Brezina",
+        "name_ar": "بريزينة",
+        "daira": "Brezina",
+        "postal_code": "62005",
+        "lat": 33.1,
+        "lng": 1.25
+      },
+      {
+        "name": "Kraakda",
+        "name_ar": "كراكدة",
+        "daira": "Brezina",
+        "postal_code": "62006",
+        "lat": 33.033333,
+        "lng": 1.15
+      },
+      {
+        "name": "Ghassoul",
+        "name_ar": "الغاسول",
+        "daira": "Brezina",
+        "postal_code": "62007",
+        "lat": 33.25,
+        "lng": 1.05
+      }
+    ]
+  },
+  {
+    "code": "63",
+    "name": "Bou Saâda",
+    "name_ar": "بوسعادة",
+    "lat": 35.213889,
+    "lng": 4.175,
+    "communes": [
+      {
+        "name": "Bou Saâda",
+        "name_ar": "بوسعادة",
+        "daira": "Bou Saâda",
+        "postal_code": "63001",
+        "lat": 35.213889,
+        "lng": 4.175
+      },
+      {
+        "name": "El Hamel",
+        "name_ar": "الهامل",
+        "daira": "Bou Saâda",
+        "postal_code": "63002",
+        "lat": 35.133333,
+        "lng": 4.083333
+      },
+      {
+        "name": "Oulteme",
+        "name_ar": "ولتام",
+        "daira": "Bou Saâda",
+        "postal_code": "63003",
+        "lat": 35.266667,
+        "lng": 4.233333
+      },
+      {
+        "name": "Ben Srour",
+        "name_ar": "بن سرور",
+        "daira": "Ben Srour",
+        "postal_code": "63004",
+        "lat": 35.033333,
+        "lng": 4.55
+      },
+      {
+        "name": "Mohamed Boudiaf",
+        "name_ar": "محمد بوضياف",
+        "daira": "Ben Srour",
+        "postal_code": "63005",
+        "lat": 35.0,
+        "lng": 4.65
+      },
+      {
+        "name": "Ouled Slimane",
+        "name_ar": "أولاد سليمان",
+        "daira": "Ben Srour",
+        "postal_code": "63006",
+        "lat": 35.1,
+        "lng": 4.7
+      },
+      {
+        "name": "Zarzour",
+        "name_ar": "زرزور",
+        "daira": "Ben Srour",
+        "postal_code": "63007",
+        "lat": 34.9,
+        "lng": 4.6
+      },
+      {
+        "name": "Ain El Melh",
+        "name_ar": "عين الملح",
+        "daira": "Ain El Melh",
+        "postal_code": "63008",
+        "lat": 34.85,
+        "lng": 4.166667
+      },
+      {
+        "name": "Ain Fares",
+        "name_ar": "عين فارس",
+        "daira": "Ain El Melh",
+        "postal_code": "63009",
+        "lat": 34.95,
+        "lng": 4.0
+      },
+      {
+        "name": "Ain Errich",
+        "name_ar": "عين الريش",
+        "daira": "Ain El Melh",
+        "postal_code": "63010",
+        "lat": 34.65,
+        "lng": 4.15
+      },
+      {
+        "name": "Bir Foda",
+        "name_ar": "بئر الفضة",
+        "daira": "Ain El Melh",
+        "postal_code": "63011",
+        "lat": 34.783333,
+        "lng": 4.283333
+      },
+      {
+        "name": "Sidi M'Hamed",
+        "name_ar": "سيدي امحمد",
+        "daira": "Ain El Melh",
+        "postal_code": "63012",
+        "lat": 34.883333,
+        "lng": 4.333333
+      }
+    ]
+  },
+  {
+    "code": "64",
+    "name": "Messaad",
+    "name_ar": "مسعد",
+    "lat": 34.161111,
+    "lng": 3.502778,
+    "communes": [
+      {
+        "name": "Messaad",
+        "name_ar": "مسعد",
+        "daira": "Messaad",
+        "postal_code": "64001",
+        "lat": 34.161111,
+        "lng": 3.502778
+      },
+      {
+        "name": "Deldoul",
+        "name_ar": "دلدول",
+        "daira": "Messaad",
+        "postal_code": "64002",
+        "lat": 34.216667,
+        "lng": 3.65
+      },
+      {
+        "name": "Selmana",
+        "name_ar": "سلمانة",
+        "daira": "Messaad",
+        "postal_code": "64003",
+        "lat": 34.05,
+        "lng": 3.4
+      },
+      {
+        "name": "Sed Rahal",
+        "name_ar": "سد رحال",
+        "daira": "Messaad",
+        "postal_code": "64004",
+        "lat": 34.1,
+        "lng": 3.25
+      },
+      {
+        "name": "Guettara",
+        "name_ar": "القطارة",
+        "daira": "Messaad",
+        "postal_code": "64005",
+        "lat": 33.65,
+        "lng": 3.7
+      },
+      {
+        "name": "Faidh El Botma",
+        "name_ar": "فيض البطمة",
+        "daira": "Faidh El Botma",
+        "postal_code": "64006",
+        "lat": 34.583333,
+        "lng": 3.5
+      },
+      {
+        "name": "Amourah",
+        "name_ar": "عمورة",
+        "daira": "Faidh El Botma",
+        "postal_code": "64007",
+        "lat": 34.333333,
+        "lng": 3.666667
+      },
+      {
+        "name": "Oum Laadham",
+        "name_ar": "أم العظام",
+        "daira": "Faidh El Botma",
+        "postal_code": "64008",
+        "lat": 33.85,
+        "lng": 3.8
+      },
+      {
+        "name": "Ain El Ibel",
+        "name_ar": "عين الإبل",
+        "daira": "Ain El Ibel",
+        "postal_code": "64009",
+        "lat": 34.35,
+        "lng": 3.216667
+      },
+      {
+        "name": "Tadmit",
+        "name_ar": "تعظميت",
+        "daira": "Ain El Ibel",
+        "postal_code": "64010",
+        "lat": 34.283333,
+        "lng": 2.983333
+      },
+      {
+        "name": "Zaccar",
+        "name_ar": "زكار",
+        "daira": "Ain El Ibel",
+        "postal_code": "64011",
+        "lat": 34.45,
+        "lng": 3.416667
+      }
+    ]
+  },
+  {
+    "code": "65",
+    "name": "Aïn Oussara",
+    "name_ar": "عين وسارة",
+    "lat": 35.45,
+    "lng": 2.9,
+    "communes": [
+      {
+        "name": "Aïn Oussara",
+        "name_ar": "عين وسارة",
+        "daira": "Aïn Oussara",
+        "postal_code": "65001",
+        "lat": 35.45,
+        "lng": 2.9
+      },
+      {
+        "name": "Guernini",
+        "name_ar": "قرنيني",
+        "daira": "Aïn Oussara",
+        "postal_code": "65002",
+        "lat": 35.4,
+        "lng": 2.816667
+      },
+      {
+        "name": "Birine",
+        "name_ar": "بيرين",
+        "daira": "Birine",
+        "postal_code": "65003",
+        "lat": 35.633333,
+        "lng": 3.216667
+      },
+      {
+        "name": "Benhar",
+        "name_ar": "بنهار",
+        "daira": "Birine",
+        "postal_code": "65004",
+        "lat": 35.533333,
+        "lng": 3.1
+      },
+      {
+        "name": "Sidi Ladjel",
+        "name_ar": "سيدي لعجال",
+        "daira": "Sidi Ladjel",
+        "postal_code": "65005",
+        "lat": 35.333333,
+        "lng": 2.583333
+      },
+      {
+        "name": "Hassi Fedoul",
+        "name_ar": "حاسي فدول",
+        "daira": "Sidi Ladjel",
+        "postal_code": "65006",
+        "lat": 35.25,
+        "lng": 2.45
+      },
+      {
+        "name": "El Khemis",
+        "name_ar": "الخميس",
+        "daira": "Sidi Ladjel",
+        "postal_code": "65007",
+        "lat": 35.383333,
+        "lng": 2.416667
+      }
+    ]
+  },
+  {
+    "code": "66",
+    "name": "Bir El Ater",
+    "name_ar": "بئر العاتر",
+    "lat": 34.75,
+    "lng": 8.066667,
+    "communes": [
+      {
+        "name": "Bir El Ater",
+        "name_ar": "بئر العاتر",
+        "daira": "Bir El Ater",
+        "postal_code": "66001",
+        "lat": 34.75,
+        "lng": 8.066667
+      },
+      {
+        "name": "El Ogla",
+        "name_ar": "العقلة",
+        "daira": "El Ogla",
+        "postal_code": "66002",
+        "lat": 35.083333,
+        "lng": 7.85
+      },
+      {
+        "name": "Negrine",
+        "name_ar": "نقرين",
+        "daira": "Negrine",
+        "postal_code": "66003",
+        "lat": 34.5,
+        "lng": 7.516667
+      },
+      {
+        "name": "Ferkane",
+        "name_ar": "فركان",
+        "daira": "Negrine",
+        "postal_code": "66004",
+        "lat": 34.466667,
+        "lng": 7.366667
+      },
+      {
+        "name": "Ouenza",
+        "name_ar": "الونزة",
+        "daira": "Ouenza",
+        "postal_code": "66005",
+        "lat": 35.966667,
+        "lng": 8.25
+      },
+      {
+        "name": "Ain Zerga",
+        "name_ar": "عين الزرقاء",
+        "daira": "Ouenza",
+        "postal_code": "66006",
+        "lat": 35.883333,
+        "lng": 8.366667
+      },
+      {
+        "name": "Mridjed",
+        "name_ar": "المريج",
+        "daira": "Ouenza",
+        "postal_code": "66007",
+        "lat": 35.916667,
+        "lng": 8.433333
+      }
+    ]
+  },
+  {
+    "code": "67",
+    "name": "Ksar Chellala",
+    "name_ar": "قصر الشلالة",
+    "lat": 35.216667,
+    "lng": 2.316667,
+    "communes": [
+      {
+        "name": "Ksar Chellala",
+        "name_ar": "قصر الشلالة",
+        "daira": "Ksar Chellala",
+        "postal_code": "67001",
+        "lat": 35.216667,
+        "lng": 2.316667
+      },
+      {
+        "name": "Serghine",
+        "name_ar": "سرغين",
+        "daira": "Ksar Chellala",
+        "postal_code": "67002",
+        "lat": 35.3,
+        "lng": 2.25
+      },
+      {
+        "name": "Zmalet El Emir Abdelkader",
+        "name_ar": "زمالة الأمير عبد القادر",
+        "daira": "Ksar Chellala",
+        "postal_code": "67003",
+        "lat": 34.983333,
+        "lng": 2.366667
+      },
+      {
+        "name": "Hamadia",
+        "name_ar": "الحمادية",
+        "daira": "Hamadia",
+        "postal_code": "67004",
+        "lat": 35.483333,
+        "lng": 2.066667
+      },
+      {
+        "name": "Rechaiga",
+        "name_ar": "الرشايقة",
+        "daira": "Hamadia",
+        "postal_code": "67005",
+        "lat": 35.416667,
+        "lng": 2.2
+      },
+      {
+        "name": "Bougara",
+        "name_ar": "بوقرة",
+        "daira": "Hamadia",
+        "postal_code": "67006",
+        "lat": 35.4,
+        "lng": 2.0
+      }
+    ]
+  },
+  {
+    "code": "68",
+    "name": "Ksar El Boukhari",
+    "name_ar": "قصر البخاري",
+    "lat": 35.883333,
+    "lng": 2.75,
+    "communes": [
+      {
+        "name": "Ksar El Boukhari",
+        "name_ar": "قصر البخاري",
+        "daira": "Ksar El Boukhari",
+        "postal_code": "68001",
+        "lat": 35.883333,
+        "lng": 2.75
+      },
+      {
+        "name": "Meftaha",
+        "name_ar": "مفاتحة",
+        "daira": "Ksar El Boukhari",
+        "postal_code": "68002",
+        "lat": 35.916667,
+        "lng": 2.85
+      },
+      {
+        "name": "Saneg",
+        "name_ar": "السانق",
+        "daira": "Ksar El Boukhari",
+        "postal_code": "68003",
+        "lat": 35.85,
+        "lng": 2.883333
+      },
+      {
+        "name": "Ouled Antar",
+        "name_ar": "أولاد عنتر",
+        "daira": "Ouled Antar",
+        "postal_code": "68004",
+        "lat": 35.833333,
+        "lng": 2.6
+      },
+      {
+        "name": "Boghar",
+        "name_ar": "بوغار",
+        "daira": "Ouled Antar",
+        "postal_code": "68005",
+        "lat": 35.9,
+        "lng": 2.683333
+      },
+      {
+        "name": "Aziz",
+        "name_ar": "عزيز",
+        "daira": "Aziz",
+        "postal_code": "68006",
+        "lat": 35.75,
+        "lng": 2.45
+      },
+      {
+        "name": "Derrag",
+        "name_ar": "دراق",
+        "daira": "Aziz",
+        "postal_code": "68007",
+        "lat": 35.716667,
+        "lng": 2.35
+      }
+    ]
+  },
+  {
+    "code": "69",
+    "name": "El Aricha",
+    "name_ar": "العريشة",
+    "lat": 34.225,
+    "lng": -1.383333,
+    "communes": [
+      {
+        "name": "El Aricha",
+        "name_ar": "العريشة",
+        "daira": "El Aricha",
+        "postal_code": "69001",
+        "lat": 34.225,
+        "lng": -1.383333
+      },
+      {
+        "name": "El Bouihi",
+        "name_ar": "البويهي",
+        "daira": "El Aricha",
+        "postal_code": "69002",
+        "lat": 34.15,
+        "lng": -1.45
+      },
+      {
+        "name": "Sebdou",
+        "name_ar": "سبدو",
+        "daira": "Sebdou",
+        "postal_code": "69003",
+        "lat": 34.633333,
+        "lng": -1.333333
+      },
+      {
+        "name": "El Gor",
+        "name_ar": "القور",
+        "daira": "Sebdou",
+        "postal_code": "69004",
+        "lat": 34.55,
+        "lng": -1.183333
+      },
+      {
+        "name": "Sidi Djillali",
+        "name_ar": "سيدي الجيلالي",
+        "daira": "Sidi Djillali",
+        "postal_code": "69005",
+        "lat": 34.45,
+        "lng": -1.483333
+      },
+      {
+        "name": "Ain Ghoraba",
+        "name_ar": "عين غُرابة",
+        "daira": "Sidi Djillali",
+        "postal_code": "69006",
+        "lat": 34.583333,
+        "lng": -1.416667
+      }
+    ]
   }
 ];
 

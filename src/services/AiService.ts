@@ -1,7 +1,5 @@
 import { ai, DEFAULT_GEMINI_MODEL } from "../config/gemini";
 import { validateExternalUrl } from "../utils/security";
-import fs from "fs";
-import path from "path";
 import { safeLogger } from "../utils/logger";
 import { resilientFetch } from "../utils/resilientFetch";
 import { LocaleStorageService } from "./LocaleStorageService";
@@ -69,44 +67,21 @@ export class AiService {
     }
   }
 
-  static dualWrite(lang: string, content: Record<string, unknown>) {
+  static async dualWrite(lang: string, content: Record<string, string>, adminUid?: string) {
     const allowedLocales = ["fr", "en", "ar"];
     if (!allowedLocales.includes(lang)) {
       safeLogger.error("Invalid locale in dualWrite", { lang });
       return;
     }
-    const basePublicDir = path.resolve(process.cwd(), "public/locales");
-    const baseDistDir = path.resolve(process.cwd(), "dist/locales");
-    
-    const p1 = path.resolve(basePublicDir, `${lang}.json`);
-    const p2 = path.resolve(baseDistDir, `${lang}.json`);
-    if (!p1.startsWith(basePublicDir) || !p2.startsWith(baseDistDir)) {
-      safeLogger.error("Path traversal detected in dualWrite", { lang });
-      return;
-    }
-
-    // Cache in memory for immediate access
-    LocaleStorageService.setCachedLocale(lang, content);
-
-    // Atomically write to public/locales
-    LocaleStorageService.safeWriteJsonAtomic(p1, content);
-
-    // Atomically write to dist/locales if production directory exists
-    if (fs.existsSync(path.join(process.cwd(), "dist"))) {
-      LocaleStorageService.safeWriteJsonAtomic(p2, content);
-    }
+    await LocaleStorageService.saveBatchTranslations(lang, content, adminUid);
   }
 
-  static async fixFictiveTranslations() {
-    const frPath = path.join(process.cwd(), "public/locales/fr.json");
-    const arPath = path.join(process.cwd(), "public/locales/ar.json");
-    const enPath = path.join(process.cwd(), "public/locales/en.json");
-
-    const frContent = LocaleStorageService.safeReadJson(frPath) as Record<string, string>;
+  static async fixFictiveTranslations(adminUid?: string) {
+    const frContent = await LocaleStorageService.getMergedLocale("fr");
     if (Object.keys(frContent).length === 0) throw new Error("Fichier source Français introuvable ou corrompu");
 
-    const arContent = LocaleStorageService.safeReadJson(arPath) as Record<string, string>;
-    const enContent = LocaleStorageService.safeReadJson(enPath) as Record<string, string>;
+    const arContent = await LocaleStorageService.getMergedLocale("ar");
+    const enContent = await LocaleStorageService.getMergedLocale("en");
 
     const keysToCorrect = new Set<string>();
     Object.keys(frContent).forEach((key) => {
@@ -158,8 +133,8 @@ export class AiService {
       }
     }
 
-    AiService.dualWrite("ar", arContent);
-    AiService.dualWrite("en", enContent);
+    await LocaleStorageService.saveBatchTranslations("ar", arContent, adminUid);
+    await LocaleStorageService.saveBatchTranslations("en", enContent, adminUid);
 
     return correctedCount;
   }

@@ -63,7 +63,7 @@ describe('SuperAppSwitcherModal & BentoGrid Modern Design Tests', () => {
     expect(container?.textContent).toContain('Boutiques Officielles');
 
     // Check badges
-    expect(container?.textContent).toContain('58 Wilayas');
+    expect(container?.textContent).toContain('69 Wilayas');
     expect(container?.textContent).toContain('Papiers DZ');
     expect(container?.textContent).toContain('Vérifiés');
     expect(container?.textContent).toContain('Certifié');
@@ -108,7 +108,7 @@ describe('SuperAppSwitcherModal & BentoGrid Modern Design Tests', () => {
       'Basculez instantanément entre vos univers avec votre compte unique'
     );
     expect(container?.textContent).toContain('Compte Unique & Session Unifiée');
-    expect(container?.textContent).toContain("58 Wilayas d'Algérie");
+    expect(container?.textContent).toContain("69 Wilayas d'Algérie");
 
     // Close button test
     const closeBtn = Array.from(container?.querySelectorAll('button') || []).find((b) =>

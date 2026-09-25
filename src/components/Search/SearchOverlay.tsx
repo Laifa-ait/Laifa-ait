@@ -435,7 +435,7 @@ export const SearchOverlay: React.FC = () => {
                     <div className="py-24 flex flex-col justify-center items-center gap-4">
                       <Loader2 className="w-10 h-10 animate-spin text-[var(--color-orange-600, #ea580c)]" />
                       <span className="text-sm text-zinc-400 font-medium">
-                        {t("Recherche en cours dans les 58 wilayas...")}
+                        {t("Recherche en cours dans les 69 wilayas...")}
                       </span>
                     </div>
                   ) : results.length > 0 || matchedStores.length > 0 ? (
@@ -480,7 +480,7 @@ export const SearchOverlay: React.FC = () => {
                                       {store.shopName || store.displayName}
                                     </span>
                                     <span className="text-[12px] font-medium text-zinc-500 uppercase tracking-wider mt-1 truncate">
-                                      {t("Wilaya")} {store.wilaya ? store.wilaya : "58"}
+                                      {t("Wilaya")} {store.wilaya ? store.wilaya : "69"}
                                     </span>
                                   </div>
                                   <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-[var(--color-orange-600, #ea580c)] group-hover:translate-x-1 transition-all" />
@@ -630,7 +630,7 @@ export const SearchOverlay: React.FC = () => {
                                     {p.category}
                                   </span>
                                   <span className="text-xs rtl:text-sm font-bold text-zinc-500">
-                                    {p.wilaya ? `${t("wilaya", "Wilaya")} ${p.wilaya}` : t("wilayas_58", "58 Wilayas")}
+                                    {p.wilaya ? `${t("wilaya", "Wilaya")} ${p.wilaya}` : t("wilayas_58", "69 Wilayas")}
                                   </span>
                                 </div>
                                 <span className="text-sm font-semibold text-[var(--color-orange-600, #ea580c)] mt-2 font-mono">

@@ -2,7 +2,7 @@ export const DEFAULT_CATEGORIES: Record<string, { title: string; subtitle: strin
   {
     "Artisanat Algérien": {
       title: "Artisanat Pur",
-      subtitle: "Tradition des 58 Wilayas",
+      subtitle: "Tradition des 69 Wilayas",
       image: "/images/placeholders/product.svg",
       gradient: "from-[var(--color-slate-900, #0f172a)]/80 via-[var(--color-slate-900, #0f172a)]/20 to-transparent",
     },

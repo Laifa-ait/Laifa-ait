@@ -45,6 +45,7 @@ RUN apk upgrade --no-cache
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV CSRF_SECRET=olmart_prod_secure_csrf_secret_token_default_9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c
 # Database environment variables are supplied dynamically via Cloud Run / container environment
 
 # Copy package files and install only production dependencies
@@ -52,16 +53,16 @@ COPY package*.json ./
 RUN npm ci --omit=dev && \
     rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /root/.npm
 
-# Copy built assets and assets required at runtime from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/server.ts ./server.ts
+# Copy built assets and assets required at runtime from builder with node ownership
+COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/server.ts ./server.ts
 
 # Set non-root user
 USER node
 
-# Expose port 8080 for Cloud Run
-EXPOSE 8080
+# Expose port 8080 and 3000 for Cloud Run ingress and internal compatibility
+EXPOSE 8080 3000
 
 # Start the application directly with node (avoids PID 1 signal forwarding issues and npm overhead)
 CMD ["node", "dist/server.cjs"]

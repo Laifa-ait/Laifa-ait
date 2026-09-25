@@ -35,7 +35,7 @@ export const ShippingLabelPreview: React.FC<ShippingLabelPreviewProps> = ({
                   📦 LIVRAISON DIRECTE VENDEUR
                 </h3>
                 <p className="text-[9px] rtl:text-[11px] font-bold text-zinc-500">
-                  {t("Bordereau Algérie 58 Wilayas")}
+                  {t("Bordereau Algérie 69 Wilayas")}
                 </p>
               </div>
               {includeBarcodes && (

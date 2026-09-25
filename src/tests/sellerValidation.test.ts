@@ -33,7 +33,7 @@ describe('Seller Onboarding and KYC Document Validation', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should reject a wilaya that is not in the 58 official wilayas list', () => {
+    it('should reject a wilaya that is not in the 69 official wilayas list', () => {
       const invalidSeller = {
         name: 'Tizi Craft',
         phone: '0770123456', // Djezzy
@@ -44,6 +44,19 @@ describe('Seller Onboarding and KYC Document Validation', () => {
       
       const result = onboardingSchema.safeParse(invalidSeller);
       expect(result.success).toBe(false);
+    });
+
+    it('should accept a wilaya from the new 11 wilayas (59-69)', () => {
+      const validSeller = {
+        name: 'Artisan Oasis',
+        phone: '0770123456',
+        wilaya: '59 Aflou',
+        address: 'Centre-ville',
+        role: 'seller'
+      };
+      
+      const result = onboardingSchema.safeParse(validSeller);
+      expect(result.success).toBe(true);
     });
   });
 

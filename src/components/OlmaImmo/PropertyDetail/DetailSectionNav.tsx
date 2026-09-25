@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { LayoutGrid, Home, ShieldCheck, DollarSign, MapPin } from 'lucide-react';
 
 export type DetailTabKey = 'all' | 'overview' | 'legal' | 'finance' | 'location';
@@ -16,39 +17,41 @@ export const DetailSectionNav: React.FC<DetailSectionNavProps> = ({
   legalCount = 0,
   featuresCount = 0,
 }) => {
+  const { t } = useTranslation();
+
   const tabs = [
     {
       key: 'all' as DetailTabKey,
-      label: 'Tout voir',
+      label: t('immo_tab_all', 'Tout voir'),
       icon: LayoutGrid,
     },
     {
       key: 'overview' as DetailTabKey,
-      label: 'Aperçu & Équipements',
+      label: t('immo_tab_overview', 'Aperçu & Équipements'),
       icon: Home,
       badge: featuresCount > 0 ? featuresCount : undefined,
     },
     {
       key: 'legal' as DetailTabKey,
-      label: 'Foncier & Légal',
+      label: t('immo_tab_legal', 'Foncier & Légal'),
       icon: ShieldCheck,
       badge: legalCount > 0 ? legalCount : undefined,
     },
     {
       key: 'finance' as DetailTabKey,
-      label: 'Conditions & Tarifs',
+      label: t('immo_tab_finance', 'Conditions & Tarifs'),
       icon: DollarSign,
     },
     {
       key: 'location' as DetailTabKey,
-      label: 'Quartier & Carte',
+      label: t('immo_tab_location', 'Quartier & Carte'),
       icon: MapPin,
     },
   ];
 
   return (
     <nav
-      aria-label="Navigation des sections de l'annonce"
+      aria-label={t('immo_nav_sections_aria', "Navigation des sections de l'annonce")}
       className="sticky top-16 sm:top-20 z-30 bg-white/95 backdrop-blur-md py-2.5 px-1 sm:px-2 rounded-2xl border border-slate-200/90 shadow-xs mb-6 overflow-x-auto no-scrollbar"
     >
       <div className="flex items-center gap-1.5 sm:gap-2 min-w-max">
