@@ -690,23 +690,41 @@ router.post("/admin-session", authenticateToken, authorizeAdmin, async (req: Aut
     return res.status(400).json({ error: "Jeton ID manquant." });
   }
 
-  res.cookie("admin_session", idToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 3600 * 1000,
-  });
+  try {
+    const expiresIn = 60 * 60 * 1000; // 1 heure
+    const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
 
-  return res.json({ success: true, message: "Session administrateur sécurisée établie." });
+    res.cookie("admin_session", sessionCookie, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api",
+      maxAge: expiresIn,
+    });
+
+    return res.json({ success: true, message: "Session administrateur sécurisée établie." });
+  } catch (err: unknown) {
+    safeLogger.error("Failed to create admin session cookie", {
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return res.status(401).json({ error: "Échec de création de la session administrateur." });
+  }
 });
 
-router.delete("/admin-session", async (_req: AuthenticatedRequest, res: Response) => {
+router.delete("/admin-session", async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (req.user?.uid) {
+      await admin.auth().revokeRefreshTokens(req.user.uid).catch(() => null);
+    }
+  } catch {
+    // Ignore error on revocation
+  }
+
   res.clearCookie("admin_session", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/",
+    path: "/api",
   });
   return res.json({ success: true, message: "Session administrateur révoquée." });
 });

@@ -49,7 +49,9 @@ export function useTranslationRealtimeSync(): void {
         }
       },
       (error: Error) => {
-        safeLogger.warn("[TranslationRealtimeSync] ⚠️ Realtime sync error (non-fatal)", {
+        // Non-fatal fallback: When running in public guest mode without custom claims,
+        // fallback to bundled static dictionary without polluting console warnings.
+        safeLogger.debug("[TranslationRealtimeSync] Realtime sync fallback active", {
           lang: cleanLng,
           err: error.message,
         });

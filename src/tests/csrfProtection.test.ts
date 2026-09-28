@@ -313,60 +313,82 @@ describe("CSRF Protection Suite (P1-01 Verification)", () => {
 
     it("explicitly authorized OLMART origins (https://olmart.dz) retain their current allowed behavior", () => {
       const environmentsToTest = ["development", "production"] as const;
+      const originalEnv = process.env.NODE_ENV;
 
-      environmentsToTest.forEach((env) => {
-        process.env.NODE_ENV = env;
+      try {
+        environmentsToTest.forEach((env) => {
+          process.env.NODE_ENV = env;
 
-        let nextCalled = false;
-        const req = {
-          method: "POST",
-          headers: {
-            host: "api.olmart.dz",
-            origin: "https://olmart.dz",
-          },
-          path: "/api/v1/orders/create",
-          originalUrl: "/api/v1/orders/create",
-        } as unknown as Request;
+          let nextCalled = false;
+          const req = {
+            method: "POST",
+            headers: {
+              host: "api.olmart.dz",
+              origin: "https://olmart.dz",
+            },
+            path: "/api/v1/orders/create",
+            originalUrl: "/api/v1/orders/create",
+          } as unknown as Request;
 
-        const res = {} as Response;
+          const res = {} as Response;
 
-        csrfProtection(req, res, () => {
-          nextCalled = true;
+          csrfProtection(req, res, () => {
+            nextCalled = true;
+          });
+
+          expect(nextCalled).toBe(true);
         });
-
-        expect(nextCalled).toBe(true);
-      });
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
     });
 
     it("explicitly authorized OLMART origins (https://www.olmart.dz) retain their current allowed behavior", () => {
       const environmentsToTest = ["development", "production"] as const;
+      const originalEnv = process.env.NODE_ENV;
 
-      environmentsToTest.forEach((env) => {
-        process.env.NODE_ENV = env;
+      try {
+        environmentsToTest.forEach((env) => {
+          process.env.NODE_ENV = env;
 
-        let nextCalled = false;
-        const req = {
-          method: "POST",
-          headers: {
-            host: "api.olmart.dz",
-            origin: "https://www.olmart.dz",
-          },
-          path: "/api/v1/orders/create",
-          originalUrl: "/api/v1/orders/create",
-        } as unknown as Request;
+          let nextCalled = false;
+          const req = {
+            method: "POST",
+            headers: {
+              host: "api.olmart.dz",
+              origin: "https://www.olmart.dz",
+            },
+            path: "/api/v1/orders/create",
+            originalUrl: "/api/v1/orders/create",
+          } as unknown as Request;
 
-        const res = {} as Response;
+          const res = {} as Response;
 
-        csrfProtection(req, res, () => {
-          nextCalled = true;
+          csrfProtection(req, res, () => {
+            nextCalled = true;
+          });
+
+          expect(nextCalled).toBe(true);
         });
-
-        expect(nextCalled).toBe(true);
-      });
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
     });
   });
 
   describe("Cloud Run Multi-Instance Server Startup CSRF Invariant", () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalSecret = process.env.CSRF_SECRET;
+
+    afterEach(() => {
+      process.env.NODE_ENV = originalEnv;
+      if (originalSecret !== undefined) {
+        process.env.CSRF_SECRET = originalSecret;
+      } else {
+        delete process.env.CSRF_SECRET;
+      }
+    });
+
     it("fails closed in production during startServer() if CSRF_SECRET is missing, with zero ephemeral secret fallback", async () => {
       process.env.NODE_ENV = "production";
       delete process.env.CSRF_SECRET;

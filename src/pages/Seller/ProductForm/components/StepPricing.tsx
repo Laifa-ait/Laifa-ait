@@ -43,8 +43,8 @@ export const StepPricing: React.FC<StepPricingProps> = ({
                 {t("Prix promo / réduit (DA)")}
               </label>
               {(() => {
-                const base = parseFloat(formData.price || "0");
-                const promo = parseFloat(formData.promoPrice || "0");
+                const base = parseFloat(String(formData.price || "0"));
+                const promo = parseFloat(String(formData.promoPrice || "0"));
                 if (base > 0 && promo > 0 && promo < base) {
                   const discount = Math.round(((base - promo) / base) * 100);
                   return (
@@ -66,8 +66,8 @@ export const StepPricing: React.FC<StepPricingProps> = ({
               onChange={(e) => setFormData((prev) => ({ ...prev, promoPrice: e.target.value }))}
             />
             {(() => {
-              const base = parseFloat(formData.price || "0");
-              const promo = parseFloat(formData.promoPrice || "0");
+              const base = parseFloat(String(formData.price || "0"));
+              const promo = parseFloat(String(formData.promoPrice || "0"));
               if (base > 0 && promo >= base) {
                 return (
                   <p className="text-[11px] text-red-500 font-medium mt-1">

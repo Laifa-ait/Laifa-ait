@@ -13,6 +13,8 @@ interface UIContextType {
   setIsRecentlyViewedOpen: (open: boolean) => void;
   isStickyBuyBarVisible: boolean;
   setIsStickyBuyBarVisible: (visible: boolean) => void;
+  isAccountMenuOpen: boolean;
+  setIsAccountMenuOpen: (open: boolean) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isRecentlyViewedOpen, setIsRecentlyViewedOpen] = useState(false);
   const [isStickyBuyBarVisible, setIsStickyBuyBarVisible] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   return (
     <UIContext.Provider
@@ -40,6 +43,8 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setIsRecentlyViewedOpen,
         isStickyBuyBarVisible,
         setIsStickyBuyBarVisible,
+        isAccountMenuOpen,
+        setIsAccountMenuOpen,
       }}
     >
       {children}

@@ -16,10 +16,26 @@ olmaUniversRouter.get("/univers/apps", async (_req: Request, res: Response) => {
     if (snapshot.empty) {
       return res.json({ success: true, data: DEFAULT_OLMA_APPS, source: "default" });
     }
+    const validMap = new Map(DEFAULT_OLMA_APPS.map((a) => [a.id, a]));
     const apps: OlmaAppModule[] = [];
     snapshot.forEach((doc) => {
-      apps.push(doc.data() as OlmaAppModule);
+      const data = doc.data() as OlmaAppModule;
+      const defApp = validMap.get(data.id);
+      if (defApp) {
+        apps.push({
+          ...defApp,
+          waitingListCount: data.waitingListCount ?? defApp.waitingListCount ?? 0,
+        });
+      }
     });
+    // Fallback if missing any default app
+    const fetchedIds = new Set(apps.map((a) => a.id));
+    DEFAULT_OLMA_APPS.forEach((defApp) => {
+      if (!fetchedIds.has(defApp.id)) {
+        apps.push(defApp);
+      }
+    });
+    apps.sort((a, b) => a.order - b.order);
     return res.json({ success: true, data: apps, source: "firestore" });
   } catch (error) {
     safeLogger.error("Error fetching Olma Univers apps", { err: error instanceof Error ? error.message : String(error) });
@@ -129,10 +145,18 @@ olmaUniversRouter.delete("/admin/univers/apps/:id", async (req: Request, res: Re
 olmaUniversRouter.post("/admin/univers/seed", async (_req: Request, res: Response) => {
   try {
     if (db) {
+      // Purge legacy records to ensure clean ecosystem app catalog
+      const existing = await db.collection("olma_univers_apps").get();
+      if (!existing.empty) {
+        const deleteBatch = db.batch();
+        existing.forEach((doc) => deleteBatch.delete(doc.ref));
+        await deleteBatch.commit();
+      }
+
       const batch = db.batch();
       DEFAULT_OLMA_APPS.forEach((app) => {
         const ref = db.collection("olma_univers_apps").doc(app.id);
-        batch.set(ref, app, { merge: true });
+        batch.set(ref, app);
       });
       await batch.commit();
       safeLogger.info("Mapped Olma Univers Ecosystem Seed in Firestore");

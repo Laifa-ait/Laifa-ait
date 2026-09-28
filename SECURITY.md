@@ -20,7 +20,7 @@ Si vous découvrez une faille de sécurité ou une vulnérabilité potentielle d
 Veuillez suivre la procédure de divulgation responsable :
 
 1. **Contact confidentiel :** Envoyez un e-mail détaillé à l'adresse de l'équipe d'ingénierie et de sécurité :
-   - 📧 **`laifa.ait@gmail.com`**
+   - 📧 **`security@olmart.dz`**
    - Objet : `[SECURITY] Vulnérabilité OLMART - <Brève description>`
 2. **Détails à fournir :**
    - Description précise de la vulnérabilité identifiée.

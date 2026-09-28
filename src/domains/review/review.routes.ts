@@ -49,6 +49,20 @@ router.post("/", authenticateToken, async (req: AuthenticatedRequest, res: Respo
   }
 });
 
+router.get("/my-reviews", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.uid;
+    if (!userId) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+    const userReviews = await reviewRepo.findByUserId(userId);
+    res.json({ reviews: userReviews });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    res.status(500).json({ error: msg });
+  }
+});
+
 router.post("/report", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { reviewId, reason } = req.body;

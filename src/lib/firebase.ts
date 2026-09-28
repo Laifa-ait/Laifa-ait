@@ -27,15 +27,12 @@ const rawStorageBucket = import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET;
 const rawMessagingSenderId = import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID;
 const rawAppId = import.meta.env?.VITE_FIREBASE_APP_ID;
 
-const apiKey = (isStringAndValid(rawApiKey) && rawApiKey.trim().startsWith("AIzaSy"))
-  ? rawApiKey.trim()
-  : "AIzaSyCsGYo1B0vavSQbKdFvu0-7jfzILFHvejA";
-
-const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebaseapp.com";
-const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915";
-const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : "ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebasestorage.app";
-const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : "76420360525";
-const appId = (isStringAndValid(rawAppId) && rawAppId.includes(":")) ? rawAppId.trim() : "1:76420360525:web:d6781ea77ef0c2257aef04";
+const apiKey = isStringAndValid(rawApiKey) ? rawApiKey.trim() : (isTestEnv ? "AIzaSyFakeTestKeyForUnitTestsOnly" : "");
+const authDomain = isStringAndValid(rawAuthDomain) ? rawAuthDomain.trim() : (isTestEnv ? "test-app.firebaseapp.com" : "");
+const projectId = isStringAndValid(rawProjectId) ? rawProjectId.trim() : (isTestEnv ? "test-app" : "");
+const storageBucket = isStringAndValid(rawStorageBucket) ? rawStorageBucket.trim() : (isTestEnv ? "test-app.firebasestorage.app" : "");
+const messagingSenderId = isStringAndValid(rawMessagingSenderId) ? rawMessagingSenderId.trim() : (isTestEnv ? "00000000000" : "");
+const appId = isStringAndValid(rawAppId) ? rawAppId.trim() : (isTestEnv ? "1:00000000000:web:000000000000" : "");
 
 const clientConfig = {
   apiKey,
@@ -47,12 +44,20 @@ const clientConfig = {
   measurementId: import.meta.env?.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const requiredVars = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VITE_FIREBASE_PROJECT_ID"];
+const requiredVars = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VITE_FIREBASE_PROJECT_ID", "VITE_FIREBASE_APP_ID"];
 if (!isTestEnv) {
+  const missingVars: string[] = [];
   for (const key of requiredVars) {
     const val = import.meta.env?.[key];
     if (!isStringAndValid(val)) {
-      safeLogger.warn("[Firebase Client] ⚠️ Variable d'environnement manquante ou invalide", { key });
+      missingVars.push(key);
+    }
+  }
+  if (missingVars.length > 0) {
+    const msg = `[Firebase Client] ❌ Variables d'environnement Firebase obligatoires manquantes : ${missingVars.join(", ")}. Échec fail-closed.`;
+    safeLogger.error(msg);
+    if (typeof window !== "undefined") {
+      throw new Error(msg);
     }
   }
 }

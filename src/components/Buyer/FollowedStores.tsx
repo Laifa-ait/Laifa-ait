@@ -1,624 +1,265 @@
-import React, { useState, useEffect } from "react";
-import {
-  Store,
-  UserCheck,
-  Search,
-  UserMinus,
-  Sparkles,
-  MapPin,
-  Package,
-  RefreshCw,
-  ArrowUpRight,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { apiGet, apiPost } from "../../lib/api";
-import { toast } from "react-hot-toast";
-import { ConfirmModal } from "../ui/ConfirmModal";
-import { ALGERIA_WILAYAS } from "../../constants";
+import React, { useState, useEffect, useMemo } from "react";
+import { Store, Sparkles, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getOptimizedImageUrl } from "../../utils/imageUtils";
-import { Shop } from "../../domains/seller/shop.types";
+import { toast } from "react-hot-toast";
+import { apiGet, apiPost } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 import { Product } from "../../domains/product/product.types";
-import { AuthUser as User } from "../../domains/user/user.types";
+import { StoreCard, StoreCardData } from "./stores/StoreCard";
+import { WilayaFilterBar } from "./stores/WilayaFilterBar";
+import { getRetroAvatar } from "../../utils/avatar";
 
-export interface FollowedStore {
+export interface FollowedStoreRaw {
   sellerId?: string;
   id?: string;
   name?: string;
   shopName?: string;
   logo?: string | null;
+  logoUrl?: string | null;
+  photoURL?: string | null;
+  avatar?: string | null;
+  avatarUrl?: string | null;
+  shopLogo?: string | null;
   location?: string;
-  followedAt?: string;
-}
-
-export interface DiscoverySeller extends Partial<Shop> {
-  displayName?: string;
+  wilaya?: string;
   shopDescription?: string;
+  description?: string;
 }
 
-// Aesthetic pastel gradients for Gen-Z empty banners
-const PRESET_GRADIENTS = [
-  "from-amber-100 to-orange-50",
-  "from-violet-100 to-indigo-50",
-  "from-teal-100 to-emerald-50",
-  "from-rose-100 to-pink-50",
-  "from-sky-100 to-blue-50",
+const POPULAR_WILAYAS = [
+  "Toutes",
+  "16 Alger",
+  "31 Oran",
+  "25 Constantine",
+  "09 Blida",
+  "15 Tizi Ouzou",
+  "19 Sétif",
+  "08 Béchar",
 ];
 
-export const FollowedStores: React.FC<{ currentUser: User | { uid: string } | null }> = ({ currentUser }) => {
+const extractStoreLogo = (s: FollowedStoreRaw): string => {
+  const candidate = s.logoUrl || s.photoURL || s.logo || s.avatar || s.avatarUrl || s.shopLogo;
+  if (candidate && typeof candidate === "string" && candidate.trim() && !candidate.startsWith("data:")) {
+    return candidate.trim();
+  }
+  return getRetroAvatar(s.shopName || s.name || s.sellerId || s.id || "store");
+};
+
+export const FollowedStores: React.FC = () => {
   const { t } = useTranslation();
-  const [stores, setStores] = useState<FollowedStore[]>([]);
-  const [allSellers, setAllSellers] = useState<DiscoverySeller[]>([]);
+  const { currentUser } = useAuth();
+
+  const [followedStores, setFollowedStores] = useState<StoreCardData[]>([]);
+  const [exploreStores, setExploreStores] = useState<StoreCardData[]>([]);
   const [productsMap, setProductsMap] = useState<Record<string, Product[]>>({});
-
   const [loading, setLoading] = useState(true);
-  const [exploreLoading, setExploreLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"followed" | "explore">("followed");
-
-  // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedWilaya, setSelectedWilaya] = useState("Tous");
-  const [showAllWilayas, setShowAllWilayas] = useState(false);
-
-  // Unfollow confirmation modal
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [storeToUnfollow, setStoreToUnfollow] = useState<FollowedStore | null>(null);
-
-  // Follow/Unfollow request debounce per store
+  const [selectedWilaya, setSelectedWilaya] = useState("Toutes");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  const navigate = useNavigate();
-
-  // Popular Wilayas for quick pill selection
-  const HOT_WILAYAS = [
-    "Tous",
-    "16 Alger",
-    "31 Oran",
-    "25 Constantine",
-    "09 Blida",
-    "15 Tizi Ouzou",
-    "35 Boumerdès",
-    "19 Sétif",
-  ];
-
-  // 1. Fetch followed stores (subscriptions)
   useEffect(() => {
-    const fetchStores = async () => {
-      if (!currentUser) return;
+    let cancelled = false;
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const data = await apiGet<{ stores: FollowedStore[] }>("/api/v1/buyer/followed-stores");
-        if (data && data.stores) {
-          setStores(data.stores);
-
-          // If user follows nothing, automatically open 'explore' tab to keep them engaged
-          if (data.stores.length === 0) {
-            setActiveTab("explore");
+        if (currentUser) {
+          const resFollowed = await apiGet<{ stores: FollowedStoreRaw[] }>(
+            "/api/v1/buyer/followed-stores"
+          );
+          if (!cancelled && resFollowed?.stores) {
+            const mapped: StoreCardData[] = resFollowed.stores.map((s) => ({
+              id: s.id || s.sellerId || "",
+              sellerId: s.sellerId || s.id || "",
+              name: s.shopName || s.name || "Boutique Partenaire",
+              logo: extractStoreLogo(s),
+              location: s.wilaya || s.location || "Algérie",
+              description: s.shopDescription || s.description || "",
+              isFollowed: true,
+            }));
+            setFollowedStores(mapped);
+            if (mapped.length === 0) setActiveTab("explore");
           }
         }
-      } catch (err) {
-        console.error("Error fetching followed stores", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStores();
-  }, [currentUser]);
 
-  // 2. Fetch public sellers & recent active products concurrently for visual product previews
-  useEffect(() => {
-    const fetchExploreData = async () => {
-      setExploreLoading(true);
-      try {
-        // Fetch top public profiles for explore feed
-        const sellersData = await apiGet<{ sellers: DiscoverySeller[] }>("/api/v1/explore/sellers");
-        if (sellersData && sellersData.sellers) {
-          setAllSellers(sellersData.sellers);
+        const resExplore = await apiGet<{ sellers: FollowedStoreRaw[] }>("/api/v1/explore/sellers");
+        if (!cancelled && resExplore?.sellers) {
+          const mappedExplore: StoreCardData[] = resExplore.sellers.map((s) => ({
+            id: s.id || s.sellerId || "",
+            sellerId: s.sellerId || s.id || "",
+            name: s.shopName || s.name || "Boutique Partenaire",
+            logo: extractStoreLogo(s),
+            location: s.wilaya || s.location || "Algérie",
+            description: s.shopDescription || s.description || "",
+            isFollowed: false,
+          }));
+          setExploreStores(mappedExplore);
         }
 
-        // Fetch active products to group under their respective seller's preview slider
-        const productsData = await apiGet<{ products: Product[] }>("/api/v1/explore/products");
-        if (productsData && productsData.products) {
-          const tempMap: Record<string, Product[]> = {};
-          productsData.products.forEach((item: Product) => {
-            const data = item;
-            if (data && typeof data.sellerId === 'string' && data.sellerId) {
-              if (!tempMap[data.sellerId]) {
-                tempMap[data.sellerId] = [];
-              }
-              if (tempMap[data.sellerId].length < 3) {
-                tempMap[data.sellerId].push(data);
-              }
+        const resProds = await apiGet<{ products: Product[] }>("/api/v1/explore/products");
+        if (!cancelled && resProds?.products) {
+          const pMap: Record<string, Product[]> = {};
+          resProds.products.forEach((p) => {
+            if (p.sellerId) {
+              if (!pMap[p.sellerId]) pMap[p.sellerId] = [];
+              if (pMap[p.sellerId].length < 3) pMap[p.sellerId].push(p);
             }
           });
-          setProductsMap(tempMap);
+          setProductsMap(pMap);
         }
       } catch (err) {
-        console.error("Error fetching discovery profiles:", err);
+        if (!cancelled) console.error("Error loading stores data:", err);
       } finally {
-        setExploreLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-    fetchExploreData();
-  }, []);
+    fetchData();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser]);
 
-  const triggerUnfollow = (store: FollowedStore) => {
-    setStoreToUnfollow(store);
-    setShowConfirm(true);
-  };
+  const handleToggleFollow = async (store: StoreCardData) => {
+    if (!currentUser) return toast.error(t("Veuillez vous connecter."));
+    const sid = store.sellerId || store.id;
+    setActionLoadingId(sid);
 
-  const executeUnfollow = async () => {
-    if (!currentUser || !storeToUnfollow) return;
-    const sellerId = storeToUnfollow.sellerId || storeToUnfollow.id || "";
-
-    setActionLoadingId(sellerId || null);
     try {
-      await apiPost("/api/v1/buyer/unfollow", { sellerId });
-      setStores((prev) => prev.filter((s) => s.sellerId !== sellerId));
-      toast.success("Désabonnement réussi. 👋");
+      if (store.isFollowed) {
+        await apiPost("/api/v1/buyer/unfollow", { sellerId: sid });
+        setFollowedStores((prev) => prev.filter((s) => s.sellerId !== sid && s.id !== sid));
+        setExploreStores((prev) =>
+          prev.map((s) => (s.sellerId === sid || s.id === sid ? { ...s, isFollowed: false } : s))
+        );
+        toast.success(t("Désabonnement réussi."));
+      } else {
+        await apiPost("/api/v1/buyer/follow", { sellerId: sid });
+        const updated = { ...store, isFollowed: true };
+        setFollowedStores((prev) => [...prev, updated]);
+        setExploreStores((prev) =>
+          prev.map((s) => (s.sellerId === sid || s.id === sid ? { ...s, isFollowed: true } : s))
+        );
+        toast.success(t("Vous suivez désormais cette boutique !"));
+      }
     } catch (err) {
-      console.error("Error unfollowing store", err);
-      toast.error("Échec lors de la désinscription.");
-    } finally {
-      setActionLoadingId(null);
-      setShowConfirm(false);
-      setStoreToUnfollow(null);
-    }
-  };
-
-  const handleFollow = async (seller: DiscoverySeller) => {
-    if (!currentUser) {
-      navigate("/login");
-      return;
-    }
-
-    setActionLoadingId(seller.id || null);
-    try {
-      const followPayload = {
-        sellerId: seller.id,
-        name: seller.shopName || seller.displayName || "Boutique",
-        logo: seller.logoUrl || null,
-        location: seller.wilaya || "Algérie",
-        followedAt: new Date().toISOString(),
-      };
-
-      await apiPost("/api/v1/buyer/follow", { sellerId: seller.id, followPayload });
-      setStores((prev) => [...prev, { id: seller.id, ...followPayload }]);
-      toast.success(`Abonné à ${seller.shopName || "la boutique"} ! ✨`);
-    } catch (err) {
-      console.error("Error following store", err);
-      toast.error("Erreur d'abonnement.");
+      console.error("Toggle follow failed:", err);
+      toast.error(t("Une erreur est survenue."));
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  // Pre-calculate search filtered items
-  const filteredSellers = allSellers.filter((seller) => {
-    const sName = (seller.shopName || seller.displayName || "").toLowerCase();
-    const sDesc = (seller.shopDescription || "").toLowerCase();
-    const matchesSearch = sName.includes(searchQuery.toLowerCase()) || sDesc.includes(searchQuery.toLowerCase());
-    const matchesWilaya = selectedWilaya === "Tous" || seller.wilaya === selectedWilaya;
-    return matchesSearch && matchesWilaya;
-  });
+  const currentList = activeTab === "followed" ? followedStores : exploreStores;
+
+  const filteredStores = useMemo(() => {
+    return currentList.filter((s) => {
+      const matchQuery =
+        !searchQuery.trim() ||
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.description && s.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (s.location && s.location.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchWilaya =
+        selectedWilaya === "Toutes" ||
+        (s.location && s.location.toLowerCase().includes(selectedWilaya.toLowerCase()));
+
+      return matchQuery && matchWilaya;
+    });
+  }, [currentList, searchQuery, selectedWilaya]);
 
   return (
-    <div className="space-y-8">
-      <ConfirmModal
-        isOpen={showConfirm}
-        onClose={() => {
-          setShowConfirm(false);
-          setStoreToUnfollow(null);
-        }}
-        onConfirm={executeUnfollow}
-        title={t("Se désabonner") || "Se désabonner"}
-        message={`Voulez-vous vraiment vous désabonner de la boutique "${storeToUnfollow?.name || storeToUnfollow?.shopName || "Boutique"}" ?`}
+    <div className="space-y-6 max-w-4xl mx-auto" id="followed-stores-module">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl sm:text-3xl font-normal text-[#202124] tracking-tight">
+          {t("Commerçants favoris")}
+        </h2>
+        <p className="text-[#5f6368] text-sm mt-1">
+          {t("Suivez vos boutiques et artisans favoris dans les 69 wilayas d'Algérie.")}
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-2 p-1 bg-[#f0f4f9] rounded-2xl w-fit">
+        <button
+          type="button"
+          onClick={() => setActiveTab("followed")}
+          className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer border-none ${
+            activeTab === "followed"
+              ? "bg-white text-[#1a73e8] shadow-xs"
+              : "text-[#5f6368] hover:text-[#202124] bg-transparent"
+          }`}
+        >
+          {t("Mes abonnements ({{count}})", { count: followedStores.length })}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("explore")}
+          className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer border-none ${
+            activeTab === "explore"
+              ? "bg-white text-[#1a73e8] shadow-xs"
+              : "text-[#5f6368] hover:text-[#202124] bg-transparent"
+          }`}
+        >
+          {t("Découvrir les boutiques")}
+        </button>
+      </div>
+
+      {/* Wilaya Filter Bar */}
+      <WilayaFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedWilaya={selectedWilaya}
+        onWilayaSelect={setSelectedWilaya}
+        popularWilayas={POPULAR_WILAYAS}
       />
 
-      {/* Dynamic Header & Gen-Z Tabs */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-sans font-bold text-zinc-900 tracking-tighter rtl:tracking-normal uppercase">
-            {t("Réseau Vendeurs")}
-          </h2>
-          <p className="text-zinc-500 font-medium text-sm">
-            {t("Suivez vos favoris et explorez les pépites des 69 Wilayas.")}
-          </p>
+      {/* Store Cards */}
+      {loading ? (
+        <div className="flex items-center justify-center p-12 bg-white rounded-[24px] border border-[#dadce0]">
+          <RefreshCw className="w-6 h-6 animate-spin text-[#1a73e8]" />
         </div>
-
-        {/* Gen Z Light Dual Tabs */}
-        <div className="flex bg-zinc-100 p-1 rounded-2xl border border-zinc-200/40 w-fit shrink-0 self-start">
-          <button
-            onClick={() => setActiveTab("followed")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 ${
-              activeTab === "followed" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
-            }`}
-          >
-            <UserCheck className="w-4 h-4" />
-            {t("Abonnements")}
-            <span className="ms-1.5 px-2 py-0.5 text-[10px] rtl:text-[12px] bg-zinc-900 text-white rounded-full font-sans font-bold">
-              {stores.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("explore")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs rtl:text-sm tracking-wide uppercase transition-all duration-300 relative ${
-              activeTab === "explore" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-zinc-500" />
-            {t("Explorer")}
-            <span className="absolute -top-1.5 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-transparent0"></span>
-            </span>
-          </button>
-        </div>
-      </header>
-
-      {/* VIEWPORT CONTROLLER */}
-      <div className="min-h-[400px]">
-        {activeTab === "followed" ? (
-          /* =======================================================
-             SUBSCRIBED STORES TAB (Traditional UI, polished)
-             ======================================================= */
-          loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-28 bg-transparent rounded-2xl animate-pulse border border-zinc-200/60" />
-              ))}
-            </div>
-          ) : stores.length === 0 ? (
-            <div className="p-10 md:p-16 flex flex-col items-center justify-center text-center bg-transparent border border-zinc-200/50 rounded-2xl">
-              <div className="w-20 h-20 bg-white border border-zinc-200 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                <Store className="w-8 h-8 text-zinc-300" />
-              </div>
-              <h3 className="text-xl font-sans font-bold text-zinc-900 mb-2 tracking-tight rtl:tracking-normal">
-                {t("Aucun abonnement existant")}
-              </h3>
-              <p className="text-zinc-500 font-medium max-w-sm mb-8 leading-relaxed text-sm">
-                {t(
-                  "Abonnez-vous à nos créateurs locaux pour être notifié instantanément de leurs derniers produits & bons plans locaux."
-                )}
-              </p>
-              <button
-                onClick={() => setActiveTab("explore")}
-                className="px-6 py-3.5 bg-zinc-900 text-white hover:bg-zinc-800 rounded-2xl font-sans font-bold text-xs rtl:text-sm uppercase tracking-widest rtl:tracking-normal transition-all shadow-md shadow-zinc-900/10 flex items-center gap-2 scale-100 hover:scale-[1.02] active:scale-95"
-              >
-                <Sparkles className="w-4 h-4 text-orange-300" />
-                {t("Découvrir des pépites")}
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {stores.map((store) => {
-                return (
-                  <div
-                    key={store.id}
-                    className="border border-zinc-200/60 rounded-2xl p-5 flex gap-4 hover:border-zinc-400 hover:shadow-md transition-all bg-white relative group"
-                  >
-                    <div className="absolute top-4 right-4 text-[10px] rtl:text-[12px] font-bold text-zinc-400 font-mono uppercase">
-                      {t("VIP")}
-                    </div>
-
-                    {/* Shop Avatar */}
-                    <div className="w-16 h-16 rounded-full bg-transparent border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center relative">
-                      {store.logo ? (
-                        <img
-                          loading="lazy"
-                          src={getOptimizedImageUrl(store.logo, 200)}
-                          alt={store.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Store className="w-6 h-6 text-zinc-400" />
-                      )}
-                      <span
-                        className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"
-                        title={t("Vendeur actif") || "Vendeur actif"}
-                      />
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-sans font-bold text-zinc-900 truncate text-base leading-tight group-hover:text-zinc-600 transition-colors">
-                        {store.name}
-                      </h4>
-                      <p className="text-xs rtl:text-sm font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal flex items-center gap-1.5 mt-1 mb-3">
-                        <MapPin className="w-3 h-3 text-zinc-500" />
-                        {store.location}
-                      </p>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => navigate(`/store/${store.sellerId}`)}
-                          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl text-[10px] rtl:text-[12px] font-sans font-bold uppercase tracking-wider rtl:tracking-normal transition-all"
-                        >
-                          {t("Visiter la vitrine")}
-                        </button>
-                        <button
-                          onClick={() => triggerUnfollow(store)}
-                          disabled={actionLoadingId === store.sellerId}
-                          className="p-2 text-zinc-400 hover:text-red-500 bg-transparent hover:bg-red-50 border border-zinc-100 rounded-2xl transition-all"
-                          title={t("Ne plus suivre") || "Ne plus suivre"}
-                        >
-                          <UserMinus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )
-        ) : (
-          /* =======================================================
-             MÉTIRE-ORIENTED GEN-Z DISCOVER VIBE BOARD
-             ======================================================= */
-          <div className="space-y-6">
-            {/* Filters Bar Context (Premium Search & Horizon Wilaya slider) */}
-            <div className="bg-white p-5 rounded-2xl border border-zinc-200/60 shadow-sm space-y-4">
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-zinc-400 absolute left-4 top-3.5" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={
-                      t("Rechercher une marque, une friperie ou un artisan...") ||
-                      "Rechercher une marque, une friperie ou un artisan..."
-                    }
-                    className="w-full bg-transparent border border-zinc-200/60 rounded-2xl py-3 ps-11 pe-4 text-sm font-medium focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-all"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-4 top-3.5 text-zinc-400 hover:text-zinc-700 text-xs rtl:text-sm font-bold font-mono"
-                    >
-                      {t("Clear")}
-                    </button>
-                  )}
-                </div>
-
-                {/* Wilaya Filter Dropdown toggle helper */}
-                <button
-                  onClick={() => setShowAllWilayas(!showAllWilayas)}
-                  className={`px-5 py-3 rounded-2xl text-xs rtl:text-sm font-bold border transition-colors flex items-center gap-2 ${
-                    showAllWilayas || selectedWilaya !== "Tous"
-                      ? "bg-transparent border-zinc-200 text-zinc-600"
-                      : "bg-white border-zinc-200 text-zinc-700 hover:bg-transparent"
-                  }`}
-                >
-                  <MapPin className="w-4 h-4" />
-                  {selectedWilaya === "Tous" ? t("Filtrer Wilaya") : t(selectedWilaya)}
-                </button>
-              </div>
-
-              {/* Algerian Wilayas Horizontal Pill Selector */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs rtl:text-sm font-bold text-zinc-400 uppercase tracking-wider rtl:tracking-normal">
-                  <span>{t("Wilayas Populaires")}</span>
-                  <button
-                    onClick={() => setShowAllWilayas(!showAllWilayas)}
-                    className="text-zinc-600 hover:underline"
-                  >
-                    {showAllWilayas ? t("Masquer") : t("Voir les 69 Wilayas")}
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {(showAllWilayas ? ALGERIA_WILAYAS : HOT_WILAYAS).map((wilaya) => (
-                    <button
-                      key={wilaya}
-                      onClick={() => setSelectedWilaya(wilaya)}
-                      className={`px-4 py-2 rounded-2xl text-xs rtl:text-sm font-black transition-all ${
-                        selectedWilaya === wilaya
-                          ? "bg-zinc-900 text-white shadow-md shadow-zinc-900/15 scale-102"
-                          : "bg-transparent text-zinc-600 border border-zinc-200/50 hover:bg-zinc-100 hover:border-zinc-300"
-                      }`}
-                    >
-                      {wilaya}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* RESULTS BOARD */}
-            {exploreLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-96 bg-transparent rounded-2xl animate-pulse border border-zinc-200/60" />
-                ))}
-              </div>
-            ) : filteredSellers.length === 0 ? (
-              <div className="p-16 text-center text-zinc-500 font-medium space-y-4">
-                <div className="w-16 h-16 bg-transparent border border-zinc-200 rounded-2xl flex items-center justify-center mx-auto text-zinc-300">
-                  <RefreshCw className="w-6 h-6 animate-spin" />
-                </div>
-                <h4 className="font-sans font-bold text-lg text-zinc-900">{t("Aucune boutique correspondante")}</h4>
-                <p className="text-zinc-500 text-sm max-w-xs mx-auto">
-                  {t("Essayez de modifier vos filtres ou de recherche par nom.")}
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedWilaya("Tous");
-                    setSearchQuery("");
-                  }}
-                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-2xl text-xs rtl:text-sm font-bold"
-                >
-                  {t("Réinitialiser")}
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredSellers.map((seller, index) => {
-                  const isUserFollowing = stores.some((s) => s.sellerId === seller.id);
-                  const isActioning = actionLoadingId === seller.id;
-                  const shopProducts = productsMap[seller.id || ""] || [];
-                  const bannerColorIndex = index % PRESET_GRADIENTS.length;
-                  const customBannerClass = PRESET_GRADIENTS[bannerColorIndex];
-
-                  return (
-                    <div
-                      key={seller.id}
-                      className="bg-white rounded-2xl border border-zinc-200/60 overflow-hidden shadow-sm hover:shadow-lg hover:border-zinc-300 transition-all duration-300 flex flex-col group relative"
-                    >
-                      {/* 1. Header Banner & Aesthetic cover */}
-                      <div
-                        className={`h-24 bg-gradient-to-r ${customBannerClass} relative w-full overflow-hidden shrink-0`}
-                      >
-                        {seller.bannerUrl ? (
-                          <img
-                            loading="lazy"
-                            src={getOptimizedImageUrl(seller.bannerUrl, 800)}
-                            alt={t("Cover") || "Cover"}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                          />
-                        ) : (
-                          // Fallback subtle line art or decoration
-                          <div className="absolute inset-0 flex items-center justify-end p-4 opacity-15">
-                            <Store className="w-24 h-24 stroke-[1]" />
-                          </div>
-                        )}
-
-                        {/* Wilaya Indicator Ribbon */}
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] rtl:text-[11px] font-sans font-bold tracking-widest rtl:tracking-normal text-zinc-900 uppercase border border-zinc-200/40 shadow-sm flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5 text-zinc-500 shrink-0" />
-                          {seller.wilaya || "Algérie"}
-                        </div>
-                      </div>
-
-                      {/* 2. Overlap Profile Badge */}
-                      <div className="px-5 pb-5 pt-1 relative flex-1 flex flex-col">
-                        <div className="flex justify-between items-end -mt-10 mb-4 shrink-0">
-                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-white shadow-md overflow-hidden flex items-center justify-center shrink-0">
-                            {seller.logoUrl ? (
-                              <img
-                                loading="lazy"
-                                src={getOptimizedImageUrl(seller.logoUrl, 200)}
-                                alt={seller.shopName}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Store className="w-6 h-6 text-zinc-400" />
-                            )}
-                          </div>
-
-                          {/* Main follow action with inline trigger unfollow modal or follow write */}
-                          <button
-                            disabled={isActioning}
-                            onClick={() => {
-                              if (isUserFollowing) {
-                                triggerUnfollow({ sellerId: seller.id, name: seller.shopName });
-                              } else {
-                                handleFollow(seller);
-                              }
-                            }}
-                            className={`px-4 py-2 rounded-2xl font-black text-[10px] rtl:text-[12px] uppercase tracking-wider rtl:tracking-normal transition-all duration-300 flex items-center gap-1.5 ${
-                              isUserFollowing
-                                ? "bg-zinc-100 text-zinc-700 border border-zinc-200/60 hover:bg-zinc-200 hover:text-red-500"
-                                : "bg-zinc-950 text-white hover:bg-zinc-800 hover:scale-102 active:scale-95 shadow-sm"
-                            }`}
-                          >
-                            {isActioning ? (
-                              <span className="w-3 h-3 border-2 border-zinc-400 border-t-white rounded-full animate-spin" />
-                            ) : isUserFollowing ? (
-                              <>
-                                <UserCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500 animate-pulse" />
-                                <span className="text-zinc-700 font-extrabold">{t("Abonné")}</span>
-                              </>
-                            ) : (
-                              <>
-                                <Store className="w-3.5 h-3.5 shrink-0 text-white" />
-                                <span className="text-white font-extrabold">{t("Suivre")}</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Title & Descr */}
-                        <div className="space-y-1.5 flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <h4
-                              onClick={() => navigate(`/store/${seller.id}`)}
-                              className="font-sans font-bold text-zinc-900 hover:text-zinc-600 transition-colors text-base truncate cursor-pointer select-none"
-                            >
-                              {seller.shopName || seller.displayName || "Boutique"}
-                            </h4>
-                            <span
-                              className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"
-                              title={t("Vendeur Vérifié & Actif") || "Vendeur Vérifié & Actif"}
-                            />
-                          </div>
-                          <p className="text-xs rtl:text-sm text-zinc-500 font-medium line-clamp-2 leading-relaxed min-h-[2rem]">
-                            {seller.shopDescription ||
-                              t("Pas de description fournie. Cliquez pour découvrir les collections de ce créateur.")}
-                          </p>
-                        </div>
-
-                        {/* GEN-Z HIGHLIGHT FEED: Product previews with inline catalog prices link */}
-                        <div className="mt-5 pt-4 border-t border-zinc-100 shrink-0">
-                          <div className="flex items-center justify-between text-[10px] rtl:text-[12px] font-sans font-bold text-zinc-400 uppercase tracking-widest rtl:tracking-normal mb-3">
-                            <span>{t("Dernières publications")}</span>
-                            <span
-                              className="text-zinc-600 flex items-center gap-0.5 group/link cursor-pointer"
-                              onClick={() => navigate(`/store/${seller.id}`)}
-                            >
-                              {t("Voir tout")}
-                              <ArrowUpRight className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-                            </span>
-                          </div>
-
-                          {shopProducts.length === 0 ? (
-                            <div className="bg-transparent rounded-2xl py-6 px-4 text-center border border-dashed border-zinc-200/40">
-                              <span className="text-zinc-400 font-bold text-xs rtl:text-sm uppercase tracking-wider rtl:tracking-normal flex items-center justify-center gap-1.5">
-                                <Package className="w-3.5 h-3.5" />
-                                {t("Collection en cours...")}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-3 gap-2.5">
-                              {shopProducts.map((prod) => {
-                                return (
-                                  <div
-                                    key={prod.id}
-                                    onClick={() => navigate(`/product/${prod.id}`)}
-                                    className="aspect-square bg-transparent overflow-hidden border border-zinc-200/40 group/prod cursor-pointer relative shadow-sm hover:shadow transition-all"
-                                  >
-                                    {prod.images && prod.images[0] ? (
-                                      <img
-                                        loading="lazy"
-                                        src={prod.images[0]}
-                                        alt={prod.name}
-                                        className="w-full h-full object-cover group-hover/prod:scale-105 transition-all duration-300"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                                        <Package className="w-5 h-5" />
-                                      </div>
-                                    )}
-
-                                    {/* Custom Price overlay inside tag bubbles */}
-                                    <div className="absolute bottom-1 right-1 left-1 bg-white/90 backdrop-blur-md py-0.5 px-1 rounded-lg text-[8px] font-sans font-bold text-zinc-900 text-center truncate border border-zinc-200/30">
-                                      {prod.price || "Contact"} {t("DA")}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+      ) : filteredStores.length === 0 ? (
+        <div className="bg-white border border-[#dadce0] rounded-[28px] p-10 text-center space-y-4 shadow-xs">
+          <div className="w-16 h-16 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mx-auto">
+            <Store className="w-8 h-8" />
           </div>
-        )}
-      </div>
+          <div className="space-y-1 max-w-sm mx-auto">
+            <h3 className="text-base font-semibold text-[#202124]">
+              {activeTab === "followed"
+                ? t("Aucune boutique suivie pour le moment")
+                : t("Aucune boutique trouvée")}
+            </h3>
+            <p className="text-xs text-[#5f6368]">
+              {activeTab === "followed"
+                ? t("Explorez nos boutiques certifiées et artisans partenaires dans les 69 wilayas.")
+                : t("Essayez un autre mot-clé ou modifiez le filtre de wilaya.")}
+            </p>
+          </div>
+          {activeTab === "followed" && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("explore")}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs sm:text-sm font-medium rounded-full transition-colors cursor-pointer border-none"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{t("Découvrir les boutiques")}</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredStores.map((store) => (
+            <StoreCard
+              key={store.id}
+              store={store}
+              products={productsMap[store.sellerId || store.id] || []}
+              isLoadingAction={actionLoadingId === (store.sellerId || store.id)}
+              onToggleFollow={handleToggleFollow}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

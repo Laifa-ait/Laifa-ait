@@ -5,6 +5,7 @@ import { TrendingSearchesService } from "../../services/TrendingSearchesService"
 import { safeLogger } from "../../utils/logger";
 import { validateExternalUrl } from "../../utils/security";
 import { corsOptions } from "../../middlewares/security";
+import { debugLimiter } from "../../middlewares/rateLimiters";
 import { PublicShopDTO } from "../seller/shop.types";
 import { buildWhitelistedShopDTO } from "../seller/shopPublic.projection";
 
@@ -155,7 +156,7 @@ router.get("/api/v1/public/settings", async (_req: Request, res: Response) => {
 });
 
 // POST log client site errors
-router.post("/api/v1/logs/error", async (req: Request, res: Response) => {
+router.post("/api/v1/logs/error", debugLimiter, async (req: Request, res: Response) => {
   try {
     await CoreService.logError(req.body as LogErrorBody);
     return res.json({ success: true });

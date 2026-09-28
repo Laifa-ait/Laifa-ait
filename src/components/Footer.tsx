@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { OlmaLogo } from "./Navbar";
 import toast from "react-hot-toast";
@@ -29,6 +29,8 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
   const { t, i18n } = useTranslation();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = isHomepage || location.pathname === "/";
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [supportEmail, setSupportEmail] = useState("contact@olmart.dz");
@@ -90,6 +92,10 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
     }
   };
 
+  if (!isHome) {
+    return null;
+  }
+
   return (
     <footer
       id="olmart-main-footer"
@@ -97,68 +103,70 @@ export const Footer: React.FC<{ isHomepage?: boolean }> = ({ isHomepage = false 
         isHomepage ? "pb-24 sm:pb-12" : "pb-12"
       }`}
     >
-      {/* 1. Value Proposition & Trust Bar (Amazon / Zalando style reassurance) */}
-      <div className="border-b border-zinc-800/60 bg-zinc-900/40">
-        <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-500">
-                <Truck className="w-5 h-5" />
+      {/* 1. Value Proposition & Trust Bar (Uniquement sur la page d'accueil) */}
+      {isHome && (
+        <div className="border-b border-zinc-800/60 bg-zinc-900/40">
+          <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 py-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-500">
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                    {t("footer_trust_delivery_title", "Livraison 58 Wilayas")}
+                  </span>
+                  <span className="text-[11px] text-zinc-400">
+                    {t("footer_trust_delivery_sub", "À domicile ou en point relais")}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                  {t("footer_trust_delivery_title") || "Livraison 69 Wilayas"}
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  {t("footer_trust_delivery_sub") || "À domicile ou en point relais"}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
-                <ShieldCheck className="w-5 h-5" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                    {t("footer_trust_security_title", "Paiement 100% Sécurisé")}
+                  </span>
+                  <span className="text-[11px] text-zinc-400">
+                    {t("footer_trust_security_sub", "CIB, BaridiMob & Main à main")}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                  {t("footer_trust_security_title") || "Paiement 100% Sécurisé"}
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  {t("footer_trust_security_sub") || "CIB, BaridiMob & Main à main"}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 text-blue-400">
-                <RotateCcw className="w-5 h-5" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 text-blue-400">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                    {t("footer_trust_guarantee_title", "Garantie & Retours")}
+                  </span>
+                  <span className="text-[11px] text-zinc-400">
+                    {t("footer_trust_guarantee_sub", "Protection acheteur Olmart")}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                  {t("footer_trust_guarantee_title") || "Garantie & Retours"}
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  {t("footer_trust_guarantee_sub") || "Protection acheteur Olmart"}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 text-rose-400">
-                <Headphones className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                  {t("footer_trust_support_title") || "Support Client 7j/7"}
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  {t("footer_trust_support_sub") || "Équipe dédiée à votre écoute"}
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 text-rose-400">
+                  <Headphones className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                    {t("footer_trust_support_title", "Support Client 7j/7")}
+                  </span>
+                  <span className="text-[11px] text-zinc-400">
+                    {t("footer_trust_support_sub", "Équipe dédiée à votre écoute")}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Main Navigation & Columns Grid */}
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 pt-12 pb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">

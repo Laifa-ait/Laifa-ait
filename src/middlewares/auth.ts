@@ -27,20 +27,24 @@ export interface AuthenticatedRequest extends Request {
   files?: unknown;
 }
 
-export function extractIdToken(req: Request): string | undefined {
+export function extractAuthCredential(req: Request): { token: string; isCookie: boolean } | undefined {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.split("Bearer ")[1]?.trim();
     if (token && token !== "undefined" && token !== "null") {
-      return token;
+      return { token, isCookie: false };
     }
   } else if (req.cookies && typeof req.cookies.admin_session === "string" && req.cookies.admin_session.trim()) {
     const token = req.cookies.admin_session.trim();
     if (token && token !== "undefined" && token !== "null") {
-      return token;
+      return { token, isCookie: true };
     }
   }
   return undefined;
+}
+
+export function extractIdToken(req: Request): string | undefined {
+  return extractAuthCredential(req)?.token;
 }
 
 /**
@@ -49,7 +53,8 @@ export function extractIdToken(req: Request): string | undefined {
  * completely eliminating double-authentication bottlenecks across all API routes.
  */
 export async function resolveAuthentication(req: AuthenticatedRequest): Promise<AuthResolutionResult> {
-  const idToken = extractIdToken(req);
+  const authCred = extractAuthCredential(req);
+  const idToken = authCred?.token;
 
   // Return cached result if already resolved on this exact request
   if (req.authContext) {
@@ -77,7 +82,7 @@ export async function resolveAuthentication(req: AuthenticatedRequest): Promise<
   }
 
   // No credentials provided -> anonymous
-  if (!idToken) {
+  if (!authCred || !idToken) {
     const result: AuthResolutionResult = { status: "anonymous" };
     req.authContext = result;
     req.user = undefined;
@@ -86,14 +91,14 @@ export async function resolveAuthentication(req: AuthenticatedRequest): Promise<
 
   try {
     let decodedToken: admin.auth.DecodedIdToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(idToken, true);
-    } catch (checkRevokedErr: unknown) {
-      const code = (checkRevokedErr as { code?: string })?.code;
-      if (code === "auth/id-token-revoked" || code === "auth/user-disabled") {
-        throw checkRevokedErr;
+    if (authCred.isCookie) {
+      try {
+        decodedToken = await admin.auth().verifySessionCookie(idToken, true);
+      } catch {
+        decodedToken = await admin.auth().verifyIdToken(idToken, true);
       }
-      decodedToken = await admin.auth().verifyIdToken(idToken, false);
+    } else {
+      decodedToken = await admin.auth().verifyIdToken(idToken, true);
     }
 
     const tokenRole = (decodedToken.role as string) || "buyer";
@@ -171,14 +176,24 @@ export async function resolveAuthentication(req: AuthenticatedRequest): Promise<
     req.authContext = result;
     return result;
   } catch (error: unknown) {
+    const errObj = error as { code?: string; message?: string };
+    const code = errObj?.code;
     const errorMsg = error instanceof Error ? error.message : String(error);
-    const isRevoked = errorMsg.includes("revoked") || (error as { code?: string })?.code === "auth/id-token-revoked";
+
+    let clientMessage = `Jeton invalide ou expiré : ${errorMsg}`;
+    if (code === "auth/id-token-revoked" || code === "auth/session-cookie-revoked" || errorMsg.includes("revoked")) {
+      clientMessage = authCred?.isCookie
+        ? "Session révoquée. Veuillez vous reconnecter."
+        : "Jeton révoqué. Veuillez vous reconnecter.";
+    } else if (code === "auth/user-disabled" || errorMsg.includes("disabled")) {
+      clientMessage = "Compte utilisateur désactivé par l'administration.";
+    }
 
     req.user = undefined;
     const result: AuthResolutionResult = {
       status: "error",
       statusCode: 401,
-      error: isRevoked ? "Jeton révoqué. Veuillez vous reconnecter." : `Jeton invalide ou expiré : ${errorMsg}`,
+      error: clientMessage,
       token: idToken,
     };
     req.authContext = result;

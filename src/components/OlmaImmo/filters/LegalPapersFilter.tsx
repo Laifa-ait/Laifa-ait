@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Award } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { LegalPaperType } from '../../../types/realEstate';
 import { LEGAL_PAPERS_CONFIG } from '../../../constants/legalPapers';
 
@@ -20,16 +21,18 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
   onToggleLivretFoncier,
   onSelectLegalPaper,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3.5 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <label className="text-xs font-bold uppercase tracking-wider text-stone-600 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-700" />
-            <span>Garanties Juridiques & Papiers Fonciers DZ</span>
+            <span>{t('immo_legal_guarantees', 'Garanties Juridiques & Papiers Fonciers DZ')}</span>
           </label>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-[#1E3A8A]">
-            Conforme loi foncière
+            {t('immo_compliant_land_law', 'Conforme loi foncière')}
           </span>
         </div>
       </div>
@@ -50,11 +53,11 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
             className="w-4 h-4 rounded text-emerald-700 focus:ring-emerald-600 border-stone-300 accent-emerald-700 cursor-pointer"
           />
           <div className="flex-1 min-w-0">
-            <div>Acte notarié disponible</div>
-            <div className="text-[10px] font-normal text-stone-500">Enregistré et authentique</div>
+            <div>{t('immo_notarized_act_avail', 'Acte notarié disponible')}</div>
+            <div className="text-[10px] font-normal text-stone-500">{t('immo_registered_authentic', 'Enregistré et authentique')}</div>
           </div>
           <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg shrink-0">
-            Notarié
+            {t('immo_notarized', 'Notarié')}
           </span>
         </label>
 
@@ -72,18 +75,18 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
             className="w-4 h-4 rounded text-[#1E3A8A] focus:ring-[#1E3A8A] border-slate-300 accent-[#1E3A8A] cursor-pointer"
           />
           <div className="flex-1 min-w-0">
-            <div>Livret foncier disponible</div>
-            <div className="text-[10px] font-normal text-stone-500">Immatriculation cadastrale</div>
+            <div>{t('immo_land_book_avail', 'Livret foncier disponible')}</div>
+            <div className="text-[10px] font-normal text-stone-500">{t('immo_cadastral_reg', 'Immatriculation cadastrale')}</div>
           </div>
           <span className="text-[10px] font-extrabold text-[#1E3A8A] bg-blue-100 px-2 py-0.5 rounded-lg shrink-0">
-            Cadastre
+            {t('immo_cadastre', 'Cadastre')}
           </span>
         </label>
       </div>
 
       {/* Specific Paper Type Selector */}
       <div className="space-y-1.5 pt-1">
-        <span className="text-[11px] font-semibold text-stone-500">Ou sélectionner un titre précis :</span>
+        <span className="text-[11px] font-semibold text-stone-500">{t('immo_select_specific_title', 'Ou sélectionner un titre précis :')}</span>
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
@@ -94,7 +97,7 @@ export const LegalPapersFilter: React.FC<LegalPapersFilterProps> = ({
                 : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
             }`}
           >
-            Tous les titres
+            {t('immo_all_titles', 'Tous les titres')}
           </button>
           {Object.values(LEGAL_PAPERS_CONFIG).map((p) => {
             const isSelected = legalPaperType === p.type;

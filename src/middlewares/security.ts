@@ -185,12 +185,6 @@ function getFrameAncestorsProd(): string[] {
       "'self'",
       "https://olmart.dz",
       "https://www.olmart.dz",
-      "https://aistudio.google.com",
-      "https://ai.studio",
-      "https://*.aistudio.google.com",
-      "https://*.ai.studio",
-      "https://*.google.com",
-      "https://*.googleusercontent.com",
       ...exactOrigins,
     ])
   );
@@ -202,7 +196,6 @@ const scriptSrcProd: (string | ((req: Request, res: Response) => string))[] = [
   "https://apis.google.com",
   "https://maps.googleapis.com",
   "https://www.googletagmanager.com",
-  "https://cdn.jsdelivr.net",
 ];
 
 const connectSrcProd = [
@@ -215,7 +208,7 @@ const connectSrcProd = [
   "https://*.run.app",
   "https://region1-active-directory.googleapis.com",
   "https://www.google-analytics.com",
-  "wss:", // Allowed for secure real-time syncing only (never plain ws:)
+  "wss://*.firebaseio.com",
 ];
 
 const styleSrcProd = ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"];

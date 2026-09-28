@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SlidersHorizontal, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PropertyType, ListingType, PropertySortOption, LegalPaperType } from '../../types/realEstate';
 import { LocationFilterSelects } from './filters/LocationFilterSelects';
 import { OlmaImmoFilterModal } from './filters/OlmaImmoFilterModal';
@@ -37,6 +38,8 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
   isMapExpanded,
   onToggleMap,
 }) => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar' || i18n.language?.startsWith('ar');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleListingTypeChange = (type?: ListingType) => {
@@ -80,17 +83,19 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
     onChange(next);
   };
 
+  const listingTypes = [
+    { type: undefined, label: isAr ? 'جميع العقارات' : t('immo_filter_all_properties', 'Tous les biens') },
+    { type: 'sale' as ListingType, label: isAr ? 'شراء' : t('immo_filter_buy', 'Acheter') },
+    { type: 'rent_long' as ListingType, label: isAr ? 'كراء' : t('immo_filter_rent', 'Louer') },
+    { type: 'rent_short' as ListingType, label: isAr ? 'إقامات' : t('immo_filter_stays', 'Séjours') },
+  ];
+
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-6 space-y-4">
       {/* Top Row: Listing Type Tabs & Map Toggle */}
       <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 scrollbar-none">
         <div className="flex items-center bg-slate-50 p-1 rounded-2xl gap-1 shrink-0 border border-slate-200">
-          {[
-            { type: undefined, label: 'Tous les biens' },
-            { type: 'sale' as ListingType, label: 'Acheter' },
-            { type: 'rent_long' as ListingType, label: 'Louer' },
-            { type: 'rent_short' as ListingType, label: 'Séjours' },
-          ].map((item) => (
+          {listingTypes.map((item) => (
             <button
               key={item.label}
               type="button"
@@ -118,7 +123,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
               }`}
             >
               <MapPin className="w-4 h-4 text-[#F59E0B]" />
-              <span>{isMapExpanded ? 'Masquer la carte' : 'Carte'}</span>
+              <span>{isMapExpanded ? (isAr ? 'إخفاء الخريطة' : t('hide_map', 'Masquer la carte')) : (isAr ? 'الخريطة' : t('map', 'Carte'))}</span>
             </button>
           )}
 
@@ -128,7 +133,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
             className="px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 cursor-pointer min-h-[40px]"
           >
             <SlidersHorizontal className="w-4 h-4" />
-            <span>Filtres</span>
+            <span>{isAr ? 'الفلاتر' : t('filter_filters', 'Filtres')}</span>
             {activeFiltersCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-[#F59E0B] text-slate-900 text-[10px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
@@ -159,14 +164,14 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
             onChange={handlePropertyTypeChange}
             className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] cursor-pointer"
           >
-            <option value="all">Tous types</option>
-            <option value="apartment">Appartement</option>
-            <option value="villa">Villa</option>
-            <option value="house">Maison</option>
-            <option value="studio">Studio</option>
-            <option value="commercial">Local comm.</option>
-            <option value="land">Terrain</option>
-            <option value="office">Bureau</option>
+            <option value="all">{isAr ? 'كل الأنواع' : t('immo_filter_all_types', 'Tous types')}</option>
+            <option value="apartment">{t('immo_type_apartment', 'Appartement')}</option>
+            <option value="villa">{t('immo_type_villa', 'Villa')}</option>
+            <option value="house">{t('immo_type_house', 'Maison')}</option>
+            <option value="studio">{t('immo_type_studio', 'Studio')}</option>
+            <option value="commercial">{t('immo_type_commercial', 'Local comm.')}</option>
+            <option value="land">{t('immo_type_land', 'Terrain')}</option>
+            <option value="office">{t('immo_type_office', 'Bureau')}</option>
           </select>
 
           <select
@@ -174,10 +179,10 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
             onChange={handleSortChange}
             className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] cursor-pointer"
           >
-            <option value="recent">Plus récents</option>
-            <option value="price_asc">Prix croissant</option>
-            <option value="price_desc">Prix décroissant</option>
-            <option value="popularity">Popularité</option>
+            <option value="recent">{t('immo_filter_sort_recent', 'Plus récents')}</option>
+            <option value="price_asc">{t('immo_filter_sort_price_asc', 'Prix croissant')}</option>
+            <option value="price_desc">{t('immo_filter_sort_price_desc', 'Prix décroissant')}</option>
+            <option value="popularity">{t('immo_filter_sort_popularity', 'Popularité')}</option>
           </select>
         </div>
       </div>

@@ -378,4 +378,9 @@ export class FirebaseReviewRepository implements IReviewRepository {
       avgRating,
     };
   }
+
+  async findByUserId(userId: string): Promise<ReviewDocument[]> {
+    const snap = await db.collection("reviews").where("userId", "==", userId).get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ReviewDocument));
+  }
 }

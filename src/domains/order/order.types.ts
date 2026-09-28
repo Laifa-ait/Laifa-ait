@@ -108,6 +108,13 @@ export interface Order {
   status: OrderStatus;
   paymentStatus?: string;
   paymentMethod?: string;
+  deliveredAt?: AppTimestamp;
+  confirmedAt?: AppTimestamp;
+  paidAt?: AppTimestamp;
+  shippedAt?: AppTimestamp;
+  cancelledAt?: AppTimestamp;
+  escrowStatus?: string;
+  carrier?: string;
 
   // Optional return/dispute data
   returnRequest?: ReturnRequest;

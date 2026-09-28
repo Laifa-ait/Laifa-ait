@@ -43,21 +43,21 @@ export const ArtisanMobileBottomNav: React.FC = () => {
   const navItems = [
     {
       id: 'explorer',
-      label: t('nav_explorer'),
+      label: t('nav_explorer', 'Explorer'),
       icon: Compass,
       isActive: isExplorerActive,
       onClick: () => navigate('/artisans'),
     },
     {
       id: 'broadcasts',
-      label: t('nav_broadcasts'),
+      label: t('nav_broadcasts', 'Annonces'),
       icon: Send,
       isActive: isBroadcastActive,
       onClick: () => navigate('/artisans/annonces'),
     },
     {
       id: 'quotes',
-      label: t('nav_my_quotes'),
+      label: t('nav_my_quotes', 'Devis'),
       icon: FileText,
       isActive: isQuotesActive,
       badgeCount: quotesCount,
@@ -72,14 +72,14 @@ export const ArtisanMobileBottomNav: React.FC = () => {
     },
     {
       id: 'switcher',
-      label: t('nav_applications'),
+      label: t('nav_applications', 'Applications'),
       icon: LayoutGrid,
       isActive: isSwitcherOpen,
       onClick: () => setIsSwitcherOpen(true),
     },
     {
       id: 'pro',
-      label: myArtisanProfile ? t('nav_pro_space') : t('nav_become_artisan'),
+      label: myArtisanProfile ? t('nav_pro_space', 'Pro') : t('nav_become_artisan', 'Rejoindre'),
       icon: myArtisanProfile ? LayoutDashboard : UserCheck,
       isActive: isProActive,
       onClick: () => {

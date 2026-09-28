@@ -196,6 +196,9 @@ export interface SellerUserProfile {
   rating?: number;
   sellerTrustScore?: number;
   phone?: string;
+  phoneNumber?: string;
+  logoUrl?: string;
+  photoURL?: string;
   address?: string;
 }
 

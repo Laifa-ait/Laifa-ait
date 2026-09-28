@@ -59,9 +59,15 @@ export function buildWhitelistedShopDTO(
 
   const logoUrl =
     (typeof pubData.logoUrl === "string" && pubData.logoUrl.trim()) ||
+    (typeof pubData.logo === "string" && pubData.logo.trim()) ||
     (typeof pubData.photoURL === "string" && pubData.photoURL.trim()) ||
+    (typeof pubData.avatar === "string" && pubData.avatar.trim()) ||
+    (typeof pubData.shopLogo === "string" && pubData.shopLogo.trim()) ||
     (typeof userData.logoUrl === "string" && userData.logoUrl.trim()) ||
+    (typeof userData.logo === "string" && userData.logo.trim()) ||
     (typeof userData.photoURL === "string" && userData.photoURL.trim()) ||
+    (typeof userData.avatar === "string" && userData.avatar.trim()) ||
+    (typeof userData.shopLogo === "string" && userData.shopLogo.trim()) ||
     "";
 
   const bannerUrl =

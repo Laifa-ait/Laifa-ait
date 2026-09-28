@@ -317,13 +317,20 @@ process.on("unhandledRejection", (reason: unknown) => {
 });
 
 process.on("uncaughtException", (error: Error) => {
+  const errorCode = error && typeof error === "object" && "code" in error ? String((error as { code: unknown }).code) : "";
+  const nonFatalNetworkCodes = ["ECONNRESET", "EPIPE", "ERR_STREAM_PREMATURE_CLOSE", "ERR_STREAM_DESTROYED", "ETIMEDOUT", "ECANCELED"];
+  if (nonFatalNetworkCodes.includes(errorCode)) {
+    safeLogger.warn("[Olmart Gateway] ⚠️ Non-fatal network socket reset caught in uncaughtException, server preserved", { code: errorCode, message: error.message });
+    return;
+  }
+
   safeLogger.error("[Olmart Gateway] ❌ Uncaught Exception at process level", { err: error.stack || error.message });
   shutdown("UNCAUGHT_EXCEPTION");
 });
 
 // Boot the server when executed directly as primary entrypoint
 if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
-  const attemptBoot = async (retries = 3, delayMs = 1500): Promise<void> => {
+  const attemptBoot = async (retries = 5, delayMs = 2000): Promise<void> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         await startServer();

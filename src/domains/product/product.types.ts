@@ -113,6 +113,8 @@ export interface Product {
   // Legacy fields (restoring to fix build errors)
   colors?: string[];
   sizes?: string[];
+  sizeType?: string;
+  deliveryPrice?: number | string;
   brand?: string;
   type?: string;
   material?: string;

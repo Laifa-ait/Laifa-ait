@@ -34,11 +34,6 @@ router.post("/api/v1/seller/products", authenticateToken, authorizeSeller, async
     const uData = userDoc && userDoc.exists ? userDoc.data() : {};
     const pData = pubDoc && pubDoc.exists ? pubDoc.data() : {};
 
-    const shopName = (pData?.shopName || uData?.shopName || uData?.storeName || uData?.displayName || "Boutique Olmart") as string;
-    const logoUrl = (pData?.logoUrl || uData?.logoUrl || uData?.photoURL || "") as string;
-    const phone = (pData?.phone || uData?.phone || uData?.phoneNumber || pData?.supportPhone || body.sellerPhone || "") as string;
-    const wilaya = (safeProductData.wilaya || pData?.wilaya || uData?.wilaya || "16 - Alger") as string;
-
     // Sanitize protected fields - Never trust client
     const protectedFields = new Set([
       "rating",
@@ -57,6 +52,11 @@ router.post("/api/v1/seller/products", authenticateToken, authorizeSeller, async
         safeProductData[key] = value;
       }
     }
+
+    const shopName = (pData?.shopName || uData?.shopName || uData?.storeName || uData?.displayName || "Boutique Olmart") as string;
+    const logoUrl = (pData?.logoUrl || uData?.logoUrl || uData?.photoURL || "") as string;
+    const phone = (pData?.phone || uData?.phone || uData?.phoneNumber || pData?.supportPhone || body.sellerPhone || "") as string;
+    const wilaya = (safeProductData.wilaya || pData?.wilaya || uData?.wilaya || "16 - Alger") as string;
 
     const productData: Record<string, unknown> = {
       ...safeProductData,

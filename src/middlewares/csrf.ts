@@ -117,7 +117,7 @@ function isTrustedOrigin(originString: string): boolean {
     return true;
   }
 
-  // 2. Allow Google AI Studio iframe sandboxes in non-production only
+  // 2. Allow explicit AI Studio preview & localhost in non-production only
   if (process.env.NODE_ENV !== "production") {
     try {
       const url = new URL(originClean);
@@ -128,22 +128,15 @@ function isTrustedOrigin(originString: string): boolean {
         hostname === "aistudio.google.com" ||
         hostname.endsWith(".ai.studio") ||
         hostname.endsWith(".aistudio.google.com");
-      
-      const isGoogleIframe =
-        hostname === "google.com" ||
-        hostname.endsWith(".google.com") ||
-        hostname === "googleusercontent.com" ||
-        hostname.endsWith(".googleusercontent.com");
 
       const isLocalHost =
         hostname === "localhost" ||
         hostname === "127.0.0.1";
 
-      if ((isTrustedAIStudio || isGoogleIframe || isLocalHost) && (url.protocol === "https:" || url.protocol === "http:")) {
+      if ((isTrustedAIStudio || isLocalHost) && (url.protocol === "https:" || url.protocol === "http:")) {
         return true;
       }
     } catch {
-      // Fallback if originString is just a hostname
       const hostname = originClean.toLowerCase();
       return (
         hostname === "ai.studio" ||
@@ -175,12 +168,26 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
-  // 2. Strict Exemptions for Local Dev & Trusted AI Studio Sandbox ONLY (using exact matches)
-  const origin = (req.headers.origin as string || "").trim();
-  const referer = (req.headers.referer as string || "").trim();
-  const host = (req.headers.host || "").toLowerCase();
+  // 2. Strict Exempt webhook paths check (verified by cryptographic HMAC)
+  const fullPath = (req.baseUrl || "") + (req.path || "");
+  const rawPath = req.path || "";
+  const originalPath = req.originalUrl ? req.originalUrl.split("?")[0] : "";
 
-  // Local development exemption (never allowed in production)
+  if (
+    WEBHOOK_EXEMPT_PATHS.has(fullPath) ||
+    WEBHOOK_EXEMPT_PATHS.has(rawPath) ||
+    WEBHOOK_EXEMPT_PATHS.has(originalPath)
+  ) {
+    return next();
+  }
+
+  // 3. CSP Report endpoint exemption
+  if (fullPath === "/api/v1/csp-report" || rawPath === "/v1/csp-report" || originalPath === "/api/v1/csp-report") {
+    return next();
+  }
+
+  // 4. Local development & internal test runner exemption (strictly forbidden in production)
+  const host = (req.headers.host || "").toLowerCase();
   if (process.env.NODE_ENV !== "production") {
     const isLocalHost =
       host === "localhost" ||
@@ -193,56 +200,34 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     }
   }
 
-  // Google AI Studio Workspace / Olmart official secure origin checks
-  if (isTrustedOrigin(origin) || isTrustedOrigin(referer)) {
+  // 5. Explicitly authorized OLMART origins retain allowed behavior
+  const origin = (req.headers.origin as string || "").trim();
+  if (isTrustedOrigin(origin)) {
     return next();
   }
 
-  // 3. Strict Exempt paths check using exact pathnames to prevent substring bypasses
-  const fullPath = (req.baseUrl || "") + (req.path || "");
-  const rawPath = req.path || "";
-  const originalPath = req.originalUrl ? req.originalUrl.split("?")[0] : "";
-
-  if (
-    WEBHOOK_EXEMPT_PATHS.has(fullPath) ||
-    WEBHOOK_EXEMPT_PATHS.has(rawPath) ||
-    WEBHOOK_EXEMPT_PATHS.has(originalPath)
-  ) {
-    // Le handler de cette route est responsable de vérifier la signature HMAC.
-    return next();
-  }
-  
-  const isStrictExempt =
-    fullPath === "/api/v1/csp-report" || rawPath === "/v1/csp-report" || originalPath === "/api/v1/csp-report" ||
-    fullPath === "/api/v1/cron/sync-tracking" || rawPath === "/v1/cron/sync-tracking" || originalPath === "/api/v1/cron/sync-tracking" ||
-    fullPath === "/api/v1/logs/error" || rawPath === "/v1/logs/error" || originalPath === "/api/v1/logs/error" ||
-    fullPath === "/api/v1/analytics/track" || rawPath === "/v1/analytics/track" || originalPath === "/api/v1/analytics/track" ||
-    fullPath === "/api/v1/sponsorship/analytics/track" || rawPath === "/v1/sponsorship/analytics/track" || originalPath === "/api/v1/sponsorship/analytics/track";
-
-  if (isStrictExempt) {
-    return next();
-  }
-
-  // 4. Extract CSRF token from headers or body
+  // 6. Extract and validate CSRF token (strictly bound to user session or guest)
   const token =
     (req.headers["x-csrf-token"] as string) ||
     (req.headers["x-xsrf-token"] as string) ||
     (req.headers["csrf-token"] as string) ||
     req.body?._csrf;
 
-  // 5. Validate Token & bind it strictly to current user session (UID or guest)
   const currentUserId = (req as AuthenticatedRequest).user?.uid || "guest";
   if (token && verifyCsrfToken(token, currentUserId)) {
     return next();
   }
 
-  // 6. Block untrusted request
+  // 7. Block untrusted request
   const reportedPath = fullPath || originalPath || rawPath;
-  safeLogger.warn("[Olmart Security] ⚠️ CSRF attack prevented", { method: req.method, path: reportedPath });
-  return res.status(403).json({
-    success: false,
-    error: "Jeton CSRF invalide ou manquant. Veuillez rafraîchir la page et réessayer.",
-  });
+  safeLogger.warn("[Olmart Security] ⚠️ CSRF attack prevented: invalid or missing token", { method: req.method, path: reportedPath, origin });
+  if (res && typeof res.status === "function") {
+    return res.status(403).json({
+      success: false,
+      error: "Jeton CSRF invalide ou manquant. Veuillez rafraîchir la page et réessayer.",
+    });
+  }
+  return;
 }
 
 /**

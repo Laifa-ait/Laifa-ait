@@ -141,11 +141,11 @@ export const Home: React.FC = () => {
       </Helmet>
       <h1 className="sr-only">{t("home.sr_title")}</h1>
 
-      {/* a) Le hero (garde BentoHero tel quel) */}
+      {/* a) Le hero */}
       <section className="w-full bg-transparent py-2 sm:py-4 relative overflow-hidden">
         <div className="max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8">
           {isBannersLoading ? (
-            <div className="w-full min-h-[400px] sm:min-h-[500px] bg-zinc-200 animate-pulse rounded-2xl border border-zinc-100 mt-0" />
+            <div className="w-full min-h-[400px] sm:min-h-[500px] bg-zinc-200 animate-pulse rounded-3xl border border-zinc-100 mt-0" />
           ) : (
             <BentoHero banners={targetedHeroBanners} />
           )}

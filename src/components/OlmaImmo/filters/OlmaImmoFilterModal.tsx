@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X, SlidersHorizontal, RotateCcw, Check, Sparkles } from 'lucide-react';
 import { FilterState } from '../SearchFilters';
 import { PropertySortOption } from '../../../types/realEstate';
@@ -29,6 +30,8 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
   portalContainer,
   usePortal,
 }) => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar' || i18n.language?.startsWith('ar');
   const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 id="filter-modal-title" className="text-base font-bold text-[#1E3A8A]">
-                  Filtres de recherche immobilière
+                  {isAr ? 'فلاتر البحث العقاري' : t('immo_filter_modal_title', 'Filtres de recherche immobilière')}
                 </h2>
                 {countActiveDraft > 0 && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300/60">
@@ -211,7 +214,7 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
           {/* 6. Tri */}
           <div className="space-y-2 pt-5">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
-              Ordre d'affichage
+              {isAr ? 'ترتيب العرض' : t('immo_filter_sort_order', "Ordre d'affichage")}
             </label>
             <select
               value={draftFilters.sort || 'recent'}
@@ -220,10 +223,10 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
               }
               className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
             >
-              <option value="recent">Plus récents en premier</option>
-              <option value="price_asc">Prix croissant (DZD)</option>
-              <option value="price_desc">Prix décroissant (DZD)</option>
-              <option value="popularity">Popularité / Nombre de vues</option>
+              <option value="recent">{isAr ? 'الأحدث أولاً' : t('immo_filter_sort_recent', 'Plus récents en premier')}</option>
+              <option value="price_asc">{isAr ? 'السعر تصاعدي (دج)' : t('immo_filter_sort_price_asc', 'Prix croissant (DZD)')}</option>
+              <option value="price_desc">{isAr ? 'السعر تنازلي (دج)' : t('immo_filter_sort_price_desc', 'Prix décroissant (DZD)')}</option>
+              <option value="popularity">{isAr ? 'الأكثر مشاهدة' : t('immo_filter_sort_popularity', 'Popularité / Nombre de vues')}</option>
             </select>
           </div>
         </div>
@@ -236,7 +239,7 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
             className="px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer rounded-xl hover:bg-slate-200/50 transition active:scale-95"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>Réinitialiser</span>
+            <span>{isAr ? 'إعادة ضبط' : t('immo_filter_reset', 'Réinitialiser')}</span>
           </button>
 
           <button
@@ -245,7 +248,7 @@ export const OlmaImmoFilterModal: React.FC<OlmaImmoFilterModalProps> = ({
             className="px-6 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-full text-xs font-extrabold shadow-md active:scale-95 transition-all flex items-center gap-2 cursor-pointer border border-amber-600/20"
           >
             <Check className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-            <span>Appliquer les filtres {countActiveDraft > 0 ? `(${countActiveDraft})` : ''}</span>
+            <span>{isAr ? `تطبيق الفلاتر ${countActiveDraft > 0 ? `(${countActiveDraft})` : ''}` : `${t('immo_filter_apply', 'Appliquer les filtres')} ${countActiveDraft > 0 ? `(${countActiveDraft})` : ''}`}</span>
           </button>
         </div>
       </div>

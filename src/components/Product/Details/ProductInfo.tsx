@@ -729,11 +729,11 @@ export const ProductInfo: React.FC<InfoProps> = ({
                   <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
                     <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">↺</div>
                     <div>
-                      <p className="font-bold text-[#2C2C28]">{t("Politique d'échange et retour d'Olmart")}</p>
+                      <p className="font-bold text-[#2C2C28]">{t("Politique d'échange et retour")}</p>
                       <p className="text-[10px] text-stone-500">
                         {product.returnPolicy
-                          ? t("Retours acceptés sous 14 jours si le produit est dans son emballage d'origine.")
-                          : t("Les retours et échanges dépendent des conditions générales du vendeur.")}
+                          ? t("Retours acceptés sous conditions du vendeur si le produit est dans son emballage d'origine.")
+                          : t("Les retours et échanges sont gérés directement par le vendeur concerné.")}
                       </p>
                     </div>
                   </div>

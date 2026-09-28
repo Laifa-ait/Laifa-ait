@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { UserProfile, AuthUser as FirebaseUser } from "../../domains/user/user.types";
 import { OptimizedImage } from "../ui/OptimizedImage";
 import { getRetroAvatar } from "../../utils/avatar";
+import { ShieldCheck, Store, LogIn, ChevronRight } from "lucide-react";
 
 interface MobileUserCardProps {
   currentUser: FirebaseUser | null;
@@ -21,14 +22,17 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
 
   if (!currentUser) {
     return (
-      <div className="bg-[#0088A8] rounded-2xl p-4 shadow-sm border border-cyan-600/30">
+      <div className="bg-white rounded-[24px] p-5 shadow-sm border border-[#dadce0] text-[#202124]">
         <div className="flex flex-col gap-3 items-center text-center">
+          <div className="w-12 h-12 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center">
+            <LogIn className="w-6 h-6" />
+          </div>
           <div className="space-y-1">
-            <h4 className="font-bold text-base text-white drop-shadow-xs">
-              {t("Rejoignez Olma")}
+            <h4 className="font-semibold text-base text-[#202124]">
+              {t("Compte Olmart")}
             </h4>
-            <p className="text-xs text-cyan-100 font-medium">
-              {t("Connectez-vous pour une expérience personnalisée.")}
+            <p className="text-xs text-[#5f6368] font-normal leading-relaxed">
+              {t("Connectez-vous pour accéder à vos commandes, adresses et préférences.")}
             </p>
           </div>
           <button
@@ -36,7 +40,7 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
               onNavigate("/auth");
               onClose();
             }}
-            className="w-full bg-white hover:bg-cyan-50 text-[#0088A8] py-2.5 px-4 rounded-2xl font-bold text-xs transition-all border-none cursor-pointer shadow-xs active:scale-98"
+            className="w-full bg-[#1a73e8] hover:bg-[#1557b0] text-white py-2.5 px-5 rounded-full font-medium text-xs transition-all border-none cursor-pointer shadow-xs active:scale-98 mt-1"
           >
             {t("Se connecter")}
           </button>
@@ -48,70 +52,81 @@ export const MobileUserCard: React.FC<MobileUserCardProps> = ({
   const role = userProfile?.role || "buyer";
 
   return (
-    <div className="bg-[#0088A8] rounded-2xl p-4 shadow-sm border border-cyan-600/30 space-y-3">
-      {/* Profile Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 shadow-xs border-2 border-white/40 bg-white/10 p-0.5">
-          <OptimizedImage
-            src={
-              userProfile?.photoURL ||
-              currentUser.photoURL ||
-              getRetroAvatar(currentUser.email || currentUser.uid)
-            }
-            alt={userProfile?.displayName || currentUser.email || "User Avatar"}
-            className="w-full h-full object-cover rounded-full"
-          />
+    <div className="bg-white rounded-[24px] p-5 shadow-sm border border-[#dadce0] text-[#202124] space-y-4">
+      {/* Profile Header Google Material 3 */}
+      <div className="flex items-center gap-3.5">
+        <div className="relative shrink-0">
+          <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-[#1a73e8] bg-[#f8fafd] p-0.5">
+            <OptimizedImage
+              src={
+                userProfile?.photoURL ||
+                currentUser.photoURL ||
+                getRetroAvatar(currentUser.email || currentUser.uid)
+              }
+              alt={userProfile?.displayName || currentUser.email || "User Avatar"}
+              className="w-full h-full object-cover rounded-full"
+            />
+          </div>
+          <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#34a853] border-2 border-white rounded-full" />
         </div>
+
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-[15px] text-white truncate leading-snug drop-shadow-xs">
-            {userProfile?.displayName || currentUser.email}
+          <h4 className="font-semibold text-sm text-[#202124] truncate leading-tight">
+            {userProfile?.displayName || currentUser.displayName || currentUser.email}
           </h4>
-          <span className="inline-block text-[11px] font-semibold text-cyan-100 bg-white/15 px-2.5 py-0.5 rounded-lg mt-0.5">
+          <p className="text-[11px] text-[#5f6368] truncate mt-0.5">{currentUser.email}</p>
+          <span className="inline-block text-[10px] font-medium text-[#1967d2] bg-[#e8f0fe] px-2 py-0.5 rounded-full mt-1">
             {role === "admin"
-              ? t("common.admin")
+              ? "Administrateur"
               : role === "seller"
-                ? t("common.seller")
-                : t("common.buyer")}
+                ? "Vendeur Pro"
+                : "Compte Client"}
           </span>
         </div>
       </div>
 
-      {/* Navigation Actions */}
-      <div className="flex items-center gap-2 pt-0.5">
-        <button
-          onClick={() => {
-            onNavigate("/dashboard/buyer");
-            onClose();
-          }}
-          className="flex-1 py-2.5 px-3 bg-white hover:bg-cyan-50 text-cyan-950 text-xs font-bold rounded-2xl text-center transition-all cursor-pointer border-none shadow-xs active:scale-98"
-        >
-          {t("common.my_space")}
-        </button>
+      {/* Main Google Account Button */}
+      <button
+        onClick={() => {
+          onNavigate("/dashboard/buyer");
+          onClose();
+        }}
+        className="w-full py-2.5 px-4 bg-white hover:bg-[#f8fafd] text-[#1a73e8] text-xs font-medium rounded-full text-center transition-all cursor-pointer border border-[#dadce0] shadow-xs flex items-center justify-center gap-2 active:scale-98"
+      >
+        <span>{t("Gérer votre compte Olmart")}</span>
+        <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+      </button>
 
-        {role === "seller" && (
-          <button
-            onClick={() => {
-              onNavigate("/dashboard/seller");
-              onClose();
-            }}
-            className="flex-1 py-2.5 px-3 bg-cyan-950/40 hover:bg-cyan-950/60 text-white text-xs font-bold rounded-2xl text-center transition-all cursor-pointer border border-white/20 shadow-xs active:scale-98"
-          >
-            {t("seller_dashboard")}
-          </button>
-        )}
+      {/* Role specific shortcuts */}
+      {(role === "seller" || role === "admin") && (
+        <div className="flex items-center gap-2 pt-1 border-t border-[#f1f3f4]">
+          {role === "seller" && (
+            <button
+              onClick={() => {
+                onNavigate("/dashboard/seller");
+                onClose();
+              }}
+              className="flex-1 py-2 px-3 bg-[#f3e8fd] hover:bg-[#ebd4fc] text-[#7627bb] text-xs font-medium rounded-xl text-center transition-all cursor-pointer border border-[#e9d5ff] flex items-center justify-center gap-1.5 active:scale-98"
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span>{t("Dashboard Vendeur")}</span>
+            </button>
+          )}
 
-        {role === "admin" && (
-          <button
-            onClick={() => {
-              onNavigate("/dashboard/admin");
-              onClose();
-            }}
-            className="flex-1 py-2.5 px-3 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-2xl border-none text-center transition-all cursor-pointer shadow-xs active:scale-98"
-          >
-            {t("common.admin")}
-          </button>
-        )}
-      </div>
+          {role === "admin" && (
+            <button
+              onClick={() => {
+                onNavigate("/dashboard/admin");
+                onClose();
+              }}
+              className="flex-1 py-2 px-3 bg-[#fce8e6] hover:bg-[#fad2cf] text-[#c5221f] text-xs font-medium rounded-xl text-center transition-all cursor-pointer border border-[#f8b4b4] flex items-center justify-center gap-1.5 active:scale-98"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{t("Administration")}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

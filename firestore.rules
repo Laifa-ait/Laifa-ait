@@ -272,18 +272,23 @@ service cloud.firestore {
     // =========================================================================
     match /products/{productId} {
       // Lecture publique conditionnée à status == "active" (brouillons, rejetés, archivés réservés au propriétaire et à l'admin)
-      allow read: if resource.data.status == "active" || !('status' in resource.data) || isAdmin() || (isSignedIn() && (
+      allow read: if resource.data.status == "active" || isAdmin() || (isSignedIn() && (
         resource.data.sellerId == request.auth.uid ||
         resource.data.artisanId == request.auth.uid ||
         resource.data.userId == request.auth.uid
       ));
 
       // Écriture : réservée aux vendeurs, artisans ou administrateurs avec liaison obligatoire à l'UID de l'auteur
+      // Les clients ne peuvent pas auto-activer un produit ou altérer les métriques d'autorité
       allow create: if (isSeller() || isArtisan() || isAdmin()) && (
         isAdmin() ||
-        ('sellerId' in incoming() && incoming().sellerId == request.auth.uid) ||
-        ('artisanId' in incoming() && incoming().artisanId == request.auth.uid) ||
-        ('userId' in incoming() && incoming().userId == request.auth.uid)
+        (
+          (('sellerId' in incoming() && incoming().sellerId == request.auth.uid) ||
+           ('artisanId' in incoming() && incoming().artisanId == request.auth.uid) ||
+           ('userId' in incoming() && incoming().userId == request.auth.uid)) &&
+          (!('status' in incoming()) || incoming().status in ['pending', 'draft', 'pending_approval']) &&
+          !incoming().keys().hasAny(['isFeatured', 'commission', 'sellerTrustScore', 'trustScore', 'rating'])
+        )
       );
       
       // Modification : réservée à l'administrateur ou au vendeur/artisan propriétaire du produit (interdiction de modifier le sellerId/artisanId/userId)
@@ -294,7 +299,8 @@ service cloud.firestore {
         ) &&
         (!('sellerId' in incoming()) || !('sellerId' in existing()) || incoming().sellerId == existing().sellerId) &&
         (!('artisanId' in incoming()) || !('artisanId' in existing()) || incoming().artisanId == existing().artisanId) &&
-        (!('userId' in incoming()) || !('userId' in existing()) || incoming().userId == existing().userId)
+        (!('userId' in incoming()) || !('userId' in existing()) || incoming().userId == existing().userId) &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['commission', 'sellerTrustScore', 'trustScore', 'rating'])
       );
 
       // Suppression : réservée à l'administrateur ou au vendeur/artisan propriétaire
@@ -337,8 +343,8 @@ service cloud.firestore {
         (isSeller() && ('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
       );
 
-      // Mise à jour : autorisée pour l'acheteur ou le vendeur avec immuabilité stricte des prix, montants, articles, acheteur et données de paiement
-      // Les mutations financières et changements de paiement sont réservés à l'Admin SDK transactionnel côté serveur
+      // Mise à jour : autorisée pour l'acheteur ou le vendeur avec immuabilité stricte des prix, montants, articles, statuts, acheteur et données de paiement
+      // Les mutations financières, transitions d'état de commande et changements de paiement sont réservés à l'Admin SDK transactionnel côté serveur
       allow update: if isSignedIn() && (
         isAdmin() || (
           (
@@ -349,7 +355,9 @@ service cloud.firestore {
           ) &&
           !incoming().diff(existing()).affectedKeys().hasAny([
             'buyerId', 'userId', 'sellerId', 'sellerIds', 'totalAmount', 'subtotal', 'total',
-            'items', 'price', 'paymentStatus', 'paymentMethod', 'paidAt', 'commission', 'createdAt'
+            'items', 'price', 'paymentStatus', 'paymentMethod', 'paidAt', 'commission', 'createdAt',
+            'status', 'deliveredAt', 'confirmedAt', 'escrowStatus', 'shippedAt', 'cancelledAt',
+            'trackingNumber', 'carrier'
           ]) &&
           (!('buyerId' in incoming()) || incoming().buyerId == existing().buyerId) &&
           (!('userId' in incoming()) || incoming().userId == existing().userId)
@@ -461,6 +469,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /translations/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /coupons/{id} {
       // Les coupons et historiques d'utilisation sont validés côté serveur uniquement (ou par l'admin / vendeur créateur)
       allow read: if isAdmin() || (isSignedIn() && (
@@ -473,7 +486,7 @@ service cloud.firestore {
 
     match /reviews/{id} {
       allow read: if true;
-      allow create: if isSignedIn() && (!('userId' in incoming()) || incoming().userId == request.auth.uid);
+      allow create: if isSignedIn() && ('userId' in incoming()) && incoming().userId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
@@ -505,38 +518,38 @@ service cloud.firestore {
     // =========================================================================
     match /user_notifications/{notifId} {
       allow read: if isSignedIn() && resource.data.recipientId == request.auth.uid;
-      allow create: if isAdmin() || isSignedIn();
+      allow create: if isAdmin() || (isSignedIn() && ('recipientId' in incoming()) && incoming().recipientId == request.auth.uid);
       allow update: if isSignedIn() && resource.data.recipientId == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.recipientId == request.auth.uid;
     }
 
     match /internal_notifications/{notifId} {
       allow read: if isAdmin();
-      allow create: if isSignedIn();
+      allow create: if isAdmin();
       allow update, delete: if isAdmin();
     }
 
     match /seller_support/{supportId} {
       allow read: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && incoming().sellerId == request.auth.uid;
+      allow create: if isSignedIn() && ('sellerId' in incoming()) && incoming().sellerId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
     match /buyer_support/{supportId} {
       allow read: if isSignedIn() && (resource.data.buyerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && incoming().buyerId == request.auth.uid;
+      allow create: if isSignedIn() && ('buyerId' in incoming()) && incoming().buyerId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
     match /support_tickets/{id} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && ('userId' in incoming()) && incoming().userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
     match /supportTickets/{id} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && ('userId' in incoming()) && incoming().userId == request.auth.uid;
       allow update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
     }
@@ -549,8 +562,7 @@ service cloud.firestore {
       );
       allow create: if isSignedIn() && (
         isAdmin() ||
-        ('userId' in incoming() ? incoming().userId == request.auth.uid : true) ||
-        ('senderId' in incoming() ? incoming().senderId == request.auth.uid : true)
+        (('senderId' in incoming()) && incoming().senderId == request.auth.uid)
       );
       allow update, delete: if isAdmin();
     }
@@ -565,7 +577,7 @@ service cloud.firestore {
       );
       allow create: if isSignedIn() && (
         isAdmin() ||
-        ('senderId' in incoming() ? incoming().senderId == request.auth.uid : true)
+        (('senderId' in incoming()) && incoming().senderId == request.auth.uid)
       );
       allow update, delete: if isAdmin();
     }
@@ -671,13 +683,14 @@ service cloud.firestore {
     }
 
     match /real_estate_properties/{propertyId} {
-      allow read: if resource.data.status == "active" || resource.data.status == "published" || resource.data.status == "available" || !('status' in resource.data) || isAdmin() || (isSignedIn() && (
+      allow read: if (('status' in resource.data) && resource.data.status in ["active", "published", "available"]) || isAdmin() || (isSignedIn() && (
         resource.data.ownerId == request.auth.uid ||
         resource.data.userId == request.auth.uid
       ));
       allow create: if isSignedIn() && (
-        ('ownerId' in incoming() && incoming().ownerId == request.auth.uid) ||
-        ('userId' in incoming() && incoming().userId == request.auth.uid)
+        isAdmin() ||
+        (('ownerId' in incoming() && incoming().ownerId == request.auth.uid) ||
+         ('userId' in incoming() && incoming().userId == request.auth.uid))
       );
       allow update: if isAdmin() || (
         isSignedIn() &&
@@ -737,7 +750,7 @@ service cloud.firestore {
           isSignedIn() &&
           exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
-          ('senderId' in incoming() ? incoming().senderId == request.auth.uid : true)
+          ('senderId' in incoming()) && incoming().senderId == request.auth.uid
         );
         allow update, delete: if isAdmin();
       }

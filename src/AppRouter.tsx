@@ -766,6 +766,22 @@ export const AppRouter: React.FC = () => {
                   </AppGuard>
                 }
               />
+              <Route
+                path="/orders/:id"
+                element={
+                  <AppGuard allowedRoles={[ROLES.BUYER, ROLES.ADMIN, ROLES.SELLER]}>
+                    <OrderDetails />
+                  </AppGuard>
+                }
+              />
+              <Route
+                path="/order/:id"
+                element={
+                  <AppGuard allowedRoles={[ROLES.BUYER, ROLES.ADMIN, ROLES.SELLER]}>
+                    <OrderDetails />
+                  </AppGuard>
+                }
+              />
 
               {/* Seller Dashboard (Modular) */}
               <Route

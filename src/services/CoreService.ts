@@ -91,14 +91,21 @@ export class CoreService {
 
   static async logError(body: LogErrorBody) {
     const { message, stack, componentStack, type, url, userAgent, userId } = body;
+    const safeMessage = typeof message === "string" ? message.slice(0, 2000) : "Unknown error";
+    // In production, strip deep internal stack paths and PII
+    const isProd = process.env.NODE_ENV === "production";
+    const safeStack = typeof stack === "string"
+      ? (isProd ? stack.split("\n").slice(0, 5).map(l => l.trim()).join("\n").slice(0, 1000) : stack.slice(0, 2000))
+      : "";
+
     await db.collection("site_errors").add({
-      message: message || "Unknown",
-      stack: stack || "",
-      componentStack: componentStack || "",
-      type: type || "window_error",
-      url: url || "",
-      userAgent: userAgent || "",
-      userId: userId || null,
+      message: safeMessage,
+      stack: safeStack,
+      componentStack: typeof componentStack === "string" ? componentStack.slice(0, 1000) : "",
+      type: typeof type === "string" ? type.slice(0, 100) : "window_error",
+      url: typeof url === "string" ? url.slice(0, 500) : "",
+      userAgent: typeof userAgent === "string" ? userAgent.slice(0, 300) : "",
+      userId: typeof userId === "string" ? userId.slice(0, 128) : null,
       timestamp: new Date().toISOString(),
       resolved: false,
     });

@@ -5,16 +5,16 @@ WORKDIR /app
 # Upgrade OS packages
 RUN apk upgrade --no-cache
 
-# Client build arguments and environment defaults
-ARG VITE_FIREBASE_PROJECT_ID=ai-studio-217f6d79-c758-4e14-845d-737228cd3915
-ARG VITE_FIREBASE_AUTH_DOMAIN=ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebaseapp.com
-ARG VITE_FIREBASE_API_KEY=AIzaSyCsGYo1B0vavSQbKdFvu0-7jfzILFHvejA
-ARG VITE_FIREBASE_APP_ID=1:76420360525:web:d6781ea77ef0c2257aef04
-ARG VITE_FIREBASE_STORAGE_BUCKET=ai-studio-217f6d79-c758-4e14-845d-737228cd3915.firebasestorage.app
-ARG VITE_FIREBASE_MESSAGING_SENDER_ID=76420360525
-ARG VITE_FIREBASE_MEASUREMENT_ID=G-XQW5YY2C36
-ARG VITE_FIREBASE_DATABASE_ID=(default)
-ARG FIREBASE_DATABASE_ID=(default)
+# Client build arguments and environment variables (injected at build time by CI/CD)
+ARG VITE_FIREBASE_PROJECT_ID
+ARG VITE_FIREBASE_AUTH_DOMAIN
+ARG VITE_FIREBASE_API_KEY
+ARG VITE_FIREBASE_APP_ID
+ARG VITE_FIREBASE_STORAGE_BUCKET
+ARG VITE_FIREBASE_MESSAGING_SENDER_ID
+ARG VITE_FIREBASE_MEASUREMENT_ID
+ARG VITE_FIREBASE_DATABASE_ID
+ARG FIREBASE_DATABASE_ID
 
 ENV VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
 ENV VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN
@@ -45,8 +45,7 @@ RUN apk upgrade --no-cache
 
 ENV NODE_ENV=production
 ENV PORT=8080
-ENV CSRF_SECRET=olmart_prod_secure_csrf_secret_token_default_9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c
-# Database environment variables are supplied dynamically via Cloud Run / container environment
+# CSRF_SECRET and other secrets must be provided at runtime via GCP Secret Manager / Cloud Run environment
 
 # Copy package files and install only production dependencies
 COPY package*.json ./

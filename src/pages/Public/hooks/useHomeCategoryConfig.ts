@@ -57,7 +57,8 @@ export const useHomeCategoryConfig = (
   );
 
   const activeCategoriesConfig = useMemo<CategoryCardConfig[]>(() => {
-    const baseMap = Object.keys(categoryHierarchy).map((catKey) => {
+    const safeHierarchy = categoryHierarchy || {};
+    const baseMap = Object.keys(safeHierarchy).map((catKey) => {
       const defaultMapping = defaultCategoryMapping.find((dm) => dm.key === catKey);
       const translatedTitle = defaultMapping?.title || t(`categories.${catKey}`, t(`cat_${catKey}`, catKey));
       return (

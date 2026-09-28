@@ -9,6 +9,7 @@ import { SellerMobileBottomNav } from "./components/layout/SellerMobileBottomNav
 import { SellerMobileDrawer } from "./components/layout/SellerMobileDrawer";
 import { SellerDesktopSidebar } from "./components/layout/SellerDesktopSidebar";
 import { SellerOnboardingTour } from "./components/SellerOnboardingTour";
+import { NotificationCenter } from "../../components/NotificationCenter";
 
 export const SellerDashboardLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export const SellerDashboardLayout: React.FC = () => {
 
       {/* Mobile Top Header */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-200/80 px-4 py-3 flex items-center justify-between"
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-200/80 px-4 py-3 flex items-center justify-between"
         id="seller-mobile-header"
       >
         <div className="flex items-center gap-2.5">
@@ -57,6 +58,7 @@ export const SellerDashboardLayout: React.FC = () => {
               <Store className="w-4 h-4" />
             </button>
           )}
+          <NotificationCenter />
           <button
             type="button"
             id="seller-mobile-menu-toggle-btn"
@@ -88,6 +90,13 @@ export const SellerDashboardLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-transparent pt-14 lg:pt-0" id="seller-main-content">
+        {/* Desktop Top Notification Bar */}
+        <div className="hidden lg:flex items-center justify-end px-8 py-4 border-b border-zinc-200/60 bg-white/60 backdrop-blur-sm sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <NotificationCenter />
+          </div>
+        </div>
+
         <div className="p-4 sm:p-8 lg:p-12 space-y-6">
           <SellerDashboardAlerts userProfile={userProfile} />
           <Outlet />

@@ -66,7 +66,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   const defaultFallback =
     fallbackSrc ||
-    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 100 100'><rect width='100%' height='100%' fill='%23F1F5F9'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%2394A3B8'>Image non disponible</text></svg>";
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23F8FAFC'/><stop offset='100%25' stop-color='%23E2E8F0'/></linearGradient></defs><rect width='100%25' height='100%25' fill='url(%23g)'/><g fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='translate(176,170)'><path d='M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z'/><line x1='3' y1='6' x2='21' y2='6'/><path d='M16 10a4 4 0 0 1-8 0'/></g><text x='50%25' y='60%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,-apple-system,sans-serif' font-weight='600' font-size='10' letter-spacing='0.2em' fill='%2394A3B8'>OLMART</text></svg>";
 
   const webpSrc = getWebpUrl(src);
   const srcSet = generateSrcSet(src);

@@ -188,7 +188,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   translating={translating}
                   activeLangTab={activeLangTab}
                   setActiveLangTab={setActiveLangTab}
-                  handleFreeTranslateProduct={handleFreeTranslateProduct}
+                  handleFreeTranslateProduct={async () => { await handleFreeTranslateProduct(); }}
                 />
               )}
 

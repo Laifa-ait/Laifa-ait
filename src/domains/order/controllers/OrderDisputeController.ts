@@ -297,6 +297,35 @@ Veuillez analyser ces éléments textuels ainsi que les photos d'évidence joint
 });
 
 
+router.get("/buyer/returns", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.uid || "";
+    if (!userId) {
+      return res.status(401).json({ error: "Non authentifié" });
+    }
+
+    const snap = await db.collection("orders")
+      .where("userId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .limit(50)
+      .get();
+
+    const returnsList = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((order: Record<string, unknown>) => {
+        const hasReturn = Boolean(order.returnRequest);
+        const status = String(order.status || "").toLowerCase();
+        const isReturnStatus = status.includes("return") || status === "refunded";
+        return hasReturn || isReturnStatus;
+      });
+
+    return res.json({ returns: returnsList });
+  } catch (error: unknown) {
+    safeLogger.error("Error fetching buyer returns", { err: error instanceof Error ? error.message : String(error) });
+    return res.status(500).json({ error: "Erreur lors de la récupération des retours" });
+  }
+});
+
 router.post("/buyer/orders/return", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   const { orderId, reason, details } = req.body;
   const userId = req.user?.uid || "";

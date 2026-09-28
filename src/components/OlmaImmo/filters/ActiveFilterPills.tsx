@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, RotateCcw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { FilterState } from '../SearchFilters';
 import { LEGAL_PAPERS_CONFIG } from '../../../constants/legalPapers';
 
@@ -16,6 +17,9 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   onResetAll,
   className = '',
 }) => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar' || i18n.language?.startsWith('ar');
+
   const activeItems: Array<{
     key: keyof FilterState;
     label: string;
@@ -25,22 +29,22 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.listingType) {
     const label =
       filters.listingType === 'sale'
-        ? 'Achat'
+        ? (isAr ? 'شراء' : t('buy', 'Achat'))
         : filters.listingType === 'rent_long'
-        ? 'Location'
-        : 'Séjour';
+        ? (isAr ? 'كراء' : t('rent', 'Location'))
+        : (isAr ? 'إقامة' : t('stay', 'Séjour'));
     activeItems.push({ key: 'listingType', label, variant: 'brand' });
   }
 
   if (filters.propertyType) {
     const typeLabels: Record<string, string> = {
-      apartment: 'Appartement',
-      villa: 'Villa',
-      house: 'Maison',
-      studio: 'Studio',
-      commercial: 'Commerce',
-      land: 'Terrain',
-      office: 'Bureau',
+      apartment: isAr ? 'شقة' : t('apartment', 'Appartement'),
+      villa: isAr ? 'فيلا' : t('villa', 'Villa'),
+      house: isAr ? 'منزل' : t('house', 'Maison'),
+      studio: isAr ? 'استوديو' : t('studio', 'Studio'),
+      commercial: isAr ? 'تجاري' : t('commercial', 'Commerce'),
+      land: isAr ? 'أرض' : t('land', 'Terrain'),
+      office: isAr ? 'مكتب' : t('office', 'Bureau'),
     };
     activeItems.push({
       key: 'propertyType',
@@ -52,7 +56,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.wilaya) {
     activeItems.push({
       key: 'wilaya',
-      label: `Wilaya: ${filters.wilaya}`,
+      label: isAr ? `الولاية: ${filters.wilaya}` : `Wilaya: ${filters.wilaya}`,
       variant: 'highlight',
     });
   }
@@ -60,7 +64,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.daira) {
     activeItems.push({
       key: 'daira',
-      label: `Daïra: ${filters.daira}`,
+      label: isAr ? `الدائرة: ${filters.daira}` : `Daïra: ${filters.daira}`,
       variant: 'highlight',
     });
   }
@@ -68,35 +72,27 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.commune) {
     activeItems.push({
       key: 'commune',
-      label: `Baladia / Commune: ${filters.commune}`,
+      label: isAr ? `البلدية: ${filters.commune}` : `Commune: ${filters.commune}`,
       variant: 'highlight',
     });
   }
 
-  if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
-    activeItems.push({
-      key: 'minPrice',
-      label: `${filters.minPrice.toLocaleString('fr-DZ')} - ${filters.maxPrice.toLocaleString('fr-DZ')} DA`,
-      variant: 'accent',
-    });
-  } else if (filters.minPrice !== undefined) {
-    activeItems.push({
-      key: 'minPrice',
-      label: `≥ ${filters.minPrice.toLocaleString('fr-DZ')} DA`,
-      variant: 'accent',
-    });
-  } else if (filters.maxPrice !== undefined) {
-    activeItems.push({
-      key: 'maxPrice',
-      label: `≤ ${filters.maxPrice.toLocaleString('fr-DZ')} DA`,
-      variant: 'accent',
-    });
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    let priceLabel = '';
+    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+      priceLabel = `${filters.minPrice.toLocaleString()} - ${filters.maxPrice.toLocaleString()} DZD`;
+    } else if (filters.minPrice !== undefined) {
+      priceLabel = `≥ ${filters.minPrice.toLocaleString()} DZD`;
+    } else {
+      priceLabel = `≤ ${(filters.maxPrice as number).toLocaleString()} DZD`;
+    }
+    activeItems.push({ key: 'minPrice', label: priceLabel, variant: 'accent' });
   }
 
   if (filters.minRooms !== undefined) {
     activeItems.push({
       key: 'minRooms',
-      label: `F${filters.minRooms}+`,
+      label: isAr ? `F${filters.minRooms}+ (${filters.minRooms} غرف)` : `F${filters.minRooms}+ (${filters.minRooms} pièces)`,
       variant: 'neutral',
     });
   }
@@ -112,7 +108,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.hasActeNotarie) {
     activeItems.push({
       key: 'hasActeNotarie',
-      label: 'Acte Notarié',
+      label: isAr ? 'عقد توثيقي' : 'Acte Notarié',
       variant: 'success',
     });
   }
@@ -120,8 +116,8 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   if (filters.hasLivretFoncier) {
     activeItems.push({
       key: 'hasLivretFoncier',
-      label: 'Livret Foncier',
-      variant: 'brand',
+      label: isAr ? 'دفتر عقاري' : 'Livret Foncier',
+      variant: 'success',
     });
   }
 
@@ -139,7 +135,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
   return (
     <div className={`flex flex-wrap items-center gap-2 py-2 ${className}`}>
       <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-        Filtres actifs :
+        {isAr ? 'الفلاتر النشطة :' : t('active_filters_colon', 'Filtres actifs :')}
       </span>
 
       {activeItems.map((item) => (
@@ -165,7 +161,7 @@ export const ActiveFilterPills: React.FC<ActiveFilterPillsProps> = ({
         className="text-xs font-bold text-rose-700 hover:text-rose-900 underline flex items-center gap-1 cursor-pointer ml-1 py-1"
       >
         <RotateCcw className="w-3 h-3" />
-        <span>Tout effacer ({activeItems.length})</span>
+        <span>{isAr ? `مسح الكل (${activeItems.length})` : `${t('clear_all', 'Tout effacer')} (${activeItems.length})`}</span>
       </button>
     </div>
   );

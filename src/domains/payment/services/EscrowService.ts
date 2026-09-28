@@ -170,22 +170,17 @@ export class EscrowService {
         throw new Error("FORBIDDEN_ESCROW_RELEASE");
       }
 
-      // Verify order delivery state
+      // Verify order delivery state - strictly requires delivered status (rejects CONFIRMED, PROCESSING, etc.)
       const orderDoc = await transaction.get(orderRef);
       if (orderDoc.exists) {
         const order = orderDoc.data() as Order;
-        const validStatuses = [
-          "DELIVERED",
-          "delivered",
-          "CONFIRMED",
-          "confirmed",
-          "COMPLETED",
-          "completed",
-          "PICKED_UP",
-          "picked_up",
-        ];
-        if (!isAdmin && !validStatuses.includes(order.status)) {
+        const isDelivered = order.status === "DELIVERED" || order.status === "delivered";
+        if (!isAdmin && !isDelivered) {
           throw new Error("ORDER_NOT_DELIVERED");
+        }
+      } else {
+        if (!isAdmin) {
+          throw new Error("ORDER_NOT_FOUND");
         }
       }
 

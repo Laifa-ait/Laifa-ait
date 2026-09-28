@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildProductPayload } from "../pages/Seller/ProductForm/utils/productPayloadBuilder";
 import { ProductFormData } from "../types/seller";
+import { Product } from "../domains/product/product.types";
 
 describe("Seller Product Mobile Addition & Free Multilingual Synchronization", () => {
   const baseFormData: ProductFormData = {
@@ -151,6 +152,13 @@ describe("Seller Product Mobile Addition & Free Multilingual Synchronization", (
       name: "Titre Français",
       price: 1000,
       sellerId: "seller_1",
+      category: "Artisanat",
+      image: "https://example.com/test.jpg",
+      rating: 5,
+      description: "Description Française",
+      stock: 10,
+      wilaya: "16 - Alger",
+      status: "active",
       translations: {
         ar: { name: "عنوان عربي", description: "وصف عربي" },
         en: { name: "English Title", description: "English Description" },

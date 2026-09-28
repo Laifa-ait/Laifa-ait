@@ -50,6 +50,7 @@ router.post("/api/v1/messages/send", authenticateToken, async (req: Authenticate
       text: secureText,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       violation: violationDetected,
+      read: false,
     };
 
     if (imageUrl) {
@@ -151,6 +152,24 @@ router.post("/api/v1/messages/mark-read", authenticateToken, async (req: Authent
     await orderRef.update({
       [isBuyer ? "unreadBuyerMessages" : "unreadSellerMessages"]: false,
     });
+
+    // Mark unread messages sent by other participant as read
+    const unreadSnap = await orderRef.collection("messages")
+      .where("senderId", "!=", userId)
+      .where("read", "==", false)
+      .get();
+
+    if (!unreadSnap.empty) {
+      const batch = db.batch();
+      unreadSnap.docs.forEach((d) => {
+        batch.update(d.ref, {
+          read: true,
+          readAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+      await batch.commit();
+    }
+
     return res.json({ success: true });
   } catch (error: unknown) {
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });

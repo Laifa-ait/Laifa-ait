@@ -1,6 +1,6 @@
 import { Response, Router } from "express";
 import crypto from "crypto";
-import { db } from "../../../config/firebase-admin";
+import { admin, db } from "../../../config/firebase-admin";
 import { optionalAuthenticateToken, AuthenticatedRequest } from "../../../middlewares/auth";
 import { validateRequest } from "../../../middlewares/validation";
 import { strictLimiter } from "../../../middlewares/rateLimiters";
@@ -134,6 +134,39 @@ router.post(
         })
       );
 
+      // Create in-app notifications for each seller
+      if (result.subOrdersForEmail && result.subOrdersForEmail.length > 0) {
+        Promise.all(
+          result.subOrdersForEmail.map(async (so) => {
+            try {
+              if (!so.sellerId) return;
+              const subId = so.subOrderId || result.orderId;
+              await db.collection("user_notifications").add({
+                recipientId: so.sellerId,
+                title: {
+                  fr: "Nouvelle commande reçue !",
+                  ar: "طلب جديد وارد !",
+                  en: "New order received!",
+                },
+                message: {
+                  fr: `Nouvelle commande #${subId.substring(0, 8).toUpperCase()} de ${so.total} DZD en attente de préparation.`,
+                  ar: `طلب جديد #${subId.substring(0, 8).toUpperCase()} بمبلغ ${so.total} د.ج في انتظار التحضير.`,
+                  en: `New order #${subId.substring(0, 8).toUpperCase()} for ${so.total} DZD awaiting fulfillment.`,
+                },
+                type: "new_order",
+                orderId: subId,
+                read: false,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            } catch (notifErr) {
+              safeLogger.warn("Failed creating seller order notification", {
+                err: notifErr instanceof Error ? notifErr.message : String(notifErr),
+              });
+            }
+          })
+        ).catch(() => {});
+      }
+
       if (result.emailAlerts.length > 0) {
         Promise.all(
           result.emailAlerts.map(async (alert) => {
@@ -208,14 +241,10 @@ router.post(
     try {
       const upperCode = code.trim().toUpperCase();
       const q = await db.collection("coupons").where("code", "==", upperCode).get();
-
       const resolveResult = CouponService.resolveActiveCouponFromDocs(q.docs);
       if (!resolveResult.couponDoc) {
         return res.status(400).json({ error: resolveResult.error || "Code promo invalide ou expiré." });
       }
-
-      const couponDoc = resolveResult.couponDoc;
-      const couponData = couponDoc.data() as Record<string, unknown>;
 
       const reconstructed = await CouponService.reconstructVerifiedCartFromFirestore(items, db);
       if (!reconstructed.valid) {
@@ -223,8 +252,8 @@ router.post(
       }
 
       const validation = CouponService.validateCoupon({
-        couponDocId: couponDoc.id,
-        couponData,
+        couponDocId: resolveResult.couponDoc.id,
+        couponData: resolveResult.couponDoc.data() as Record<string, unknown>,
         subtotal: reconstructed.serverSubtotal,
         userId,
         isGuest,
@@ -242,8 +271,7 @@ router.post(
         eligibleSubtotal: validation.eligibleSubtotal,
       });
     } catch (error: unknown) {
-      safeLogger.error("Coupon validation error", { err: error instanceof Error ? error.message : String(error) });
-      return res.status(500).json({ error: "Erreur serveur lors de la validation." });
+      return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur validation" });
     }
   }
 );

@@ -13,6 +13,9 @@ let redisClient: Redis | null = null;
 function createStore(prefix: string) {
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) {
+    if (process.env.NODE_ENV === "production") {
+      safeLogger.error("[Olmart RateLimiter] ⚠️ CRITICAL: REDIS_URL is not set in production. Running with per-instance memory store fallback. Configure Memorystore / Redis to ensure unified rate limiting across instances.");
+    }
     return undefined; // Default memory store
   }
 
@@ -25,7 +28,7 @@ function createStore(prefix: string) {
       });
 
       redisClient.on("error", (err) => {
-        safeLogger.warn("[Olmart RateLimiter] ⚠️ Redis connection error, falling back to memory store", {
+        safeLogger.error("[Olmart RateLimiter] ❌ Redis connection error in rate limiter", {
           err: err.message,
         });
       });
@@ -46,7 +49,7 @@ function createStore(prefix: string) {
       prefix: `olmart_rl:${prefix}:`,
     });
   } catch (err: unknown) {
-    safeLogger.warn("[Olmart RateLimiter] ⚠️ Failed to initialize Redis store, falling back to memory store", {
+    safeLogger.error("[Olmart RateLimiter] ❌ Failed to initialize Redis store, falling back to memory store", {
       err: err instanceof Error ? err.message : String(err),
     });
     return undefined;
@@ -67,7 +70,7 @@ export const apiLimiter = rateLimit({
 
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // Max 30 auth attempts per 15 min
+  max: 10, // Max 10 auth attempts per 15 min (anti-brute force)
   standardHeaders: true,
   legacyHeaders: false,
   store: createStore("login"),

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { BedDouble, Bath, Maximize2, Building2, Eye } from 'lucide-react';
 
 export type PropertyMetaLayout = 'bar' | 'grid' | 'inline';
@@ -17,16 +18,16 @@ export interface PropertyMetaProps {
   id?: string;
 }
 
-const formatPropertyType = (type?: string, t?: (k: string, d?: string) => string): string => {
+const formatPropertyType = (type?: string, t?: TFunction): string => {
   if (!type) return '';
   switch (type.toLowerCase()) {
-    case 'apartment': return t ? t('property_type_apartment', 'Appartement') : 'Appartement';
-    case 'villa': return t ? t('property_type_villa', 'Villa') : 'Villa';
-    case 'studio': return t ? t('property_type_studio', 'Studio') : 'Studio';
-    case 'commercial': return t ? t('property_type_commercial', 'Local commercial') : 'Local commercial';
-    case 'land': return t ? t('property_type_land', 'Terrain') : 'Terrain';
-    case 'office': return t ? t('property_type_office', 'Bureau') : 'Bureau';
-    case 'duplex': return t ? t('property_type_duplex', 'Duplex') : 'Duplex';
+    case 'apartment': return t ? t('property_type_apartment', { defaultValue: 'Appartement' }) : 'Appartement';
+    case 'villa': return t ? t('property_type_villa', { defaultValue: 'Villa' }) : 'Villa';
+    case 'studio': return t ? t('property_type_studio', { defaultValue: 'Studio' }) : 'Studio';
+    case 'commercial': return t ? t('property_type_commercial', { defaultValue: 'Local commercial' }) : 'Local commercial';
+    case 'land': return t ? t('property_type_land', { defaultValue: 'Terrain' }) : 'Terrain';
+    case 'office': return t ? t('property_type_office', { defaultValue: 'Bureau' }) : 'Bureau';
+    case 'duplex': return t ? t('property_type_duplex', { defaultValue: 'Duplex' }) : 'Duplex';
     default: return type;
   }
 };

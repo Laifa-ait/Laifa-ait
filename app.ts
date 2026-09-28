@@ -76,6 +76,25 @@ app.post(
 );
 app.use(compression() as unknown as express.RequestHandler);
 app.use(cookieParser());
+
+// Webhooks with exact cryptographic HMAC signatures must parse raw body BEFORE express.json()
+app.post(
+  "/api/v1/payment/webhook/chargily",
+  express.raw({ type: "application/json" }),
+  (req: Request, _res: Response, next: NextFunction) => {
+    (req as Request & { rawBody?: Buffer }).rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || "");
+    next();
+  }
+);
+app.post(
+  "/api/v1/payment/webhook/baridimob",
+  express.raw({ type: "application/json" }),
+  (req: Request, _res: Response, next: NextFunction) => {
+    (req as Request & { rawBody?: Buffer }).rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || "");
+    next();
+  }
+);
+
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
 

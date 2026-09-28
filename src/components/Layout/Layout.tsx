@@ -16,6 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 import { WifiOff } from "lucide-react";
 import { VerificationModal } from "../Auth/VerificationModal";
 import { AuthModal } from "../Auth/AuthModal";
+import { GoogleAccountMenu } from "../Buyer/GoogleAccountMenu";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 
 interface LayoutProps {
@@ -26,7 +27,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { i18n } = useTranslation();
   const location = useLocation();
   const isOnline = useOnlineStatus();
-  const { isCartOpen, setIsCartOpen, isWishlistOpen, setIsWishlistOpen } = useUI();
+  const { isCartOpen, setIsCartOpen, isWishlistOpen, setIsWishlistOpen, isAccountMenuOpen, setIsAccountMenuOpen } = useUI();
   const { currentUser } = useAuth();
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<"email" | "sms">("email");
@@ -76,7 +77,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     location.pathname.startsWith("/store") ||
     location.pathname.startsWith("/boutique");
 
-  const hideNavigation = isDashboard || isAuthPage;
+  const isSettingsPage =
+    location.pathname.startsWith("/dashboard/buyer") ||
+    location.pathname.startsWith("/settings");
+
+  const hideNavigation = isDashboard || isAuthPage || isSettingsPage;
 
   if (hideNavigation) {
     return (
@@ -85,6 +90,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         dir={i18n.language === "ar" ? "rtl" : "ltr"}
       >
         {children}
+        <AuthModal />
+        <GoogleAccountMenu
+          isOpen={isAccountMenuOpen}
+          onClose={() => setIsAccountMenuOpen(false)}
+        />
+        <VerificationModal
+          isOpen={isVerificationModalOpen}
+          onClose={() => setIsVerificationModalOpen(false)}
+          method={verificationMethod}
+        />
       </div>
     );
   }
@@ -114,8 +129,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {isBricolagePage && <ArtisanMobileBottomNav />}
 
-      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
-        <Footer isHomepage={isHomepage} />
+      {isHomepage && (
+        <Footer isHomepage={true} />
       )}
 
       {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
@@ -151,6 +166,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <ComparatorDrawer />
       <MobileMenu />
       <AuthModal />
+      <GoogleAccountMenu
+        isOpen={isAccountMenuOpen}
+        onClose={() => setIsAccountMenuOpen(false)}
+      />
       <VerificationModal
         isOpen={isVerificationModalOpen}
         onClose={() => setIsVerificationModalOpen(false)}

@@ -24,6 +24,7 @@ import { MegaMenu } from "./MegaMenu";
 import { AdvancedSearchbar as Searchbar } from "./Search/AdvancedSearchbar";
 import { NotificationCenter } from "./NotificationCenter";
 import { SuperAppSwitcherModal } from "./common/SuperAppSwitcherModal";
+import { getRetroAvatar } from "../utils/avatar";
 
 export interface OlmaLogoProps {
   className?: string;
@@ -57,16 +58,16 @@ export const OlmaLogo: React.FC<OlmaLogoProps> = ({ className }) => (
 );
 
 export const Navbar: React.FC = () => {
-  const { currentUser, userProfile, logout } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const { cart, wishlist } = useCart();
   const { setSearchQuery, setActiveCategory, setIsSaleFilterActive, setActiveTag } = useShop();
-  const { setIsCartOpen, setIsWishlistOpen, setIsMobileMenuOpen } = useUI();
+  const { setIsCartOpen, setIsWishlistOpen, setIsMobileMenuOpen, setIsAccountMenuOpen } = useUI();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isCategoriesPage = location.pathname === "/categories";
 
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const lang = i18n.language as Language;
 
@@ -301,11 +302,13 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center w-full px-0 lg:px-8 order-last lg:order-none gap-2">
-            <div className="w-full max-w-3xl">
-              <Searchbar variant="default" />
+          {!isCategoriesPage && (
+            <div className="flex-1 flex items-center justify-center w-full px-0 lg:px-8 order-last lg:order-none gap-2">
+              <div className="w-full max-w-3xl">
+                <Searchbar variant="default" />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="hidden lg:flex items-center justify-end gap-3 sm:gap-5 relative lg:w-1/4 shrink-0">
             <div className="hidden lg:block">
@@ -385,108 +388,50 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* Profile Dropdown Toggle */}
-            <button
-              onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setIsUserDropdownOpen(!isUserDropdownOpen);
-                } else if (e.key === "Escape") {
-                  setIsUserDropdownOpen(false);
-                }
-              }}
-              aria-expanded={isUserDropdownOpen}
-              aria-haspopup="true"
-              aria-label="Menu utilisateur"
-              className="flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all cursor-pointer bg-zinc-50 w-10 h-10 rounded-full"
-            >
-              <UserIcon className="w-5 h-5 stroke-[1.5] text-zinc-500" />
-            </button>
-
-            {isUserDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-[60]" onClick={() => setIsUserDropdownOpen(false)} />
-                <div className="absolute top-full right-0 mt-4 bg-white border border-zinc-100 shadow-xl rounded-none z-[70] overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 min-w-[260px]">
-                  {!currentUser ? (
-                    <div className="p-4 bg-transparent">
-                      <button
-                        onClick={() => {
-                          navigate("/auth", { replace: true });
-                          setIsUserDropdownOpen(false);
-                        }}
-                        className="w-full py-3 bg-zinc-900 text-white rounded-none font-semibold text-sm hover:bg-zinc-900 transition-colors border-none cursor-pointer"
-                      >
-                        {t("auth.signin") || "Se connecter"}
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="p-5 border-b border-zinc-100 flex flex-col gap-1 bg-transparent">
-                        <p className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
-                          <span className="truncate">{userProfile?.displayName || currentUser.email}</span>
-                        </p>
-                        <p className="text-xs font-medium text-zinc-500">
-                          {userProfile?.role === "admin"
-                            ? t("role_admin") || "Administrateur"
-                            : userProfile?.role === "seller"
-                              ? t("role_seller") || "Vendeur"
-                              : t("role_client") || "Client"}
-                        </p>
-                      </div>
-
-                      <div className="py-2">
-                        <button
-                          onClick={() => {
-                            navigate("/dashboard/buyer");
-                            setIsUserDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center px-5 py-3 text-sm font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors bg-transparent border-none cursor-pointer"
-                        >
-                          {t("buyer_space") || "Mon Espace"}
-                        </button>
-
-                        {userProfile?.role === "seller" && (
-                          <button
-                            onClick={() => {
-                              navigate("/dashboard/seller");
-                              setIsUserDropdownOpen(false);
-                            }}
-                            className="w-full flex items-center px-5 py-3 text-sm font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors bg-transparent border-none cursor-pointer"
-                          >
-                            {t("seller_dashboard") || "Dashboard Vendeur"}
-                          </button>
-                        )}
-
-                        {userProfile?.role === "admin" && (
-                          <button
-                            onClick={() => {
-                              navigate("/dashboard/admin");
-                              setIsUserDropdownOpen(false);
-                            }}
-                            className="w-full flex items-center px-5 py-3 text-sm font-medium text-zinc-700 hover:text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer"
-                          >
-                            {t("administration") || "Administration"}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="p-2 border-t border-zinc-100 bg-transparent">
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsUserDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center justify-center py-2.5 text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-colors bg-transparent border-none cursor-pointer"
-                        >
-                          {t("auth.logout") || "Déconnexion"}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
+            {/* Profile / Google Account Dropdown Toggle */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    navigate("/auth", { replace: true });
+                  } else {
+                    setIsAccountMenuOpen(true);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!currentUser) {
+                      navigate("/auth", { replace: true });
+                    } else {
+                      setIsAccountMenuOpen(true);
+                    }
+                  }
+                }}
+                aria-haspopup="true"
+                aria-label="Compte utilisateur"
+                className={`flex items-center justify-center transition-all cursor-pointer w-10 h-10 rounded-full border ${
+                  currentUser
+                    ? "p-0.5 border-[#dadce0] hover:ring-2 hover:ring-[#1a73e8]/30 hover:border-[#1a73e8] bg-white"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border-zinc-200/60 bg-zinc-50"
+                }`}
+              >
+                {currentUser ? (
+                  <img
+                    src={
+                      userProfile?.photoURL ||
+                      currentUser.photoURL ||
+                      getRetroAvatar(currentUser.email || currentUser.uid)
+                    }
+                    alt={userProfile?.displayName || "Profil"}
+                    className="w-full h-full object-cover rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <UserIcon className="w-5 h-5 stroke-[1.5] text-zinc-500" />
+                )}
+              </button>
+            </div>
 
             {/* PC Version Hamburger / Sandwich Menu on the Right */}
             <button

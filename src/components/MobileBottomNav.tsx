@@ -6,9 +6,9 @@ import { useCart } from "../context/CartContext";
 import { useUI } from "../context/UIContext";
 
 export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnRoutes = [] }) => {
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser } = useAuth();
   const { cart, wishlist } = useCart();
-  const { setIsCartOpen, setIsWishlistOpen, isStickyBuyBarVisible } = useUI();
+  const { setIsCartOpen, setIsWishlistOpen, isStickyBuyBarVisible, setIsAccountMenuOpen } = useUI();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -103,13 +103,7 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
               navigate("/auth", { replace: true });
               return;
             }
-            if (userProfile?.role === "admin") {
-              navigate("/dashboard/admin");
-            } else if (userProfile?.role === "seller") {
-              navigate("/dashboard/seller");
-            } else {
-              navigate("/dashboard/buyer");
-            }
+            setIsAccountMenuOpen(true);
           }}
           aria-label="Mon compte"
           className="flex flex-col items-center justify-center flex-1 py-1 active:scale-95 transition-all bg-transparent border-none cursor-pointer"
@@ -118,7 +112,7 @@ export const MobileBottomNav: React.FC<{ hideOnRoutes?: string[] }> = ({ hideOnR
             <UserIcon className="w-5 h-5 stroke-[2]" />
           </div>
           <span className={`text-[10px] font-bold mt-0.5 ${location.pathname.startsWith("/dashboard") ? "text-orange-600" : "text-zinc-500"}`}>
-            Mon Olmart
+            Compte
           </span>
         </button>
       </div>

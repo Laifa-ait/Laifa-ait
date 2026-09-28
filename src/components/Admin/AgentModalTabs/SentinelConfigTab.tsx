@@ -67,7 +67,6 @@ export const SentinelConfigTab: React.FC<SentinelConfigTabProps> = ({
           </div>
           <p className="text-zinc-500 text-xs">
             {t(
-              "Analyse les exceptions récentes, la réactivité des 69 Wilayas et la santé des API.",
               "Analyse les exceptions récentes, la réactivité des 69 Wilayas et la santé des API."
             )}
           </p>

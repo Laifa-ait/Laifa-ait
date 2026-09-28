@@ -24,7 +24,7 @@ import {
 export const ProductDetails: React.FC = () => {
 
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const { fetchCrossSellProducts } = useShop();
 

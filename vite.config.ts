@@ -231,10 +231,17 @@ export default defineConfig(({mode}) => {
       ]
     },
     server: {
-      hmr: {
-        protocol: 'wss',
-        clientPort: 443,
-        path: '/vite-hmr'
+      hmr: false,
+      watch: {
+        ignored: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/.git/**',
+          '**/coverage/**',
+          '**/.husky/**',
+          '**/docs/**',
+          '**/k6/**'
+        ]
       }
     },
   };

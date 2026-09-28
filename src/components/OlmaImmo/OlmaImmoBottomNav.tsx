@@ -47,14 +47,14 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
   const navItems = [
     {
       id: 'explorer',
-      label: t('nav_explorer'),
+      label: t('nav_explorer', 'Explorer'),
       icon: Compass,
       isActive: isExplorerActive,
       onClick: () => navigate('/immo'),
     },
     {
       id: 'bookings',
-      label: t('nav_my_stays_bookings'),
+      label: t('nav_my_stays_bookings', 'Réservations'),
       icon: Calendar,
       isActive: isBookingsActive,
       badgeCount: activeBookingsCount,
@@ -62,7 +62,7 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
     },
     {
       id: 'univers',
-      label: t('nav_applications'),
+      label: t('nav_applications', 'Applications'),
       icon: LayoutGrid,
       isActive: isSwitcherOpen,
       isSpecial: true,
@@ -70,14 +70,14 @@ export const OlmaImmoBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab 
     },
     {
       id: 'messages',
-      label: t('nav_messages_exchanges'),
+      label: t('nav_messages_exchanges', 'Messages'),
       icon: MessageSquare,
       isActive: isMessagingOpen,
       onClick: handleOpenMessaging,
     },
     {
       id: 'profile',
-      label: t('nav_owner_space'),
+      label: t('nav_owner_space', 'Compte'),
       icon: User,
       isActive: isProfileActive,
       onClick: handleProfileClick,
