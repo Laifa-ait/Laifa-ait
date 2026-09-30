@@ -38,13 +38,15 @@ function createStore(prefix: string) {
       });
     }
 
+    type RedisReply = boolean | number | string | Array<boolean | number | string>;
+
     return new RedisStore({
-      // @ts-expect-error rate-limit-redis sendCommand interface for ioredis
-      sendCommand: async (...args: string[]) => {
+      sendCommand: async (...args: string[]): Promise<RedisReply> => {
         if (!redisClient || redisClient.status !== "ready") {
           throw new Error("Redis client not ready");
         }
-        return redisClient.call(args[0], ...args.slice(1));
+        const reply = await redisClient.call(args[0], ...args.slice(1));
+        return reply as RedisReply;
       },
       prefix: `olmart_rl:${prefix}:`,
     });
@@ -123,6 +125,18 @@ export const webhookLimiter = rateLimit({
   handler: (req, res) => {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.status(429).json({ success: false, error: "Trop de requêtes webhook, limite de fréquence dépassée." });
+  },
+});
+
+export const chatLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60, // Max 60 chat messages per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createStore("chat"),
+  handler: (req, res) => {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.status(429).json({ success: false, error: "Trop de messages envoyés, veuillez patienter un instant." });
   },
 });
 

@@ -1,4 +1,4 @@
-import { ALGERIA_WILAYAS_DATABASE } from '../data/algerianCommunesDatabase';
+import wilayasData from './wilayasData.json';
 
 export interface WilayaOption {
   code: string;
@@ -8,12 +8,6 @@ export interface WilayaOption {
   lng?: number;
 }
 
-// Map 69 Wilayas with representative central coordinates
-export const ALGERIA_WILAYAS: WilayaOption[] = ALGERIA_WILAYAS_DATABASE.map((w) => ({
-  code: w.code,
-  name: w.name,
-  name_ar: w.name_ar,
-  lat: w.lat,
-  lng: w.lng,
-}));
+// Map 69 Wilayas with representative central coordinates (Lightweight dataset without 1,541 communes)
+export const ALGERIA_WILAYAS: WilayaOption[] = wilayasData as WilayaOption[];
 

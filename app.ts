@@ -29,7 +29,6 @@ import { olmaUniversRouter } from "./src/domains/olmaUnivers/olmaUnivers.routes"
 import { artisanRouter } from "./src/domains/artisan/artisan.routes";
 import { realEstateRouter } from "./src/domains/realEstate/realEstate.routes";
 import messagingRouter from "./src/domains/messaging/messaging.routes";
-import paymentRouter from "./src/domains/payment/payment.routes";
 import bootstrapRouter from "./src/domains/bootstrap/bootstrap.routes";
 import { domainUserDocumentsRouter } from "./src/domains/userDocuments/userDocuments.routes";
 
@@ -76,24 +75,6 @@ app.post(
 );
 app.use(compression() as unknown as express.RequestHandler);
 app.use(cookieParser());
-
-// Webhooks with exact cryptographic HMAC signatures must parse raw body BEFORE express.json()
-app.post(
-  "/api/v1/payment/webhook/chargily",
-  express.raw({ type: "application/json" }),
-  (req: Request, _res: Response, next: NextFunction) => {
-    (req as Request & { rawBody?: Buffer }).rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || "");
-    next();
-  }
-);
-app.post(
-  "/api/v1/payment/webhook/baridimob",
-  express.raw({ type: "application/json" }),
-  (req: Request, _res: Response, next: NextFunction) => {
-    (req as Request & { rawBody?: Buffer }).rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || "");
-    next();
-  }
-);
 
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
@@ -145,7 +126,6 @@ app.use("/api/v1", olmaUniversRouter);
 app.use("/api/v1", artisanRouter);
 app.use("/api/v1/real-estate", realEstateRouter);
 app.use("/api/v1/messaging", messagingRouter);
-app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/user-documents", domainUserDocumentsRouter);
 app.use("/api/v1", bootstrapRouter);
 

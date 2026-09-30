@@ -23,16 +23,14 @@ describe("ArtisanPublicService", () => {
   it("should return empty list if db is undefined", async () => {
     // temporarily mock db as null/undefined
     const originalDb = (await import("../config/firebase-admin")).db;
-    const adminConfig = await import("../config/firebase-admin");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (adminConfig as any).db = null;
+    const adminConfig = (await import("../config/firebase-admin")) as { db: typeof originalDb | null };
+    adminConfig.db = null;
 
     const res = await ArtisanPublicService.listApprovedArtisans({});
     expect(res).toEqual([]);
 
     // Restore
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (adminConfig as any).db = originalDb;
+    adminConfig.db = originalDb;
   });
 
   it("should query approved artisans with filter successfully", async () => {

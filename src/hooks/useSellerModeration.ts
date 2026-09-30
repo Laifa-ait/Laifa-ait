@@ -158,7 +158,11 @@ export function useSellerModeration() {
 
   const handleBulkDeleteSellers = async () => {
     if (selectedSellerIds.length === 0) return;
-    if (!window.confirm(t('Êtes-vous sûr de vouloir supprimer définitivement les vendeurs sélectionnés ?'))) {
+    if (selectedSellerIds.length > 50) {
+      toast.error(t('La suppression en masse est limitée à 50 vendeurs maximum à la fois.'));
+      return;
+    }
+    if (!window.confirm(t('ATTENTION : Êtes-vous certain de vouloir supprimer définitivement les {{count}} vendeurs sélectionnés ? Cette action est irréversible.', { count: selectedSellerIds.length }))) {
       return;
     }
     setBulkLoading(true);

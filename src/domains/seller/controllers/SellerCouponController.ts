@@ -4,29 +4,9 @@ import { authenticateToken, authorizeSeller, AuthenticatedRequest } from "../../
 import { validateRequest } from "../../../middlewares/validation";
 import { sellerCouponCreateSchema, sellerCouponStatusSchema } from "../validators/seller.validators";
 import { safeLogger } from "../../../utils/logger";
+import { SellerCouponService } from "../services/sellerCoupon.service";
 
 const router = Router();
-
-const getDocMillis = (docData: Record<string, unknown>): number => {
-  const val = docData.createdAt;
-  if (!val) return 0;
-  if (typeof val === "object" && val !== null) {
-    if ("toDate" in val && typeof (val as { toDate: () => Date }).toDate === "function") {
-      return (val as { toDate: () => Date }).toDate().getTime();
-    }
-    if ("seconds" in val && typeof (val as { seconds: number }).seconds === "number") {
-      return (val as { seconds: number }).seconds * 1000;
-    }
-    if (val instanceof Date) {
-      return val.getTime();
-    }
-  }
-  if (typeof val === "string" || typeof val === "number") {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? 0 : d.getTime();
-  }
-  return 0;
-};
 
 // GET /api/v1/seller/coupons - Fetch only the authenticated seller's coupons
 router.get(
@@ -53,8 +33,7 @@ router.get(
         };
       });
 
-      // Sort by creation descending in memory if missing composite index
-      coupons.sort((a, b) => getDocMillis(b) - getDocMillis(a));
+      coupons.sort((a, b) => SellerCouponService.getDocMillis(b) - SellerCouponService.getDocMillis(a));
 
       return res.json({ success: true, coupons });
     } catch (error: unknown) {
@@ -80,71 +59,20 @@ router.post(
       const sellerId = req.user.uid;
       const { code, discountType, discountValue, expiryDate, minOrderAmount, maxUses } = req.body;
 
-      const upperCode = String(code).trim().toUpperCase();
-      const parsedExpiry = new Date(expiryDate);
-      const minOrder = Number(minOrderAmount) || 0;
-      const parsedMaxUses = maxUses ? Number(maxUses) : null;
-
-      const codeLockRef = db.collection("coupon_codes").doc(upperCode);
-      const newCouponRef = db.collection("coupons").doc();
-
-      const createdCoupon = await db.runTransaction(async (transaction) => {
-        const lockDoc = await transaction.get(codeLockRef);
-        if (lockDoc.exists) {
-          throw new Error("Ce code promo existe déjà. Veuillez choisir un autre code.");
-        }
-
-        const existingQuery = await transaction.get(
-          db.collection("coupons").where("code", "==", upperCode).limit(1)
-        );
-        if (!existingQuery.empty) {
-          throw new Error("Ce code promo existe déjà. Veuillez choisir un autre code.");
-        }
-
-        const couponData = {
-          code: upperCode,
-          discountType,
-          discountValue: Number(discountValue),
-          minOrderValue: minOrder,
-          minOrderAmount: minOrder,
-          maxDiscountAmount: null,
-          maxDiscount: null,
-          startAt: admin.firestore.FieldValue.serverTimestamp(),
-          startsAt: admin.firestore.FieldValue.serverTimestamp(),
-          expiresAt: admin.firestore.Timestamp.fromDate(parsedExpiry),
-          expiryDate: admin.firestore.Timestamp.fromDate(parsedExpiry),
-          usageLimit: parsedMaxUses,
-          maxUses: parsedMaxUses,
-          maxUsesPerUser: null,
-          singleUsePerClient: false,
-          limitedToCategories: [],
-          limitedToSellers: [sellerId],
-          sellerId: sellerId,
-          usageCount: 0,
-          usedCount: 0,
-          usedBy: [],
-          userUsages: {},
-          isActive: true,
-          createdBy: sellerId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        };
-
-        transaction.set(codeLockRef, {
-          couponId: newCouponRef.id,
-          code: upperCode,
-          sellerId: sellerId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        transaction.set(newCouponRef, couponData);
-
-        return { id: newCouponRef.id, ...couponData };
+      const createdCoupon = await SellerCouponService.createCoupon({
+        sellerId,
+        code,
+        discountType,
+        discountValue,
+        expiryDate,
+        minOrderAmount,
+        maxUses,
       });
 
       safeLogger.info("[SellerCouponController] 🟢 Seller coupon created", {
         sellerId,
         couponId: createdCoupon.id,
-        code: upperCode,
+        code: createdCoupon.code,
       });
 
       return res.status(201).json({
@@ -179,17 +107,22 @@ router.put(
       const { isActive } = req.body;
 
       const couponRef = db.collection("coupons").doc(couponId);
-      const couponDoc = await couponRef.get();
+      const couponSnap = await couponRef.get();
 
-      if (!couponDoc.exists) {
-        return res.status(404).json({ error: "Coupon introuvable." });
+      if (!couponSnap.exists) {
+        return res.status(404).json({ error: "Code promo introuvable." });
       }
 
-      const couponData = couponDoc.data();
-      if (!couponData || couponData.sellerId !== sellerId) {
-        return res.status(403).json({
-          error: "Accès refusé : vous ne pouvez modifier que vos propres coupons (IDOR Guard).",
+      const couponData = couponSnap.data();
+
+      // Strict IDOR ownership check: ensure this coupon belongs exclusively to the calling seller
+      if (couponData?.sellerId !== sellerId && couponData?.createdBy !== sellerId) {
+        safeLogger.warn("[SellerCouponController] ⚠️ IDOR attempt blocked on coupon status update", {
+          attemptedBy: sellerId,
+          couponId,
+          actualOwner: couponData?.sellerId,
         });
+        return res.status(403).json({ error: "Action non autorisée sur ce code promo." });
       }
 
       await couponRef.update({
@@ -197,7 +130,7 @@ router.put(
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      safeLogger.info("[SellerCouponController] 🟢 Seller coupon status updated", {
+      safeLogger.info("[SellerCouponController] 🔄 Coupon status updated", {
         sellerId,
         couponId,
         isActive,
@@ -205,10 +138,11 @@ router.put(
 
       return res.json({
         success: true,
-        message: isActive ? "Coupon activé avec succès." : "Coupon désactivé avec succès.",
+        message: `Code promo ${isActive ? "activé" : "désactivé"} avec succès.`,
+        isActive: Boolean(isActive),
       });
     } catch (error: unknown) {
-      safeLogger.error("[SellerCouponController] ❌ Error updating seller coupon status", {
+      safeLogger.error("[SellerCouponController] ❌ Error updating coupon status", {
         err: error instanceof Error ? error.message : String(error),
       });
       return res.status(500).json({ error: "Erreur lors de la mise à jour du statut." });
@@ -216,7 +150,7 @@ router.put(
   }
 );
 
-// DELETE /api/v1/seller/coupons/:id - Delete seller coupon (Anti-IDOR & Atomic Lock Release)
+// DELETE /api/v1/seller/coupons/:id - Delete a seller coupon & release lock (Anti-IDOR)
 router.delete(
   "/api/v1/seller/coupons/:id",
   authenticateToken,
@@ -230,43 +164,49 @@ router.delete(
       const couponId = req.params.id;
 
       const couponRef = db.collection("coupons").doc(couponId);
-      const couponDoc = await couponRef.get();
+      const couponSnap = await couponRef.get();
 
-      if (!couponDoc.exists) {
-        return res.status(404).json({ error: "Coupon introuvable." });
+      if (!couponSnap.exists) {
+        return res.status(404).json({ error: "Code promo introuvable." });
       }
 
-      const couponData = couponDoc.data();
-      if (!couponData || couponData.sellerId !== sellerId) {
-        return res.status(403).json({
-          error: "Accès refusé : vous ne pouvez supprimer que vos propres coupons (IDOR Guard).",
+      const couponData = couponSnap.data();
+
+      // Strict IDOR ownership check
+      if (couponData?.sellerId !== sellerId && couponData?.createdBy !== sellerId) {
+        safeLogger.warn("[SellerCouponController] ⚠️ IDOR attempt blocked on coupon deletion", {
+          attemptedBy: sellerId,
+          couponId,
+          actualOwner: couponData?.sellerId,
         });
+        return res.status(403).json({ error: "Action non autorisée sur ce code promo." });
       }
 
-      const couponCode = couponData.code;
-      const codeLockRef = couponCode ? db.collection("coupon_codes").doc(couponCode) : null;
+      const couponCode = couponData?.code;
 
-      const batch = db.batch();
-      batch.delete(couponRef);
-      if (codeLockRef) {
-        batch.delete(codeLockRef);
-      }
-      await batch.commit();
+      await db.runTransaction(async (transaction) => {
+        if (couponCode) {
+          const lockRef = db.collection("coupon_codes").doc(couponCode);
+          transaction.delete(lockRef);
+        }
+        transaction.delete(couponRef);
+      });
 
-      safeLogger.info("[SellerCouponController] 🟢 Seller coupon deleted", {
+      safeLogger.info("[SellerCouponController] 🗑️ Seller coupon deleted & lock released", {
         sellerId,
         couponId,
+        couponCode,
       });
 
       return res.json({
         success: true,
-        message: "Coupon supprimé avec succès.",
+        message: "Code promo supprimé avec succès.",
       });
     } catch (error: unknown) {
       safeLogger.error("[SellerCouponController] ❌ Error deleting seller coupon", {
         err: error instanceof Error ? error.message : String(error),
       });
-      return res.status(500).json({ error: "Erreur lors de la suppression du coupon." });
+      return res.status(500).json({ error: "Erreur lors de la suppression du code promo." });
     }
   }
 );

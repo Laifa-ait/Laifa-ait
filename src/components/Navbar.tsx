@@ -24,7 +24,7 @@ import { MegaMenu } from "./MegaMenu";
 import { AdvancedSearchbar as Searchbar } from "./Search/AdvancedSearchbar";
 import { NotificationCenter } from "./NotificationCenter";
 import { SuperAppSwitcherModal } from "./common/SuperAppSwitcherModal";
-import { getRetroAvatar } from "../utils/avatar";
+import { UserAvatar } from "./ui/UserAvatar";
 
 export interface OlmaLogoProps {
   className?: string;
@@ -147,10 +147,10 @@ export const Navbar: React.FC = () => {
               type="button"
               onClick={() => setIsSwitcherOpen(true)}
               className="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-zinc-950 cursor-pointer group shadow-xs mr-1"
-              title="Ouvrir le commutateur d'univers Olmart Super-App"
+              title={t("Ouvrir le commutateur d'univers Olmart Super-App", "Ouvrir le commutateur d'univers Olmart Super-App")}
             >
               <LayoutGrid className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-              <span>Univers</span>
+              <span>{t("Univers", "Univers")}</span>
             </button>
 
             <Link
@@ -162,7 +162,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Marketplace</span>
+              <span>{t("Marketplace", "Marketplace")}</span>
             </Link>
 
             <Link
@@ -174,9 +174,9 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <Wrench className="w-3.5 h-3.5 text-amber-400" />
-              <span>Olma Bricolage</span>
+              <span>{t("Olma Bricolage", "Olma Bricolage")}</span>
               <span className="text-[9px] uppercase px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
-                Artisans
+                {t("Artisans", "Artisans")}
               </span>
             </Link>
 
@@ -189,7 +189,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Olma Immo</span>
+              <span>{t("Olma Immo", "Olma Immo")}</span>
             </Link>
 
             <Link
@@ -201,7 +201,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <Store className="w-3.5 h-3.5 text-blue-400" />
-              <span>Boutiques</span>
+              <span>{t("Boutiques", "Boutiques")}</span>
             </Link>
 
             <Link
@@ -213,7 +213,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <Scale className="w-3.5 h-3.5 text-purple-400" />
-              <span>Comparateur</span>
+              <span>{t("Comparateur", "Comparateur")}</span>
             </Link>
           </div>
 
@@ -417,15 +417,13 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 {currentUser ? (
-                  <img
-                    src={
-                      userProfile?.photoURL ||
-                      currentUser.photoURL ||
-                      getRetroAvatar(currentUser.email || currentUser.uid)
-                    }
+                  <UserAvatar
+                    photoURL={userProfile?.photoURL || currentUser.photoURL}
+                    displayName={userProfile?.displayName || currentUser.displayName}
+                    email={currentUser.email}
+                    providerData={currentUser.providerData}
+                    size="sm"
                     alt={userProfile?.displayName || "Profil"}
-                    className="w-full h-full object-cover rounded-full"
-                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <UserIcon className="w-5 h-5 stroke-[1.5] text-zinc-500" />

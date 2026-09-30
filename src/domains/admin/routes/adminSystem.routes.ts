@@ -111,7 +111,7 @@ router.post("/admin/danger-zone-wipe", authenticateToken, authorizeAdmin, requir
 });
 
 // GET & POST Translations Management (Authoritative Firestore backing for Cloud Run)
-router.get("/api/v1/translations", async (req: Request, res: Response) => {
+router.get(["/translations", "/api/v1/translations"], async (req: Request, res: Response) => {
   try {
     const lang = (req.query.lang as string) || "fr";
     if (!["fr", "ar", "en"].includes(lang)) {
@@ -371,6 +371,9 @@ router.post("/admin/users/bulk-delete", authenticateToken, authorizeAdmin, async
     const { userIds } = req.body;
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ error: "Liste d'utilisateurs requise" });
+    }
+    if (userIds.length > 50) {
+      return res.status(400).json({ error: "La suppression en masse est limitée à 50 utilisateurs maximum par opération." });
     }
 
     const batchSize = 400;

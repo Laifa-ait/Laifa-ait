@@ -57,6 +57,9 @@ COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/server.ts ./server.ts
 
+# Security Hardening: Revoke write permissions on static assets to prevent tampering/injection
+RUN chmod -R a-w dist public
+
 # Set non-root user
 USER node
 

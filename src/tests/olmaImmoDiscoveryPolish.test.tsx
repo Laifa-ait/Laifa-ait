@@ -71,8 +71,11 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
           });
         }),
       };
-      // @ts-expect-error Mocking window navigator geolocation
-      global.navigator.geolocation = mockGeolocation;
+      Object.defineProperty(global.navigator, 'geolocation', {
+        value: mockGeolocation,
+        configurable: true,
+        writable: true,
+      });
 
       const onSuccess = vi.fn();
       const onError = vi.fn();
@@ -91,8 +94,11 @@ describe('PHASE 2.6 — Olma Immo Discovery & Polish Tests', () => {
           error({ code: 1, message: 'User denied geolocation' });
         }),
       };
-      // @ts-expect-error Mocking window navigator geolocation
-      global.navigator.geolocation = mockGeolocation;
+      Object.defineProperty(global.navigator, 'geolocation', {
+        value: mockGeolocation,
+        configurable: true,
+        writable: true,
+      });
 
       const onSuccess = vi.fn();
       const onError = vi.fn();

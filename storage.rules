@@ -14,6 +14,16 @@ service firebase.storage {
       );
     }
 
+    // Strict regex validation for file names: blocks path traversal, XSS scripts, null bytes
+    function isValidSafeFileName(fileName) {
+      return fileName.matches('^[a-zA-Z0-9_\\-.]{1,120}\\.(jpg|jpeg|png|webp|gif|pdf|docx|mp4|webm)$');
+    }
+
+    // Strict regex validation for user-prefixed file names: requires userId_ followed by safe characters
+    function isValidUserPrefixedFileName(userId, fileName) {
+      return fileName.matches('^' + userId + '_[a-zA-Z0-9_\\-.]{1,120}\\.(jpg|jpeg|png|webp|gif|pdf|docx|mp4|webm)$');
+    }
+
     // Helper to check if user owns the support ticket or is admin
     function isTicketParticipant(ticketId) {
       return isLoggedIn() && (
@@ -66,13 +76,11 @@ service firebase.storage {
     // -------------------------------------------------------------------------
     // PRODUCT IMAGES & VIDEOS
     // -------------------------------------------------------------------------
-    // Upload occurs during product creation/editing before Firestore save.
-    // Secure by requiring filename to start with the user's UID.
     match /products/{type}/{fileName} {
       allow read: if true;
       allow write: if isLoggedIn() && (
         isAdmin() || (
-          fileName.startsWith(request.auth.uid + '_') &&
+          isValidUserPrefixedFileName(request.auth.uid, fileName) &&
           (
             (type == 'images' && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*')) ||
             (type == 'videos' && request.resource.size < 50 * 1024 * 1024 && request.resource.contentType.matches('video/.*'))
@@ -87,6 +95,7 @@ service firebase.storage {
     match /kyc/{uid}/{fileName} {
       allow read: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if isLoggedIn() && request.auth.uid == uid 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 10 * 1024 * 1024 
         && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
@@ -97,6 +106,7 @@ service firebase.storage {
     match /user_documents/{uid}/{fileName} {
       allow read: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if isLoggedIn() && request.auth.uid == uid 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 30 * 1024 * 1024 
         && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
       allow delete: if isLoggedIn() && (request.auth.uid == uid || isAdmin());
@@ -108,6 +118,7 @@ service firebase.storage {
     match /users/{uid}/avatar/{fileName} {
       allow read: if true;
       allow write: if isLoggedIn() && request.auth.uid == uid 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 2 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
@@ -118,6 +129,7 @@ service firebase.storage {
     match /shops/{sellerId}/{fileName} {
       allow read: if true;
       allow write: if isLoggedIn() && (isAdmin() || request.auth.uid == sellerId) 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 5 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
@@ -128,6 +140,7 @@ service firebase.storage {
     match /support/{ticketId}/{fileName} {
       allow read: if isTicketParticipant(ticketId);
       allow write: if isTicketParticipant(ticketId) 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 10 * 1024 * 1024 
         && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
@@ -135,6 +148,7 @@ service firebase.storage {
     match /disputes/{disputeId}/{fileName} {
       allow read: if isDisputeParticipant(disputeId);
       allow write: if isDisputeParticipant(disputeId) 
+        && isValidSafeFileName(fileName)
         && request.resource.size <= 1 * 1024 * 1024 
         && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
@@ -142,6 +156,7 @@ service firebase.storage {
     match /returns/{orderId}/{fileName} {
       allow read: if isOrderParticipant(orderId);
       allow write: if isOrderParticipant(orderId) 
+        && isValidSafeFileName(fileName)
         && request.resource.size <= 1 * 1024 * 1024 
         && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
@@ -152,6 +167,7 @@ service firebase.storage {
     match /chat_images/{orderId}/{fileName} {
       allow read: if isOrderParticipant(orderId);
       allow write: if isOrderParticipant(orderId) 
+        && isValidSafeFileName(fileName)
         && request.resource.size < 10 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
@@ -161,31 +177,31 @@ service firebase.storage {
     // -------------------------------------------------------------------------
     match /banners/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 
+      allow write: if isAdmin() && isValidSafeFileName(fileName) && request.resource.size < 10 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
 
     match /categories_covers/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024 
+      allow write: if isAdmin() && isValidSafeFileName(fileName) && request.resource.size < 5 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
 
     match /megamenu_icons/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 2 * 1024 * 1024 
+      allow write: if isAdmin() && isValidSafeFileName(fileName) && request.resource.size < 2 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
 
     match /homepage_media/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 15 * 1024 * 1024 
-        && (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*'));
+      allow write: if isAdmin() && isValidSafeFileName(fileName) && request.resource.size < 15 * 1024 * 1024 
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'video/.*');
     }
 
     match /newsletter-images/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 
+      allow write: if isAdmin() && isValidSafeFileName(fileName) && request.resource.size < 10 * 1024 * 1024 
         && request.resource.contentType.matches('image/.*');
     }
 
@@ -205,6 +221,7 @@ service firebase.storage {
         (
           firestore.exists(/databases/(default)/documents/conversations/$(conversationId)) &&
           request.auth.uid in firestore.get(/databases/(default)/documents/conversations/$(conversationId)).data.participants &&
+          isValidSafeFileName(fileName) &&
           request.resource.size <= 5 * 1024 * 1024 &&
           (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf')
         )

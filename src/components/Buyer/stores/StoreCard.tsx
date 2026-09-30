@@ -122,7 +122,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({
 
           <div className="grid grid-cols-3 gap-2">
             {products.slice(0, 3).map((prod) => {
-              const prodImg = prod.images?.[0] || getRetroAvatar(prod.title || prod.id);
+              const prodImg = prod.images?.[0] || getRetroAvatar(prod.name || prod.id);
               return (
                 <div
                   key={prod.id}
@@ -132,11 +132,11 @@ export const StoreCard: React.FC<StoreCardProps> = ({
                   <div className="aspect-square rounded-lg overflow-hidden bg-white mb-1.5 flex items-center justify-center">
                     <img
                       src={prodImg}
-                      alt={prod.title || "Produit"}
+                      alt={prod.name || "Produit"}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       referrerPolicy="no-referrer"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = getRetroAvatar(prod.title || prod.id);
+                        (e.target as HTMLImageElement).src = getRetroAvatar(prod.name || prod.id);
                       }}
                     />
                   </div>

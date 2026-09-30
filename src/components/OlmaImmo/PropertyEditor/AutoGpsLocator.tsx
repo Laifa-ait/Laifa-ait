@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { GeoPointLocation } from '../../../types/realEstate';
 import { ALGERIA_WILAYAS } from '../../../constants/wilayas';
 import {
@@ -7,6 +7,7 @@ import {
   findWilayaCoords,
   findCommuneCoords,
 } from '../../../data/algerianCommunesDatabase';
+import { useAlgerianLocationData } from '../../../hooks/useAlgerianLocationData';
 import { ListFilter, Edit3 } from 'lucide-react';
 import { ResidenceLocationPickerMap } from './ResidenceLocationPickerMap';
 import { AutoGpsCard } from './AutoGpsCard';
@@ -23,10 +24,8 @@ export const AutoGpsLocator: React.FC<AutoGpsLocatorProps> = ({ location, onChan
   const [hasDetected, setHasDetected] = useState<boolean>(Boolean(location.lat && location.lng));
   const [isManualTextEntry, setIsManualTextEntry] = useState(false);
 
-  const availableCommunes = useMemo(() => {
-    if (!location.wilaya) return [];
-    return getCommunesForWilaya(location.wilaya);
-  }, [location.wilaya]);
+  // Async Location Data (Communes loaded on-demand per Wilaya)
+  const { communes: availableCommunes } = useAlgerianLocationData(location.wilaya);
 
   const handleTriggerGps = () => {
     if (!navigator.geolocation) {

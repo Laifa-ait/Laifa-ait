@@ -35,17 +35,153 @@ export interface LogErrorBody {
 }
 
 export class CoreService {
+  static async ensureInitialProductsSeeded(): Promise<void> {
+    try {
+      const snap = await db.collection("products").limit(1).get();
+      if (snap.empty) {
+        safeLogger.info("[CoreService] 🚀 Empty products collection detected. Auto-seeding initial marketplace products...");
+        const sampleProducts = [
+          {
+            name: "Canapé Modular 'Atlas'",
+            price: 145000,
+            promoPrice: 125000,
+            category: "Maison & Déco",
+            description: "Un canapé moderne inspiré par les paysages de l'Atlas. Tissu premium et confort absolu.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Alger",
+            stock: 15,
+            rating: 4.8,
+            tags: ["Premium", "Salon", "Moderne"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {
+            name: "Jus d'Orange Pressé Bio",
+            price: 350,
+            promoPrice: 280,
+            category: "Supermarché",
+            description: "Jus d'orange 100% naturel sans sucre ajouté.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Alger",
+            stock: 120,
+            rating: 4.9,
+            tags: ["Supermarché", "Jus", "Boisson"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {
+            name: "Lampe 'Sahara Glow'",
+            price: 32000,
+            flashPrice: 24900,
+            category: "Luminaires",
+            description: "Une lumière d'ambiance qui rappelle les couchers de soleil du Sahara.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Ghardaïa",
+            stock: 8,
+            rating: 4.7,
+            tags: ["Lumière", "Ambiance", "Design"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {
+            name: "Tapis Zindkh de Constantine",
+            price: 85000,
+            promoPrice: 69000,
+            category: "Tapis",
+            description: "Tapis tissé main selon la tradition séculaire de l'Est Algérien.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Constantine",
+            stock: 5,
+            rating: 5.0,
+            tags: ["Tapis", "Handmade", "Constantine"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {
+            name: "Machine à Café Espresso DZ Pro",
+            price: 45000,
+            flashPrice: 38000,
+            category: "Électronique & Électroménager",
+            description: "Performances professionnelles pour votre cuisine.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Oran",
+            stock: 15,
+            rating: 4.6,
+            tags: ["Cuisine", "Tech", "Café"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {
+            name: "Vase Artisanal d'Aït Yenni",
+            price: 18000,
+            promoPrice: 14500,
+            category: "Artisanat",
+            description: "Vase céramique fait main sculpté par des artisans de Kabylie.",
+            image: "/images/placeholders/product.svg",
+            wilaya: "Tizi Ouzou",
+            stock: 10,
+            rating: 4.9,
+            tags: ["Artisanat", "Kabylie", "Céramique"],
+            sellerId: "admin_seed",
+            sellerName: "Boutique Officielle Olmart",
+            status: "active",
+            media: [{ url: "/images/placeholders/product.svg", type: "image" }],
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          }
+        ];
+
+        const batch = db.batch();
+        for (const prod of sampleProducts) {
+          const ref = db.collection("products").doc();
+          batch.set(ref, prod);
+        }
+        await batch.commit();
+        safeLogger.info("[CoreService] ✅ Initial catalog seeded successfully.");
+      }
+    } catch (err: unknown) {
+      safeLogger.warn("[CoreService] Could not auto-seed initial products", { err: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
   static async getHomeData() {
     const startTime = Date.now();
     try {
-      const [categoriesSnap, sectionsSnap, bannersSnap, tagsSnap, productsSnap, sellersSnap] = await Promise.all([
+      await CoreService.ensureInitialProductsSeeded();
+
+      let productsSnap = await db.collection("products").where("status", "in", ["active", "approved"]).limit(24).get().catch(async () => {
+        return db.collection("products").limit(24).get().catch(() => ({ docs: [] }));
+      });
+
+      if (productsSnap.docs.length === 0) {
+        productsSnap = await db.collection("products").limit(24).get().catch(() => ({ docs: [] }));
+      }
+
+      const [categoriesSnap, sectionsSnap, bannersSnap, tagsSnap, sellersSnap] = await Promise.all([
         db.collection("homepage_categories_v2").limit(100).get().catch(() => ({ docs: [] })),
         db.collection("homepage_sections").orderBy("orderIndex", "asc").limit(50).get().catch(() => ({ docs: [] })),
         db.collection("banners").limit(30).get().catch(() => ({ docs: [] })),
         db.collection("tags").limit(100).get().catch(() => ({ docs: [] })),
-        db.collection("products").where("status", "==", "active").orderBy("createdAt", "desc").limit(24).get().catch(async () => {
-          return db.collection("products").where("status", "==", "active").orderBy("created_at", "desc").limit(24).get().catch(() => ({ docs: [] }));
-        }),
         db.collection("publicProfiles").limit(20).get().catch(() => ({ docs: [] }))
       ]);
       const categories = categoriesSnap.docs.map((doc: FirestoreDocSnapshot) => ({ id: doc.id, ...doc.data() }));

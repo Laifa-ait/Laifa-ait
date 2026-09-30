@@ -5,13 +5,25 @@ import { useNavigate } from "react-router-dom";
 import { formatPrice } from "../../utils/format";
 import { normalizeTimestamp, AppTimestamp } from "../../utils/date";
 
+export interface BuyerOrderItem {
+  productId?: string;
+  id?: string;
+  name: string;
+  title?: string;
+  quantity: number;
+  price: number;
+  image?: string;
+  imageUrl?: string;
+}
+
 export interface BuyerOrder {
   id: string;
+  orderNumber?: string;
   userId: string;
   total: number;
   status: string;
   createdAt: AppTimestamp;
-  items: Array<{ name: string; quantity: number; price: number; image?: string }>;
+  items: BuyerOrderItem[];
   shippingAddress?: { wilaya: string; communes?: string; commune?: string };
   unreadBuyerMessages?: boolean;
   unreadSellerMessages?: boolean;

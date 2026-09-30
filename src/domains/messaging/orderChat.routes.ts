@@ -1,16 +1,22 @@
 import { Router, Response } from "express";
 import { db, admin } from "../../config/firebase-admin";
 import { authenticateToken, AuthenticatedRequest } from "../../middlewares/auth";
+import { chatLimiter } from "../../middlewares/rateLimiters";
+import { hasExternalChannel, maskSensitiveData } from "../../utils/masking";
 
 const router = Router();
 
 // Internal Messaging & DLP (Data Loss Prevention)
-router.post("/api/v1/messages/send", authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post("/api/v1/messages/send", authenticateToken, chatLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const { orderId, text, imageUrl } = req.body;
   const senderId = req.user?.uid || "";
 
   if (!orderId || (!text && !imageUrl)) {
     return res.status(400).json({ error: "Missing fields" });
+  }
+
+  if (text && typeof text === "string" && text.length > 2000) {
+    return res.status(400).json({ error: "Message trop long (maximum 2000 caractères)" });
   }
 
   try {
@@ -28,19 +34,12 @@ router.post("/api/v1/messages/send", authenticateToken, async (req: Authenticate
 
     const recipientId = senderId === buyerId ? sellerId : buyerId;
 
-    // NLP Regex Filter for Phone Numbers, URLs and Social Media
-    const phoneRegex = /(0[5672349][0-9]{8}|(\+213|00213)[5672349][0-9]{8})/g;
-    const socialRegex = /(whatsapp|viber|telegram|insta|fb|facebook|appel[e]?)/gi;
-    const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
-
     let secureText = text || "";
     let violationDetected = false;
 
-    if (text && (phoneRegex.test(secureText) || socialRegex.test(secureText) || urlRegex.test(secureText))) {
+    if (text && hasExternalChannel(text)) {
       violationDetected = true;
-      secureText = secureText.replace(phoneRegex, "[NUMÉRO MASQUÉ]");
-      secureText = secureText.replace(socialRegex, "[MOT INTERDIT]");
-      secureText = secureText.replace(urlRegex, "[LIEN INTERDIT]");
+      secureText = maskSensitiveData(text);
     }
 
     const messageObj: Record<string, unknown> = {
@@ -54,8 +53,14 @@ router.post("/api/v1/messages/send", authenticateToken, async (req: Authenticate
     };
 
     if (imageUrl) {
-      if (typeof imageUrl !== "string" || (!imageUrl.startsWith("https://") && !imageUrl.startsWith("data:image/"))) {
-        return res.status(400).json({ error: "Format d'image invalide (HTTPS ou data-URI requis)" });
+      if (typeof imageUrl !== "string") {
+        return res.status(400).json({ error: "Format d'image invalide" });
+      }
+      const isAllowedStorageHost = imageUrl.startsWith("https://firebasestorage.googleapis.com/") ||
+        imageUrl.startsWith("https://storage.googleapis.com/") ||
+        imageUrl.startsWith("data:image/");
+      if (!isAllowedStorageHost) {
+        return res.status(400).json({ error: "Image non autorisée : les images doivent être hébergées sur le stockage sécurisé Olmart" });
       }
       messageObj.imageUrl = imageUrl;
     }
@@ -81,17 +86,33 @@ router.post("/api/v1/messages/send", authenticateToken, async (req: Authenticate
         resolved: false,
       });
 
-      const userDoc = await db.collection("users").doc(senderId).get();
-      if (userDoc.exists && userDoc.data()?.role === "seller") {
-        const currentScore = userDoc.data()?.trustScore || 50;
-        await db.collection("users").doc(senderId).update({
-          trustScore: Math.max(0, currentScore - 10),
-        });
+      const userRef = db.collection("users").doc(senderId);
+      const userDoc = await userRef.get();
+      
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const currentViolations = (userData?.dlpViolations || 0) + 1;
+        const updates: Record<string, unknown> = {
+          dlpViolations: admin.firestore.FieldValue.increment(1),
+          lastDlpViolationAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        if (userData?.role === "seller") {
+          const currentScore = userData?.trustScore || 50;
+          updates.trustScore = Math.max(0, currentScore - 10);
+
+          if (currentViolations >= 3) {
+            updates.visibilityRestricted = true;
+            updates.moderationStatus = "review_required";
+          }
+        }
+
+        await userRef.update(updates);
 
         await db.collection("notifications").add({
           userId: senderId,
           title: "Avertissement de sécurité : Message modéré",
-          message: "Votre message a été bloqué pour non-respect de nos règles (ex: partage de coordonnées externes). Votre Trust Score a baissé de 10 points. Si c'est une erreur, ouvrez une contestation via le Support.",
+          message: "Votre message a été modéré pour partage de coordonnées externes. Vos violations répétées peuvent entraîner la restriction de visibilité de votre boutique.",
           type: "ALERT",
           read: false,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),

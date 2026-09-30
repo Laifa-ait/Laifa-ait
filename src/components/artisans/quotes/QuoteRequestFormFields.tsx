@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { WilayaCommuneSelector } from '../WilayaCommuneSelector';
 
 interface QuoteRequestFormFieldsProps {
@@ -51,11 +52,13 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
   preferredDate,
   setPreferredDate,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Votre Nom *</label>
+          <label className="text-xs font-bold text-slate-700">{t("Votre Nom *")}</label>
           <input
             type="text"
             required
@@ -65,7 +68,7 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Téléphone *</label>
+          <label className="text-xs font-bold text-slate-700">{t("Téléphone *")}</label>
           <input
             type="tel"
             required
@@ -78,7 +81,7 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Email (Optionnel)</label>
+          <label className="text-xs font-bold text-slate-700">{t("Email (Optionnel)")}</label>
           <input
             type="email"
             value={clientEmail}
@@ -87,7 +90,7 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Budget max (DZD)</label>
+          <label className="text-xs font-bold text-slate-700">{t("Budget max (DZD)")}</label>
           <input
             type="number"
             placeholder="Ex: 5000"
@@ -101,10 +104,11 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-700">Titre des travaux *</label>
+        <label className="text-xs font-bold text-slate-700">{t("Titre des travaux *")}</label>
         <input
           type="text"
           required
+          placeholder={t("Ex: Rénovation peinture salon")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
@@ -112,11 +116,11 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-700">Description du besoin *</label>
+        <label className="text-xs font-bold text-slate-700">{t("Description détaillée *")}</label>
         <textarea
           rows={3}
           required
-          placeholder="Décrivez les réparations, surface, pannes..."
+          placeholder={t("Décrivez les réparations, surface, pannes...", "Décrivez les réparations, surface, pannes...")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
@@ -124,7 +128,7 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-bold text-slate-700">Lieu d'intervention</label>
+        <label className="text-xs font-bold text-slate-700">{t("Lieu d'intervention", "Lieu d'intervention")}</label>
         <WilayaCommuneSelector
           selectedWilaya={wilaya}
           selectedCommune={commune}
@@ -134,10 +138,10 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-700">Adresse / Repère (Optionnel)</label>
+        <label className="text-xs font-bold text-slate-700">{t("Adresse / Repère (Optionnel)", "Adresse / Repère (Optionnel)")}</label>
         <input
           type="text"
-          placeholder="Cité, numéro de rue..."
+          placeholder={t("Cité, numéro de rue...", "Cité, numéro de rue...")}
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
@@ -146,7 +150,7 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Niveau d'urgence</label>
+          <label className="text-xs font-bold text-slate-700">{t("Niveau d'urgence")}</label>
           <select
             value={urgency}
             onChange={(e) =>
@@ -154,14 +158,14 @@ export const QuoteRequestFormFields: React.FC<QuoteRequestFormFieldsProps> = ({
             }
             className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
           >
-            <option value="standard">Standard (Sous 48h)</option>
-            <option value="urgent">Urgent (Aujourd'hui)</option>
-            <option value="flexible">Flexible</option>
+            <option value="standard">{t("Standard (1-2 sem)")}</option>
+            <option value="urgent">{t("Urgent (24-48h)")}</option>
+            <option value="flexible">{t("Flexible")}</option>
           </select>
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-slate-700">Date souhaitée</label>
+          <label className="text-xs font-bold text-slate-700">{t("Date souhaitée")}</label>
           <div className="relative">
             <input
               type="date"

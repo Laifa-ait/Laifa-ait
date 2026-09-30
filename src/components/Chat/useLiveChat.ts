@@ -147,7 +147,7 @@ export function useLiveChat(isOpen: boolean, orderId: string, initialShopName: s
 
     setUploading(true);
     try {
-      const url = await uploadChatAttachment(file, orderId);
+      const url = await uploadChatAttachment(orderId, file);
       const idToken = await currentUser.getIdToken();
       await fetch('/api/v1/messages/send', {
         method: 'POST',

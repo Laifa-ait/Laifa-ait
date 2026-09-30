@@ -1,13 +1,102 @@
 import { Router, Response } from "express";
+import { z } from "zod";
+import { db } from "../../config/firebase-admin";
 import { authenticateToken } from "../../middlewares/auth";
-import type { AuthenticatedBuyerRequest, BuyerFollowStoreDTO, BuyerUnfollowStoreDTO } from "./types/buyer.types";
+import type { AuthenticatedBuyerRequest } from "./types/buyer.types";
 import { BuyerService } from "./services/buyer.service";
 import { PersonalizedFeedService, AffinityDigestPayload } from "../../services/PersonalizedFeedService";
 import { safeLogger } from "../../utils/logger";
 
 const router = Router();
 
-// POST /api/v1/user/affinity-digest (1 single consolidated sync per day)
+// Strict Zod Schemas
+const UserHabitsSchema = z.object({
+  historique_recherches: z.array(z.string().max(120)).max(100).optional(),
+  categories_visitees: z.record(z.string(), z.number()).optional(),
+}).strict();
+
+const CartItemSchema = z.object({
+  productId: z.string().min(1).max(100),
+  quantity: z.number().int().min(1).max(99),
+  variantId: z.string().max(100).optional(),
+  selected: z.boolean().optional(),
+}).strict();
+
+const CartSchema = z.object({
+  items: z.array(CartItemSchema).max(100),
+}).strict();
+
+const WishlistSchema = z.object({
+  productIds: z.array(z.string().min(1).max(100)).max(200),
+}).strict();
+
+const FollowStoreSchema = z.object({
+  sellerId: z.string().min(1).max(100),
+  followPayload: z.record(z.string(), z.unknown()).optional(),
+}).strict();
+
+const UnfollowStoreSchema = z.object({
+  sellerId: z.string().min(1).max(100),
+}).strict();
+
+// 1. POST /api/v1/user/habits - User habits tracking
+router.post("/api/v1/user/habits", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
+  const uid = req.user?.uid;
+  if (!uid) return res.status(401).json({ error: "Authentification requise" });
+
+  const parsed = UserHabitsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Données de comportement invalides", details: parsed.error.issues });
+  }
+
+  try {
+    await db.collection("user_habits").doc(uid).set(parsed.data, { merge: true });
+    return res.json({ success: true });
+  } catch (err: unknown) {
+    safeLogger.error("[Buyer Domain] Error saving user habits", { err: String(err) });
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// 2. POST /api/v1/user/cart - User cart synchronization
+router.post("/api/v1/user/cart", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
+  const uid = req.user?.uid;
+  if (!uid) return res.status(401).json({ error: "Authentification requise" });
+
+  const parsed = CartSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Données de panier invalides", details: parsed.error.issues });
+  }
+
+  try {
+    await db.collection("users").doc(uid).collection("cart").doc("current").set(parsed.data, { merge: true });
+    return res.json({ success: true, data: parsed.data });
+  } catch (err: unknown) {
+    safeLogger.error("[Buyer Domain] Error saving cart", { err: String(err) });
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// 3. POST /api/v1/user/wishlist - User wishlist synchronization
+router.post("/api/v1/user/wishlist", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
+  const uid = req.user?.uid;
+  if (!uid) return res.status(401).json({ error: "Authentification requise" });
+
+  const parsed = WishlistSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Données de liste d'envies invalides", details: parsed.error.issues });
+  }
+
+  try {
+    await db.collection("users").doc(uid).collection("wishlist").doc("current").set(parsed.data, { merge: true });
+    return res.json({ success: true, data: parsed.data });
+  } catch (err: unknown) {
+    safeLogger.error("[Buyer Domain] Error saving wishlist", { err: String(err) });
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// 4. POST /api/v1/user/affinity-digest (1 single consolidated sync per day)
 router.post("/api/v1/user/affinity-digest", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
@@ -24,7 +113,7 @@ router.post("/api/v1/user/affinity-digest", authenticateToken, async (req: Authe
   }
 });
 
-// GET buyer returns
+// 5. GET buyer returns
 router.get("/api/v1/buyer/returns", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
@@ -40,7 +129,7 @@ router.get("/api/v1/buyer/returns", authenticateToken, async (req: Authenticated
   }
 });
 
-// GET buyer orders
+// 6. GET buyer orders
 router.get("/api/v1/buyer/orders", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
@@ -60,7 +149,7 @@ router.get("/api/v1/buyer/orders", authenticateToken, async (req: AuthenticatedB
   }
 });
 
-// GET buyer followed stores
+// 7. GET buyer followed stores
 router.get("/api/v1/buyer/followed-stores", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
@@ -76,7 +165,7 @@ router.get("/api/v1/buyer/followed-stores", authenticateToken, async (req: Authe
   }
 });
 
-// GET buyer follow status for a specific store
+// 8. GET buyer follow status for a specific store
 router.get("/api/v1/buyer/follow-status/:sellerId", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
@@ -96,18 +185,18 @@ router.get("/api/v1/buyer/follow-status/:sellerId", authenticateToken, async (re
   }
 });
 
-// POST unfollow store
+// 9. POST unfollow store with Zod validation
 router.post("/api/v1/buyer/unfollow", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
     if (!uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { sellerId } = req.body as BuyerUnfollowStoreDTO;
-    if (!sellerId) {
-      return res.status(400).json({ error: "sellerId required" });
+    const parsed = UnfollowStoreSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Données désabonnement invalides", details: parsed.error.issues });
     }
-    await BuyerService.unfollowStore(uid, sellerId);
+    await BuyerService.unfollowStore(uid, parsed.data.sellerId);
     return res.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Erreur serveur";
@@ -116,18 +205,18 @@ router.post("/api/v1/buyer/unfollow", authenticateToken, async (req: Authenticat
   }
 });
 
-// POST follow store
+// 10. POST follow store with Zod validation
 router.post("/api/v1/buyer/follow", authenticateToken, async (req: AuthenticatedBuyerRequest, res: Response) => {
   try {
     const uid = req.user?.uid;
     if (!uid) {
       return res.status(401).json({ error: "Authentification requise" });
     }
-    const { sellerId, followPayload } = req.body as BuyerFollowStoreDTO;
-    if (!sellerId || !followPayload) {
-      return res.status(400).json({ error: "sellerId and followPayload required" });
+    const parsed = FollowStoreSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Données d'abonnement invalides", details: parsed.error.issues });
     }
-    await BuyerService.followStore(uid, sellerId, followPayload);
+    await BuyerService.followStore(uid, parsed.data.sellerId, parsed.data.followPayload || {});
     return res.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Erreur serveur";

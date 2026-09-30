@@ -54,11 +54,8 @@ if (!isTestEnv) {
     }
   }
   if (missingVars.length > 0) {
-    const msg = `[Firebase Client] ❌ Variables d'environnement Firebase obligatoires manquantes : ${missingVars.join(", ")}. Échec fail-closed.`;
-    safeLogger.error(msg);
-    if (typeof window !== "undefined") {
-      throw new Error(msg);
-    }
+    const msg = `[Firebase Client] ⚠️ Variables d'environnement Firebase non configurées : ${missingVars.join(", ")}.`;
+    safeLogger.warn(msg);
   }
 }
 

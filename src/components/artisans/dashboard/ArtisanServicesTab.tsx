@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Tag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ArtisanProfile, ArtisanService } from '../../../types/artisan';
 import { updateArtisanMyProfile } from '../../../services/artisan.api';
 
@@ -12,6 +13,7 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
   profile,
   onProfileUpdated,
 }) => {
+  const { t } = useTranslation();
   const [showAddModal, setShowAddModal] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -57,13 +59,13 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-black text-slate-900">Prestations & Tarifs Indicatifs</h2>
+        <h2 className="text-lg font-black text-slate-900">{t("Prestations & Tarifs Indicatifs")}</h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Ajouter une prestation</span>
+          <span>{t("Ajouter une prestation")}</span>
         </button>
       </div>
 
@@ -92,17 +94,17 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-xs font-extrabold text-amber-600">
                   {srv.priceStartingFrom
-                    ? `À partir de ${srv.priceStartingFrom.toLocaleString('fr-DZ')} DZD`
-                    : 'Sur devis'}
+                    ? `${t("À partir de", "À partir de")} ${srv.priceStartingFrom.toLocaleString('fr-DZ')} DZD`
+                    : t('Sur devis')}
                 </span>
                 <span className="text-[10px] uppercase font-bold text-slate-400">
                   {srv.priceUnit === 'heure'
-                    ? '/ Heure'
+                    ? t('/ Heure', '/ Heure')
                     : srv.priceUnit === 'm2'
-                    ? '/ m²'
+                    ? t('/ m²', '/ m²')
                     : srv.priceUnit === 'jour'
-                    ? '/ Jour'
-                    : 'Forfait'}
+                    ? t('/ Jour', '/ Jour')
+                    : t('Forfait')}
                 </span>
               </div>
             </div>
@@ -110,7 +112,7 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
         ) : (
           <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-slate-200 text-slate-400 space-y-2">
             <Tag className="w-8 h-8 mx-auto text-slate-300" />
-            <p className="text-xs font-bold">Aucune prestation configurée.</p>
+            <p className="text-xs font-bold">{t("Aucune prestation configurée.")}</p>
           </div>
         )}
       </div>
@@ -118,14 +120,14 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h3 className="text-base font-black text-slate-900">Ajouter une prestation</h3>
+            <h3 className="text-base font-black text-slate-900">{t("Ajouter une prestation")}</h3>
             <form onSubmit={handleAddService} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Titre de la prestation *</label>
+                <label className="text-xs font-bold text-slate-700">{t("Titre de la prestation *")}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Recherche et réparation de fuite d'eau"
+                  placeholder={t("Ex: Installation chauffe-eau")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
@@ -133,10 +135,10 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Description</label>
+                <label className="text-xs font-bold text-slate-700">{t("Description")}</label>
                 <textarea
                   rows={2}
-                  placeholder="Précisions sur l'intervention..."
+                  placeholder={t("Précisions sur l'intervention...", "Précisions sur l'intervention...")}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
@@ -145,7 +147,7 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Prix indicatif (DZD)</label>
+                  <label className="text-xs font-bold text-slate-700">{t("Prix indicatif à partir de (DZD)")}</label>
                   <input
                     type="number"
                     placeholder="3000"
@@ -157,7 +159,7 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Unité tarifaire</label>
+                  <label className="text-xs font-bold text-slate-700">{t("Unité de tarification")}</label>
                   <select
                     value={priceUnit}
                     onChange={(e) =>
@@ -165,11 +167,11 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
                     }
                     className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
                   >
-                    <option value="forfait">Forfait fixe</option>
-                    <option value="heure">Par Heure</option>
-                    <option value="jour">Par Jour</option>
-                    <option value="m2">Par m²</option>
-                    <option value="prestation">Par Prestation</option>
+                    <option value="forfait">{t("Forfait")}</option>
+                    <option value="heure">{t("Par heure")}</option>
+                    <option value="jour">{t("Par jour")}</option>
+                    <option value="m2">{t("Par m²")}</option>
+                    <option value="prestation">{t("Sur devis")}</option>
                   </select>
                 </div>
               </div>
@@ -180,14 +182,14 @@ export const ArtisanServicesTab: React.FC<ArtisanServicesTabProps> = ({
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
                 >
-                  Annuler
+                  {t("Fermer", "Annuler")}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs cursor-pointer shadow-xs"
                 >
-                  {saving ? 'Enregistrement...' : 'Ajouter'}
+                  {saving ? t('Enregistrement...') : t('Ajouter une prestation', 'Ajouter')}
                 </button>
               </div>
             </form>

@@ -4,32 +4,52 @@ import { Product } from "../product.types";
 import NodeCache from "node-cache";
 import { safeLogger } from "../../../utils/logger";
 
-const cache = new NodeCache({ stdTTL: 300, maxKeys: 1000, useClones: false });
+const cache = new NodeCache({ stdTTL: 300, maxKeys: 1000, useClones: true });
 
 export const productCatalogRouter = Router();
 
 productCatalogRouter.get("/api/v1/public/home-endless-grid", async (req, res) => {
-  const queryLimit = req.query.limit ? parseInt(String(req.query.limit), 10) : 12;
-  const queryOffset = req.query.offset ? parseInt(String(req.query.offset), 10) : 0;
-  
+  const queryLimit = Math.min(Math.max(req.query.limit ? parseInt(String(req.query.limit), 10) : 12, 1), 50);
+  const queryOffset = req.query.offset ? Math.max(parseInt(String(req.query.offset), 10), 0) : 0;
+  const lastDocId = req.query.lastDocId ? String(req.query.lastDocId).trim() : null;
+
+  // Cache first page (offset 0, default limit, no lastDocId) for 60 seconds to relieve database load
+  const isDefaultFirstPage = queryOffset === 0 && !lastDocId && queryLimit === 12;
+  const cacheKey = "home_endless_grid_page_1";
+  if (isDefaultFirstPage) {
+    const cached = cache.get<{ products: Product[]; nextCursor: string | null }>(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+  }
+
   try {
     let products: Product[] = [];
+    let nextCursor: string | null = null;
     try {
-      const q = db.collection("products")
+      let finalQ = db.collection("products")
         .where("status", "in", ["active", "approved"])
         .orderBy("createdAt", "desc");
-      
-      let finalQ = q;
-      if (queryOffset > 0) {
+
+      if (lastDocId) {
+        const lastDocSnap = await db.collection("products").doc(lastDocId).get();
+        if (lastDocSnap.exists) {
+          finalQ = finalQ.startAfter(lastDocSnap);
+        }
+      } else if (queryOffset > 0) {
         finalQ = finalQ.offset(queryOffset);
       }
+
       finalQ = finalQ.limit(queryLimit);
-      
       const snap = await finalQ.get();
       products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
+      if (snap.docs.length === queryLimit && snap.docs.length > 0) {
+        nextCursor = snap.docs[snap.docs.length - 1].id;
+      }
     } catch {
-      safeLogger.warn("Index not found or failed for home-endless-grid. Falling back to in-memory query.");
-      const snap = await db.collection("products").limit(200).get();
+      safeLogger.warn("Composite index query failed for home-endless-grid. Using bounded limit fallback.");
+      const fetchCap = Math.min(queryOffset + queryLimit, 50);
+      const snap = await db.collection("products").limit(fetchCap).get();
       products = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
       products = products.filter((p) => !p.status || p.status === "active" || p.status === "approved");
       products.sort((a, b) => {
@@ -43,8 +63,12 @@ productCatalogRouter.get("/api/v1/public/home-endless-grid", async (req, res) =>
       });
       products = products.slice(queryOffset, queryOffset + queryLimit);
     }
-    
-    return res.json({ products });
+
+    const payload = { products, nextCursor };
+    if (isDefaultFirstPage && products.length > 0) {
+      cache.set(cacheKey, payload, 60);
+    }
+    return res.json(payload);
   } catch (error: unknown) {
     safeLogger.error("Error in home-endless-grid", { err: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });

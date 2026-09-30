@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Response, Router } from "express";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../../middlewares/auth";
 import { ProductApprovalSchema } from "../../../validators/adminValidators";
 import { AdminProductService } from "../services/adminProduct.service";
@@ -19,7 +19,7 @@ router.get("/admin/categories/list", authenticateToken, authorizeAdmin, async (r
 });
 
 // Tags management
-router.get("/tags", async (req: Request, res: Response) => {
+router.get("/tags", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const tags = await AdminProductService.listTags();
     res.json({ success: true, tags });

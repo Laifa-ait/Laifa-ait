@@ -3,12 +3,42 @@ import fs from 'fs';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 
+function saveBufferAtomically(targetPath, buffer, expectedType = 'png') {
+  const dir = path.dirname(targetPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const tmpPath = `${targetPath}.tmp.${Date.now()}`;
+  fs.writeFileSync(tmpPath, buffer);
+
+  // Validate magic bytes
+  if (expectedType === 'png') {
+    const isPng = buffer.length >= 8 &&
+      buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
+    if (!isPng) {
+      fs.unlinkSync(tmpPath);
+      throw new Error(`Corrupted PNG generated for ${targetPath}`);
+    }
+  } else if (expectedType === 'jpeg' || expectedType === 'jpg') {
+    const isJpg = buffer.length >= 3 &&
+      buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+    if (!isJpg) {
+      fs.unlinkSync(tmpPath);
+      throw new Error(`Corrupted JPEG generated for ${targetPath}`);
+    }
+  }
+
+  fs.renameSync(tmpPath, targetPath);
+}
+
 async function generateAndSave(ai, prompt, targetPath, aspectRatio) {
   console.log(`\nAppel du modèle imagen-3.0-generate-002 pour générer : ${path.basename(targetPath)}...`);
   console.log(`Prompt: "${prompt}"`);
   console.log(`Aspect Ratio requis : ${aspectRatio}`);
 
-  const mimeType = targetPath.endsWith('.jpg') || targetPath.endsWith('.jpeg') ? 'image/jpeg' : 'image/png';
+  const isJpeg = targetPath.endsWith('.jpg') || targetPath.endsWith('.jpeg');
+  const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
 
   try {
     const response = await ai.models.generateImages({
@@ -34,12 +64,9 @@ async function generateAndSave(ai, prompt, targetPath, aspectRatio) {
 
     const buffer = Buffer.from(imageBase64, 'base64');
     
-    // S\'assurer que le répertoire cible existe
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    
-    // Sauvegarder l\'image générée
-    fs.writeFileSync(targetPath, buffer);
-    console.log(`✅ Image enregistrée avec succès : ${targetPath} (${Math.round(buffer.length / 1024)} KB)`);
+    // Sauvegarder atomiquement
+    saveBufferAtomically(targetPath, buffer, isJpeg ? 'jpeg' : 'png');
+    console.log(`✅ Image enregistrée atomiquement : ${targetPath} (${Math.round(buffer.length / 1024)} KB)`);
     return true;
   } catch (error) {
     console.error(`❌ Échec de la génération de ${path.basename(targetPath)} :`, error.message);
@@ -96,7 +123,6 @@ async function run() {
     if (success) {
       successCount++;
     }
-    // Délai de précaution de 2 secondes
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 

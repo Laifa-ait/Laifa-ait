@@ -1,12 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { MapPin, Building2, Landmark } from 'lucide-react';
 import { ALGERIA_WILAYAS } from '../../../constants/wilayas';
-import {
-  getCommunesForWilaya,
-  getDairasForWilaya,
-  getCommunesForDaira,
-  findDairaForCommune,
-} from '../../../data/algerianCommunesDatabase';
+import { findDairaForCommune, getCommunesForDaira, CommuneInfo } from '../../../data/algerianCommunesDatabase';
+import { useAlgerianLocationData } from '../../../hooks/useAlgerianLocationData';
 import { OlmaSelect } from '../primitives/OlmaSelect';
 import { AlgerianTerritoryInfoButton } from '../common/AlgerianTerritoryExplainer';
 
@@ -35,20 +31,12 @@ export const LocationFilterSelects: React.FC<LocationFilterSelectsProps> = ({
   idPrefix = 'filter',
   showHelpButton = true,
 }) => {
-  // Available Dairas for current Wilaya
-  const availableDairas = useMemo(() => {
-    if (!wilaya || wilaya === 'all') return [];
-    return getDairasForWilaya(wilaya);
-  }, [wilaya]);
-
-  // Available Communes (filtered by Daira if one is selected, else all for Wilaya)
-  const availableCommunes = useMemo(() => {
-    if (!wilaya || wilaya === 'all') return [];
-    if (daira && daira !== 'all') {
-      return getCommunesForDaira(wilaya, daira);
-    }
-    return getCommunesForWilaya(wilaya);
-  }, [wilaya, daira]);
+  // Async Location Data (Dairas & Communes loaded on-demand per Wilaya)
+  const {
+    dairas: availableDairas,
+    communes: availableCommunes,
+    isLoading: isCommunesLoading,
+  } = useAlgerianLocationData(wilaya, daira);
 
   const handleWilayaSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -74,7 +62,7 @@ export const LocationFilterSelects: React.FC<LocationFilterSelectsProps> = ({
     // If selected commune does not belong to new daira, reset it
     if (commune && wilaya && nextDaira) {
       const dairaCommunes = getCommunesForDaira(wilaya, nextDaira);
-      const isStillValid = dairaCommunes.some((c) => c.name.toLowerCase() === commune.toLowerCase());
+      const isStillValid = dairaCommunes.some((c: CommuneInfo) => c.name.toLowerCase() === commune.toLowerCase());
       if (!isStillValid) {
         onCommuneChange(undefined);
       }
@@ -189,7 +177,9 @@ export const LocationFilterSelects: React.FC<LocationFilterSelectsProps> = ({
           fullWidth
         >
           <option value="all">
-            {!wilaya
+            {isCommunesLoading
+              ? 'Chargement des baladias...'
+              : !wilaya
               ? "D'abord une wilaya"
               : availableCommunes.length === 0
               ? 'Aucune baladia'

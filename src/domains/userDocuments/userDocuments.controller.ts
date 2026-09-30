@@ -1,6 +1,7 @@
 import { Response, Router } from "express";
 import { z } from "zod";
-import { db } from "../../config/firebase-admin";
+import path from "path";
+import { admin, db } from "../../config/firebase-admin";
 import { AuthenticatedRequest, authenticateToken } from "../../middlewares/auth";
 import { validateRequest } from "../../middlewares/validation";
 import { safeLogger } from "../../utils/logger";
@@ -80,7 +81,7 @@ userDocumentsRouter.get("/my", authenticateToken, async (req: AuthenticatedReque
   }
 });
 
-// 2. POST /api/v1/user-documents/record - Register uploaded document metadata
+// 2. POST /api/v1/user-documents/record - Register uploaded document metadata with strict server-side verification
 userDocumentsRouter.post(
   "/record",
   authenticateToken,
@@ -94,9 +95,45 @@ userDocumentsRouter.post(
     const body = req.body as z.infer<typeof RecordDocumentSchema>;
 
     // Strict path verification: path must start with user_documents/{userId}/
-    if (!body.storagePath.startsWith(`user_documents/${userId}/`)) {
-      safeLogger.warn(`[UserDocuments] ⚠️ Tentative IDOR sur storagePath: ${body.storagePath} par uid=${userId}`);
+    const expectedPrefix = `user_documents/${userId}/`;
+    if (!body.storagePath.startsWith(expectedPrefix) || body.storagePath.includes("..")) {
+      safeLogger.warn(`[UserDocuments] ⚠️ Tentative IDOR ou Path Traversal sur storagePath: ${body.storagePath} par uid=${userId}`);
       return res.status(403).json({ success: false, error: "Accès refusé : chemin de stockage non autorisé" });
+    }
+
+    // Sanitize file name (strip directory traversal & HTML injection tokens)
+    const sanitizedFileName = path.basename(body.fileName).replace(/[<>"'`;\\/]/g, "_");
+
+    let verifiedSize = body.fileSize;
+    let verifiedMime = body.mimeType;
+
+    // Server-side verification of physical object in Firebase Storage
+    try {
+      if (admin && admin.apps && admin.apps.length > 0) {
+        const bucket = admin.storage().bucket();
+        const file = bucket.file(body.storagePath);
+        const [exists] = await file.exists();
+
+        if (exists) {
+          const [metadata] = await file.getMetadata();
+          if (metadata.size) {
+            verifiedSize = parseInt(String(metadata.size), 10);
+          }
+          if (metadata.contentType) {
+            verifiedMime = metadata.contentType;
+          }
+          safeLogger.info(`[UserDocuments] 🔐 Métadonnées Storage vérifiées côté serveur pour ${body.storagePath} (size: ${verifiedSize} bytes)`);
+        } else {
+          // If storage bucket is accessible and file physically does not exist, reject fraudulent record
+          safeLogger.warn(`[UserDocuments] ⚠️ Fichier introuvable sur Firebase Storage pour storagePath: ${body.storagePath}`);
+          return res.status(404).json({ success: false, error: "Fichier introuvable sur le stockage distant" });
+        }
+      }
+    } catch (storageErr) {
+      // In testing or emulator mode without storage credentials, log warning and preserve validated payload
+      safeLogger.warn("[UserDocuments] ⚠️ Impossible de vérifier physiquement le fichier sur Storage (mode secours)", {
+        err: storageErr instanceof Error ? storageErr.message : String(storageErr),
+      });
     }
 
     try {
@@ -105,9 +142,9 @@ userDocumentsRouter.post(
       const newDoc = {
         userId,
         category: body.category,
-        fileName: body.fileName,
-        fileSize: body.fileSize,
-        mimeType: body.mimeType,
+        fileName: sanitizedFileName,
+        fileSize: verifiedSize,
+        mimeType: verifiedMime,
         downloadUrl: body.downloadUrl,
         storagePath: body.storagePath,
         description: body.description || "",
@@ -164,7 +201,22 @@ userDocumentsRouter.delete("/:id", authenticateToken, async (req: AuthenticatedR
       return res.status(403).json({ success: false, error: "Accès refusé" });
     }
 
+    // Delete Firestore document
     await db.collection("user_documents").doc(docId).delete();
+
+    // Optionally delete physical Storage object if storagePath is present
+    if (docData?.storagePath) {
+      try {
+        if (admin && admin.apps && admin.apps.length > 0) {
+          const bucket = admin.storage().bucket();
+          await bucket.file(docData.storagePath).delete({ ignoreNotFound: true });
+          safeLogger.info(`[UserDocuments] 🗑️ Fichier Storage supprimé: ${docData.storagePath}`);
+        }
+      } catch (storageDelErr) {
+        safeLogger.warn("[UserDocuments] ⚠️ Avertissement suppression Storage physique", { err: String(storageDelErr) });
+      }
+    }
+
     safeLogger.info(`[UserDocuments] 🟢 Document supprimé: ${docId} par uid=${userId}`);
     return res.json({ success: true, message: "Document supprimé avec succès" });
   } catch (err) {

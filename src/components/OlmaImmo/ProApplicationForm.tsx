@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, Briefcase, Send, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiPost } from '../../lib/api';
 import { ProApplicationData, ProApplicationResponse } from '../../types/realEstate';
 import toast from 'react-hot-toast';
@@ -9,6 +10,7 @@ interface ProApplicationFormProps {
 }
 
 export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const [accountType, setAccountType] = useState<'pro' | 'agency'>('agency');
   const [companyName, setCompanyName] = useState('');
   const [tradeRegisterNumber, setTradeRegisterNumber] = useState('');
@@ -23,7 +25,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim() || !tradeRegisterNumber.trim() || !contactPhone.trim()) {
-      toast.error('Veuillez renseigner tous les champs obligatoires.');
+      toast.error(t('Veuillez renseigner tous les champs obligatoires.'));
       return;
     }
 
@@ -43,13 +45,13 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
 
       const res = await apiPost<ProApplicationResponse>('/api/v1/real-estate/pro-application', payload);
       if (res.success && res.data) {
-        toast.success('Votre demande a été soumise avec succès !');
+        toast.success(t('Votre demande a été soumise avec succès !'));
         onSuccess(res.data);
       } else {
-        toast.error(res.error || 'Erreur lors de la soumission.');
+        toast.error(res.error || t('Erreur lors de la soumission.'));
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur réseau';
+      const msg = err instanceof Error ? err.message : t('Erreur lors de la soumission.');
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -70,8 +72,8 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           }`}
         >
           <Building2 className="w-5 h-5 mb-1.5 text-[#1E3A8A]" />
-          <p className="text-xs font-bold">Agence Immobilière</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Pour les agences avec agrément et registre</p>
+          <p className="text-xs font-bold">{t("Agence Immobilière")}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">{t("Pour les agences avec agrément et registre")}</p>
         </button>
 
         <button
@@ -84,8 +86,8 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
           }`}
         >
           <Briefcase className="w-5 h-5 mb-1.5 text-[#1E3A8A]" />
-          <p className="text-xs font-bold">Agent / Courtier Pro</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Pour les professionnels indépendants</p>
+          <p className="text-xs font-bold">{t("Agent / Courtier Pro")}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">{t("Pour les professionnels indépendants")}</p>
         </button>
       </div>
 
@@ -93,21 +95,21 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Nom de l'agence ou Raison Sociale *
+            {t("Nom de l'agence ou Raison Sociale *")}
           </label>
           <input
             type="text"
             required
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Ex: Agence El Bahdja Immo"
+            placeholder={t("Ex: Agence Immobilière El Bahdja")}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            N° Registre de Commerce (RC) *
+            {t("N° Registre du Commerce *")}
           </label>
           <input
             type="text"
@@ -124,7 +126,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            N° Agrément Ministériel {accountType === 'agency' ? '(Recommandé)' : '(Optionnel)'}
+            {accountType === 'agency' ? t("N° Agrément Immobilier (Optionnel)") : t("N° Agrément Immobilier (Optionnel)")}
           </label>
           <input
             type="text"
@@ -137,7 +139,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            NIF / NIS Fiscal
+            {t("NIF / Numéro Fiscal (Optionnel)")}
           </label>
           <input
             type="text"
@@ -152,7 +154,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
       {/* Wilaya & Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Wilaya principale *</label>
+          <label className="block text-xs font-bold text-slate-700 mb-1">{t("Wilaya principale *")}</label>
           <select
             value={wilaya}
             onChange={(e) => setWilaya(e.target.value)}
@@ -172,13 +174,13 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Téléphone professionnel *</label>
+          <label className="block text-xs font-bold text-slate-700 mb-1">{t("Téléphone Professionnel *")}</label>
           <input
             type="tel"
             required
             value={contactPhone}
             onChange={(e) => setContactPhone(e.target.value)}
-            placeholder="Ex: 0550 12 34 56"
+            placeholder={t("Ex: 0550 12 34 56")}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
           />
         </div>
@@ -186,23 +188,23 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
 
       {/* Address */}
       <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1">Adresse du siège / agence</label>
+        <label className="block text-xs font-bold text-slate-700 mb-1">{t("Adresse du bureau / Siège")}</label>
         <input
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Ex: 12 Rue Didouche Mourad, Alger Centre"
+          placeholder={t("Ex: 12 Rue Didouche Mourad, Alger")}
           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A]"
         />
       </div>
 
       {/* Bio */}
       <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1">Présentation de l'activité</label>
+        <label className="block text-xs font-bold text-slate-700 mb-1">{t("Présentation de l'activité (Optionnel)")}</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Spécialités, zones d'intervention, types de biens gérés..."
+          placeholder={t("Décrivez brièvement vos zones d'intervention, spécialités...")}
           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-[#1E3A8A] h-20 resize-none"
         />
       </div>
@@ -217,7 +219,7 @@ export const ProApplicationForm: React.FC<ProApplicationFormProps> = ({ onSucces
         ) : (
           <Send className="w-4 h-4 text-[#F59E0B]" />
         )}
-        <span>Envoyer la demande de vérification</span>
+        <span>{isSubmitting ? t("Soumission en cours...") : t("Soumettre ma candidature Pro")}</span>
       </button>
     </form>
   );

@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {defineConfig, loadEnv} from 'vite';
@@ -18,6 +19,20 @@ export default defineConfig(({mode}) => {
     plugins: [
       react(), 
       tailwindcss(),
+      {
+        name: 'mirror-build-artifacts',
+        closeBundle() {
+          try {
+            const distDir = path.resolve(__dirname, 'dist');
+            const buildDir = path.resolve(__dirname, 'build');
+            if (fs.existsSync(distDir)) {
+              fs.cpSync(distDir, buildDir, { recursive: true });
+            }
+          } catch {
+            // graceful fallback
+          }
+        },
+      },
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {

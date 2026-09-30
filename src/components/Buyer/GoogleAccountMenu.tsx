@@ -15,7 +15,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getRetroAvatar } from "../../utils/avatar";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface GoogleAccountMenuProps {
   isOpen: boolean;
@@ -39,11 +39,6 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
     onClose();
     navigate("/");
   };
-
-  const avatarUrl =
-    userProfile?.photoURL ||
-    currentUser?.photoURL ||
-    getRetroAvatar(currentUser?.email || currentUser?.uid || "user");
 
   const displayName =
     userProfile?.displayName ||
@@ -107,9 +102,14 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
 
         <div className="px-5 pt-1 pb-4 flex flex-col items-center text-center shrink-0">
           <div className="relative mb-2">
-            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xs bg-white p-0.5">
-              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
-            </div>
+            <UserAvatar
+              photoURL={userProfile?.photoURL || currentUser?.photoURL}
+              displayName={displayName}
+              email={currentUser?.email}
+              providerData={currentUser?.providerData}
+              size="xl"
+              alt={displayName}
+            />
             <button
               onClick={() => handleNav("/dashboard/buyer?tab=profile")}
               title={t("Modifier la photo")}
@@ -123,7 +123,11 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
           <p className="text-xs text-[#444746] truncate max-w-[280px]">{currentUser?.email}</p>
 
           <span className="mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]">
-            {userProfile?.role === "admin" ? "Compte Administrateur" : userProfile?.role === "seller" ? "Compte Vendeur Pro" : "Compte Client"}
+            {userProfile?.role === "admin"
+              ? t("Compte Administrateur", "Compte Administrateur")
+              : userProfile?.role === "seller"
+              ? t("Compte Vendeur Pro", "Compte Vendeur Pro")
+              : t("Compte Client", "Compte Client")}
           </span>
 
           <button
@@ -197,9 +201,9 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
 
           <div className="pt-1 text-center">
             <p className="text-[10px] text-[#444746] flex items-center justify-center gap-2">
-              <button onClick={() => handleNav("/privacy-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">Confidentialité</button>
+              <button onClick={() => handleNav("/privacy-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">{t("Confidentialité", "Confidentialité")}</button>
               <span>•</span>
-              <button onClick={() => handleNav("/refund-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">Conditions</button>
+              <button onClick={() => handleNav("/refund-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">{t("Conditions", "Conditions")}</button>
             </p>
           </div>
         </div>

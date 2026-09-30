@@ -18,35 +18,47 @@ export const HomeEndlessGrid: React.FC = () => {
     const fetchInitial = async () => {
       try {
         let docs: Product[] = [];
-        const res = await fetch(`/api/v1/public/home-endless-grid?limit=${INITIAL_FETCH_LIMIT}`);
-        if (res.ok) {
-          const data = await res.json();
-          docs = data.products || [];
+        try {
+          const res = await fetch(`/api/v1/public/home-endless-grid?limit=${INITIAL_FETCH_LIMIT}`);
+          if (res.ok) {
+            const data = await res.json();
+            docs = data.products || [];
+          }
+        } catch {
+          // Fetch failed, proceed to fallback
         }
 
         if (docs.length === 0) {
-          const fallbackRes = await fetch(`/api/v1/products?limit=${INITIAL_FETCH_LIMIT}`);
-          if (fallbackRes.ok) {
-            const fallbackData = await fallbackRes.json();
-            docs = fallbackData.products || [];
+          try {
+            const fallbackRes = await fetch(`/api/v1/products?limit=${INITIAL_FETCH_LIMIT}`);
+            if (fallbackRes.ok) {
+              const fallbackData = await fallbackRes.json();
+              docs = fallbackData.products || [];
+            }
+          } catch {
+            // Fallback failed, proceed to next
           }
         }
 
         if (docs.length === 0) {
-          const homeDataRes = await fetch(`/api/v1/public/home-data`);
-          if (homeDataRes.ok) {
-            const homeData = await homeDataRes.json();
-            docs = homeData.featuredProducts || [];
+          try {
+            const homeDataRes = await fetch(`/api/v1/public/home-data`);
+            if (homeDataRes.ok) {
+              const homeData = await homeDataRes.json();
+              docs = homeData.featuredProducts || [];
+            }
+          } catch {
+            // Final fallback failed
           }
         }
 
         if (!cancelled) {
-          const validDocs = docs.filter((d) => d.stock === undefined || d.stock > 0);
+          const validDocs = docs.filter((d) => d && (d.stock === undefined || d.stock > 0));
           setProducts(validDocs);
           setHasMore(docs.length >= INITIAL_FETCH_LIMIT);
         }
-      } catch (err) {
-        console.error("Error fetching endless grid:", err);
+      } catch {
+        // Silently handle error and set empty state
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -61,24 +73,34 @@ export const HomeEndlessGrid: React.FC = () => {
     if (!hasMore || loadingMore) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(
-        `/api/v1/public/home-endless-grid?limit=${LOAD_MORE_LIMIT}&offset=${products.length}`
-      );
       let newDocs: Product[] = [];
-      if (res.ok) {
-        const data = await res.json();
-        newDocs = data.products || [];
-      } else {
-        const fallbackRes = await fetch(
-          `/api/v1/products?limit=${LOAD_MORE_LIMIT}&offset=${products.length}`
+      try {
+        const res = await fetch(
+          `/api/v1/public/home-endless-grid?limit=${LOAD_MORE_LIMIT}&offset=${products.length}`
         );
-        if (fallbackRes.ok) {
-          const data = await fallbackRes.json();
+        if (res.ok) {
+          const data = await res.json();
           newDocs = data.products || [];
+        }
+      } catch {
+        // Fetch failed, proceed to fallback
+      }
+
+      if (newDocs.length === 0) {
+        try {
+          const fallbackRes = await fetch(
+            `/api/v1/products?limit=${LOAD_MORE_LIMIT}&offset=${products.length}`
+          );
+          if (fallbackRes.ok) {
+            const data = await fallbackRes.json();
+            newDocs = data.products || [];
+          }
+        } catch {
+          // Fallback failed
         }
       }
 
-      const validNewDocs = newDocs.filter((d) => d.stock === undefined || d.stock > 0);
+      const validNewDocs = newDocs.filter((d) => d && (d.stock === undefined || d.stock > 0));
 
       setProducts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
@@ -87,8 +109,8 @@ export const HomeEndlessGrid: React.FC = () => {
       });
 
       setHasMore(newDocs.length >= LOAD_MORE_LIMIT);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Handle load more error silently
     } finally {
       setLoadingMore(false);
     }

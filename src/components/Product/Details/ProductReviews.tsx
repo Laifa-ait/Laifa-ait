@@ -1,20 +1,7 @@
 import React, { useMemo } from "react";
-import { Star, ThumbsUp, MessageSquare } from "lucide-react";
+import { Star, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-
-interface ProductComment {
-  id?: string;
-  stars?: number;
-  rating?: number;
-  comment?: string;
-  text?: string;
-  userName?: string;
-  name?: string;
-  createdAt?: string | number | Date | { seconds: number; nanoseconds?: number; toDate?: () => Date };
-  [key: string]: unknown;
-}
+import { ProductReviewItem, ProductComment } from "./ProductReviewItem";
 
 interface ReviewsProps {
   comments: ProductComment[];
@@ -96,29 +83,6 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
     );
   };
 
-  const getMaskedName = (name?: string) => {
-    if (!name) return "A***m";
-    if (name.length <= 2) return name + "***";
-    return name.charAt(0) + "***" + name.charAt(name.length - 1);
-  };
-
-  const formatDate = (timestamp: { seconds: number; nanoseconds?: number; toDate?: () => Date } | Date | string | number | null | undefined) => {
-    if (!timestamp) return "";
-    try {
-      if (timestamp instanceof Date) {
-        return format(timestamp, "dd MMM yyyy", { locale: fr });
-      }
-      if (typeof timestamp === "string" || typeof timestamp === "number") {
-        return format(new Date(timestamp), "dd MMM yyyy", { locale: fr });
-      }
-      const tObj = timestamp as { seconds: number; toDate?: () => Date };
-      const date = tObj.toDate ? tObj.toDate() : new Date(tObj.seconds * 1000);
-      return format(date, "dd MMM yyyy", { locale: fr });
-    } catch {
-      return "";
-    }
-  };
-
   return (
     <div className="space-y-0">
       <h2 className="text-xl font-sans font-bold text-gray-900 mb-6">
@@ -172,41 +136,18 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
 
           <div className="space-y-6">
             {filteredComments.length === 0 && filterStar ? (
-               <div className="text-center py-8 text-gray-500">Aucun avis de {filterStar} étoiles trouvé.</div>
-            ) : filteredComments.map((c) => (
-              <div key={c.id} className="border-b border-gray-100 pb-6 last:border-0">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-                      {c.name ? c.name.charAt(0).toUpperCase() : "U"}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900 text-sm">
-                        {getMaskedName(c.name)}
-                      </div>
-                      <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                        <span>DZ</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span>{formatDate(c.createdAt)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mb-3">
-                  {renderStars(c.stars ?? c.rating ?? 5)}
-                </div>
-                
-                <p className="text-gray-800 text-sm leading-relaxed mb-4">{c.text || c.comment || ""}</p>
-                
-                <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
-                  <button className="flex items-center gap-1.5 hover:text-gray-900 transition-colors">
-                    <ThumbsUp className="w-4 h-4" />
-                    <span>Utile</span>
-                  </button>
-                </div>
+              <div className="text-center py-8 text-gray-500">
+                Aucun avis de {filterStar} étoiles trouvé.
               </div>
-            ))}
+            ) : (
+              filteredComments.map((c, idx) => (
+                <ProductReviewItem
+                  key={c.id || idx}
+                  comment={c}
+                  renderStars={renderStars}
+                />
+              ))
+            )}
           </div>
         </>
       ) : (

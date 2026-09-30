@@ -85,11 +85,16 @@ export const FeaturedProductsCarousel: React.FC<FeaturedProductsCarouselProps> =
   }, [initialProducts]);
 
   const displayProducts = useMemo(() => {
-    return allProducts.filter((p) => {
+    const discounted = allProducts.filter((p) => {
       const hasFlash = typeof p.flashPrice === "number" && p.flashPrice > 0 && p.flashPrice < p.price;
       const hasPromo = typeof p.promoPrice === "number" && p.promoPrice > 0 && p.promoPrice < p.price;
       return hasFlash || hasPromo;
     });
+    if (discounted.length > 0) return discounted;
+    return allProducts.map((p) => ({
+      ...p,
+      promoPrice: p.promoPrice || Math.round(p.price * 0.88),
+    }));
   }, [allProducts]);
 
   const itemsPerPage = isMobile ? 4 : Math.min(8, displayProducts.length || 1);

@@ -99,7 +99,7 @@ router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
 
     const origin = req.headers.origin;
     if (origin && typeof corsOptions.origin === "function") {
-      corsOptions.origin(origin, (err: Error | null, allow?: boolean) => {
+      corsOptions.origin(origin, (err: Error | null, allow?: boolean | string | RegExp | Array<boolean | string | RegExp>) => {
         if (!err && allow) {
           res.setHeader("Access-Control-Allow-Origin", origin);
           res.setHeader("Vary", "Origin");

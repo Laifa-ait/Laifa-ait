@@ -71,6 +71,7 @@ export const PropertySortOptionEnum = z.enum([
   'distance',
   'price_asc',
   'price_desc',
+  'area_desc',
   'recent',
   'popularity',
 ]);

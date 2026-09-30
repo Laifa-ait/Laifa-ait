@@ -620,6 +620,15 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    match /admin_audit_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /ad_events/{id} {
+      allow create: if true;
+      allow read, write: if isAdmin();
+    }
+
     match /newsletter_campaigns/{id} {
       allow read, write: if isAdmin();
     }

@@ -1,4 +1,5 @@
-import { Request, Response, Router } from "express";
+import { Response, Router } from "express";
+import { z } from "zod";
 import { admin, db } from "../../../config/firebase-admin";
 import { authenticateToken, authorizeAdmin, AuthenticatedRequest } from "../../../middlewares/auth";
 import { AdminCouponCreateSchema, AdminCouponStatusUpdateSchema } from "../../../validators/adminValidators";
@@ -6,8 +7,26 @@ import { CouponService } from "../../marketing/coupon.service";
 
 const router = Router();
 
+const AdminBannerSchema = z.object({
+  title: z.string().max(200).optional(),
+  imageUrl: z.string().url().optional(),
+  mobileImageUrl: z.string().url().optional(),
+  linkUrl: z.string().url().optional(),
+  targetType: z.string().max(50).optional(),
+  targetId: z.string().max(100).optional(),
+  order: z.number().int().min(0).optional(),
+  sort_order: z.number().int().min(0).optional(),
+  isActive: z.boolean().optional(),
+  active: z.boolean().optional(),
+  startDate: z.string().nullable().optional(),
+  endDate: z.string().nullable().optional(),
+  wilayaCode: z.string().max(10).nullable().optional(),
+  type: z.string().max(50).optional(),
+  category: z.string().max(100).optional(),
+}).strict();
+
 // Banners management
-router.get("/banners", async (req: Request, res: Response) => {
+router.get("/banners", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const snap = await db.collection("banners").orderBy("order", "asc").get();
     const banners = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -17,7 +36,7 @@ router.get("/banners", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/banners/:id", async (req: Request, res: Response) => {
+router.get("/banners/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const doc = await db.collection("banners").doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: "Banner not found" });
@@ -29,8 +48,12 @@ router.get("/banners/:id", async (req: Request, res: Response) => {
 
 router.post("/banners", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const parseResult = AdminBannerSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: "Données de bannière invalides", details: parseResult.error.issues });
+    }
     const bannerData = {
-      ...req.body,
+      ...parseResult.data,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     const ref = await db.collection("banners").add(bannerData);
@@ -42,8 +65,12 @@ router.post("/banners", authenticateToken, authorizeAdmin, async (req: Authentic
 
 router.put("/banners/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const parseResult = AdminBannerSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: "Données de bannière invalides", details: parseResult.error.issues });
+    }
     await db.collection("banners").doc(req.params.id).update({
-      ...req.body,
+      ...parseResult.data,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     res.json({ success: true });

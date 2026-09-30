@@ -42,7 +42,9 @@ export function validateProductionHtmlTemplate(content: string, distPath: string
     if (match[1]) {
       const referencedJsPath = path.join(distPath, match[1].replace(/^\//, ""));
       if (!existsSync(referencedJsPath)) {
-        safeLogger.error("[CRITICAL BUILD ERROR] Referenced JS asset chunk does not exist on disk", { referencedJsPath });
+        safeLogger.error("[CRITICAL BUILD ERROR] Missing JS asset chunk in HTML template", {
+          chunkName: path.basename(match[1]),
+        });
         return false;
       }
     }

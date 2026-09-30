@@ -2,11 +2,11 @@ import React, { useMemo, useState } from 'react';
 import { GeoPointLocation } from '../../../types/realEstate';
 import {
   getCommunesForWilaya,
-  getDairasForWilaya,
   findWilayaCoords,
   findCommuneCoords,
   findDairaForCommune,
 } from '../../../data/algerianCommunesDatabase';
+import { useAlgerianLocationData } from '../../../hooks/useAlgerianLocationData';
 import { MapPin } from 'lucide-react';
 import { ResidenceLocationPickerMap } from './ResidenceLocationPickerMap';
 import { AlgeriaPlaceSearchBar } from './AlgeriaPlaceSearchBar';
@@ -23,19 +23,11 @@ export const ManualLocationPicker: React.FC<ManualLocationPickerProps> = ({ loca
   const [isManualTextEntry, setIsManualTextEntry] = useState(false);
   const [isTerritoryModalOpen, setIsTerritoryModalOpen] = useState(false);
 
-  // Available Daïras for Wilaya
-  const availableDairas = useMemo(() => {
-    if (!location.wilaya) return [];
-    return getDairasForWilaya(location.wilaya);
-  }, [location.wilaya]);
-
-  // Communes available for currently selected Wilaya & Daïra
-  const availableCommunes = useMemo(() => {
-    if (!location.wilaya) return [];
-    const all = getCommunesForWilaya(location.wilaya);
-    if (!location.daira) return all;
-    return all.filter((c) => c.daira && c.daira.toLowerCase() === location.daira?.toLowerCase());
-  }, [location.wilaya, location.daira]);
+  // Async Location Data (Dairas & Communes loaded on-demand per Wilaya)
+  const {
+    dairas: availableDairas,
+    communes: availableCommunes,
+  } = useAlgerianLocationData(location.wilaya, location.daira);
 
   const effectiveDaira = useMemo(() => {
     if (location.daira) return location.daira;

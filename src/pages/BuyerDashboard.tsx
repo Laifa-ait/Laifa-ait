@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiGet } from "../lib/api";
-import { getRetroAvatar } from "../utils/avatar";
+import { UserAvatar } from "../components/ui/UserAvatar";
 import { BUYER_ORDERS_PER_PAGE } from "../constants/ui";
 
 // Core Modular Sub-Views
@@ -141,11 +141,6 @@ export const BuyerDashboard: React.FC = () => {
       setLoadingMore(false);
     }
   };
-
-  const avatarUrl =
-    userProfile?.photoURL ||
-    currentUser?.photoURL ||
-    getRetroAvatar(currentUser?.email || currentUser?.uid || "user");
 
   const settingItems = useMemo(
     () => [
@@ -290,14 +285,13 @@ export const BuyerDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full overflow-hidden border border-[#dadce0] p-0.5 bg-white">
-              <img
-                src={avatarUrl}
-                alt="Profil"
-                className="w-full h-full object-cover rounded-full"
-                referrerPolicy="no-referrer"
-              />
-            </div>
+            <UserAvatar
+              photoURL={userProfile?.photoURL || currentUser?.photoURL}
+              displayName={userProfile?.displayName || currentUser?.displayName}
+              email={currentUser?.email}
+              providerData={currentUser?.providerData}
+              size="sm"
+            />
           </div>
         </div>
       </div>
@@ -422,7 +416,7 @@ export const BuyerDashboard: React.FC = () => {
                 )}
                 {activeTab === "following" && <FollowedStores />}
                 {activeTab === "reviews" && <MyReviews />}
-                {activeTab === "returns" && <ReturnManagement />}
+                {activeTab === "returns" && <ReturnManagement currentUser={currentUser} />}
                 {activeTab === "documents" && <UserDocumentsSection />}
                 {activeTab === "support" && <BuyerSupport />}
                 {activeTab === "about" && <AboutSection />}

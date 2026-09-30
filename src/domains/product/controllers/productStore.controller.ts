@@ -4,7 +4,7 @@ import { Product, HomepageSection, Banner } from "../product.types";
 import NodeCache from "node-cache";
 import { safeLogger } from "../../../utils/logger";
 
-const cache = new NodeCache({ stdTTL: 300, maxKeys: 1000, useClones: false });
+const cache = new NodeCache({ stdTTL: 300, maxKeys: 1000, useClones: true });
 
 export const productStoreRouter = Router();
 

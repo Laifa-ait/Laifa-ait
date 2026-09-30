@@ -6,7 +6,6 @@
  */
 
 import React, { useEffect } from "react";
-import { Toaster } from "sonner";
 import { AppRouter } from "./AppRouter";
 import { InstallPrompt } from "./components/InstallPrompt";
 import { useTranslation } from "react-i18next";
@@ -56,19 +55,6 @@ const App = () => {
       <AppRouter />
       <GlobalSearchModal />
       <DataConsentBanner />
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        duration={4000}
-        theme="system"
-        toastOptions={{
-          style: {
-            fontFamily: "inherit",
-            borderRadius: "0.75rem",
-          }
-        }}
-      />
       <InstallPrompt />
     </ErrorBoundary>
   );

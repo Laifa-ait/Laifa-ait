@@ -49,11 +49,11 @@ export const SellerOnboarding: React.FC = () => {
   };
 
   const steps = [
-    { id: 1, title: 'Boutique', icon: <Store className="w-6 h-6" /> },
-    { id: 2, title: 'Vérification', icon: <FileText className="w-6 h-6" /> },
-    { id: 3, title: 'Paiement', icon: <CreditCard className="w-6 h-6" /> },
-    { id: 4, title: 'Catalogue', icon: <Box className="w-6 h-6" /> },
-    { id: 5, title: 'Prêt', icon: <CheckCircle className="w-6 h-6" /> }
+    { id: 1, title: t('Boutique'), icon: <Store className="w-6 h-6" /> },
+    { id: 2, title: t('Vérification'), icon: <FileText className="w-6 h-6" /> },
+    { id: 3, title: t('Paiement'), icon: <CreditCard className="w-6 h-6" /> },
+    { id: 4, title: t('Catalogue'), icon: <Box className="w-6 h-6" /> },
+    { id: 5, title: t('Prêt'), icon: <CheckCircle className="w-6 h-6" /> }
   ];
 
   return (
@@ -62,7 +62,7 @@ export const SellerOnboarding: React.FC = () => {
           {/* Header */}
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold text-slate-900 mb-4">{t("Devenir vendeur sur Olmart")}</h1>
-            <p className="text-slate-600">Complétez ces quelques étapes pour ouvrir votre boutique</p>
+            <p className="text-slate-600">{t("Complétez ces quelques étapes pour ouvrir votre boutique")}</p>
           </div>
 
           {/* Stepper */}
@@ -86,50 +86,50 @@ export const SellerOnboarding: React.FC = () => {
           <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
             {step === 1 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-900">1. Informations de la boutique</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{t("1. Informations de la boutique")}</h2>
                 <div>
-                  <label htmlFor="storeName" className="block text-sm font-semibold text-slate-700 mb-2">Nom de la boutique</label>
-                  <input id="storeName" type="text" aria-label="Nom de la boutique" value={formData.storeName} onChange={e => setFormData({...formData, storeName: e.target.value})} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Ex: Boutique Tech Alger" />
+                  <label htmlFor="storeName" className="block text-sm font-semibold text-slate-700 mb-2">{t("Nom de la boutique")}</label>
+                  <input id="storeName" type="text" aria-label={t("Nom de la boutique")} value={formData.storeName} onChange={e => setFormData({...formData, storeName: e.target.value})} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder={t("Ex: Boutique Tech Alger")} />
                 </div>
                 <div>
-                  <label htmlFor="storeDesc" className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
-                  <textarea id="storeDesc" aria-label="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Décrivez votre boutique..." />
+                  <label htmlFor="storeDesc" className="block text-sm font-semibold text-slate-700 mb-2">{t("Description")}</label>
+                  <textarea id="storeDesc" aria-label={t("Description")} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder={t("Décrivez votre boutique...")} />
                 </div>
               </motion.div>
             )}
 
             {step === 2 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-900">2. Vérification d'identité (KYC)</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{t("2. Vérification d'identité (KYC)")}</h2>
                 <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl">
-                  <p className="text-blue-800 mb-4">Pour protéger nos clients, nous avons besoin de vérifier votre identité.</p>
-                  <label htmlFor="kycDoc" className="block text-sm font-semibold text-slate-700 mb-2">Numéro de Registre de Commerce ou NIF</label>
-                  <input id="kycDoc" type="text" aria-label="NIF" value={formData.documentId} onChange={e => setFormData({...formData, documentId: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20" placeholder="Ex: 1234567890" />
+                  <p className="text-blue-800 mb-4">{t("Pour protéger nos clients, nous avons besoin de vérifier votre identité.")}</p>
+                  <label htmlFor="kycDoc" className="block text-sm font-semibold text-slate-700 mb-2">{t("Numéro de Registre de Commerce ou NIF")}</label>
+                  <input id="kycDoc" type="text" aria-label={t("Numéro de Registre de Commerce ou NIF")} value={formData.documentId} onChange={e => setFormData({...formData, documentId: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20" placeholder={t("Ex: 1234567890")} />
                 </div>
               </motion.div>
             )}
 
             {step === 3 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-900">3. Configuration de paiement</h2>
-                <p className="text-slate-600">Comment souhaitez-vous recevoir vos paiements ?</p>
+                <h2 className="text-2xl font-bold text-slate-900">{t("3. Configuration de paiement")}</h2>
+                <p className="text-slate-600">{t("Comment souhaitez-vous recevoir vos paiements ?")}</p>
                 <div>
-                  <label htmlFor="rib" className="block text-sm font-semibold text-slate-700 mb-2">RIB / CCP (20 chiffres)</label>
-                  <input id="rib" type="text" aria-label="RIB / CCP" value={formData.rib} onChange={e => setFormData({...formData, rib: e.target.value})} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Ex: 00000000000000000000" />
+                  <label htmlFor="rib" className="block text-sm font-semibold text-slate-700 mb-2">{t("RIB / CCP (20 chiffres)")}</label>
+                  <input id="rib" type="text" aria-label={t("RIB / CCP (20 chiffres)")} value={formData.rib} onChange={e => setFormData({...formData, rib: e.target.value})} className="w-full px-4 py-3 bg-transparent border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Ex: 00000000000000000000" />
                 </div>
               </motion.div>
             )}
 
             {step === 4 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-900">4. Préparez votre catalogue</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{t("4. Préparez votre catalogue")}</h2>
                 <div className="bg-transparent p-6 rounded-2xl border border-slate-200 text-center space-y-4">
                   <Box className="w-12 h-12 text-slate-500 mx-auto" />
-                  <p className="text-slate-600">Vous pourrez ajouter vos produits dès que vous accéderez à votre tableau de bord.</p>
+                  <p className="text-slate-600">{t("Vous pourrez ajouter vos produits dès que vous accéderez à votre tableau de bord.")}</p>
                   <ul className="text-sm text-slate-500 text-left list-disc list-inside space-y-2 max-w-sm mx-auto">
-                    <li>Préparez des photos claires et lumineuses</li>
-                    <li>Rédigez des descriptions détaillées</li>
-                    <li>Fixez des prix compétitifs</li>
+                    <li>{t("Préparez des photos claires et lumineuses")}</li>
+                    <li>{t("Rédigez des descriptions détaillées")}</li>
+                    <li>{t("Fixez des prix compétitifs")}</li>
                   </ul>
                 </div>
               </motion.div>
@@ -138,8 +138,8 @@ export const SellerOnboarding: React.FC = () => {
             {step === 5 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 text-center">
                 <CheckCircle className="w-20 h-20 text-emerald-500 mx-auto" />
-                <h2 className="text-2xl font-bold text-slate-900">Vous y êtes presque !</h2>
-                <p className="text-slate-600 max-w-md mx-auto">Votre boutique est prête à être créée. Une fois sur votre tableau de bord, vous pourrez commencer à ajouter vos produits et configurer vos options de livraison.</p>
+                <h2 className="text-2xl font-bold text-slate-900">{t("Vous y êtes presque !")}</h2>
+                <p className="text-slate-600 max-w-md mx-auto">{t("Votre boutique est prête à être créée. Une fois sur votre tableau de bord, vous pourrez commencer à ajouter vos produits et configurer vos options de livraison.")}</p>
               </motion.div>
             )}
 
@@ -150,7 +150,7 @@ export const SellerOnboarding: React.FC = () => {
                 disabled={step === 1 || loading}
                 className="px-6 py-3 font-semibold text-slate-600 hover:bg-transparent rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                <ArrowLeft className="w-4 h-4" /> Précédent
+                <ArrowLeft className="w-4 h-4" /> {t("Précédent")}
               </button>
 
               {step < 5 ? (
@@ -158,7 +158,7 @@ export const SellerOnboarding: React.FC = () => {
                   onClick={() => setStep(Math.min(5, step + 1))}
                   className="px-8 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-lg shadow-orange-600/20"
                 >
-                  Suivant <ArrowRight className="w-4 h-4" />
+                  {t("Suivant")} <ArrowRight className="w-4 h-4" />
                 </button>
               ) : (
                 <button 
@@ -166,7 +166,7 @@ export const SellerOnboarding: React.FC = () => {
                   disabled={loading}
                   className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-600/20"
                 >
-                  {loading ? 'Création...' : 'Ouvrir ma boutique'} <CheckCircle className="w-4 h-4" />
+                  {loading ? t('Création...') : t('Ouvrir ma boutique')} <CheckCircle className="w-4 h-4" />
                 </button>
               )}
             </div>

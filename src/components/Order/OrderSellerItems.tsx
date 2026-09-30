@@ -40,7 +40,7 @@ export const OrderSellerItems: React.FC<OrderSellerItemsProps> = ({
         {Object.entries(groupedItems).map(([sellerId, items]) => {
           const shop = shops[sellerId];
           const shopName = shop?.shopName || t("Boutique Partenaire Olmart") || "Boutique Partenaire Olmart";
-          const shopLogo = shop?.logo;
+          const shopLogo = shop?.logoUrl;
 
           return (
             <div

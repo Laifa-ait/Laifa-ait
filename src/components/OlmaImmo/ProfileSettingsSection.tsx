@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { User, Phone, Mail, MapPin, Save, CheckCircle2, ShieldCheck, Bell } from 'lucide-react';
-import { ALGERIA_WILAYAS_DATABASE } from '../../data/algerianCommunesDatabase';
+import { ALGERIA_WILAYAS } from '../../constants/wilayas';
 
 export const ProfileSettingsSection: React.FC = () => {
   const { currentUser, userProfile, updateUserProfile } = useAuth();
@@ -106,9 +106,9 @@ export const ProfileSettingsSection: React.FC = () => {
             onChange={(e) => setPreferredWilaya(e.target.value)}
             className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-xl text-xs text-stone-900 font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
           >
-            {ALGERIA_WILAYAS_DATABASE.map((w) => (
+            {ALGERIA_WILAYAS.map((w) => (
               <option key={w.code} value={w.name}>
-                {w.code} - {w.name} ({w.name_ar})
+                {w.code} - {w.name} {w.name_ar ? `(${w.name_ar})` : ''}
               </option>
             ))}
           </select>
