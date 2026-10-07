@@ -283,6 +283,23 @@ router.put("/admin/users/:id/client-type", authenticateToken, authorizeAdmin, as
   }
 });
 
+const ALLOWED_CAPABILITIES = [
+  "property_owner",
+  "artisan",
+  "real_estate_pro",
+  "seller",
+  "delivery_agent",
+  "verified_buyer",
+  "support_agent",
+  "marketing_manager",
+] as const;
+
+function csvSafe(value: unknown): string {
+  const s = String(value ?? "");
+  const protectedValue = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+  return `"${protectedValue.replace(/"/g, '""')}"`;
+}
+
 router.put("/admin/users/:id/capabilities", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.params.id;
@@ -290,6 +307,15 @@ router.put("/admin/users/:id/capabilities", authenticateToken, authorizeAdmin, a
 
     if (!Array.isArray(capabilities) || !capabilities.every((c) => typeof c === "string")) {
       return res.status(400).json({ error: "Les fonctionnalités (capabilities) doivent être un tableau de chaînes." });
+    }
+
+    const invalidCaps = capabilities.filter(
+      (c) => !ALLOWED_CAPABILITIES.includes(c as (typeof ALLOWED_CAPABILITIES)[number])
+    );
+    if (invalidCaps.length > 0) {
+      return res.status(400).json({
+        error: `Fonctionnalité(s) non autorisée(s): ${invalidCaps.join(", ")}. Valeurs admises: ${ALLOWED_CAPABILITIES.join(", ")}`,
+      });
     }
 
     await db.collection("users").doc(userId).update({
@@ -317,6 +343,9 @@ router.post("/admin/users/bulk-status", authenticateToken, authorizeAdmin, async
     const { userIds, status, reason } = req.body;
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ error: "Liste d'utilisateurs requise" });
+    }
+    if (userIds.length > 100) {
+      return res.status(400).json({ error: "Maximum 100 utilisateurs par opération groupée." });
     }
     if (!["active", "suspended", "blocked"].includes(status)) {
       return res.status(400).json({ error: "Statut invalide" });
@@ -468,23 +497,25 @@ router.get("/admin/reports/export", authenticateToken, authorizeAdmin, async (re
     if (type === "orders") {
       const snap = await db.collection("orders").limit(500).get();
       csvContent = "ID,Client,Montant,Statut,Date\n";
-      snap.docs.forEach(doc => {
+      snap.docs.forEach((doc) => {
         const d = doc.data();
-        csvContent += `"${doc.id}","${d.customerName || ""}","${d.totalAmount || 0}","${d.status || ""}","${d.createdAt ? d.createdAt.toDate().toISOString() : ""}"\n`;
+        const dateStr = d.createdAt && typeof d.createdAt.toDate === "function" ? d.createdAt.toDate().toISOString() : "";
+        csvContent += `${csvSafe(doc.id)},${csvSafe(d.customerName || "")},${csvSafe(d.totalAmount || 0)},${csvSafe(d.status || "")},${csvSafe(dateStr)}\n`;
       });
     } else if (type === "sellers") {
       const snap = await db.collection("users").where("role", "==", "seller").limit(500).get();
       csvContent = "ID,Boutique,Email,Statut,Wilaya\n";
-      snap.docs.forEach(doc => {
+      snap.docs.forEach((doc) => {
         const d = doc.data();
-        csvContent += `"${doc.id}","${d.shopName || ""}","${d.email || ""}","${d.status || ""}","${d.wilaya || ""}"\n`;
+        csvContent += `${csvSafe(doc.id)},${csvSafe(d.shopName || "")},${csvSafe(d.email || "")},${csvSafe(d.status || "")},${csvSafe(d.wilaya || "")}\n`;
       });
     } else if (type === "finances") {
       const snap = await db.collection("withdrawals").limit(500).get();
       csvContent = "ID,VendeurID,Montant,Statut,Date\n";
-      snap.docs.forEach(doc => {
+      snap.docs.forEach((doc) => {
         const d = doc.data();
-        csvContent += `"${doc.id}","${d.sellerId || ""}","${d.amount || 0}","${d.status || ""}","${d.createdAt ? d.createdAt.toDate().toISOString() : ""}"\n`;
+        const dateStr = d.createdAt && typeof d.createdAt.toDate === "function" ? d.createdAt.toDate().toISOString() : "";
+        csvContent += `${csvSafe(doc.id)},${csvSafe(d.sellerId || "")},${csvSafe(d.amount || 0)},${csvSafe(d.status || "")},${csvSafe(dateStr)}\n`;
       });
     }
 

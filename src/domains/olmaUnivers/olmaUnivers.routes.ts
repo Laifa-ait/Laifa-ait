@@ -3,8 +3,12 @@ import { db } from "../../config/firebase-admin";
 import { DEFAULT_OLMA_APPS } from "../../data/olmaUniversData";
 import { OlmaAppModule } from "../../types/olmaUnivers";
 import { safeLogger } from "../../utils/logger";
+import { authenticateToken, authorizeAdmin } from "../../middlewares/auth";
 
 export const olmaUniversRouter = Router();
+
+// Protect all admin endpoints under /admin/univers
+olmaUniversRouter.use("/admin/univers", authenticateToken, authorizeAdmin);
 
 // 1. Get Ecosystem Applications
 olmaUniversRouter.get("/univers/apps", async (_req: Request, res: Response) => {

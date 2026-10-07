@@ -36,6 +36,21 @@ router.post(
         const keySnap = await keyRef.get();
         if (keySnap.exists) {
           const keyData = keySnap.data();
+          const isOwner =
+            (!isGuest && keyData?.userId === userId) ||
+            (isGuest && keyData?.guestTokenHash && keyData?.guestTokenHash === guestTokenHash);
+
+          if (!isOwner) {
+            safeLogger.warn("[Security Alert] ⚠️ Idempotency key ownership mismatch", {
+              idempotencyKey,
+              attemptedBy: userId,
+              keyOwner: keyData?.userId,
+            });
+            return res.status(409).json({
+              error: "Conflit sur la clé d'idempotence: cette clé appartient à un autre utilisateur.",
+            });
+          }
+
           return res.json({
             orderId: keyData?.orderId,
             status: "already_processed",

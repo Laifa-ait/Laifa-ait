@@ -403,6 +403,18 @@ export class OrderStatusService {
   static async confirmDelivery(input: ConfirmDeliveryInput): Promise<string> {
     const { id, fullName, email, phone, wilaya, commune, address, deliveryMethod, items, total, authUid } = input;
 
+    const docRef = db.collection("confirmed_delivery_info").doc(id);
+    const existingSnap = await docRef.get();
+    if (existingSnap.exists) {
+      const existingData = existingSnap.data();
+      const isOwner =
+        (authUid && existingData?.userId === authUid) ||
+        (!authUid && existingData?.userId === "guest" && existingData?.phone === phone);
+      if (!isOwner) {
+        throw new Error("Accès refusé: cette référence de livraison appartient à une autre session.");
+      }
+    }
+
     const deliveryPayload = {
       id,
       fullName,
@@ -418,7 +430,7 @@ export class OrderStatusService {
       createdAt: admin.firestore.Timestamp.now(),
     };
 
-    await db.collection("confirmed_delivery_info").doc(id).set(deliveryPayload);
+    await docRef.set(deliveryPayload, { merge: true });
     return id;
   }
 }

@@ -99,25 +99,7 @@ export class OrderPlacementService {
     });
 
     sellerIdsArray = Array.from(sellerIdsSet);
-    if (sellerIdsArray.length > 0) {
-      const sellerRefs = sellerIdsArray.map((sId) => db.collection("users").doc(sId));
-      const sellerSnaps = await db.getAll(...sellerRefs);
-
-      sellerSnaps.forEach((shopSnap, idx) => {
-        const sellerId = sellerIdsArray[idx];
-        if (shopSnap.exists) {
-          const sd = shopSnap.data();
-          if (sd && (sd.isActive === false || sd.is_active === false || sd.velocitySuspended)) {
-            throw new Error(
-              `La boutique "${sd.shopName || sd.displayName || sellerId}" est fermée temporairement (capacité de commande maximale atteinte).`
-            );
-          }
-          shopSnapshots.set(sellerId, sd as firestore.DocumentSnapshot);
-        } else {
-          shopSnapshots.set(sellerId, {} as firestore.DocumentSnapshot);
-        }
-      });
-    }
+    const sellerRefs = sellerIdsArray.map((sId) => db.collection("users").doc(sId));
 
     const internalNotificationsToCreate: { ref: firestore.DocumentReference; data: Record<string, unknown> }[] = [];
     const pushQueueToCreate: { ref: firestore.DocumentReference; data: Record<string, unknown> }[] = [];
@@ -137,6 +119,12 @@ export class OrderPlacementService {
             const keySnap = await t.get(idempotencyDocRef);
             if (keySnap.exists) {
               const keyData = keySnap.data();
+              const isOwner =
+                (!isGuest && keyData?.userId === userId) ||
+                (isGuest && keyData?.guestTokenHash && keyData?.guestTokenHash === guestTokenHash);
+              if (!isOwner) {
+                throw new Error("Conflit d'idempotence: cette clé appartient à un autre utilisateur.");
+              }
               return {
                 alreadyProcessed: true,
                 orderId: keyData?.orderId || "",
@@ -146,6 +134,25 @@ export class OrderPlacementService {
                 subOrdersForEmail: [],
               };
             }
+          }
+
+          // Anti-TOCTOU: Atomically read and verify seller status inside the transaction
+          if (sellerRefs.length > 0) {
+            const sellerSnaps = await t.getAll(...sellerRefs);
+            sellerSnaps.forEach((shopSnap, idx) => {
+              const sellerId = sellerIdsArray[idx];
+              if (shopSnap.exists) {
+                const sd = shopSnap.data();
+                if (sd && (sd.isActive === false || sd.is_active === false || sd.velocitySuspended)) {
+                  throw new Error(
+                    `La boutique "${sd.shopName || sd.displayName || sellerId}" est fermée temporairement (capacité de commande maximale atteinte).`
+                  );
+                }
+                shopSnapshots.set(sellerId, sd as firestore.DocumentSnapshot);
+              } else {
+                shopSnapshots.set(sellerId, {} as firestore.DocumentSnapshot);
+              }
+            });
           }
 
           const productSnaps = new Map<string, firestore.DocumentSnapshot>();
@@ -646,6 +653,8 @@ export class OrderPlacementService {
               orderId: subOrdersToCreate[0].ref.id,
               total: grandTotal,
               userId,
+              isGuest: !!isGuest,
+              guestTokenHash: isGuest ? guestTokenHash : null,
               createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
           }
