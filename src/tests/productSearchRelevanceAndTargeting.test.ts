@@ -13,6 +13,11 @@ const mockCatalog: Product[] = [
     rating: 4.9,
     stock: 5,
     tags: ["smartphone", "samsung", "5g", "android"],
+    image: "/images/prod-1.jpg",
+    description: "Smartphone flagship haute performance",
+    sellerId: "seller-1",
+    wilaya: "16 Alger",
+    status: "active",
     createdAt: "2026-03-01T10:00:00Z",
   },
   {
@@ -25,6 +30,11 @@ const mockCatalog: Product[] = [
     rating: 4.8,
     stock: 3,
     tags: ["apple", "iphone", "ios"],
+    image: "/images/prod-2.jpg",
+    description: "Téléphone premium avec écran Super Retina",
+    sellerId: "seller-2",
+    wilaya: "31 Oran",
+    status: "active",
     createdAt: "2026-02-15T10:00:00Z",
   },
   {
@@ -37,6 +47,11 @@ const mockCatalog: Product[] = [
     rating: 5.0,
     stock: 0, // Rupture
     tags: ["karakou", "mariage", "algerois"],
+    image: "/images/prod-3.jpg",
+    description: "Karakou traditionnel fait main en velours brodé",
+    sellerId: "seller-3",
+    wilaya: "09 Blida",
+    status: "active",
     createdAt: "2026-03-10T10:00:00Z",
   },
   {
@@ -49,6 +64,11 @@ const mockCatalog: Product[] = [
     rating: 4.6,
     stock: 12,
     tags: ["cafe", "expresso", "cuisine"],
+    image: "/images/prod-4.jpg",
+    description: "Cafetière à pression classique pour café italien",
+    sellerId: "seller-4",
+    wilaya: "25 Constantine",
+    status: "active",
     createdAt: "2026-01-20T10:00:00Z",
   },
 ];

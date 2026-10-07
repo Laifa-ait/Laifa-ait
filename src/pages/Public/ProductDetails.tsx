@@ -52,7 +52,7 @@ export const ProductDetails: React.FC = () => {
     displayedPrice,
     isColorOutOfStock,
     isSizeOutOfStock,
-  } = useProductVariantsStock(product, selectedColor, selectedSize, currentPrice);
+  } = useProductVariantsStock(product, selectedColor, selectedSize, currentPrice ?? null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

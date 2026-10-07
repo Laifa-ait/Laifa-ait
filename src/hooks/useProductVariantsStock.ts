@@ -5,7 +5,7 @@ export function useProductVariantsStock(
   product: Product | null,
   selectedColor: string | null,
   selectedSize: string | null,
-  currentPrice: number | null
+  currentPrice?: number | null
 ) {
   const calculatedVariantKey = React.useMemo(() => {
     return [selectedColor, selectedSize].filter(Boolean).join(" - ").toUpperCase();

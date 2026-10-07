@@ -43,7 +43,7 @@ export function filterAndRankProducts(
     // Category filter with tolerance for subcategories and tags
     if (cleanCat) {
       const pCat = normalizeSearchTerm(p.category || "");
-      const pSubCat = normalizeSearchTerm(p.subCategory || "");
+      const pSubCat = normalizeSearchTerm(p.subCategory || p.subcategory || "");
       const pTags = (p.tags || []).map((t) => normalizeSearchTerm(t));
 
       const matchesCat =

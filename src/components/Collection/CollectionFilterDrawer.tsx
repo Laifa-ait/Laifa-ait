@@ -2,7 +2,7 @@ import React from "react";
 import { X, SlidersHorizontal, RotateCcw, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { ALGERIA_WILAYAS } from "../../constants";
+import { ALGERIA_WILAYAS } from "../../constants/wilayas";
 
 interface CollectionFilterDrawerProps {
   isOpen: boolean;

@@ -92,7 +92,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ hideOnRoutes =
       onClick: () => {
         setIsCartOpen(false);
         setIsAccountMenuOpen(false);
-        setIsWishlistOpen((prev) => !prev);
+        setIsWishlistOpen(!isWishlistOpen);
       },
     },
     {
@@ -103,7 +103,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ hideOnRoutes =
       onClick: () => {
         setIsWishlistOpen(false);
         setIsAccountMenuOpen(false);
-        setIsCartOpen((prev) => !prev);
+        setIsCartOpen(!isCartOpen);
       },
     },
     {
@@ -117,7 +117,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ hideOnRoutes =
           navigate("/auth");
           return;
         }
-        setIsAccountMenuOpen((prev) => !prev);
+        setIsAccountMenuOpen(!isAccountMenuOpen);
       },
     },
   ];

@@ -47,7 +47,7 @@ export const DBSeedAdmin: React.FC = () => {
     setSeeding(true);
     const tId = toast.loading("Génération des produits de démonstration...");
     try {
-      const res = await apiPost<SeedActionResponse>("/api/v1/admin/seed/generate");
+      const res = await apiPost<SeedActionResponse>("/api/v1/admin/seed/generate", {});
       if (res && res.success) {
         toast.success(res.message || "Produits générés avec succès !", { id: tId });
         await fetchSeedCount();
@@ -67,7 +67,7 @@ export const DBSeedAdmin: React.FC = () => {
     setClearing(true);
     const tId = toast.loading("Nettoyage complet des produits de démonstration...");
     try {
-      const res = await apiPost<SeedActionResponse>("/api/v1/admin/seed/clear");
+      const res = await apiPost<SeedActionResponse>("/api/v1/admin/seed/clear", {});
       if (res && res.success) {
         toast.success(res.message || `${res.deletedCount || 0} produits supprimés avec succès !`, { id: tId });
         await fetchSeedCount();

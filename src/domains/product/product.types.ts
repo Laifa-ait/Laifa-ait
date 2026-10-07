@@ -89,6 +89,7 @@ export interface Product {
   returnPolicy?: string | boolean;
   category: string;
   subcategory?: string;
+  subCategory?: string;
   subSubCategory?: string;
   subsubcategory?: string; // legacy lowercase compatibility
   image: string;
@@ -106,7 +107,9 @@ export interface Product {
   otherMaterial?: string;
   season?: string;
   isBannerFeatured?: boolean;
+  isFeatured?: boolean;
   isSponsored?: boolean;
+  acceptsCod?: boolean;
   sponsoredSince?: AppTimestamp;
   energyClass?: "A" | "B" | "C" | "D" | "E" | "F" | "G";
 
