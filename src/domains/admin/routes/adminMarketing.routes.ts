@@ -26,7 +26,7 @@ const AdminBannerSchema = z.object({
 }).strict();
 
 // Banners management
-router.get("/banners", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.get(["/admin/banners", "/banners"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const snap = await db.collection("banners").orderBy("order", "asc").get();
     const banners = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -36,7 +36,7 @@ router.get("/banners", authenticateToken, authorizeAdmin, async (req: Authentica
   }
 });
 
-router.get("/banners/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.get(["/admin/banners/:id", "/banners/:id"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const doc = await db.collection("banners").doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: "Banner not found" });
@@ -46,7 +46,7 @@ router.get("/banners/:id", authenticateToken, authorizeAdmin, async (req: Authen
   }
 });
 
-router.post("/banners", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.post(["/admin/banners", "/banners"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parseResult = AdminBannerSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -57,13 +57,23 @@ router.post("/banners", authenticateToken, authorizeAdmin, async (req: Authentic
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     const ref = await db.collection("banners").add(bannerData);
+
+    await db.collection("audit_logs").add({
+      type: "MARKETING_MANAGEMENT",
+      action: "CREATE_BANNER",
+      adminId: req.user?.uid || "admin",
+      adminEmail: req.user?.email || "",
+      bannerId: ref.id,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     res.json({ success: true, banner: { id: ref.id, ...bannerData } });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
 
-router.put("/banners/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.put(["/admin/banners/:id", "/banners/:id"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parseResult = AdminBannerSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -73,22 +83,42 @@ router.put("/banners/:id", authenticateToken, authorizeAdmin, async (req: Authen
       ...parseResult.data,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    await db.collection("audit_logs").add({
+      type: "MARKETING_MANAGEMENT",
+      action: "UPDATE_BANNER",
+      adminId: req.user?.uid || "admin",
+      adminEmail: req.user?.email || "",
+      bannerId: req.params.id,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     res.json({ success: true });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
 
-router.delete("/banners/:id", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.delete(["/admin/banners/:id", "/banners/:id"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     await db.collection("banners").doc(req.params.id).delete();
+
+    await db.collection("audit_logs").add({
+      type: "MARKETING_MANAGEMENT",
+      action: "DELETE_BANNER",
+      adminId: req.user?.uid || "admin",
+      adminEmail: req.user?.email || "",
+      bannerId: req.params.id,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     res.json({ success: true });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });
   }
 });
 
-router.put("/banners/reorder", authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
+router.put(["/admin/banners/reorder", "/banners/reorder"], authenticateToken, authorizeAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { items } = req.body;
     if (!Array.isArray(items)) return res.status(400).json({ error: "Items array required" });
@@ -98,6 +128,16 @@ router.put("/banners/reorder", authenticateToken, authorizeAdmin, async (req: Au
       batch.update(ref, { order: item.order });
     });
     await batch.commit();
+
+    await db.collection("audit_logs").add({
+      type: "MARKETING_MANAGEMENT",
+      action: "REORDER_BANNERS",
+      adminId: req.user?.uid || "admin",
+      adminEmail: req.user?.email || "",
+      itemCount: items.length,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     res.json({ success: true });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Erreur interne" });

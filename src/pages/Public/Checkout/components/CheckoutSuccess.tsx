@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle, Ticket, ShieldCheck } from "lucide-react";
+import { CheckCircle2, PhoneCall, Truck, Banknote, ShieldCheck, ArrowRight, ShoppingBag } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { formatPrice } from "../../../../utils/format";
@@ -40,143 +40,192 @@ export const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const referenceCode = orderSummary?.id ? orderSummary.id.substring(0, 8).toUpperCase() : "OLMA-DZ";
+
   return (
-    <div className="max-w-3xl mx-auto text-center space-y-12 py-10 px-4" id="checkout-success-view">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-32 h-32 bg-emerald-500 text-white rounded-[3rem] flex items-center justify-center mx-auto shadow-[0_10px_40px_rgba(16,185,129,0.3)]"
-      >
-        <CheckCircle className="w-16 h-16 animate-pulse" />
-      </motion.div>
+    <div className="max-w-3xl mx-auto text-center space-y-10 py-6 sm:py-10 px-4" id="checkout-success-view">
+      {/* Animated Success Badge */}
       <div className="space-y-4">
-        <h2 className="text-4xl md:text-5xl font-sans font-bold text-[var(--color-slate-900, #0f172a)] tracking-tighter rtl:tracking-normal">
-          {t("checkout.info_registered_title", "Informations Enregistrées !")}
-        </h2>
-        <p className="text-stone-600 text-base font-bold max-w-lg mx-auto leading-relaxed">
-          {t(
-            "checkout.info_registered_desc",
-            "Vos coordonnées de livraison ont été enregistrées sous la référence"
-          )}{" "}
-          <span className="text-[var(--color-slate-900, #0f172a)] font-mono text-sm px-1.5 py-0.5 bg-stone-100 border border-stone-200">
-            #{orderSummary?.id?.substring(0, 8)}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          className="w-20 h-20 sm:w-24 sm:h-24 bg-emerald-500 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/25"
+        >
+          <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 stroke-[2.5]" />
+        </motion.div>
+
+        <div className="space-y-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+            {t("checkout.order_received", "Commande validée avec succès")}
           </span>
-          .<br />
-          <span className="block mt-4 text-stone-800 font-medium">
-            {t(
-              "checkout.phone_validation_notice",
-              "Notre équipe commerciale va vous contacter par téléphone au numéro indiqué pour vérifier vos coordonnées et procéder à l'expédition de votre colis."
-            )}
-          </span>
-          <span className="block mt-4 text-stone-550 text-sm font-semibold">
-            {t("checkout.estimated_amount", "Montant estimé à la livraison :")}{" "}
-            <span className="text-orange-600 font-extrabold">
-              {formatPrice(orderSummary?.total || 0)}
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-black text-zinc-950 tracking-tight">
+            {t("checkout.thank_you_title", "Merci pour votre commande !")}
+          </h2>
+          <p className="text-zinc-600 text-sm sm:text-base font-medium max-w-md mx-auto">
+            {t("Référence de suivi :")}{" "}
+            <span className="font-mono font-bold text-zinc-950 px-2 py-0.5 bg-zinc-100 rounded-md border border-zinc-200 text-xs sm:text-sm">
+              #{referenceCode}
             </span>
-          </span>
-        </p>
+          </p>
+        </div>
       </div>
 
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-100 p-8 md:p-10 rounded-[3rem] shadow-sm transform hover:scale-[1.01] transition-transform">
-        <div className="w-14 h-14 bg-white rounded-2xl shadow-sm text-orange-500 flex items-center justify-center mx-auto mb-6">
-          <Ticket className="w-6 h-6" />
+      {/* Order Quick Recap Card */}
+      <div className="bg-white border border-zinc-200/90 rounded-2xl p-5 sm:p-7 shadow-xs text-start space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100">
+          <div>
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              {t("Destinataire & Wilaya")}
+            </span>
+            <p className="font-bold text-sm sm:text-base text-zinc-950 mt-0.5">
+              {formData.fullName || t("Client")} • {formData.wilaya} ({formData.commune})
+            </p>
+            <p className="text-xs text-zinc-500 font-medium">{formData.phone}</p>
+          </div>
+          <div className="sm:text-end">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              {t("Montant total à régler (COD)")}
+            </span>
+            <p className="text-xl sm:text-2xl font-sans font-black text-amber-600 tabular-nums">
+              {formatPrice(orderSummary?.total || 0)}
+            </p>
+          </div>
         </div>
-        <h3 className="text-2xl font-sans font-bold text-[var(--color-slate-900, #0f172a)] mb-4">
-          {t("earn_points_title") || "Gagnez 100 Olma Points !"}
-        </h3>
-        <p className="text-sm font-bold text-stone-500 max-w-sm mx-auto leading-relaxed">
-          {t("validate_delivery_points_desc") ||
-            "Validez la réception de votre colis sur l'application dans les 24h suivant l'arrivée du livreur pour débloquer vos points."}
-        </p>
+
+        {/* 3-Step COD Process Roadmap */}
+        <div className="pt-2">
+          <h4 className="text-xs font-bold font-sans text-zinc-900 uppercase tracking-wider mb-4">
+            {t("Prochaines étapes de votre livraison")} :
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-zinc-50 border border-zinc-100">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                <PhoneCall className="w-4 h-4" />
+              </div>
+              <div className="text-start">
+                <h5 className="font-bold text-xs text-zinc-950">{t("1. Appel de validation")}</h5>
+                <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">
+                  {t("Notre service client vous appelle pour confirmer vos informations.")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-zinc-50 border border-zinc-100">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="text-start">
+                <h5 className="font-bold text-xs text-zinc-950">{t("2. Expédition rapide")}</h5>
+                <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">
+                  {t("Acheminement vers votre wilaya avec notification par SMS.")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-zinc-50 border border-zinc-100">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                <Banknote className="w-4 h-4" />
+              </div>
+              <div className="text-start">
+                <h5 className="font-bold text-xs text-zinc-950">{t("3. Paiement en espèces")}</h5>
+                <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">
+                  {t("Réglez le montant exact au livreur à la réception de votre colis.")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Guest Account Conversion Box */}
       {orderSummary?.guestUserId && !currentUser && (
-        <div className="bg-white border border-stone-100 p-8 md:p-10 rounded-[3rem] shadow-xl text-start max-w-lg mx-auto space-y-6">
-          <div className="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center shadow-sm">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-xl font-sans font-bold text-stone-900">
-              {t("convert_to_full_account", "Créer un compte complet en 1 clic")}
-            </h3>
-            <p className="text-sm text-stone-500 mt-1">
-              {t(
-                "convert_to_full_account_desc",
-                "Sécurisez vos données et suivez l'état de livraison de vos colis en choisissant simplement un mot de passe. Vos données de livraison sont déjà pré-remplies."
-              )}
-            </p>
+        <div className="bg-white border border-zinc-200/90 p-6 sm:p-8 rounded-2xl shadow-xs text-start max-w-lg mx-auto space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-sans font-bold text-zinc-950">
+                {t("convert_to_full_account", "Activer mon compte en 1 clic")}
+              </h3>
+              <p className="text-xs text-zinc-500">
+                {t("Suivez vos colis en direct et retrouvez vos factures.")}
+              </p>
+            </div>
           </div>
 
           {isConverted ? (
-            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3 text-emerald-800 text-sm font-semibold">
-              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>
-                {t(
-                  "account_converted_success_alert",
-                  "Votre compte a été créé avec succès ! Vos informations ont été rattachées."
-                )}
-              </span>
+            <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl flex items-center gap-2.5 text-emerald-900 text-xs font-bold">
+              <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
+              <span>{t("Compte activé avec succès ! Vos commandes y sont désormais associées.")}</span>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+            <div className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-600 uppercase tracking-wider block">
                   {t("email_address", "E-mail")}
                 </label>
                 <input
                   type="email"
                   disabled
                   value={formData.email}
-                  className="w-full px-5 py-3.5 bg-transparent border border-stone-200 rounded-xl text-sm font-semibold text-stone-400 cursor-not-allowed"
+                  className="w-full h-11 px-3.5 bg-zinc-100 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-500 cursor-not-allowed"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                  {t("choose_password", "Choisir un mot de passe")}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-600 uppercase tracking-wider block">
+                  {t("choose_password", "Créer un mot de passe")}
                 </label>
                 <input
                   type="password"
-                  placeholder="Min 6 caractères"
+                  placeholder={t("Min 6 caractères") || "Min 6 caractères"}
                   value={guestPassword}
                   onChange={(e) => setGuestPassword(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-transparent border border-stone-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                  className="w-full h-11 px-3.5 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl text-xs font-semibold text-zinc-900 outline-none transition-all"
                 />
               </div>
               <button
                 onClick={handleGuestToFullConversion}
                 disabled={isConverting}
-                className="w-full btn-premium-orange flex items-center justify-center gap-2 py-3.5 font-bold rounded-2xl cursor-pointer"
+                className="w-full h-12 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm rounded-xl transition-all cursor-pointer border-none active:scale-95 shadow-xs flex items-center justify-center gap-2"
                 type="button"
                 id="btn-guest-conversion"
               >
-                {isConverting
-                  ? t("creating_account", "Création...")
-                  : t("register_now", "Enregistrer mon compte")}
+                {isConverting ? (
+                  <span>{t("creating_account", "Création en cours...")}</span>
+                ) : (
+                  <span>{t("register_now", "Enregistrer mon compte client")}</span>
+                )}
               </button>
             </div>
           )}
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-stone-100">
+      {/* Main Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3.5 justify-center pt-4">
         <button
           onClick={onNavigateToTracking}
-          className="btn-premium-orange cursor-pointer"
+          className="h-13 px-8 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black text-sm shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer border-none flex items-center justify-center gap-2"
           type="button"
           id="btn-navigate-tracking"
         >
-          {t("my_orders") || "Mes commandes"}
+          <span>{t("my_orders") || "Suivre ma commande"}</span>
+          <ArrowRight className="w-4 h-4 rtl:rotate-180" />
         </button>
+
         <button
           onClick={onNavigateToShop}
-          className="btn-ghost-teal cursor-pointer"
+          className="h-13 px-8 rounded-2xl bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-sm border border-zinc-200 shadow-2xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
           type="button"
           id="btn-navigate-shop"
         >
-          {t("continue_shopping") || "Continuer mes achats"}
+          <ShoppingBag className="w-4 h-4 text-zinc-600" />
+          <span>{t("continue_shopping") || "Continuer mes achats"}</span>
         </button>
       </div>
     </div>
   );
 };
+

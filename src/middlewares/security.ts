@@ -83,7 +83,14 @@ export const corsOptions: cors.CorsOptions = {
     const isAllowedExact = allowedOrigins.includes(origin);
     const isAllowedPreview = isAllowedPreviewOrigin(origin);
     const isNonProd = process.env.NODE_ENV !== "production";
-    const isCloudRunDevOrigin = isNonProd && (origin.endsWith(".run.app") || origin.endsWith(".googleusercontent.com"));
+    const isCloudRunDevOrigin =
+      isNonProd &&
+      ((origin.endsWith(".run.app") &&
+        (origin.includes("ais-dev-") ||
+          origin.includes("ais-pre-") ||
+          origin.includes("412943438773") ||
+          origin.includes("76420360525"))) ||
+        origin.endsWith(".googleusercontent.com"));
 
     if (isAllowedExact || isAllowedPreview || isCloudRunDevOrigin) {
       return callback(null, true);
@@ -167,7 +174,8 @@ export function injectNonceToHtml(html: string, nonce: string): string {
   return html
     .replace(/%%CSP_NONCE%%/g, nonce)
     .replace(/<script\b([^>]*)>/gi, (match, attrs) => {
-      if (attrs.includes("nonce=")) {
+      // Do not inject nonce on external scripts with src= so 'self' resolution remains intact
+      if (attrs.includes("nonce=") || attrs.includes("src=")) {
         return match;
       }
       return `<script nonce="${nonce}"${attrs}>`;
@@ -185,6 +193,13 @@ function getFrameAncestorsProd(): string[] {
       "'self'",
       "https://olmart.dz",
       "https://www.olmart.dz",
+      "https://*.google.com",
+      "https://*.googleusercontent.com",
+      "https://*.aistudio.google.com",
+      "https://aistudio.google.com",
+      "https://*.ai.studio",
+      "https://ai.studio",
+      "https://*.run.app",
       ...exactOrigins,
     ])
   );
@@ -203,6 +218,9 @@ const connectSrcProd = [
   "https://firestore.googleapis.com",
   "https://identitytoolkit.googleapis.com",
   "https://securetoken.googleapis.com",
+  "https://fonts.googleapis.com",
+  "https://fonts.gstatic.com",
+  "https://*.gstatic.com",
   "https://olmart.dz",
   "https://www.olmart.dz",
   "https://*.run.app",
@@ -256,8 +274,8 @@ const helmetProd = helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "same-origin" },
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
   xFrameOptions: false,
   noSniff: true,
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
@@ -276,8 +294,9 @@ const frameAncestorsDev = [
   "http://127.0.0.1:*",
 ];
 
-const scriptSrcDev = [
+const scriptSrcDev: (string | ((req: Request, res: Response) => string))[] = [
   "'self'",
+  (req: Request, res: Response) => `'nonce-${String((res.locals as Record<string, unknown>).cspNonce || "")}'`,
   "'unsafe-inline'",
   "'unsafe-eval'",
   "blob:",
@@ -297,8 +316,8 @@ const helmetDev = helmet({
     reportOnly: false,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: scriptSrcDev,
-      scriptSrcElem: scriptSrcDev,
+      scriptSrc: scriptSrcDev as unknown as string[],
+      scriptSrcElem: scriptSrcDev as unknown as string[],
       workerSrc: ["'self'", "blob:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:", "https://cdn.jsdelivr.net"],
@@ -306,6 +325,9 @@ const helmetDev = helmet({
       connectSrc: [
         "'self'",
         "https://*.googleapis.com",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+        "https://*.gstatic.com",
         "https://*.firebaseio.com",
         "https://*.firebase.com",
         "https://*.googleusercontent.com",
@@ -330,8 +352,8 @@ const helmetDev = helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "same-origin" },
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
   xFrameOptions: false,
   noSniff: true,
 });

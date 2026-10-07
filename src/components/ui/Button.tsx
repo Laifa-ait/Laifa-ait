@@ -29,11 +29,11 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const variantClasses = {
-    primary: "bg-slate-900 hover:bg-slate-800 text-white shadow-sm border border-transparent",
-    secondary: "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200",
-    outline: "bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200",
+    primary: "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm border border-emerald-600",
+    secondary: "bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200",
+    outline: "bg-white hover:bg-slate-50 text-slate-900 border border-slate-300",
     danger: "bg-red-50 hover:bg-red-100 text-red-700 border border-red-200",
-    ghost: "bg-transparent hover:bg-zinc-100 text-zinc-700 border border-transparent",
+    ghost: "bg-transparent hover:bg-slate-100 text-slate-700 border border-transparent",
   };
 
   const finalClassName = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;

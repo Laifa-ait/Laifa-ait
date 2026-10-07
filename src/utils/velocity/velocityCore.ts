@@ -65,10 +65,13 @@ export async function checkSellerVelocityLimit(sellerId: string, transaction?: f
       return promise;
     };
 
-    const results: boolean[] = [];
+    let pendingCount = 0;
     const BATCH_SIZE = 10;
 
     for (let i = 0; i < pendingDocs.length; i += BATCH_SIZE) {
+      if (pendingCount > 5) {
+        break; // Early exit: threshold already breached, stop querying
+      }
       const batch = pendingDocs.slice(i, i + BATCH_SIZE);
       const batchResults = await Promise.all(
         batch.map(async (doc) => {
@@ -92,56 +95,68 @@ export async function checkSellerVelocityLimit(sellerId: string, transaction?: f
           return isVerified;
         })
       );
-      results.push(...batchResults);
+      for (const res of batchResults) {
+        if (res) pendingCount++;
+      }
+      if (pendingCount > 5) {
+        break;
+      }
     }
+    
+    const applySellerUpdate = async (tx?: firestore.Transaction) => {
+      const sellerRef = db.collection("users").doc(sellerId);
+      const sellerSnap = tx ? await tx.get(sellerRef) : await sellerRef.get();
+      if (!sellerSnap.exists) return;
+      const sellerData = sellerSnap.data();
+      
+      const updateData = {
+        isActive: pendingCount <= 5,
+        is_active: pendingCount <= 5,
+        velocitySuspended: pendingCount > 5,
+        bgSuspended_reason: pendingCount > 5 ? `Alerte Rouge : Limite de vélocité dépassée (${pendingCount} commandes en attente non expédiées).` : null
+      };
 
-    const pendingCount = results.filter(Boolean).length;
-    
-    const sellerRef = db.collection("users").doc(sellerId);
-    const sellerSnap = await sellerRef.get();
-    if (!sellerSnap.exists) return;
-    const sellerData = sellerSnap.data();
-    
-    const updateData = {
-      isActive: pendingCount <= 5,
-      is_active: pendingCount <= 5,
-      velocitySuspended: pendingCount > 5,
-      bgSuspended_reason: pendingCount > 5 ? `Alerte Rouge : Limite de vélocité dépassée (${pendingCount} commandes en attente non expédiées).` : null
+      if (pendingCount > 5) {
+        if (tx) {
+          tx.update(sellerRef, updateData);
+          const alertRef = db.collection("admin_alerts").doc();
+          tx.set(alertRef, {
+            type: 'velocity_kill_switch',
+            sellerId,
+            shopName: sellerData?.shopName || sellerData?.displayName || sellerId,
+            pendingCount,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            resolved: false
+          });
+        } else {
+          await sellerRef.update(updateData);
+          await db.collection("admin_alerts").add({
+            type: 'velocity_kill_switch',
+            sellerId,
+            shopName: sellerData?.shopName || sellerData?.displayName || sellerId,
+            pendingCount,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            resolved: false
+          });
+        }
+        safeLogger.warn("Kill switch: Suspended seller exceeding velocity limit", { sellerId, pendingCount });
+      } else if (pendingCount <= 5 && sellerData?.velocitySuspended) {
+        if (tx) {
+          tx.update(sellerRef, updateData);
+        } else {
+          await sellerRef.update(updateData);
+        }
+        safeLogger.info("Kill switch: Realigned seller within velocity limit", { sellerId, pendingCount });
+      }
     };
 
-    if (pendingCount > 5) {
-      if (transaction) {
-        transaction.update(sellerRef, updateData);
-        const alertRef = db.collection("admin_alerts").doc();
-        transaction.set(alertRef, {
-          type: 'velocity_kill_switch',
-          sellerId,
-          shopName: sellerData?.shopName || sellerData?.displayName || sellerId,
-          pendingCount,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          resolved: false
-        });
-      } else {
-        await sellerRef.update(updateData);
-        await db.collection("admin_alerts").add({
-          type: 'velocity_kill_switch',
-          sellerId,
-          shopName: sellerData?.shopName || sellerData?.displayName || sellerId,
-          pendingCount,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          resolved: false
-        });
-      }
-      safeLogger.warn("Kill switch: Suspended seller exceeding velocity limit", { sellerId, pendingCount });
-    } else if (pendingCount <= 5 && sellerData?.velocitySuspended) {
-      if (transaction) {
-        transaction.update(sellerRef, updateData);
-      } else {
-        await sellerRef.update(updateData);
-      }
-      safeLogger.info("Kill switch: Realigned seller within velocity limit", { sellerId, pendingCount });
+    if (transaction) {
+      await applySellerUpdate(transaction);
+    } else {
+      await applySellerUpdate();
     }
   } catch (err) {
     safeLogger.error("Error in checkSellerVelocityLimit", { sellerId, err: err instanceof Error ? err.message : String(err) });
+    throw err;
   }
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText } from "lucide-react";
+import { FileText, ChevronDown } from "lucide-react";
 import { Product } from "../../../domains/product/product.types";
 
 export interface ProductAccordionDescriptionProps {
@@ -24,22 +24,21 @@ export const ProductAccordionDescription: React.FC<ProductAccordionDescriptionPr
   const { t } = useTranslation();
 
   return (
-    <div className="border-b border-[#EAE3D5]">
+    <div>
       <button
+        type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-start font-sans font-bold text-xs uppercase tracking-wider text-[#2C2C28] cursor-pointer"
+        className="w-full flex items-center justify-between py-4 text-start font-bold text-xs uppercase tracking-wider text-zinc-900 hover:text-emerald-700 transition-colors cursor-pointer border-none bg-transparent"
       >
-        <span className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#008BB5]" />
-          {t("Description / taillant")}
+        <span className="flex items-center gap-2.5">
+          <FileText className="w-4 h-4 text-emerald-600" />
+          <span>{t("Description")}</span>
         </span>
-        <span
-          className={`text-stone-400 font-light text-base transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
+        <ChevronDown
+          className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-zinc-700" : ""
           }`}
-        >
-          ▼
-        </span>
+        />
       </button>
 
       <AnimatePresence initial={false}>
@@ -50,44 +49,44 @@ export const ProductAccordionDescription: React.FC<ProductAccordionDescriptionPr
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pt-1 space-y-4 text-stone-600 bg-[#FAF6F0]/25">
+            <div className="pb-4 pt-1 space-y-3 text-zinc-600 text-xs sm:text-sm">
               {bilingualMode ? (
-                <div className="space-y-4 text-start">
+                <div className="space-y-3 text-start">
                   {(product.translations?.["ar"]?.description || product.description) && (
                     <div className="space-y-1 text-right" dir="rtl">
-                      <span className="text-[8px] font-bold text-[#D81159] bg-[#FFEAEF] px-2 py-0.5 rounded uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-wider">
                         العربية
                       </span>
-                      <p className="text-[#2C2C28]/85 text-xs whitespace-pre-wrap leading-relaxed font-medium">
+                      <p className="text-zinc-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium mt-1">
                         {product.translations?.["ar"]?.description || product.description}
                       </p>
                     </div>
                   )}
                   {(product.translations?.["fr"]?.description || product.description) && (
-                    <div className="space-y-1 text-left border-t border-[#EAE3D5] pt-3" dir="ltr">
-                      <span className="text-[8px] font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded uppercase tracking-wider">
+                    <div className="space-y-1 text-left border-t border-zinc-100 pt-3" dir="ltr">
+                      <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded uppercase tracking-wider">
                         Français
                       </span>
-                      <p className="text-[#2C2C28]/85 text-xs whitespace-pre-wrap leading-relaxed font-medium">
+                      <p className="text-zinc-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium mt-1">
                         {product.translations?.["fr"]?.description || product.description}
                       </p>
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-[#2C2C28]/85 text-xs whitespace-pre-wrap leading-relaxed font-medium">
+                <p className="text-zinc-700 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium">
                   {product.description}
                 </p>
               )}
               {isClothing && (
-                <div className="flex items-center justify-between pt-3 border-t border-[#EAE3D5]">
-                  <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                     {t("Coupe standard / Regular Fit")}
                   </span>
                   <button
                     type="button"
                     onClick={onOpenSizeGuide}
-                    className="text-[9px] font-bold text-[#008BB5] hover:underline uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-semibold text-emerald-700 hover:underline uppercase tracking-wider flex items-center gap-1 cursor-pointer border-none bg-transparent"
                   >
                     {t("Guide des tailles")}
                   </button>

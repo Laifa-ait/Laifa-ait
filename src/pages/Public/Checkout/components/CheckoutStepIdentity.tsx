@@ -81,13 +81,13 @@ export const CheckoutStepIdentity: React.FC<CheckoutStepIdentityProps> = ({
             className="overflow-hidden"
             id="identity-form-container"
           >
-            <div className="pt-8 space-y-6">
-              <div className="space-y-3">
+            <div className="pt-6 space-y-5">
+              <div className="space-y-2">
                 <label
                   htmlFor="fullName"
-                  className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
+                  className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
                 >
-                  {t("full_name") || "Nom Complet"}
+                  {t("full_name") || "Nom & Prénom"} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="fullName"
@@ -98,42 +98,23 @@ export const CheckoutStepIdentity: React.FC<CheckoutStepIdentityProps> = ({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, fullName: e.target.value }))
                   }
-                  placeholder={t("full_name_placeholder") || "Ex: Selma Laifa"}
-                  className="w-full px-6 py-4 bg-transparent border border-stone-200 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:border-orange-500 ring-[var(--color-orange-600, #ea580c)]/20 transition-all focus:ring-orange-500/20"
+                  placeholder={t("full_name_placeholder") || "Ex: Mohamed Benali"}
+                  className="w-full h-13 px-4 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-sm sm:text-base text-zinc-900 transition-all"
                 />
               </div>
-              <div className="space-y-3">
-                <label
-                  htmlFor="email"
-                  className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
-                >
-                  {t("email_address") || "Adresse E-mail"}
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required={!currentUser}
-                  disabled={!!currentUser}
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  placeholder={t("email_placeholder") || "Ex: selma@example.com"}
-                  className="w-full px-6 py-4 bg-transparent border border-stone-200 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:border-orange-500 ring-[var(--color-orange-600, #ea580c)]/20 transition-all focus:ring-orange-500/20 disabled:opacity-60 disabled:bg-stone-100"
-                />
-              </div>
-              <div className="space-y-3">
+
+              <div className="space-y-2">
                 <label
                   htmlFor="phone"
-                  className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
+                  className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
                 >
-                  {t("phone_number") || "Numéro de téléphone"}
+                  {t("phone_number") || "Numéro de téléphone"} <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     id="phone"
                     type="tel"
+                    inputMode="tel"
                     required
                     autoComplete="tel"
                     value={formData.phone}
@@ -141,42 +122,70 @@ export const CheckoutStepIdentity: React.FC<CheckoutStepIdentityProps> = ({
                       setFormData((prev) => ({ ...prev, phone: e.target.value }))
                     }
                     placeholder={t("phone_placeholder") || "Ex: 0550 12 34 56"}
-                    className={`w-full px-6 py-4 bg-transparent border rounded-2xl outline-none font-bold text-sm transition-all focus:ring-2 ${
+                    className={`w-full h-13 px-4 bg-zinc-50/70 border rounded-xl outline-none font-semibold text-sm sm:text-base text-zinc-900 transition-all tabular-nums ${
                       isValidPhone
-                        ? "border-emerald-500 focus:border-emerald-600 ring-emerald-500/20 focus:ring-emerald-500/20 bg-emerald-50/10"
-                        : "border-stone-200 focus:border-orange-500 ring-[var(--color-orange-600, #ea580c)]/20 focus:ring-orange-500/20"
+                        ? "border-emerald-500 bg-emerald-50/20 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-500/15"
+                        : "border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15"
                     }`}
                   />
                   {isValidPhone && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute end-4 top-1/2 -translate-y-1/2"
+                      className="absolute end-3.5 top-1/2 -translate-y-1/2"
                     >
-                      <CheckCircle className="w-6 h-6 text-emerald-500" />
+                      <CheckCircle className="w-5 h-5 text-emerald-600" />
                     </motion.div>
                   )}
                 </div>
+                <p className="text-[11px] text-zinc-400 font-medium ms-1">
+                  {t("Le livreur vous contactera sur ce numéro avant la livraison.")}
+                </p>
               </div>
-              <button
-                onClick={() => {
-                  if (isValidPhone && formData.fullName.trim()) {
-                    setActiveAccordion(2);
-                  } else {
-                    toast.error(
-                      t(
-                        "checkout.invalid_name_phone",
-                        "Veuillez saisir un nom et un numéro valide algérien."
-                      )
-                    );
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
+                >
+                  {t("email_address") || "Adresse E-mail"} <span className="text-zinc-400 font-normal">({t("facultatif")})</span>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  inputMode="email"
+                  disabled={!!currentUser}
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, email: e.target.value }))
                   }
-                }}
-                className="btn-ghost-teal w-full sm:w-auto mt-4"
-                type="button"
-                id="btn-identity-continue"
-              >
-                {t("checkout.continue_to_shipping", "Continuer vers l'Expédition")}
-              </button>
+                  placeholder={t("email_placeholder") || "Ex: client@example.dz"}
+                  className="w-full h-13 px-4 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-sm sm:text-base text-zinc-900 transition-all disabled:opacity-60 disabled:bg-zinc-100"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    if (isValidPhone && formData.fullName.trim()) {
+                      setActiveAccordion(2);
+                    } else {
+                      toast.error(
+                        t(
+                          "checkout.invalid_name_phone",
+                          "Veuillez saisir votre nom et un numéro de téléphone algérien valide."
+                        )
+                      );
+                    }
+                  }}
+                  className="w-full sm:w-auto h-12 px-6 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm transition-all cursor-pointer border-none active:scale-95 shadow-xs flex items-center justify-center gap-2"
+                  type="button"
+                  id="btn-identity-continue"
+                >
+                  <span>{t("checkout.continue_to_shipping", "Continuer vers l'Expédition")}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

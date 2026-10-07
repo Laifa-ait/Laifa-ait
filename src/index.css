@@ -12,33 +12,41 @@
   --font-arabic: "Cairo", system-ui, sans-serif;
 
   /* ========================================================
-     COLOR TOKENS
-     - Single Neutral: Zinc (zinc-50 to zinc-950)
-     - Primary Brand: Amber (amber-500/600)
-     - Trust / Success: Emerald (emerald-600)
-     - Alert / Error / Promo: Rose / Red (rose-600)
+     COLOR TOKENS — PREMIER MARKETPLACE PALETTE
+     - Primary: Emerald (#059669, #047857, #10B981, #ECFDF5)
+     - Accent: Warm Solar Amber (#F59E0B, #D97706, #FEF3C7)
+     - Neutral Ink: Slate (#0F172A, #334155, #64748B, #E2E8F0, #F8FAFC)
      ======================================================== */
-  --color-brand-primary: #f59e0b; /* amber-500 */
-  --color-brand-primary-hover: #d97706; /* amber-600 */
-  --color-brand-primary-dark: #b45309; /* amber-700 */
-  --color-brand-primary-light: #fef3c7; /* amber-100 */
-  --color-brand-trust: #059669; /* emerald-600 */
-  --color-brand-trust-hover: #047857; /* emerald-700 */
-  --color-brand-trust-light: #ecfdf5; /* emerald-50 */
-  --color-brand-error: #e11d48; /* rose-600 */
-  --color-brand-error-light: #fff1f2; /* rose-50 */
+  --color-palette-1: #ECFDF5;
+  --color-palette-2: #A7F3D0;
+  --color-palette-3: #10B981;
+  --color-palette-4: #059669;
+  --color-palette-5: #047857;
+
+  --color-brand-primary: #059669;
+  --color-brand-primary-hover: #047857;
+  --color-brand-primary-dark: #065F46;
+  --color-brand-primary-light: #ECFDF5;
+  --color-brand-accent: #F59E0B;
+  --color-brand-accent-hover: #D97706;
+  --color-brand-accent-light: #FEF3C7;
+  --color-brand-trust: #059669;
+  --color-brand-trust-hover: #047857;
+  --color-brand-trust-light: #ECFDF5;
+  --color-brand-error: #DC2626;
+  --color-brand-error-light: #FEE2E2;
 
   /* Semantic UI Surfaces */
   --color-surface: #ffffff;
-  --color-surface-subtle: #fafafa;
-  --color-surface-muted: #f4f4f5;
-  --color-border-subtle: #f4f4f5;
-  --color-border-default: #e4e4e7;
-  --color-border-strong: #d4d4d8;
-  --color-text-primary: #18181b;
-  --color-text-secondary: #52525b;
-  --color-text-muted: #71717a;
-  --color-text-subtle: #a1a1aa;
+  --color-surface-subtle: #F8FAFC;
+  --color-surface-muted: #F1F5F9;
+  --color-border-subtle: #F1F5F9;
+  --color-border-default: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
 
   /* ========================================================
      ELEVATION / SHADOW TOKENS (Strictly 2 Functional Levels)
@@ -78,8 +86,8 @@
 }
 
 body {
-  background-color: #ffffff !important;
-  color: #18181b !important;
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -150,7 +158,7 @@ html[dir="rtl"], [dir="rtl"] {
   height: 6px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-track {
@@ -160,17 +168,17 @@ html[dir="rtl"], [dir="rtl"] {
 @layer components {
   /* Canonical Primary Action Button */
   .btn-primary {
-    @apply bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-950 text-white font-semibold text-sm px-6 py-3 rounded-lg shadow-sm hover:shadow-floating transition-all duration-200 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-xs hover:shadow-floating transition-all duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   /* Canonical Secondary Action Button */
   .btn-secondary {
-    @apply border border-zinc-200 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-900 font-semibold text-sm px-6 py-3 rounded-lg shadow-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-semibold text-sm px-6 py-3 rounded-xl shadow-xs transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   /* Canonical Surface Card */
   .surface-card {
-    @apply bg-white rounded-2xl shadow-sm border border-zinc-100 hover:border-zinc-200 hover:shadow-floating transition-all duration-200 overflow-hidden;
+    @apply bg-white rounded-2xl shadow-[0_1px_3px_rgba(15,23,42,0.04)] border border-slate-200/80 hover:border-slate-300 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 overflow-hidden;
   }
 }
 

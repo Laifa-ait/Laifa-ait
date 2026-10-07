@@ -43,10 +43,13 @@ export const maskSensitiveData = (text: string): string => {
   const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
   // Forbidden social keywords
   const socialRegex = /(whatsapp|whatsap|watsapp|viber|telegram|instagram|insta|facebook|fb|messenger|tiktok|snapchat)/gi;
+  // Emails
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/gi;
 
   masked = masked.replace(phoneRegex, "[NUMÉRO MASQUÉ]");
   masked = masked.replace(urlRegex, "[LIEN INTERDIT]");
   masked = masked.replace(socialRegex, "[CONTACT DÉTECTÉ]");
+  masked = masked.replace(emailRegex, "[EMAIL MASQUÉ]");
 
   return masked;
 };

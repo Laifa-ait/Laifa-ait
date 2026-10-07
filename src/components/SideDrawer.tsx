@@ -33,17 +33,17 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, title, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[240]"
           />
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[110] shadow-2xl flex flex-col overscroll-contain border-l border-[var(--color-orange-600, #ea580c)]/40"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[250] shadow-2xl flex flex-col overscroll-contain border-l border-zinc-200/80 pb-0"
             style={{ maxHeight: "100dvh", overflowY: "auto" }}
           >
-            <div className="p-6 border-b border-[var(--color-orange-600, #ea580c)]/40 flex items-center justify-between shrink-0 bg-transparent">
+            <div className="p-5 sm:p-6 border-b border-zinc-100 flex items-center justify-between shrink-0 bg-transparent">
               <h3 className="text-lg font-bold flex items-center gap-2 tracking-tight rtl:tracking-normal text-zinc-900">
                 {icon} {title}
               </h3>

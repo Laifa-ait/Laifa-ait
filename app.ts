@@ -5,7 +5,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 
-import { apiLimiter, debugLimiter, webhookLimiter, strictLimiter } from "./src/middlewares/rateLimiters";
+import { apiLimiter, debugLimiter, webhookLimiter, adminLimiter } from "./src/middlewares/rateLimiters";
 import { helmetMiddleware, corsMiddleware, preventDirectCloudRunAccess, nonceMiddleware } from "./src/middlewares/security";
 import { handleCspReport } from "./src/middlewares/cspReporter";
 import { csrfProtection, getCsrfTokenHandler } from "./src/middlewares/csrf";
@@ -57,8 +57,8 @@ app.use(healthRouter);
 app.use(preventDirectCloudRunAccess);
 app.use("/api/v1/webhooks", webhookLimiter);
 app.use("/webhooks", webhookLimiter);
-app.use("/api/v1/admin", strictLimiter);
-app.use("/admin", strictLimiter);
+app.use("/api/v1/admin", adminLimiter);
+app.use("/admin", adminLimiter);
 
 const isRateLimitBypassedInTest = process.env.NODE_ENV === "test" && process.env.SKIP_RATE_LIMITS === "true";
 if (!isRateLimitBypassedInTest) {

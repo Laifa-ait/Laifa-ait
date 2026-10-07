@@ -603,13 +603,12 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
   });
 
   // ===========================================================================
-  // 4. PAYMENTS & ESCROW MUTATIONS
+  // 4. CASH-ON-DELIVERY LIFECYCLE & WALLET/ESCROW DECOUPLING
   // ===========================================================================
-  describe("D. Webhook Payments & Escrow Integration Flow", () => {
+  describe("D. Marketplace Model: COD & Zero Online Payment / Escrow Exposure", () => {
     let orderIdForPayment: string;
 
     beforeEach(async () => {
-      // Prep order in database to be paid
       orderIdForPayment = "ord_to_pay_1234";
       orderStore.set(orderIdForPayment, {
         id: orderIdForPayment,
@@ -623,117 +622,41 @@ describe("OLMART Premier Marketplace — E2E Core Integration Flows", () => {
       });
     });
 
-    it("rejects webhook request with invalid HMAC signature header (401)", async () => {
-      const payloadObj = {
-        id: "evt_fraud_999",
-        type: "checkout.paid",
-        data: {
-          id: "chk_fraud",
-          status: "paid",
-          amount: 150500,
-          metadata: { orderId: orderIdForPayment }
-        }
-      };
-
+    it("ensures legacy payment webhook endpoint is not exposed (returns 404)", async () => {
       const res = await request(app)
         .post("/api/v1/payment/webhook/chargily")
-        .set("x-chargily-signature", "invalid_signature_hex_code_123456")
         .set("Content-Type", "application/json")
-        .send(payloadObj);
+        .send({ id: "evt_test" });
 
-      expect(res.status).toBe(401);
-      expect(res.body.error).toContain("Signature de webhook invalide");
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain("Endpoint API introuvable");
     });
 
-    it("processes authentic signature, transitions order to PROCESSING / PAID, logs webhook, and holds escrow hold", async () => {
-      const payloadObj = {
-        id: "evt_chargily_valid_777",
-        type: "checkout.paid",
-        data: {
-          id: "chk_chargily_777",
-          status: "paid",
-          amount: 150500,
-          metadata: {
-            orderId: orderIdForPayment,
-            buyerId: "buyer_test_user_1",
-            sellerId: "seller_test_1"
-          }
-        }
-      };
-
-      const rawBody = JSON.stringify(payloadObj);
-      const signature = crypto.createHmac("sha256", CHARGILY_TEST_SECRET).update(rawBody).digest("hex");
-
+    it("ensures legacy escrow release endpoint is unmounted (returns 404)", async () => {
       const res = await request(app)
-        .post("/api/v1/payment/webhook/chargily")
-        .set("x-chargily-signature", signature)
-        .set("Content-Type", "application/json")
-        .send(rawBody);
+        .post(`/api/v1/payment/escrow/release/${orderIdForPayment}`)
+        .set("Authorization", "Bearer valid-buyer-token")
+        .send();
 
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-
-      // Verify Order updated state atomically
-      const updatedOrder = must(orderStore.get(orderIdForPayment), "updatedOrder");
-      expect(updatedOrder.status).toBe("PROCESSING");
-      expect(updatedOrder.paymentStatus).toBe("PAID");
-
-      // Verify Idempotency Log is recorded to prevent replay attack
-      const webhookLog = must(webhookLogStore.get("evt_chargily_valid_777"), "webhookLog");
-      expect(webhookLog.processed).toBe(true);
-
-      // Verify Escrow Hold is created successfully
-      const escrowRecord = must(escrowStore.get(orderIdForPayment), "escrowRecord");
-      expect(escrowRecord.status).toBe("HELD");
-      expect(escrowRecord.totalAmountDZD).toBe(150500);
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain("Endpoint API introuvable");
     });
 
-    it("successfully releases held escrow funds to seller's wallet upon delivery confirmation", async () => {
-      // Transition order status to DELIVERED
+    it("verifies order delivery transitions without touching virtual wallet or escrow balances", async () => {
       const existingOrder = orderStore.get(orderIdForPayment);
       if (existingOrder) {
         orderStore.set(orderIdForPayment, {
           ...existingOrder,
           status: "DELIVERED",
+          paymentStatus: "PAID"
         });
       }
 
-      // Establish an escrow holding record in DB
-      escrowStore.set(orderIdForPayment, {
-        id: orderIdForPayment,
-        orderId: orderIdForPayment,
-        buyerId: "buyer_test_user_1",
-        sellerId: "seller_test_1",
-        totalAmountDZD: 150500,
-        sellerPayoutAmountDZD: 142975, // Total minus 5% fee
-        status: "HELD"
-      });
-
-      // Establish wallet for seller
-      walletStore.set("seller_test_1", {
-        sellerId: "seller_test_1",
-        availableBalanceDZD: 1000,
-        pendingEscrowBalanceDZD: 0,
-        totalEarningsDZD: 0,
-        currency: "DZD"
-      });
-
-      const res = await request(app)
-        .post(`/api/v1/payment/escrow/release/${orderIdForPayment}`)
-        .set("host", "localhost")
-        .set("Authorization", "Bearer valid-buyer-token") // Verified buyer trigger
-        .send();
-
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-
-      // Confirm escrow status transitions to RELEASED
-      const escrowObj = must(escrowStore.get(orderIdForPayment), "escrowObj");
-      expect(escrowObj.status).toBe("RELEASED");
-
-      // Confirm seller's wallet is credited
-      const walletObj = must(walletStore.get("seller_test_1"), "walletObj");
-      expect(walletObj.availableBalanceDZD).toBeGreaterThan(1000);
+      const deliveredOrder = must(orderStore.get(orderIdForPayment), "deliveredOrder");
+      expect(deliveredOrder.status).toBe("DELIVERED");
+      expect(deliveredOrder.paymentStatus).toBe("PAID");
+      expect(escrowStore.size).toBe(0);
+      expect(walletStore.size).toBe(0);
     });
   });
 });

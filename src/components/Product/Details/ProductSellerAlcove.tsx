@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Store, UserCheck, UserPlus, Phone, MessageCircle } from "lucide-react";
+import { Store, UserCheck, UserPlus, MessageCircle, Phone, BadgeCheck } from "lucide-react";
 import { Shop } from "../../../domains/seller/shop.types";
 import { Product } from "../../../domains/product/product.types";
 import { SellerCouponBanner } from "../../Shop/SellerCouponBanner";
@@ -23,108 +23,97 @@ export const ProductSellerAlcove: React.FC<ProductSellerAlcoveProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  return (
-    <>
-      {shop && (
-        <div className="bg-white rounded-[2rem] p-4 border border-[#EAE3D5] shadow-sm flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-t-full rounded-b-xl bg-[#FAF6F0] flex items-center justify-center overflow-hidden border-2 border-[#008BB5] shrink-0">
-                {shop.logoUrl ? (
-                  <img
-                    loading="lazy"
-                    src={shop.logoUrl}
-                    alt={shop.shopName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Store className="w-5 h-5 text-[#008BB5]" />
-                )}
-              </div>
-              <div>
-                <p className="text-[9px] font-bold text-[#008BB5] uppercase tracking-wider mb-0.5">
-                  {t("product.details.sold_by") || "Vendu par"}
-                </p>
-                <Link
-                  to={`/shop/${shop.id}`}
-                  className="text-sm font-sans font-bold text-[#2C2C28] hover:text-[#008BB5] transition-all line-clamp-1"
-                >
-                  {shop.shopName}
-                </Link>
-              </div>
-            </div>
+  const sellerPhone = shop?.supportPhone || shop?.phone || product.sellerPhone;
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
-                onClick={onFollowToggle}
-                disabled={followLoading}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-full font-bold text-[10px] uppercase tracking-wider transition-all border shadow-sm cursor-pointer ${
-                  isFollowing
-                    ? "bg-transparent text-stone-600 border-stone-200 hover:bg-stone-100"
-                    : "bg-[#008BB5] text-white border-[#008BB5] hover:bg-[#007CA7]"
-                }`}
-              >
-                {isFollowing ? (
-                  <span className="flex items-center gap-1">
-                    <UserCheck className="w-3.5 h-3.5" /> {t("product.details.following") || "Abonné"}
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <UserPlus className="w-3.5 h-3.5" /> {t("product.details.follow") || "Suivre"}
-                  </span>
-                )}
-              </button>
+  return (
+    <div className="space-y-2">
+      {shop && (
+        <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-zinc-200/70 shadow-2xs flex items-center justify-between gap-3">
+          {/* Seller Profile Summary */}
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Link
+              to={`/shop/${shop.id}`}
+              className="w-11 h-11 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
+            >
+              {shop.logoUrl ? (
+                <img
+                  loading="lazy"
+                  src={shop.logoUrl}
+                  alt={shop.shopName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Store className="w-5 h-5 text-zinc-500" />
+              )}
+            </Link>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                  {t("product.details.sold_by") || "Vendeur certifié"}
+                </span>
+                <BadgeCheck className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
+              </div>
               <Link
                 to={`/shop/${shop.id}`}
-                className="flex-1 sm:flex-none text-center px-4 py-2 bg-white text-stone-600 border border-stone-200 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors hover:bg-transparent"
+                className="font-bold text-sm text-zinc-950 hover:text-amber-600 transition-colors truncate block"
               >
-                {t("product.details.view_shop") || "Boutique"}
+                {shop.shopName}
               </Link>
             </div>
           </div>
 
-          {/* Direct Free Contact Bar */}
-          {Boolean(shop.supportPhone || shop.phone || product.sellerPhone) && (
-            <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-                ⚡ Contact Direct Vendeur
-              </span>
+          {/* Quick Actions (Follow & Direct Contact) */}
+          <div className="flex items-center gap-2 shrink-0">
+            {sellerPhone && (
+              <a
+                href={`https://wa.me/213${String(sellerPhone).replace(/^0/, "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je vous contacte concernant l'article ${product.name} sur Olmart.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Contacter le vendeur sur WhatsApp"
+                className="w-9 h-9 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 flex items-center justify-center transition-all shadow-2xs active:scale-95"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </a>
+            )}
 
-              {(shop.supportPhone || shop.phone || product.sellerPhone) && (
-                <a
-                  href={`tel:${shop.supportPhone || shop.phone || product.sellerPhone}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white hover:bg-stone-800 rounded-full text-[11px] font-bold transition-all shadow-xs"
-                >
-                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{shop.supportPhone || shop.phone || product.sellerPhone}</span>
-                </a>
+            {sellerPhone && (
+              <a
+                href={`tel:${sellerPhone}`}
+                aria-label="Appeler le vendeur"
+                className="w-9 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-all shadow-2xs active:scale-95"
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+            )}
+
+            <button
+              onClick={onFollowToggle}
+              disabled={followLoading}
+              className={`h-9 px-3.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer border shadow-2xs active:scale-95 ${
+                isFollowing
+                  ? "bg-zinc-100 text-zinc-700 border-zinc-200 hover:bg-zinc-200"
+                  : "bg-zinc-900 text-white border-zinc-900 hover:bg-zinc-800"
+              }`}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">{t("product.details.following") || "Abonné"}</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>{t("product.details.follow") || "Suivre"}</span>
+                </>
               )}
-
-              {(shop.supportPhone || shop.phone || product.sellerPhone) && (
-                <a
-                  href={`https://wa.me/213${String(shop.supportPhone || shop.phone || product.sellerPhone)
-                    .replace(/^0/, "")
-                    .replace(/[^0-9]/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[11px] font-bold transition-all shadow-xs"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>WhatsApp Vendeur</span>
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Discrete Seller Promo Coupon Banner */}
-          <SellerCouponBanner sellerId={shop.id || product.sellerId} className="mt-1" />
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Discrete Seller Promo Coupon Banner (if no shop block rendered) */}
-      {!shop && product.sellerId && (
-        <SellerCouponBanner sellerId={product.sellerId} className="mt-2" />
-      )}
-    </>
+      {/* Discrete Coupon Banner */}
+      <SellerCouponBanner sellerId={shop?.id || product.sellerId} className="mt-1" />
+    </div>
   );
 };

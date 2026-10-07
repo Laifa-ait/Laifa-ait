@@ -362,58 +362,69 @@ export const Shop: React.FC = () => {
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
       </Helmet>
-      {/* Header / Search: White-Lit Premium Architecture */}
-      <div className="bg-white border-b border-slate-100 pt-20 sm:pt-24 lg:pt-32 pb-8 sm:pb-10 px-4 sm:px-6 relative shadow-sm">
-         <div className="absolute top-0 inset-x-0 h-1 bg-slate-900 z-10" />
-         <div className="max-w-[90rem] mx-auto space-y-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      {/* Clean Minimalist Header Hero without background image */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-zinc-50 via-white to-zinc-50 text-zinc-900 border-b border-zinc-200/80">
+         <div className="relative z-10 max-w-[90rem] mx-auto space-y-6 px-4 sm:px-6 pt-8 sm:pt-10 pb-8 sm:pb-10">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                <div className="space-y-2">
-                 {/* Breadcrumbs */}
-                 <Breadcrumbs items={breadcrumbItems} />
+                 {/* High-contrast Breadcrumbs */}
+                 <div className="[&_nav]:p-0 [&_nav]:max-w-none [&_ol]:text-zinc-400 [&_a]:text-zinc-500 [&_a:hover]:text-zinc-950 [&_span]:text-zinc-900 [&_li]:text-zinc-400 text-xs">
+                   <Breadcrumbs items={breadcrumbItems} />
+                 </div>
 
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight rtl:tracking-normal text-slate-900 uppercase">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal tracking-tight rtl:tracking-normal text-zinc-950 uppercase">
                     {urlTag ? `Tag: ${urlTag}` : (urlSubsubcategory ? getCategoryTranslation(urlSubsubcategory, t) : urlSubcategory ? getCategoryTranslation(urlSubcategory, t) : activeCategory === "Tous" ? t("shop_collections", "Collections") : getCategoryTranslation(activeCategory, t))}
                   </h1>
-                  <p className="text-slate-500 text-sm">{t('shop_explore_treasures', "Explorez les trésors uniques des 69 Wilayas d'Algérie.")}</p>
+                  <p className="text-zinc-600 text-xs sm:text-sm max-w-xl font-normal">{t('shop_explore_treasures', "Explorez les trésors uniques des 69 Wilayas d'Algérie.")}</p>
                </div>
 
-               {/* Right side: Modern Unified Compact Actions */}
-               <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-xl shrink-0">
-                  <div className="relative w-full">
-                     <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+               {/* Right side: Sleek Modern Search Bar & Matching Filter Toggle */}
+               <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+                  <div className="relative flex-1 sm:w-64 md:w-72 lg:w-80">
+                     <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                      <button 
+                       type="button"
                        onClick={() => setIsSearchOpen(true)}
-                       className="w-full bg-transparent border border-slate-200 rounded-full ps-11 pe-4 py-3 text-sm font-medium text-left rtl:text-right text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer"
+                       className="w-full h-11 bg-zinc-100 hover:bg-zinc-200/70 text-zinc-800 hover:text-zinc-950 border border-zinc-200/80 rounded-full ps-10 pe-8 text-xs font-medium text-left rtl:text-right shadow-xs transition-all cursor-pointer truncate"
                      >
-                       {searchQuery || t('search_placeholder_olma', 'Rechercher une création Olma...')}
+                       {searchQuery || t('search_placeholder_olma', 'Rechercher une création...')}
                      </button>
                      {searchQuery && (
-                       <button onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }} className="absolute end-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 cursor-pointer" title={t("Effacer la recherche") || "Effacer la recherche"}>
-                         <X className="w-4 h-4" />
+                       <button 
+                         type="button"
+                         onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }} 
+                         className="absolute end-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer" 
+                         title={t("Effacer la recherche") || "Effacer la recherche"}
+                       >
+                         <X className="w-3.5 h-3.5" />
                        </button>
                      )}
                   </div>
-                  
 
                   <button 
+                    type="button"
                     onClick={() => setShowFilters(!showFilters)} 
-                    className="w-full sm:w-auto px-6 py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-sans text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+                    className={`h-11 px-5 rounded-full text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 ${
+                      showFilters
+                        ? 'bg-emerald-600 text-white font-bold'
+                        : 'bg-zinc-900 hover:bg-zinc-800 text-white'
+                    }`}
                   >
-                     <SlidersHorizontal className="w-4 h-4 shrink-0" />
+                     <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
                      <span>{t("filter_filters", "Filtres")}</span>
                   </button>
                </div>
             </div>
 
             {/* Unified Control Box: Double-Decker categories & express tags */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
+            <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
                {/* Deck 1: Main Categories */}
                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                     <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2 h-6">
+                     <span className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider flex items-center gap-2 h-6">
                         <span>{t('nav_categories', 'Catégories')}</span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-slate-900 bg-transparent px-3 py-0.5 rounded-full text-[11px] border border-slate-100">
+                        <span className="text-zinc-300">•</span>
+                        <span className="text-zinc-900 bg-zinc-100 px-3 py-0.5 rounded-full text-[11px] border border-zinc-200 font-medium">
                            {getCategoryTranslation(activeCategory, t)}
                         </span>
                      </span>

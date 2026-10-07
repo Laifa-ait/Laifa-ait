@@ -96,13 +96,25 @@ export const pinLimiter = rateLimit({
 
 export const strictLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 30, // Strict limit for sensitive endpoints (payments, exports, admin, sensitive real estate)
+  max: 60, // Strict limit for sensitive endpoints (payments, exports, KYC, danger zone, sensitive real estate)
   standardHeaders: true,
   legacyHeaders: false,
   store: createStore("strict"),
   handler: (req, res) => {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.status(429).json({ success: false, error: "Trop de requêtes sur cette opération sensible, veuillez réessayer dans une minute." });
+  },
+});
+
+export const adminLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 300, // Rate limit for authenticated back-office admin operations, section management & dashboard polling
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createStore("admin"),
+  handler: (req, res) => {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.status(429).json({ success: false, error: "Trop de requêtes administratives, veuillez patienter un instant." });
   },
 });
 

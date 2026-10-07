@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
-import { Truck } from "lucide-react";
+import { Truck, ChevronDown, MapPin, Clock } from "lucide-react";
 import { Product } from "../../../domains/product/product.types";
 import { Shop } from "../../../domains/seller/shop.types";
 import { formatPrice } from "../../../utils/format";
@@ -24,20 +24,19 @@ export const ProductAccordionShipping: React.FC<ProductAccordionShippingProps> =
   return (
     <div>
       <button
+        type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-start font-sans font-bold text-xs uppercase tracking-wider text-[#2C2C28] cursor-pointer"
+        className="w-full flex items-center justify-between py-4 text-start font-bold text-xs uppercase tracking-wider text-zinc-900 hover:text-emerald-700 transition-colors cursor-pointer border-none bg-transparent"
       >
-        <span className="flex items-center gap-2">
-          <Truck className="w-4 h-4 text-[#008BB5]" />
-          {t("Livraison / retour")}
+        <span className="flex items-center gap-2.5">
+          <Truck className="w-4 h-4 text-emerald-600" />
+          <span>{t("Livraison & Retours")}</span>
         </span>
-        <span
-          className={`text-stone-400 font-light text-base transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
+        <ChevronDown
+          className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-zinc-700" : ""
           }`}
-        >
-          ▼
-        </span>
+        />
       </button>
 
       <AnimatePresence initial={false}>
@@ -48,68 +47,40 @@ export const ProductAccordionShipping: React.FC<ProductAccordionShippingProps> =
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pt-1 space-y-4 text-xs text-stone-600 bg-[#FAF6F0]/25">
-              <div className="flex gap-2.5 items-start">
-                <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">
-                  ✓
-                </div>
-                <div>
-                  <p className="font-bold text-[#2C2C28]">
-                    {t("Livraison sur les 69 Wilayas d'Algérie")}
-                  </p>
-                  <p className="text-[10px] text-stone-500">
-                    {product.deliveryPrice !== undefined && product.deliveryPrice !== null
-                      ? Number(product.deliveryPrice) === 0
-                        ? "Livraison gratuite offerte par le vendeur !"
-                        : `Frais de livraison estimés : ${formatPrice(Number(product.deliveryPrice))}`
-                      : t("Paiement sécurisé en espèces à la livraison.")}
-                  </p>
-                </div>
+            <div className="pb-4 pt-1 space-y-2.5 text-xs text-zinc-600 divide-y divide-zinc-100">
+              <div className="pt-1">
+                <p className="font-bold text-zinc-900">
+                  {t("Livraison sur les 58 Wilayas d'Algérie")}
+                </p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">
+                  {product.deliveryPrice !== undefined && product.deliveryPrice !== null
+                    ? Number(product.deliveryPrice) === 0
+                      ? "Livraison gratuite offerte !"
+                      : `Frais de livraison estimés : ${formatPrice(Number(product.deliveryPrice))}`
+                    : t("Paiement sécurisé en espèces à la livraison (COD).")}
+                </p>
               </div>
+
               {(product.wilaya || shop?.wilaya) && (
-                <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
-                  <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">
-                    📍
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#2C2C28]">{t("Origine d'expédition")}</p>
-                    <p className="text-[10px] text-stone-500">
-                      {t("Expédié depuis")} :{" "}
-                      <span className="font-semibold text-stone-800">
-                        {product.wilaya || shop?.wilaya}
-                      </span>
-                    </p>
-                  </div>
+                <div className="flex gap-2 items-center pt-2 text-[11px]">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>
+                    {t("Expédié depuis")} : <span className="font-semibold text-zinc-800">{product.wilaya || shop?.wilaya}</span>
+                  </span>
                 </div>
               )}
+
               {(product.preparationTime || shop?.avgPreparationTime) && (
-                <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
-                  <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">
-                    ⏱
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#2C2C28]">{t("Délai de préparation du vendeur")}</p>
-                    <p className="text-[10px] text-stone-500">
-                      {t("Prêt pour expédition en")}{" "}
-                      {product.preparationTime || shop?.avgPreparationTime || "24-48h"}.
-                    </p>
-                  </div>
+                <div className="flex gap-2 items-center pt-2 text-[11px]">
+                  <Clock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>
+                    {t("Préparation")} : <span className="font-semibold text-zinc-800">{product.preparationTime || shop?.avgPreparationTime || "24-48h"}</span>
+                  </span>
                 </div>
               )}
-              <div className="flex gap-2.5 items-start border-t border-[#EAE3D5]/40 pt-3">
-                <div className="w-5 h-5 rounded-full bg-[#008BB5]/10 flex items-center justify-center text-[#008BB5] font-bold text-[10px] shrink-0 mt-0.5">
-                  ↺
-                </div>
-                <div>
-                  <p className="font-bold text-[#2C2C28]">{t("Politique d'échange et retour")}</p>
-                  <p className="text-[10px] text-stone-500">
-                    {product.returnPolicy
-                      ? t(
-                          "Retours acceptés sous conditions du vendeur si le produit est dans son emballage d'origine."
-                        )
-                      : t("Les retours et échanges sont gérés directement par le vendeur concerné.")}
-                  </p>
-                </div>
+
+              <div className="pt-2 text-[11px] text-zinc-500">
+                {t("Retours acceptés sous 48h en cas de non-conformité ou produit défectueux.")}
               </div>
             </div>
           </motion.div>

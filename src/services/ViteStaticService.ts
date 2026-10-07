@@ -25,7 +25,12 @@ export function isFrontendReady(): boolean {
   if (process.env.NODE_ENV !== "production") {
     return true;
   }
-  return isStaticBuildValid && cachedHtmlTemplate.length > 50 && cachedHtmlTemplate.includes('id="root"');
+  if (isStaticBuildValid && cachedHtmlTemplate.length > 50 && cachedHtmlTemplate.includes('id="root"')) {
+    return true;
+  }
+  const distHtml = path.join(process.cwd(), "dist", "index.html");
+  const buildHtml = path.join(process.cwd(), "build", "index.html");
+  return existsSync(distHtml) || existsSync(buildHtml);
 }
 
 /**
@@ -54,7 +59,9 @@ export function validateProductionHtmlTemplate(content: string, distPath: string
 }
 
 export async function setupViteAndStaticServing(app: Express): Promise<void> {
-  const distPath = path.join(process.cwd(), "dist");
+  const distPath = existsSync(path.join(process.cwd(), "dist"))
+    ? path.join(process.cwd(), "dist")
+    : path.join(process.cwd(), "build");
   const publicLocalesPath = path.join(process.cwd(), "public", "locales");
   const distLocalesPath = path.join(distPath, "locales");
 
@@ -85,7 +92,11 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
     }
   });
 
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    (!process.argv[1]?.includes("tsx") && existsSync(path.join(distPath, "index.html")));
+
+  if (!isProduction) {
     try {
       const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
@@ -166,14 +177,29 @@ export async function setupViteAndStaticServing(app: Express): Promise<void> {
   const sendOptimizedHtml = async (res: Response, htmlContent: string) => {
     let content = htmlContent;
     if (!content || content.trim() === "") {
-      if (isStaticBuildValid) {
+      if (isStaticBuildValid && cachedHtmlTemplate) {
         content = cachedHtmlTemplate;
+      } else {
+        try {
+          const directHtmlPath = existsSync(path.join(distPath, "index.html"))
+            ? path.join(distPath, "index.html")
+            : existsSync(path.join(process.cwd(), "build", "index.html"))
+            ? path.join(process.cwd(), "build", "index.html")
+            : path.join(process.cwd(), "index.html");
+          if (existsSync(directHtmlPath)) {
+            content = await fsPromises.readFile(directHtmlPath, "utf-8");
+            cachedHtmlTemplate = content;
+            isStaticBuildValid = true;
+          }
+        } catch {
+          // ignore
+        }
       }
     }
 
     const nonce = res.locals.cspNonce || "";
 
-    if (!content || content.trim() === "" || !isStaticBuildValid) {
+    if (!content || content.trim() === "") {
       safeLogger.error("[CRITICAL ALERT] Serving HTTP 500 because frontend static assets are missing or corrupted");
       res.status(500).setHeader("Content-Type", "text/html; charset=utf-8");
       let errorPage = '<!doctype html><html lang="fr"><head><meta charset="UTF-8"><title>500 - Service Indisponible</title></head><body><div style="font-family:sans-serif;text-align:center;padding:50px;"><h1>500 - Service Indisponible</h1><p>Les ressources de la plateforme sont indisponibles. Veuillez réessayer ultérieurement.</p></div></body></html>';

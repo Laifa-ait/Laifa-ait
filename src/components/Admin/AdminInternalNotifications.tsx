@@ -47,7 +47,7 @@ export const AdminInternalNotifications: React.FC = () => {
     };
     
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 10000);
+    const interval = setInterval(fetchNotifs, 30000);
     
     return () => {
         isCancelled = true;

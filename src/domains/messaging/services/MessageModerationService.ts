@@ -17,6 +17,9 @@ export class MessageModerationService {
   private static readonly URL_TEST = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/i;
   private static readonly URL_REPLACE = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
 
+  private static readonly EMAIL_TEST = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
+  private static readonly EMAIL_REPLACE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
+
   /**
    * Scans and sanitizes message text against platform DLP rules.
    */
@@ -40,6 +43,12 @@ export class MessageModerationService {
     if (this.URL_TEST.test(cleanText)) {
       violationReasons.push("EXTERNAL_URL_DETECTED");
       cleanText = cleanText.replace(this.URL_REPLACE, "[LIEN INTERDIT]");
+    }
+
+    // 4. Email address filter
+    if (this.EMAIL_TEST.test(cleanText)) {
+      violationReasons.push("EMAIL_ADDRESS_DETECTED");
+      cleanText = cleanText.replace(this.EMAIL_REPLACE, "[EMAIL MASQUÉ]");
     }
 
     const violationDetected = violationReasons.length > 0;

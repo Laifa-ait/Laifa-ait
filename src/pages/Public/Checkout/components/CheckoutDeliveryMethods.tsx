@@ -26,35 +26,35 @@ export const CheckoutDeliveryMethods: React.FC<CheckoutDeliveryMethodsProps> = (
     <div className="space-y-6">
       {/* Mode de Livraison Option Selector */}
       <div className="space-y-3 pt-2">
-        <label className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1">
+        <label className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block">
           {t("checkout.delivery_mode", "Mode de livraison")}
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <button
             type="button"
             onClick={() => setDeliveryMethod("domicile")}
-            className={`p-5 rounded-2xl border text-start transition-all cursor-pointer flex flex-col justify-between h-36 relative overflow-hidden ${
+            className={`p-4 sm:p-5 rounded-2xl border text-start transition-all cursor-pointer flex flex-col justify-between min-h-[120px] relative overflow-hidden active:scale-[0.99] ${
               deliveryMethod === "domicile"
-                ? "border-orange-500 bg-orange-50/5 ring-2 ring-orange-500/20"
-                : "border-stone-200 hover:border-stone-300 bg-stone-50/30"
+                ? "border-amber-500 bg-amber-50/30 ring-2 ring-amber-500/20 shadow-xs"
+                : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
             }`}
           >
-            <div className="flex justify-between items-start w-full">
-              <span className="p-2.5 bg-orange-100 rounded-xl text-orange-600">
+            <div className="flex justify-between items-start w-full mb-3">
+              <span className={`p-2 rounded-xl ${deliveryMethod === "domicile" ? "bg-amber-500 text-zinc-950" : "bg-zinc-100 text-zinc-700"}`}>
                 <Truck className="w-5 h-5" />
               </span>
               {deliveryMethod === "domicile" && (
-                <span className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center animate-scale-in">
-                  <Check className="w-3 h-3 text-white stroke-[3]" />
+                <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center animate-scale-in">
+                  <Check className="w-3 h-3 text-zinc-950 stroke-[3]" />
                 </span>
               )}
             </div>
             <div>
-              <h4 className="font-bold text-sm text-[var(--color-slate-900, #0f172a)]">
-                {t("checkout.domicile_title", "À Domicile 🚚")}
+              <h4 className="font-bold text-sm text-zinc-950">
+                {t("checkout.domicile_title", "À Domicile")} 🚚
               </h4>
-              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mt-0.5 leading-tight">
-                {t("checkout.domicile_sub", "Livraison directe à votre adresse")}
+              <p className="text-[11px] text-zinc-500 font-medium mt-0.5 leading-snug">
+                {t("checkout.domicile_sub", "Remise en main propre à votre adresse")}
               </p>
             </div>
           </button>
@@ -62,28 +62,28 @@ export const CheckoutDeliveryMethods: React.FC<CheckoutDeliveryMethodsProps> = (
           <button
             type="button"
             onClick={() => setDeliveryMethod("stopdesk")}
-            className={`p-5 rounded-2xl border text-start transition-all cursor-pointer flex flex-col justify-between h-36 relative overflow-hidden ${
+            className={`p-4 sm:p-5 rounded-2xl border text-start transition-all cursor-pointer flex flex-col justify-between min-h-[120px] relative overflow-hidden active:scale-[0.99] ${
               deliveryMethod === "stopdesk"
-                ? "border-orange-500 bg-orange-50/5 ring-2 ring-orange-500/20"
-                : "border-stone-200 hover:border-stone-300 bg-stone-50/30"
+                ? "border-amber-500 bg-amber-50/30 ring-2 ring-amber-500/20 shadow-xs"
+                : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
             }`}
           >
-            <div className="flex justify-between items-start w-full">
-              <span className="p-2.5 bg-purple-100 rounded-xl text-purple-600">
+            <div className="flex justify-between items-start w-full mb-3">
+              <span className={`p-2 rounded-xl ${deliveryMethod === "stopdesk" ? "bg-amber-500 text-zinc-950" : "bg-zinc-100 text-zinc-700"}`}>
                 <Package className="w-5 h-5" />
               </span>
               {deliveryMethod === "stopdesk" && (
-                <span className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center animate-scale-in">
-                  <Check className="w-3 h-3 text-white stroke-[3]" />
+                <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center animate-scale-in">
+                  <Check className="w-3 h-3 text-zinc-950 stroke-[3]" />
                 </span>
               )}
             </div>
             <div>
-              <h4 className="font-bold text-sm text-[var(--color-slate-900, #0f172a)]">
-                {t("checkout.stopdesk_title", "Point Relais (Stop-Desk) 📦")}
+              <h4 className="font-bold text-sm text-zinc-950">
+                {t("checkout.stopdesk_title", "Point Relais (Stop-Desk)")} 📦
               </h4>
-              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mt-0.5 leading-tight">
-                {t("checkout.stopdesk_sub", "Tarif réduit, retrait en bureau de poste / agence relais")}
+              <p className="text-[11px] text-zinc-500 font-medium mt-0.5 leading-snug">
+                {t("checkout.stopdesk_sub", "Tarif économique, retrait en agence relais")}
               </p>
             </div>
           </button>
@@ -97,28 +97,28 @@ export const CheckoutDeliveryMethods: React.FC<CheckoutDeliveryMethodsProps> = (
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4 p-5 rounded-2xl bg-orange-50/20 border border-orange-100/60"
+            className="space-y-3.5 p-4 sm:p-5 rounded-2xl bg-amber-50/40 border border-amber-200/60"
           >
             <div className="flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-orange-600 mt-0.5 shrink-0" />
+              <Info className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
                   {t("checkout.agency_selection", "Sélection du Bureau de Retrait")}
                 </h4>
-                <p className="text-[10px] text-stone-500 leading-normal mt-0.5">
+                <p className="text-[11px] text-zinc-600 leading-normal mt-0.5">
                   {t(
                     "checkout.agency_desc",
-                    "Sélectionnez le bureau de retrait le plus proche. Vous serez notifié par SMS dès que votre colis y sera disponible."
+                    "Choisissez votre bureau de retrait. Vous recevrez un SMS dès l'arrivée du colis."
                   )}
                 </p>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <select
                 id="selectedAgency"
                 value={selectedAgency}
                 onChange={(e) => setSelectedAgency(e.target.value)}
-                className="w-full px-5 py-3 bg-white border border-stone-200 rounded-xl outline-none font-bold text-xs cursor-pointer focus:ring-2 ring-orange-500/10"
+                className="w-full h-13 px-4 bg-white border border-zinc-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-xs sm:text-sm text-zinc-900 cursor-pointer transition-all"
               >
                 {availableCenters.map((agency) => (
                   <option key={agency} value={agency}>

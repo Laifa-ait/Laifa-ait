@@ -366,10 +366,29 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const revalidateCart = async () => {
-    const updated = await hydrateCart(cart);
-    setCart(updated);
-  };
+  const revalidateCart = React.useCallback(async () => {
+    setCart((prev) => {
+      hydrateCart(prev)
+        .then((updated) => {
+          setCart((current) => {
+            const isSame =
+              current.length === updated.length &&
+              current.every(
+                (item, i) =>
+                  item.id === updated[i]?.id &&
+                  item.price === updated[i]?.price &&
+                  item.promoPrice === updated[i]?.promoPrice &&
+                  item.quantity === updated[i]?.quantity
+              );
+            return isSame ? current : updated;
+          });
+        })
+        .catch((e) => {
+          safeLogger.error("Cart revalidation failed", { err: String(e) });
+        });
+      return prev;
+    });
+  }, [hydrateCart]);
 
   const getCartItemPrice = (item: CartItem) => {
     let targetPrice = item.promoPrice !== undefined && item.promoPrice !== null

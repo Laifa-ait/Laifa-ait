@@ -33,7 +33,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({ stats, dispu
       color: "bg-amber-50 text-amber-600",
     },
     {
-      label: "Revenu Net Olma",
+      label: "Revenus Publicitaires / Sponsors",
       value: formatPrice(stats.netRevenue),
       icon: TrendingUp,
       inc: stats.revenueChange > 0 ? `+${stats.revenueChange.toFixed(1)}%` : `${stats.revenueChange.toFixed(1)}%`,

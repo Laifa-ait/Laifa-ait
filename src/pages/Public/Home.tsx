@@ -4,7 +4,6 @@ import { useShop } from "../../context/ShopContext";
 import { useAuth } from "../../context/AuthContext";
 import { BentoHero } from "../../components/Home/BentoHero";
 import { NeoCategoryGrid } from "../../components/Home/NeoCategoryGrid";
-import { FeaturedProductsCarousel } from "../../components/Home/FeaturedProductsCarousel";
 import { DynamicSection } from "../../components/Home/DynamicSection";
 import { HomeEndlessGrid } from "../../components/Home/HomeEndlessGrid";
 import { SponsoredSection } from "../../components/Home/SponsoredSection";
@@ -43,7 +42,6 @@ export const Home: React.FC = () => {
   const {
     dbBanners,
     isBannersLoading,
-    featuredProducts,
     customCategories,
     homepageSections,
   } = useHomeData();
@@ -77,6 +75,38 @@ export const Home: React.FC = () => {
       const cleanActive = activeWilaya.toLowerCase().trim();
       const matches = regions.some((reg: string) => {
         const cleanReg = reg.toLowerCase().trim();
+        return cleanReg === cleanActive || cleanActive.includes(cleanReg) || cleanReg.includes(cleanActive);
+      });
+      if (!matches) return false;
+    }
+
+    return true;
+  }, [currentUser, activeWilaya]);
+
+  // Real Dynamic Target Filtering for Homepage Sections (Wilayas, Audience, Scheduling)
+  const filterSectionByTargeting = useCallback((section: HomepageSection) => {
+    if (section.isActive === false) return false;
+
+    const startDate = section.startDate;
+    if (startDate && new Date() < new Date(startDate as string | number)) return false;
+    const endDate = section.endDate;
+    if (endDate && new Date() > new Date(endDate as string | number)) return false;
+
+    const audience = section.targetAudience;
+    if (audience && audience !== "all") {
+      if (audience === "logged_in" && !currentUser) return false;
+      if (audience === "new" && currentUser) return false;
+      if (audience === "vip") {
+        const isVip = Boolean(currentUser && (currentUser as { isVip?: boolean }).isVip);
+        if (!isVip) return false;
+      }
+    }
+
+    const regions = section.targetRegions;
+    if (regions && regions.length > 0 && activeWilaya && activeWilaya !== "Tous") {
+      const cleanActive = activeWilaya.toLowerCase().replace(/^[0-9]+\s*[-–]?\s*/, "").trim();
+      const matches = regions.some((reg: string) => {
+        const cleanReg = reg.toLowerCase().replace(/^[0-9]+\s*[-–]?\s*/, "").trim();
         return cleanReg === cleanActive || cleanActive.includes(cleanReg) || cleanReg.includes(cleanActive);
       });
       if (!matches) return false;
@@ -158,15 +188,12 @@ export const Home: React.FC = () => {
         favoriteCategory={getCategorieFavorite()}
       />
 
-      {/* c) UNE section « Promotions du moment » (les produits ayant flashPrice ou promoPrice actifs, réutilise le carrousel existant) */}
-      <FeaturedProductsCarousel products={featuredProducts} />
-
       {/* Emplacements Sponsorisés Home (masqué si vide, zéro mock fallback) */}
       <SponsoredSection />
 
       {/* Sections administrables dynamiques */}
       {[...(homepageSections || [])]
-        .filter((section) => section && section.isActive)
+        .filter((section) => section && filterSectionByTargeting(section))
         .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
         .map((section) => (
           <DynamicSection key={section.id} section={section} />

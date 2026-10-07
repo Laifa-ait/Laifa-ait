@@ -7,10 +7,8 @@ import {
   MapPin,
   HelpCircle,
   LogOut,
-  Store,
   ChevronRight,
   Camera,
-  ExternalLink,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -83,18 +81,18 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
     <div className="fixed inset-0 z-[120] flex items-end sm:items-start sm:justify-end sm:p-4 animate-in fade-in duration-200">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
 
-      <div className="relative w-full sm:w-[390px] max-w-full bg-[#f0f4f9] rounded-t-[32px] sm:rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.24)] border border-[#dadce0] z-[130] overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="w-12 h-1 bg-[#c4c7c5] rounded-full mx-auto mt-2.5 sm:hidden shrink-0" />
+      <div className="relative w-full sm:w-[390px] max-w-full bg-white rounded-t-[32px] sm:rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] border border-zinc-200/90 z-[130] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="w-12 h-1 bg-zinc-300 rounded-full mx-auto mt-2.5 sm:hidden shrink-0" />
 
         <div className="flex items-center justify-between px-5 pt-3 pb-2 shrink-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[#1f1f1f] font-medium text-base tracking-tight">Olmart</span>
-            <span className="text-xs text-[#444746] font-normal">• Compte</span>
+            <span className="text-zinc-900 font-black text-base tracking-tight">Olmart</span>
+            <span className="text-xs text-[#FF5000] font-semibold">• {t("Compte")}</span>
           </div>
           <button
             onClick={onClose}
             aria-label={t("Fermer")}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#444746] hover:bg-[#e0e3e7] transition-colors border-none bg-transparent cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors border-none bg-transparent cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -113,16 +111,16 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
             <button
               onClick={() => handleNav("/dashboard/buyer?tab=profile")}
               title={t("Modifier la photo")}
-              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-[#dadce0] shadow-xs flex items-center justify-center text-[#444746] hover:text-[#1a73e8] cursor-pointer"
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-zinc-200 shadow-xs flex items-center justify-center text-zinc-600 hover:text-[#FF5000] hover:border-[#FF5000] transition-colors cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <h3 className="font-semibold text-base text-[#1f1f1f] truncate max-w-[280px]">{displayName}</h3>
-          <p className="text-xs text-[#444746] truncate max-w-[280px]">{currentUser?.email}</p>
+          <h3 className="font-bold text-base text-zinc-900 truncate max-w-[280px]">{displayName}</h3>
+          <p className="text-xs text-zinc-500 truncate max-w-[280px]">{currentUser?.email}</p>
 
-          <span className="mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]">
+          <span className="mt-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-[#FF5000] border border-orange-200/80 shadow-2xs">
             {userProfile?.role === "admin"
               ? t("Compte Administrateur", "Compte Administrateur")
               : userProfile?.role === "seller"
@@ -132,79 +130,45 @@ export const GoogleAccountMenu: React.FC<GoogleAccountMenuProps> = ({ isOpen, on
 
           <button
             onClick={() => handleNav("/dashboard/buyer")}
-            className="mt-3 px-5 py-1.5 rounded-full border border-[#747775]/40 bg-white hover:bg-[#e1e3e1] text-[#1f1f1f] font-medium text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+            className="mt-3 px-5 py-1.5 rounded-full border border-zinc-200 hover:border-[#FF5000] bg-white hover:bg-orange-50/50 text-zinc-900 hover:text-[#FF5000] font-semibold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
           >
             {t("Gérer votre compte Olmart")}
           </button>
         </div>
 
-        <div className="px-4 pb-4 overflow-y-auto space-y-2">
-          <div className="bg-white rounded-[22px] border border-[#dadce0]/70 p-1 shadow-xs space-y-0.5">
+        <div className="px-4 pb-20 sm:pb-4 overflow-y-auto space-y-2">
+          <div className="bg-[#FAF9F6] rounded-[22px] border border-zinc-200/80 p-1 shadow-xs space-y-0.5">
             {quickLinks.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.path}
                   onClick={() => handleNav(item.path)}
-                  className="w-full flex items-center justify-between p-2.5 rounded-[16px] hover:bg-[#f2f4f8] transition-colors group cursor-pointer border-none bg-transparent"
+                  className="w-full flex items-center justify-between p-2.5 rounded-[16px] hover:bg-white hover:shadow-xs transition-all group cursor-pointer border-none bg-transparent"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#f0f4f9] text-[#444746] group-hover:text-[#1a73e8] group-hover:bg-[#e8f0fe] flex items-center justify-center shrink-0 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-white text-zinc-600 group-hover:text-white group-hover:bg-[#FF5000] flex items-center justify-center shrink-0 transition-colors shadow-2xs">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="text-left rtl:text-right">
-                      <p className="text-xs font-medium text-[#1f1f1f] group-hover:text-[#1a73e8] transition-colors">{item.label}</p>
-                      <p className="text-[10px] text-[#444746]">{item.sub}</p>
+                      <p className="text-xs font-semibold text-zinc-900 group-hover:text-[#FF5000] transition-colors">{item.label}</p>
+                      <p className="text-[10px] text-zinc-500">{item.sub}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#747775] rtl:rotate-180" />
+                  <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-[#FF5000] rtl:rotate-180 transition-colors" />
                 </button>
               );
             })}
           </div>
 
-          {userProfile?.role === "seller" && (
-            <button
-              onClick={() => handleNav("/dashboard/seller")}
-              className="w-full flex items-center justify-between p-3 rounded-[20px] bg-white border border-[#dadce0]/70 hover:bg-[#f8fafd] transition-colors cursor-pointer shadow-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#f3e8fd] text-[#7627bb] flex items-center justify-center shrink-0"><Store className="w-4 h-4" /></div>
-                <div className="text-left rtl:text-right"><p className="text-xs font-medium text-[#1f1f1f]">{t("Console Vendeur Pro")}</p></div>
-              </div>
-              <ExternalLink className="w-4 h-4 text-[#747775]" />
-            </button>
-          )}
-
-          {userProfile?.role === "admin" && (
-            <button
-              onClick={() => handleNav("/dashboard/admin")}
-              className="w-full flex items-center justify-between p-3 rounded-[20px] bg-white border border-[#dadce0]/70 hover:bg-[#f8fafd] transition-colors cursor-pointer shadow-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#fce8e6] text-[#c5221f] flex items-center justify-center shrink-0"><Settings className="w-4 h-4" /></div>
-                <div className="text-left rtl:text-right"><p className="text-xs font-medium text-[#1f1f1f]">{t("Console d'Administration")}</p></div>
-              </div>
-              <ExternalLink className="w-4 h-4 text-[#747775]" />
-            </button>
-          )}
-
-          <div className="pt-1">
+          <div className="pt-2">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-full border border-[#dadce0] bg-white hover:bg-[#fce8e6] text-[#c5221f] font-medium text-xs transition-colors cursor-pointer shadow-xs"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full border border-red-200 bg-white hover:bg-red-50 text-red-600 font-semibold text-xs transition-colors cursor-pointer shadow-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>{t("Déconnexion")}</span>
             </button>
-          </div>
-
-          <div className="pt-1 text-center">
-            <p className="text-[10px] text-[#444746] flex items-center justify-center gap-2">
-              <button onClick={() => handleNav("/privacy-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">{t("Confidentialité", "Confidentialité")}</button>
-              <span>•</span>
-              <button onClick={() => handleNav("/refund-policy")} className="hover:underline cursor-pointer bg-transparent border-none text-[#444746] p-0 text-[10px]">{t("Conditions", "Conditions")}</button>
-            </p>
           </div>
         </div>
       </div>

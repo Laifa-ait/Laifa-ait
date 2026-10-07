@@ -21,7 +21,7 @@ service firebase.storage {
 
     // Strict regex validation for user-prefixed file names: requires userId_ followed by safe characters
     function isValidUserPrefixedFileName(userId, fileName) {
-      return fileName.matches('^' + userId + '_[a-zA-Z0-9_\\-.]{1,120}\\.(jpg|jpeg|png|webp|gif|pdf|docx|mp4|webm)$');
+      return fileName.startsWith(userId) && fileName.matches('^' + userId + '_[a-zA-Z0-9_\\-.]{1,120}\\.(jpg|jpeg|png|webp|gif|pdf|docx|mp4|webm)$');
     }
 
     // Helper to check if user owns the support ticket or is admin
@@ -80,6 +80,7 @@ service firebase.storage {
       allow read: if true;
       allow write: if isLoggedIn() && (
         isAdmin() || (
+          fileName.startsWith(request.auth.uid + '_') &&
           isValidUserPrefixedFileName(request.auth.uid, fileName) &&
           (
             (type == 'images' && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*')) ||

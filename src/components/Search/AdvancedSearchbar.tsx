@@ -24,13 +24,13 @@ const ROTATING_HINTS = [
 interface AdvancedSearchbarProps {
   className?: string;
   isMobile?: boolean;
-  variant?: "default" | "glass";
+  variant?: "default" | "glass" | "discreet" | "transparent";
 }
 
 export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
   className = "",
   isMobile: _isMobile = false,
-  variant: _variant = "default",
+  variant = "default",
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -305,7 +305,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
       <span>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <strong key={i} className="text-orange-600 bg-orange-50/80 font-bold px-1 rounded">
+            <strong key={i} className="text-emerald-800 bg-emerald-100 font-bold px-1 rounded">
               {part}
             </strong>
           ) : (
@@ -327,7 +327,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
               setShowDropdown(false);
               inputRef.current?.blur();
             }}
-            className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-[90] transition-opacity duration-200"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[90] transition-opacity duration-200"
           />,
           document.body
         )}
@@ -337,15 +337,29 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
         className={`relative w-full ${isOverlayActive ? "z-[50]" : "z-[10]"} ${className}`}
       >
         <div
-          className={`flex items-center w-full h-10 sm:h-11 rounded-full p-0.5 sm:p-1 bg-white transition-all duration-200 ${
-            isOverlayActive
-              ? "border-2 border-orange-500 shadow-md ring-2 ring-orange-500/20"
-              : "border border-slate-300 hover:border-orange-500 shadow-xs"
+          className={`flex items-center w-full rounded-full transition-all duration-200 ${
+            variant === "transparent"
+              ? `h-9 sm:h-10 px-2 sm:px-2.5 py-0.5 bg-white/60 hover:bg-white/85 backdrop-blur-md ${
+                  isOverlayActive
+                    ? "bg-white border-2 border-emerald-600 shadow-md ring-2 ring-emerald-500/20 text-slate-900"
+                    : "border border-slate-200 hover:border-slate-300 shadow-xs text-slate-800"
+                }`
+              : variant === "discreet"
+              ? `h-9 sm:h-10 px-2 sm:px-2.5 py-0.5 bg-slate-100 hover:bg-white ${
+                  isOverlayActive
+                    ? "border-2 border-emerald-600 shadow-sm ring-2 ring-emerald-500/15"
+                    : "border border-slate-200 hover:border-slate-300 shadow-xs"
+                }`
+              : `h-10 sm:h-11 p-0.5 sm:p-1 bg-white ${
+                  isOverlayActive
+                    ? "border-2 border-emerald-600 shadow-md ring-2 ring-emerald-500/20"
+                    : "border border-slate-200 hover:border-slate-300 shadow-xs"
+                }`
           }`}
         >
           {/* Search Icon */}
-          <div className="flex items-center justify-center shrink-0 text-orange-500 ps-3 pe-1.5">
-            <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] stroke-[2.2]" />
+          <div className={`flex items-center justify-center shrink-0 ${variant === "transparent" ? "text-slate-600 ps-2 pe-1.5" : variant === "discreet" ? "text-slate-500 ps-2 pe-1.5" : "text-slate-500 ps-3 pe-1.5"}`}>
+            <Search className={`${variant === "discreet" || variant === "transparent" ? "w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1.8]" : "w-4 h-4 sm:w-[18px] sm:h-[18px] stroke-[2.2]"}`} />
           </div>
 
           {/* Input with animated rotating hint when empty */}
@@ -367,39 +381,53 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
-              className="bg-transparent border-none text-[13px] sm:text-[14px] focus:outline-none w-full h-full px-1 font-medium shadow-none text-slate-900 placeholder:text-slate-400 text-ellipsis whitespace-nowrap"
+              className={`bg-transparent border-none focus:outline-none w-full h-full px-1 font-medium shadow-none ${variant === "transparent" ? "text-slate-900 placeholder:text-slate-400 font-semibold" : "text-slate-900 placeholder:text-slate-400"} text-ellipsis whitespace-nowrap ${
+                variant === "discreet" || variant === "transparent" ? "text-xs sm:text-[13px]" : "text-[13px] sm:text-[14px]"
+              }`}
             />
           </div>
 
           {/* Clear or Loader */}
           {isSearching ? (
-            <Loader2 className="w-4 h-4 text-orange-500 animate-spin mx-1 shrink-0 animate-infinite" />
+            <Loader2 className={`w-4 h-4 animate-spin mx-1 shrink-0 animate-infinite text-emerald-600`} />
           ) : localQuery ? (
             <button
               onClick={clearSearch}
-              className="p-1 hover:text-orange-500 text-slate-400 transition-colors bg-transparent border-none flex items-center justify-center cursor-pointer mx-1 rounded-full hover:bg-slate-100"
+              className={`p-1 transition-colors bg-transparent border-none flex items-center justify-center cursor-pointer mx-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700`}
             >
               <X className="w-4 h-4 stroke-[2]" />
             </button>
           ) : null}
 
-          {/* Solid Vibrant Orange Search Button */}
-          <button
-            type="button"
-            onClick={handleSearchSubmit}
-            className="h-full px-3.5 sm:px-5 bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] text-white font-bold text-xs sm:text-[13px] rounded-full shadow-xs flex items-center justify-center gap-1 active:scale-95 transition-all duration-150 shrink-0 cursor-pointer border-none"
-          >
-            <span>{isMobileView ? t("Recherche", "Recherche") : t("Rechercher", "Rechercher")}</span>
-          </button>
+          {/* Trailing Search Action: Discreet pill or Vibrant Button */}
+          {variant === "discreet" || variant === "transparent" ? (
+            <button
+              type="button"
+              onClick={handleSearchSubmit}
+              className={`h-7 w-7 sm:h-8 sm:w-8 rounded-full ${variant === "transparent" ? "bg-white/80 hover:bg-white text-slate-700 shadow-2xs" : "bg-slate-100 hover:bg-slate-200 text-slate-700"} transition-colors flex items-center justify-center shrink-0 cursor-pointer border-none`}
+              title={t("Recherche", "Recherche")}
+              aria-label={t("Recherche", "Recherche")}
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSearchSubmit}
+              className="h-full px-3.5 sm:px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-[13px] rounded-full shadow-xs flex items-center justify-center gap-1 active:scale-95 transition-all duration-150 shrink-0 cursor-pointer border-none"
+            >
+              <span>{isMobileView ? t("Recherche", "Recherche") : t("Rechercher", "Rechercher")}</span>
+            </button>
+          )}
         </div>
 
         {/* Predictive & Interactive Mega Search Dropdown Overlay */}
         {isOverlayActive && (
-          <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] md:left-1/2 md:-translate-x-1/2 w-full md:w-[750px] lg:w-[850px] bg-white border border-slate-200/90 shadow-2xl z-[150] rounded-2xl md:rounded-3xl overflow-hidden max-h-[75vh] md:max-h-[80vh] overflow-y-auto">
+          <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] md:left-1/2 md:-translate-x-1/2 w-full md:w-[750px] lg:w-[850px] bg-white border border-slate-200 shadow-2xl z-[150] rounded-2xl md:rounded-3xl overflow-hidden max-h-[75vh] md:max-h-[80vh] overflow-y-auto">
             <div className="p-4 sm:p-6 space-y-5">
               {/* Overlay Header with Close Button for Mobile */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   {localQuery.trim()
                     ? t("search_results", "Résultats de recherche")
                     : t("search_explore_olmart", "Explorer sur Olmart")}
@@ -422,8 +450,8 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                   {/* 1. Recent Searches */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
-                        <History className="w-3.5 h-3.5 text-orange-500" />
+                      <h4 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                        <History className="w-3.5 h-3.5 text-slate-400" />
                         <span>{t("recent_searches", "Recherches récentes")}</span>
                       </h4>
                       {recentSearches.length > 0 && (
@@ -442,10 +470,10 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                           <li
                             key={i}
                             onClick={() => selectTrendingOrRecent(term)}
-                            className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-orange-50/50 text-[13px] font-medium text-slate-700 hover:text-orange-600 transition-colors cursor-pointer group"
+                            className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-slate-50 text-[13px] font-medium text-slate-800 transition-colors cursor-pointer group"
                           >
                             <span className="truncate flex items-center gap-2">
-                              <History className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 shrink-0" />
+                              <History className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 shrink-0" />
                               {term}
                             </span>
                             <button
@@ -466,8 +494,8 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
 
                   {/* 2. Trending Searches */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
-                      <Flame className="w-3.5 h-3.5 text-orange-500" />
+                    <h4 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                      <Flame className="w-3.5 h-3.5 text-amber-500" />
                       <span>{t("trending_searches", "Tendances populaires")}</span>
                     </h4>
                     <div className="flex flex-wrap gap-2 pt-1">
@@ -475,9 +503,9 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                         <button
                           key={i}
                           onClick={() => selectTrendingOrRecent(tag)}
-                          className="px-3 py-1.5 text-xs font-semibold border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 active:scale-95 text-slate-700 rounded-full transition-all cursor-pointer flex items-center gap-1.5"
+                          className="px-3 py-1.5 text-xs font-semibold border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 active:scale-95 text-slate-700 rounded-full transition-all cursor-pointer flex items-center gap-1.5"
                         >
-                          <TrendingUp className="w-3 h-3 text-orange-500/70" />
+                          <TrendingUp className="w-3 h-3 text-emerald-600" />
                           <span>{t(tag, tag)}</span>
                         </button>
                       ))}
@@ -489,15 +517,15 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                 <div className="space-y-5">
                   {isSearching ? (
                     <div className="py-12 flex justify-center items-center">
-                      <Loader2 className="w-7 h-7 animate-spin text-orange-500" />
+                      <Loader2 className="w-7 h-7 animate-spin text-emerald-600" />
                     </div>
                   ) : results.length > 0 || matchedStores.length > 0 ? (
                     <div className="space-y-5">
                       {/* Stores Section */}
                       {matchedStores.length > 0 && (
                         <div className="space-y-3">
-                          <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider flex items-center gap-2">
-                            <Store className="w-3.5 h-3.5 text-orange-500" />
+                          <h4 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                            <Store className="w-3.5 h-3.5 text-emerald-600" />
                             <span>{t("matching_stores", "Boutiques certifiées")}</span>
                           </h4>
                           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -508,7 +536,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                     navigate(`/store/${store.id || store.uid}`);
                                     setShowDropdown(false);
                                   }}
-                                  className="w-full text-left p-2.5 bg-slate-50/70 hover:bg-orange-50/50 border border-slate-100 hover:border-orange-200 flex items-center gap-3 group transition-colors rounded-xl outline-none cursor-pointer"
+                                  className="w-full text-left p-2.5 bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-300 flex items-center gap-3 group transition-colors rounded-xl outline-none cursor-pointer"
                                 >
                                   <div className="w-10 h-10 rounded-lg bg-white overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
                                     {store.logoUrl ? (
@@ -519,22 +547,22 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                         className="w-full h-full object-cover"
                                       />
                                     ) : (
-                                      <div className="w-full h-full bg-orange-50 flex items-center justify-center">
-                                        <span className="text-orange-600 font-bold text-base uppercase">
+                                      <div className="w-full h-full bg-emerald-50 flex items-center justify-center">
+                                        <span className="text-emerald-700 font-bold text-base uppercase">
                                           {(store.shopName || store.displayName || "B").charAt(0)}
                                         </span>
                                       </div>
                                     )}
                                   </div>
                                   <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                                    <span className="font-bold text-[13px] text-slate-800 group-hover:text-orange-600 truncate transition-colors">
+                                    <span className="font-bold text-[13px] text-slate-900 truncate transition-colors">
                                       {store.shopName || store.displayName}
                                     </span>
-                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
+                                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mt-0.5 truncate">
                                       {t("Wilaya", "Wilaya")} {store.wilaya ? store.wilaya : "69"}
                                     </span>
                                   </div>
-                                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+                                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
                                 </button>
                               </li>
                             ))}
@@ -546,11 +574,11 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                       {results.length > 0 && (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between pb-1">
-                            <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                            <h4 className="text-xs font-bold uppercase text-slate-900 tracking-wider">
                               {t("matching_creations", "Produits correspondants")}
                             </h4>
                             {totalProductsCount > 5 && (
-                              <span className="text-[11px] text-slate-400 font-medium">
+                              <span className="text-[11px] text-slate-500 font-medium">
                                 {t("showing_5_of_total", { count: totalProductsCount }) || `${5} ${t("on")} ${totalProductsCount} ${t("results")}`}
                               </span>
                             )}
@@ -561,7 +589,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                 <li key={product.id}>
                                   <button
                                     onClick={() => navigateToProduct(product.id, product.name)}
-                                    className="w-full text-left p-2.5 hover:bg-orange-50/40 border border-slate-100 hover:border-orange-200 flex items-center gap-3 group transition-colors rounded-xl outline-none bg-white cursor-pointer"
+                                    className="w-full text-left p-2.5 hover:bg-slate-50 border border-slate-200 hover:border-slate-300 flex items-center gap-3 group transition-colors rounded-xl outline-none bg-white cursor-pointer"
                                   >
                                     <div className="w-12 h-12 rounded-lg bg-slate-50 overflow-hidden shrink-0 border border-slate-100">
                                       <img
@@ -572,17 +600,17 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                       />
                                     </div>
                                     <div className="flex flex-col text-left overflow-hidden min-w-0 flex-1">
-                                      <span className="font-semibold text-[13px] text-slate-800 group-hover:text-orange-600 transition-colors truncate">
+                                      <span className="font-semibold text-[13px] text-slate-900 transition-colors truncate">
                                         {highlightMatch(product.name, localQuery)}
                                       </span>
                                       <span className="text-[10.5px] font-medium text-slate-400 uppercase tracking-wider mt-0.5 truncate">
                                         {t(product.category, product.category)} {product.wilaya ? `• W.${product.wilaya}` : ""}
                                       </span>
-                                      <span className="text-xs font-bold text-orange-600 mt-1">
+                                      <span className="text-xs font-bold text-emerald-700 mt-1">
                                         {formatPrice(product.price)}
                                       </span>
                                     </div>
-                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                                   </button>
                                 </li>
                               );
@@ -594,7 +622,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                       <div className="pt-2 flex justify-end">
                         <button
                           onClick={handleSearchSubmit}
-                          className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#FF5000] to-[#FF7A00] hover:from-[#e04500] hover:to-[#e66c00] rounded-full shadow-xs transition-all cursor-pointer border-none flex items-center gap-1.5"
+                          className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-xs transition-all cursor-pointer border-none flex items-center gap-1.5"
                         >
                           <span>{t("see_all_results", "Voir tous les résultats")}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -604,19 +632,19 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                   ) : (
                     // Case C: Absolute Zero Results -> Show clean fallback
                     <div className="space-y-6">
-                      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2">
-                        <Search className="w-6 h-6 text-slate-300" />
-                        <span className="text-sm font-bold text-slate-800">
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2">
+                        <Search className="w-6 h-6 text-slate-400" />
+                        <span className="text-sm font-bold text-slate-900">
                           {t("no_results_for", "Aucun résultat pour")} "{localQuery}"
                         </span>
-                        <p className="text-xs text-slate-400 max-w-sm">
+                        <p className="text-xs text-slate-500 max-w-sm">
                           {t("no_exact_match_fallback", "Vérifiez l'orthographe ou essayez d'autres mots-clés.")}
                         </p>
                       </div>
 
                       {fallbackProducts.length > 0 && (
                         <div className="space-y-3">
-                          <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                          <h4 className="text-xs font-bold uppercase text-slate-900 tracking-wider">
                             {t("recommended_creations", "Suggestions populaires")}
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -624,7 +652,7 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                               <div
                                 key={p.id}
                                 onClick={() => navigateToProduct(p.id, p.name)}
-                                className="p-2.5 border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 rounded-xl transition-all cursor-pointer flex gap-3 text-left group"
+                                className="p-2.5 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition-all cursor-pointer flex gap-3 text-left group"
                               >
                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
                                   <img
@@ -635,10 +663,10 @@ export const AdvancedSearchbar: React.FC<AdvancedSearchbarProps> = ({
                                   />
                                 </div>
                                 <div className="flex flex-col min-w-0 justify-center flex-1">
-                                  <span className="font-semibold text-xs text-slate-800 group-hover:text-orange-600 truncate transition-colors">
+                                  <span className="font-semibold text-xs text-slate-900 truncate transition-colors">
                                     {p.name}
                                   </span>
-                                  <span className="text-xs font-bold text-orange-600 mt-0.5">
+                                  <span className="text-xs font-bold text-emerald-700 mt-0.5">
                                     {formatPrice(p.price)}
                                   </span>
                                 </div>

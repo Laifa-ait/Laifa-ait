@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,15 +14,19 @@ import { CataloguesMarketplace } from "../../components/Admin/HomepageBuilder/Ca
 import { ItemFormModal } from "../../components/Admin/HomepageBuilder/ItemFormModal";
 import { BackupVersionsPanel } from "../../components/Admin/HomepageBuilder/BackupVersionsPanel";
 import { HomepageLivePreview } from "../../components/Admin/HomepageBuilder/HomepageLivePreview";
+import { filterAndRankProducts } from "../../utils/productSearchRelevance";
 
 export const HomepageBuilder: React.FC = () => {
   const { t } = useTranslation();
   const state = useHomepageBuilderState();
   const [activeTab, setActiveTab] = useState<"sections" | "categories" | "versions" | "preview">("sections");
 
-  const filteredCategoryProducts = state.categoriesState.categoryProducts.filter((p) =>
-    p.name.toLowerCase().includes(state.categoriesState.searchProductQuery.toLowerCase())
-  );
+  const filteredCategoryProducts = useMemo(() => {
+    return filterAndRankProducts(state.categoriesState.categoryProducts, {
+      query: state.categoriesState.searchProductQuery,
+      sortBy: "relevance",
+    });
+  }, [state.categoriesState.categoryProducts, state.categoriesState.searchProductQuery]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto" id="homepage-builder-container">

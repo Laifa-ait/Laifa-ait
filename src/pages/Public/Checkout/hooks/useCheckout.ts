@@ -304,25 +304,47 @@ export const useCheckout = () => {
 
 
 
-  useEffect(() => {
-    const fetchShops = async () => {
-      try {
-        const sellerIds = Array.from(new Set(activeCart.map(item => item.sellerId).filter(Boolean))) as string[];
-        if (sellerIds.length === 0) return;
-        const data = await apiPost<{ profiles: Record<string, { shopName?: string; [key: string]: unknown }> }>('/api/v1/public-profiles', { ids: sellerIds });
-        if (data && data.profiles) {
-          const shopData: Record<string, Shop> = {};
-          Object.entries(data.profiles).forEach(([id, profile]) => {
-            shopData[id] = { uid: id, ...profile } as unknown as Shop;
-          });
-          setShops(shopData);
-        }
-      } catch (err) {
-        console.error("Error fetching shops in checkout:", err);
-      }
-    };
-    if (activeCart.length > 0) fetchShops();
+  const sellerIdsKey = useMemo(() => {
+    const ids = Array.from(new Set(activeCart.map(item => item.sellerId).filter(Boolean))) as string[];
+    return ids.sort().join(',');
   }, [activeCart]);
+
+  useEffect(() => {
+    if (!sellerIdsKey) return;
+    const sellerIds = sellerIdsKey.split(',').filter(Boolean);
+    if (sellerIds.length === 0) return;
+
+    let cancelled = false;
+    setShops((currentShops) => {
+      const missingSellerIds = sellerIds.filter((id) => !currentShops[id]);
+      if (missingSellerIds.length === 0) return currentShops;
+
+      const fetchShops = async () => {
+        try {
+          const data = await apiPost<{ profiles: Record<string, { shopName?: string; [key: string]: unknown }> }>('/api/v1/public-profiles', { ids: missingSellerIds });
+          if (cancelled) return;
+          if (data?.profiles) {
+            setShops((prev) => {
+              const next = { ...prev };
+              Object.entries(data.profiles).forEach(([id, profile]) => {
+                next[id] = { uid: id, ...profile } as unknown as Shop;
+              });
+              return next;
+            });
+          }
+        } catch (err) {
+          if (!cancelled) console.error("Error fetching shops in checkout:", err);
+        }
+      };
+
+      fetchShops();
+      return currentShops;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sellerIdsKey]);
 
   useEffect(() => {
     if (activeCart.length > 0) {

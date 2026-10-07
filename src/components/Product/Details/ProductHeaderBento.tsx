@@ -1,10 +1,12 @@
 import React from "react";
-import { Sparkles, Star } from "lucide-react";
+import { Star, Globe } from "lucide-react";
 import { Product } from "../../../domains/product/product.types";
+import { Shop } from "../../../domains/seller/shop.types";
 import { formatPrice } from "../../../utils/format";
 
 export interface ProductHeaderBentoProps {
   product: Product;
+  shop?: Shop | null;
   currentPrice: number;
   bilingualMode: boolean;
   onToggleBilingualMode: () => void;
@@ -13,121 +15,134 @@ export interface ProductHeaderBentoProps {
 
 export const ProductHeaderBento: React.FC<ProductHeaderBentoProps> = ({
   product,
+  shop,
   currentPrice,
   bilingualMode,
   onToggleBilingualMode,
   currentLang,
 }) => {
-  const isProductFlashActive = false;
   const productName = product.translations?.[currentLang]?.name || product.name;
+  const brandName = product.brand || shop?.shopName || "";
+
+  // Real discount calculation only if real previous price exists
+  const originalPrice = product.price && product.price > currentPrice ? product.price : null;
+  const discountPercent = originalPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : null;
+
+  const hasReviews = Boolean(product.stats?.reviewCount && product.stats.reviewCount > 0);
 
   return (
-    <div className="bg-[#FAF6F0] rounded-[2rem] p-4 sm:p-6 border border-[#EAE3D5] shadow-sm space-y-3.5 relative overflow-hidden">
-      {/* Decorative corner curve resembling the arch */}
-      <div className="absolute top-0 right-0 w-16 h-16 bg-[#008BB5]/5 rounded-bl-[2.5rem] border-l border-b border-[#EAE3D5]/40 pointer-events-none" />
-
-      <div className="flex items-center justify-between gap-3 relative z-10">
-        {product.condition && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#FFEAEF] text-[#D81159] border border-[#FFEAEF]">
-            <Sparkles className="w-3 h-3" /> {product.condition}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={onToggleBilingualMode}
-          className={`px-3 py-1 border text-[9px] font-bold uppercase tracking-wider transition-all rounded-full cursor-pointer flex items-center gap-1.5 ${
-            bilingualMode
-              ? "bg-[#008BB5] text-white border-[#008BB5] shadow-sm"
-              : "bg-white border-[#EAE3D5] text-[#008BB5] hover:bg-[#008BB5]/5"
-          }`}
-        >
-          🌍 {bilingualMode ? "AR / FR" : "Affichage Bilingue"}
-        </button>
-      </div>
-
-      {bilingualMode ? (
-        <div className="space-y-1.5 text-start relative z-10">
-          <h1 className="text-xl sm:text-2xl font-sans font-extrabold text-[#2C2C28] uppercase tracking-wide leading-tight break-words">
-            {product.translations?.["ar"]?.name || product.name}
-          </h1>
-          <h2 className="text-sm sm:text-base font-sans text-stone-500 uppercase tracking-wide leading-tight break-words border-t border-stone-200/50 pt-1.5 font-medium">
-            {product.translations?.["fr"]?.name || product.name}
-          </h2>
-        </div>
-      ) : (
-        <h1 className="text-xl sm:text-2xl font-sans font-extrabold text-[#2C2C28] uppercase tracking-wide leading-tight break-words relative z-10">
-          {productName}
-        </h1>
-      )}
-
-      {/* PRICING & RATING ROW */}
-      <div className="flex items-center justify-between gap-4 pt-1 border-t border-[#EAE3D5]/50 relative z-10">
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl sm:text-3xl font-sans font-black text-[#008BB5]">
-            {formatPrice(currentPrice)}
-          </span>
-          {isProductFlashActive ? (
-            <span className="text-sm text-stone-400 line-through font-sans">
-              {formatPrice(product.price)}
+    <div className="space-y-2.5 pt-1">
+      {/* Top Line: Badges on Left, Brand Alone on Right (Zara Style) */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          {discountPercent && discountPercent > 0 ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-50 text-rose-700 border border-rose-200/60">
+              -{discountPercent}%
             </span>
-          ) : (
-            product.onSale && (
-              <span className="text-sm text-stone-400 line-through font-sans">
-                {formatPrice(currentPrice * 1.2)}
-              </span>
-            )
+          ) : null}
+          {product.onSale ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/60">
+              ⚡ Promo
+            </span>
+          ) : null}
+          {product.condition && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
+              {product.condition}
+            </span>
           )}
         </div>
 
-        {/* Quick rating snippet with bougainvillea pink stars */}
-        {product.stats?.averageRating && (
-          <div className="flex items-center gap-1 bg-[#D81159]/5 px-2.5 py-1 rounded-full border border-[#D81159]/10">
-            <Star className="w-3.5 h-3.5 fill-[#D81159] text-[#D81159]" />
-            <span className="text-xs font-bold text-[#D81159]">
-              {Number(product.stats.averageRating).toFixed(1)}
-            </span>
-          </div>
-        )}
+        {/* Brand Name Alone on Right */}
+        {brandName ? (
+          <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-zinc-900">
+            {brandName}
+          </span>
+        ) : <div />}
       </div>
 
-      {product.energyClass && (
-        <div className="flex items-center pt-1">
-          <div className="flex items-center border border-stone-300 rounded overflow-hidden">
-            <div
-              className="text-white font-bold text-[9px] px-2 py-0.5"
-              style={{
-                backgroundColor: (() => {
-                  switch (product.energyClass) {
-                    case "A":
-                      return "#00A650";
-                    case "B":
-                      return "#50B848";
-                    case "C":
-                      return "#C4D400";
-                    case "D":
-                      return "#FFF200";
-                    case "E":
-                      return "#F7B500";
-                    case "F":
-                      return "#EB690B";
-                    case "G":
-                      return "#E2001A";
-                    default:
-                      return "#00A650";
-                  }
-                })(),
-              }}
-            >
-              Classe {product.energyClass}
-            </div>
-            <div className="bg-stone-100 text-[8px] flex flex-col leading-none px-1.5 py-0.5 font-bold">
-              <span>A</span>
-              <span>↑</span>
-              <span>G</span>
-            </div>
+      {/* Main Product Title */}
+      <div>
+        {bilingualMode ? (
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight leading-tight">
+              {product.translations?.["ar"]?.name || product.name}
+            </h1>
+            <h2 className="text-sm font-medium text-zinc-500 leading-snug border-t border-zinc-100 pt-1">
+              {product.translations?.["fr"]?.name || product.name}
+            </h2>
           </div>
+        ) : (
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight leading-tight">
+            {productName}
+          </h1>
+        )}
+
+        {/* Category Subtitle + Discrete Bilingual Switcher */}
+        <div className="flex items-center justify-between gap-2 mt-1">
+          {product.category && (
+            <p className="text-xs sm:text-sm font-medium text-zinc-500">
+              {product.category} {product.subcategory ? `• ${product.subcategory}` : ""}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={onToggleBilingualMode}
+            className={`px-2 py-0.5 text-[10px] font-semibold transition-all rounded-full cursor-pointer flex items-center gap-1 border shrink-0 ${
+              bilingualMode
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "bg-white border-zinc-200 text-zinc-500 hover:text-zinc-800"
+            }`}
+            aria-label="Mode bilingue"
+          >
+            <Globe className="w-3 h-3 text-emerald-600" />
+            <span>{bilingualMode ? "AR / FR" : "Bilingue"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Star Rating Row (Only shown if real reviews exist) */}
+      {hasReviews && (
+        <div className="flex items-center gap-2 pt-0.5">
+          <div className="flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star
+                key={i}
+                className={`w-3.5 h-3.5 ${
+                  i <= Math.round(Number(product.stats?.averageRating || 0))
+                    ? "fill-amber-500 text-amber-500"
+                    : "fill-zinc-200 text-zinc-200"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-xs font-bold text-zinc-900">
+            {Number(product.stats?.averageRating || 0).toFixed(1)}
+          </span>
+          <span className="text-xs font-medium text-zinc-400">
+            ({product.stats?.reviewCount} avis)
+          </span>
         </div>
       )}
+
+      {/* Price Row with Old Price and Discount Pill on Right (Zara Style) */}
+      <div className="flex items-center justify-between gap-4 pt-1">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-3xl sm:text-4xl font-black text-slate-900 tabular-nums tracking-tight">
+            {formatPrice(currentPrice)}
+          </span>
+          {originalPrice && (
+            <span className="text-sm sm:text-base text-zinc-400 line-through tabular-nums font-semibold">
+              {formatPrice(originalPrice)}
+            </span>
+          )}
+        </div>
+
+        {discountPercent && discountPercent > 0 && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-700 border border-rose-200/60">
+            -{discountPercent}%
+          </span>
+        )}
+      </div>
     </div>
   );
 };

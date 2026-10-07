@@ -74,41 +74,41 @@ export const CheckoutSummarySidebar: React.FC<CheckoutSummarySidebarProps> = ({
         />
 
         <div className="space-y-3 pt-2">
-          <div className="flex justify-between items-center text-sm font-bold text-stone-500">
+          <div className="flex justify-between items-center text-sm font-semibold text-zinc-500">
             <span>{t("Sous-total")}</span>
-            <span className="text-[var(--color-slate-900, #0f172a)]">
+            <span className="text-zinc-900 font-bold tabular-nums">
               {formatPrice(subtotal)}
             </span>
           </div>
           {couponDiscount > 0 && (
             <div className="flex justify-between items-center text-sm font-bold text-emerald-600 animate-fade-in py-1">
               <span className="flex items-center gap-1.5 font-sans font-bold uppercase text-xs">
-                {t("checkout.discount", "🎟️ Remise :")} {appliedCoupon?.code}
+                {t("checkout.discount", "Remise coupon")} ({appliedCoupon?.code})
               </span>
-              <span className="font-extrabold text-xs">
+              <span className="font-black text-xs tabular-nums">
                 - {formatPrice(couponDiscount)}
               </span>
             </div>
           )}
-          <div className="flex justify-between items-center text-sm font-bold text-stone-500">
+          <div className="flex justify-between items-center text-sm font-semibold text-zinc-500">
             <span>{t("Livraison estimée")}</span>
-            <span className="text-[var(--color-slate-900, #0f172a)]">
+            <span className="text-zinc-900 font-bold tabular-nums">
               {formatPrice(totalShipping)}
             </span>
           </div>
 
-          <div className="flex justify-between items-center pt-4 mt-4 border-t border-stone-100">
+          <div className="flex justify-between items-baseline pt-4 mt-4 border-t border-zinc-200/80">
             <div>
-              <span className="text-xs font-sans font-bold text-[var(--color-slate-900, #0f172a)] uppercase tracking-widest rtl:tracking-normal block">
+              <span className="text-xs font-sans font-bold text-zinc-900 uppercase tracking-wider block">
                 {t("checkout.total", "Total à payer")}
+              </span>
+              <span className="text-[11px] font-semibold text-emerald-700 block mt-0.5">
+                {t("Paiement à la livraison")}
               </span>
             </div>
             <div className="text-end">
-              <span className="text-xl font-sans font-bold text-[var(--color-orange-600, #ea580c)] block">
+              <span className="text-2xl font-sans font-black text-zinc-950 block tabular-nums tracking-tight">
                 {formatPrice(grandTotal)}
-              </span>
-              <span className="text-[10px] font-sans font-bold uppercase tracking-widest rtl:tracking-normal text-orange-600 block mt-0.5 animate-pulse">
-                {t("checkout.remaining_cod", "Reste à payer en COD")}
               </span>
             </div>
           </div>
@@ -117,40 +117,40 @@ export const CheckoutSummarySidebar: React.FC<CheckoutSummarySidebarProps> = ({
         <AnimatePresence>
           {activeAccordion === 3 && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mt-8 border-t border-stone-100 pt-6"
+              className="mt-6 border-t border-zinc-100 pt-6"
             >
               <button
                 onClick={handlePlaceOrder}
                 disabled={isSubmittingOrder}
-                className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 cursor-pointer ${
+                className={`w-full h-14 flex items-center justify-center gap-3 px-6 rounded-2xl font-sans font-black text-base transition-all duration-200 cursor-pointer border-none ${
                   isDeliveryInfoConfirmed
-                    ? "bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20 active:scale-95"
-                    : "bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 shadow-md shadow-orange-500/25 active:scale-[0.98]"
+                    : "bg-zinc-100 text-zinc-400 cursor-not-allowed shadow-none"
                 }`}
                 type="button"
                 id="btn-place-order"
               >
                 {isSubmittingOrder ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>{t("checkout.placing_order", "Traitement de la commande...")}</span>
+                    <span className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                    <span>{t("checkout.placing_order", "Finalisation de la commande...")}</span>
                   </>
                 ) : (
                   <span>
                     {t(
                       "checkout.finalize_purchase_button",
-                      "Confirmer la commande & Finaliser l'achat"
+                      "Confirmer la commande (COD)"
                     )}
                   </span>
                 )}
               </button>
               {!isDeliveryInfoConfirmed && (
-                <p className="text-[10px] text-center text-stone-500 font-semibold mt-2.5 animate-pulse">
+                <p className="text-[11px] text-center text-amber-700 font-semibold mt-2.5">
                   {t(
                     "checkout.prompt_confirm_info",
-                    "⚠️ Veuillez d'abord valider vos coordonnées personnelles à l'étape 3"
+                    "⚠️ Veuillez valider vos informations de livraison à l'étape 3"
                   )}
                 </p>
               )}

@@ -44,13 +44,13 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 5, scale: 0.99 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="absolute top-full start-0 w-full bg-white text-zinc-900 border-t border-zinc-200 shadow-2xl z-50 rounded-b-2xl overflow-hidden"
+          className="absolute top-full start-0 w-full bg-white text-slate-800 border-t border-slate-200 shadow-2xl z-50 rounded-b-2xl overflow-hidden"
         >
           <div className="w-full max-w-[90rem] mx-auto px-6 sm:px-8 py-8">
             <div className="grid grid-cols-12 gap-8">
               {/* Col 1: Sections */}
-              <div className="col-span-3 pe-4 border-e border-zinc-100">
-                <h3 className="text-xs font-sans font-bold tracking-wider text-zinc-400 mb-4 uppercase">
+              <div className="col-span-3 pe-4 border-e border-slate-100">
+                <h3 className="text-xs font-sans font-bold tracking-wider text-slate-400 mb-4 uppercase">
                   {t("sub_categories", "Sous-catégories")}
                 </h3>
                 <ul className="flex flex-col gap-1">
@@ -66,8 +66,8 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
                           onClick={() => setActiveSectionName(section.name)}
                           className={`w-full text-start py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-between cursor-pointer border-none ${
                             isActive
-                              ? "bg-zinc-950 text-white shadow-xs"
-                              : "bg-transparent text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100"
+                              ? "bg-emerald-600 text-white shadow-xs"
+                              : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                           }`}
                         >
                           <span className="truncate">
@@ -82,7 +82,7 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
 
               {/* Col 2: Sub-links */}
               <div className="col-span-6 ps-2">
-                <h3 className="text-xs font-sans font-bold tracking-wider text-zinc-400 mb-4 uppercase">
+                <h3 className="text-xs font-sans font-bold tracking-wider text-slate-400 mb-4 uppercase">
                   {activeSectionName
                     ? t(activeSectionName) || activeSectionName
                     : t("explore", "Explorer")}
@@ -103,7 +103,7 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
                             activeSection.name.trim()
                           )}&subsubcategory=${encodeURIComponent(link.name.trim())}`}
                           onClick={onClose}
-                          className="group flex items-center justify-between py-2 px-3.5 rounded-xl transition-all hover:bg-zinc-100/90 text-sm font-medium text-zinc-600 hover:text-zinc-950"
+                          className="group flex items-center justify-between py-2 px-3.5 rounded-xl transition-all hover:bg-slate-100 text-sm font-medium text-slate-600 hover:text-emerald-700"
                           onMouseEnter={() => {
                             if (link.featuredProduct) {
                               setHoveredProduct(link.featuredProduct);
@@ -120,15 +120,15 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
               </div>
 
               {/* Col 3: Featured Product */}
-              <div className="col-span-3 ps-4 border-s border-zinc-100">
-                <h3 className="text-xs font-sans font-bold tracking-wider text-zinc-400 mb-4 uppercase">
+              <div className="col-span-3 ps-4 border-s border-slate-100">
+                <h3 className="text-xs font-sans font-bold tracking-wider text-slate-400 mb-4 uppercase">
                   {t("featured_product", "Article Vedette")}
                 </h3>
                 {productToDisplay ? (
                   <Link
                     to={`/product/${productToDisplay.id}`}
                     onClick={onClose}
-                    className="group flex flex-col relative w-full aspect-[4/5] bg-zinc-50 overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-all"
+                    className="group flex flex-col relative w-full aspect-[4/5] bg-slate-100 overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-all"
                   >
                     <OptimizedImage
                       src={
@@ -137,20 +137,20 @@ export const MegaMenuDropdown: React.FC<MegaMenuDropdownProps> = ({
                       alt={getTranslatedField(productToDisplay, "name", lang)}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/25 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 flex flex-col">
                       <h4 className="text-sm font-bold text-white line-clamp-2 leading-snug">
                         {getTranslatedField(productToDisplay, "name", lang)}
                       </h4>
-                      <p className="text-xs font-bold text-amber-300 mt-1">
+                      <p className="text-xs font-bold text-emerald-400 mt-1">
                         {productToDisplay.price.toLocaleString("fr-DZ")}{" "}
                         {t("DA")}
                       </p>
                     </div>
                   </Link>
                 ) : (
-                  <div className="w-full aspect-[4/5] rounded-2xl bg-zinc-50 border border-dashed border-zinc-200 flex items-center justify-center p-4 text-center">
-                    <span className="text-xs text-zinc-400 font-medium">
+                  <div className="w-full aspect-[4/5] rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center p-4 text-center">
+                    <span className="text-xs text-slate-500 font-medium">
                       {t("home.explore_all_category", "Découvrez tous les articles de cette catégorie")}
                     </span>
                   </div>

@@ -333,4 +333,42 @@ describe("GET /api/v1/public-profiles - Authoritative Projection, RBAC & Strict 
     expect(res.body.success).toBe(false);
     expect(res.body.error).toContain("Erreur lors de la récupération des profils publics");
   });
+
+  describe("POST /api/v1/public-profiles - Batch Lookup for Checkout", () => {
+    it("returns 400 when ids is not an array", async () => {
+      const res = await request(app).post("/api/v1/public-profiles").send({ ids: "invalid" });
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it("returns empty map when ids array is empty", async () => {
+      const res = await request(app).post("/api/v1/public-profiles").send({ ids: [] });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.profiles).toEqual({});
+    });
+
+    it("returns mapped whitelisted shop profiles for requested seller ids", async () => {
+      mockUsersDb.set("seller_alpha", {
+        role: "seller",
+        status: "active",
+        shopName: "Boutique Alpha",
+        isVerified: true,
+      });
+      mockPublicProfilesDb.set("seller_alpha", {
+        shopName: "Boutique Alpha",
+        slogan: "Meilleure boutique",
+      });
+
+      const res = await request(app)
+        .post("/api/v1/public-profiles")
+        .send({ ids: ["seller_alpha", "non_existent"] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.profiles["seller_alpha"]).toBeDefined();
+      expect(res.body.profiles["seller_alpha"].shopName).toBe("Boutique Alpha");
+      expect(res.body.profiles["non_existent"]).toBeUndefined();
+    });
+  });
 });

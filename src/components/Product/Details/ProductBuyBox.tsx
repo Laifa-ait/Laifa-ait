@@ -1,14 +1,13 @@
-import React from "react";
-import { ShoppingBag, Heart, Share2, ShieldCheck, Scale } from "lucide-react";
+import React, { useState } from "react";
+import { ShoppingBag, Minus, Plus, Heart, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useComparatorStore } from "../../../store/useComparatorStore";
 import { Product } from "../../../domains/product/product.types";
 import { useUI } from "../../../context/UIContext";
 
 interface BuyBoxProps {
   product: Product;
   isCurrentSelectionOutOfStock: boolean;
-  onAddToCart: () => void;
+  onAddToCart: (quantity?: number) => void;
   onToggleWishlist: () => void;
   wishlist: string[];
   onShare: () => void;
@@ -27,8 +26,7 @@ export const ProductBuyBox: React.FC<BuyBoxProps> = ({
   isSticky,
 }) => {
   const { t } = useTranslation();
-  const { products: comparedProducts, addProduct: addToCompare, removeProduct: removeFromCompare } = useComparatorStore();
-  const isCompared = comparedProducts.some(p => p.id === product.id);
+  const [quantity, setQuantity] = useState(1);
   const { setIsStickyBuyBarVisible } = useUI();
 
   React.useEffect(() => {
@@ -38,74 +36,96 @@ export const ProductBuyBox: React.FC<BuyBoxProps> = ({
     };
   }, [isSticky, setIsStickyBuyBarVisible]);
 
+  const handleDecrease = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleIncrease = () => {
+    const maxStock = product.stock || 99;
+    setQuantity((prev) => Math.min(maxStock, prev + 1));
+  };
+
   return (
     <div
       ref={stickyRef}
-      className={`z-40 ${isSticky ? "fixed bottom-0 left-0 right-0 p-3 sm:p-5 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-[0_-10px_30px_rgba(40,30,20,0.08)] animate-in slide-in-from-bottom-12 duration-300" : "relative"}`}
+      className={`z-40 ${
+        isSticky
+          ? "fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-white/95 backdrop-blur-md border-t border-zinc-200/80 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] animate-in slide-in-from-bottom-8 duration-200"
+          : "relative pt-2"
+      }`}
       style={isSticky ? { paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" } : undefined}
     >
-      <div className={`flex gap-2 sm:gap-3.5 max-w-7xl mx-auto ${isSticky ? "justify-center" : ""}`}>
+      <div className={`flex items-center gap-2.5 sm:gap-3.5 max-w-7xl mx-auto ${isSticky ? "justify-center" : ""}`}>
+        {/* Quantity Stepper: [-] 1 [+] like in the Zara mockup */}
+        <div className="h-13 sm:h-14 px-2 sm:px-3 bg-zinc-100 rounded-2xl flex items-center justify-between gap-2 border border-zinc-200/70 shrink-0">
+          <button
+            type="button"
+            onClick={handleDecrease}
+            disabled={quantity <= 1}
+            aria-label="Diminuer la quantité"
+            className="w-8 h-8 rounded-xl bg-white hover:bg-zinc-200 flex items-center justify-center text-zinc-700 transition-colors disabled:opacity-40 cursor-pointer border-none shadow-2xs"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <span className="w-6 text-center font-bold text-sm text-zinc-950 tabular-nums">
+            {quantity}
+          </span>
+          <button
+            type="button"
+            onClick={handleIncrease}
+            aria-label="Augmenter la quantité"
+            className="w-8 h-8 rounded-xl bg-white hover:bg-zinc-200 flex items-center justify-center text-zinc-700 transition-colors cursor-pointer border-none shadow-2xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Big Prominent "Ajouter au panier" Button */}
         <button
+          type="button"
           disabled={isCurrentSelectionOutOfStock}
-          onClick={onAddToCart}
-          className={`flex-1 sm:flex-[3] py-3.5 sm:py-4.5 rounded-full flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 group border border-transparent shadow-md hover:shadow-lg ${
+          onClick={() => onAddToCart(quantity)}
+          className={`flex-1 h-13 sm:h-14 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-200 cursor-pointer border-none active:scale-98 ${
             isCurrentSelectionOutOfStock
-              ? "bg-stone-100 text-stone-400 cursor-not-allowed"
-              : "bg-[#008BB5] text-white hover:bg-[#007CA7] active:scale-95"
+              ? "bg-zinc-100 text-zinc-400 cursor-not-allowed shadow-none"
+              : "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold shadow-md shadow-emerald-700/20"
           }`}
         >
-          <ShoppingBag className="w-4.5 h-4.5" />
-          <span className="font-sans font-bold uppercase tracking-wider text-[11px] sm:text-xs whitespace-nowrap">
-            {isCurrentSelectionOutOfStock ? t("out_of_stock") || "En rupture" : t("add_to_cart") || "Ajouter au Panier"}
+          <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+          <span className="font-sans font-bold text-sm tracking-wide whitespace-nowrap">
+            {isCurrentSelectionOutOfStock
+              ? t("out_of_stock") || "En rupture"
+              : t("add_to_cart") || "Ajouter au panier"}
           </span>
         </button>
 
-        <button
-          onClick={onToggleWishlist}
-          className={`w-12 sm:w-14 h-12 sm:h-auto rounded-full border transition-all flex items-center justify-center shrink-0 shadow-sm active:scale-90 ${
-            wishlist.includes(product.id)
-              ? "border-[#D81159] bg-[#FFEAEF] text-[#D81159]"
-              : "border-stone-200 bg-white text-stone-600 hover:text-[#D81159] hover:border-[#D81159]"
-          }`}
-          aria-label={t("Add to wishlist") || "Add to wishlist"}
-        >
-          <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${wishlist.includes(product.id) ? "fill-[#D81159]" : ""}`} />
-        </button>
-        
-        <button
-          onClick={() => {
-            if (isCompared) {
-              removeFromCompare(product.id);
-            } else {
-              addToCompare(product);
-            }
-          }}
-          className={`w-12 sm:w-14 h-12 sm:h-auto rounded-full border transition-all flex items-center justify-center shrink-0 shadow-sm active:scale-90 ${
-            isCompared
-              ? "border-[#008BB5] bg-[#E5F6FA] text-[#008BB5]"
-              : "border-stone-200 bg-white text-stone-600 hover:text-[#008BB5] hover:border-[#008BB5]"
-          }`}
-          aria-label={t("Comparer") || "Comparer"}
-        >
-          <Scale className={`w-4 h-4 sm:w-5 sm:h-5 ${isCompared ? "stroke-[2.5]" : ""}`} />
-        </button>
+        {/* Desktop-only wishlist / share when not sticky */}
+        {!isSticky && (
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onToggleWishlist}
+              className={`w-13 h-13 sm:h-14 rounded-2xl border transition-all flex items-center justify-center shadow-2xs active:scale-95 cursor-pointer ${
+                wishlist.includes(product.id)
+                  ? "border-rose-200 bg-rose-50 text-rose-600"
+                  : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
+              }`}
+              aria-label="Ajouter aux favoris"
+            >
+              <Heart className={`w-5 h-5 ${wishlist.includes(product.id) ? "fill-rose-600 text-rose-600" : ""}`} />
+            </button>
 
-        <button
-          onClick={onShare}
-          className={`w-12 sm:w-14 h-12 sm:h-auto rounded-full bg-white border border-stone-200 text-stone-600 flex items-center justify-center hover:text-black hover:border-black shadow-sm active:scale-90 transition-all ${
-            isSticky ? "hidden sm:flex" : "flex"
-          }`}
-          aria-label={t("Share product") || "Share product"}
-        >
-          <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
+            <button
+              type="button"
+              onClick={onShare}
+              className="w-13 h-13 sm:h-14 rounded-2xl bg-white border border-zinc-200 text-zinc-600 flex items-center justify-center hover:text-zinc-950 hover:border-zinc-300 shadow-2xs active:scale-95 transition-all cursor-pointer"
+              aria-label="Partager"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
-
-      {isSticky && (
-        <div className="hidden sm:flex max-w-7xl mx-auto mt-2.5 items-center justify-center gap-1.5 text-[10px] rtl:text-[12px] font-bold text-stone-500 uppercase tracking-widest rtl:tracking-normal">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#008BB5]" /> {t("secured_cash_on_delivery") || "Paiement à la livraison sécurisé"}
-        </div>
-      )}
     </div>
   );
 };

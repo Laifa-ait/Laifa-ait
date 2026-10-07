@@ -44,13 +44,12 @@ WORKDIR /app
 RUN apk upgrade --no-cache
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3000
 # CSRF_SECRET and other secrets must be provided at runtime via GCP Secret Manager / Cloud Run environment
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev && \
-    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /root/.npm
+RUN npm ci --omit=dev
 
 # Copy built assets and assets required at runtime from builder with node ownership
 COPY --from=builder --chown=node:node /app/dist ./dist
@@ -63,8 +62,8 @@ RUN chmod -R a-w dist public
 # Set non-root user
 USER node
 
-# Expose port 8080 and 3000 for Cloud Run ingress and internal compatibility
-EXPOSE 8080 3000
+# Expose port 3000 and 8080 for Cloud Run ingress and internal compatibility
+EXPOSE 3000 8080
 
 # Start the application directly with node (avoids PID 1 signal forwarding issues and npm overhead)
 CMD ["node", "dist/server.cjs"]

@@ -166,12 +166,21 @@ export const HomepageLivePreview: React.FC<HomepageLivePreviewProps> = ({
               activeSections.map((section, idx) => {
                 const prods = getSectionProducts(section);
                 return (
-                  <div key={section.id || idx} className="bg-white rounded-2xl p-4 sm:p-5 border border-zinc-200/80 shadow-xs space-y-3">
+                  <div
+                    key={section.id || idx}
+                    className="rounded-2xl p-4 sm:p-5 border border-zinc-200/80 shadow-xs space-y-3 transition-colors"
+                    style={section.backgroundColor ? { backgroundColor: section.backgroundColor } : { backgroundColor: "#ffffff" }}
+                  >
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
                       <div>
                         <div className="flex items-center gap-2">
                           {section.type === "flash_sale" && <Zap className="w-4 h-4 text-rose-500 fill-rose-500" />}
                           <h4 className="font-bold text-zinc-900 text-sm">{section.title || section.name}</h4>
+                          {section.themeName && (
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800">
+                              {section.themeName}
+                            </span>
+                          )}
                           <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-zinc-100 text-zinc-600">{section.type}</span>
                         </div>
                         {section.subtitle && <p className="text-[11px] text-zinc-500 mt-0.5">{section.subtitle}</p>}
@@ -187,21 +196,43 @@ export const HomepageLivePreview: React.FC<HomepageLivePreviewProps> = ({
                           {t("En attente de produits correspondant aux critères...")}
                         </div>
                       ) : (
-                        prods.slice(0, 4).map((p) => (
-                          <div key={p.id} className="bg-zinc-50 rounded-2xl p-2.5 border border-zinc-200/60 flex flex-col justify-between space-y-2">
-                            <div className="aspect-square bg-zinc-200 rounded-lg overflow-hidden relative">
-                              {p.images && p.images[0] ? (
-                                <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-zinc-400 text-xs">Img</div>
-                              )}
+                        prods.slice(0, 4).map((p) => {
+                          const isPremiumStyle = section.style === "premium";
+                          const isImmersiveStyle = section.style === "immersive";
+                          const isGlassStyle = section.style === "glass";
+                          const isElevatedStyle = section.style === "elevated";
+                          const isDarkStyle = section.style === "dark";
+
+                          const previewCardStyle = isGlassStyle
+                            ? "bg-white/80 backdrop-blur-md border border-white/60 shadow-xs"
+                            : isPremiumStyle
+                            ? "bg-white border-2 border-amber-400 shadow-xs ring-1 ring-amber-400/20"
+                            : isImmersiveStyle
+                            ? "bg-white border-2 border-rose-500 shadow-xs ring-1 ring-rose-400/20"
+                            : isElevatedStyle
+                            ? "bg-white border border-zinc-100 shadow-md ring-1 ring-black/5"
+                            : isDarkStyle
+                            ? "bg-zinc-900 border border-zinc-700 shadow-md text-white"
+                            : "bg-white border border-zinc-200 shadow-2xs";
+
+                          return (
+                            <div key={p.id} className={`rounded-2xl p-2.5 flex flex-col justify-between space-y-2 transition-all ${previewCardStyle}`}>
+                              <div className="aspect-square bg-zinc-100 rounded-lg overflow-hidden relative">
+                                {p.images && p.images[0] ? (
+                                  <img loading="lazy" decoding="async" src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-zinc-400 text-xs">Img</div>
+                                )}
+                              </div>
+                              <div>
+                                <p className={`text-xs font-bold line-clamp-1 ${isDarkStyle ? "text-white" : "text-zinc-900"}`}>{p.name}</p>
+                                <p className={`text-[11px] font-extrabold mt-0.5 ${isPremiumStyle ? "text-amber-700" : isImmersiveStyle ? "text-rose-600" : isElevatedStyle ? "text-indigo-600" : isDarkStyle ? "text-amber-400" : "text-zinc-900"}`}>
+                                  {formatPrice(p.price)} DZD
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs font-bold text-zinc-900 line-clamp-1">{p.name}</p>
-                              <p className="text-[11px] font-extrabold text-amber-600 mt-0.5">{formatPrice(p.price)} DZD</p>
-                            </div>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>

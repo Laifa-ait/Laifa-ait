@@ -94,7 +94,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
         borderBottomWidth: isVisible ? "1px" : "0px",
       }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`relative w-full z-40 bg-white/95 backdrop-blur-md border-zinc-200/80 text-zinc-900 font-sans hidden lg:block shadow-2xs ${
+      className={`relative w-full z-40 bg-white/95 backdrop-blur-md border-slate-200 text-slate-800 font-sans hidden lg:block shadow-xs ${
         activeCategory ? "overflow-visible" : "overflow-hidden"
       }`}
     >
@@ -112,8 +112,8 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isVisible = true }) => {
                   onClick={() => toggleCategory(category.id)}
                   className={`py-1.5 px-3 rounded-full transition-all duration-200 cursor-pointer border flex items-center gap-2 text-xs font-semibold ${
                     isActive
-                      ? "bg-zinc-950 text-white border-zinc-950 shadow-xs"
-                      : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 border-zinc-200/70"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 hover:text-slate-900 border-slate-200/80"
                   }`}
                 >
                   <span className="w-4 h-4 flex items-center justify-center shrink-0">

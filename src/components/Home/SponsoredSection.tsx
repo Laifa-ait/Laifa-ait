@@ -71,23 +71,23 @@ export const SponsoredSection: React.FC = () => {
   }
 
   return (
-    <section className="py-8 bg-zinc-50/50 border-y border-zinc-200/60 my-6">
+    <section className="py-8 bg-slate-50 border-y border-slate-200 my-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
-            <span className="p-1.5 rounded-lg bg-orange-100 text-orange-600">
-              <Sparkles className="w-4 h-4" />
+            <span className="p-1.5 rounded-lg bg-white text-emerald-700 border border-slate-200 shadow-2xs">
+              <Sparkles className="w-4 h-4 text-amber-500" />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-zinc-900 tracking-tight">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
                   Sélection Sponsorisée
                 </h2>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-zinc-200/80 text-zinc-600">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                   Sponsorisé
                 </span>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-slate-500">
                 Produits mis en avant par nos vendeurs partenaires certifiés
               </p>
             </div>

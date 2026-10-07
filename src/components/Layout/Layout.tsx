@@ -129,18 +129,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {isBricolagePage && <ArtisanMobileBottomNav />}
 
-      {isHomepage && (
-        <Footer isHomepage={true} />
+      {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
+        <Footer isHomepage={isHomepage} />
       )}
 
       {!isPremiumCollection && !isCheckoutPage && !isBricolagePage && !isImmoPage && !isStorePage && (
         <MobileBottomNav
           hideOnRoutes={[
             "/checkout",
-            "/auth",
-            "/onboarding",
-            "/verify-email",
-            "/forgot-password",
             "/bricolage",
             "/artisans",
             "/services/bricolage",

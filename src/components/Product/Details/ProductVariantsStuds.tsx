@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { Product } from "../../../domains/product/product.types";
 import { PRODUCT_COLORS } from "../../../constants";
 
@@ -33,13 +33,18 @@ export const ProductVariantsStuds: React.FC<ProductVariantsStudsProps> = ({
   if (!hasColors && !hasSizes) return null;
 
   return (
-    <div className="bg-[#FAF6F0] rounded-[2rem] p-4 sm:p-5 border border-[#EAE3D5] shadow-sm space-y-5">
+    <div className="space-y-4 pt-1">
+      {/* Colors Section */}
       {hasColors && (
-        <div className="space-y-2.5">
-          <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
-            {t("product.details.nuances") || "Couleurs"}
-          </h4>
-          <div className="flex flex-wrap gap-2.5">
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 text-sm font-bold text-zinc-900">
+            <span>{t("product.details.nuances") || "Couleur"} :</span>
+            <span className="font-semibold text-zinc-700 capitalize">
+              {selectedColor || product.colors![0]}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             {product.colors!.map((c: string) => {
               const matchingColor = PRODUCT_COLORS.find(
                 (pc) => pc.name.toLowerCase().trim() === c.toLowerCase().trim()
@@ -50,30 +55,34 @@ export const ProductVariantsStuds: React.FC<ProductVariantsStudsProps> = ({
               const isWhiteOrLight =
                 colorHex.toLowerCase() === "#ffffff" ||
                 colorHex.toLowerCase() === "#fde68a" ||
-                colorHex.toLowerCase() === "#facc15";
+                colorHex.toLowerCase() === "#facc15" ||
+                colorHex.toLowerCase() === "#f3ccde";
+              const isSelected = selectedColor === c;
+              const outOfStock = isColorOutOfStock(c);
 
               return (
                 <button
                   key={c}
                   type="button"
-                  disabled={isColorOutOfStock(c) && selectedColor !== c}
+                  disabled={outOfStock && !isSelected}
                   onClick={() => onSelectColor(c)}
-                  className={`flex items-center justify-center p-0.5 rounded-full border-2 transition-all shadow-sm cursor-pointer ${
-                    selectedColor === c
-                      ? "border-[#008BB5] scale-110"
-                      : "border-transparent hover:border-stone-300"
-                  } ${isColorOutOfStock(c) ? "opacity-30 cursor-not-allowed" : ""}`}
+                  className={`w-9 h-9 rounded-full p-0.5 transition-all cursor-pointer flex items-center justify-center border-none bg-transparent ${
+                    isSelected
+                      ? "ring-2 ring-offset-2 ring-emerald-600 scale-105"
+                      : "hover:scale-105"
+                  } ${outOfStock ? "opacity-35 cursor-not-allowed" : ""}`}
+                  aria-label={`Couleur ${c}`}
                 >
                   <div
-                    className="w-8 h-8 rounded-full border border-black/15 flex items-center justify-center relative shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]"
-                    style={{ background: colorHex }}
+                    className="w-full h-full rounded-full border border-black/10 flex items-center justify-center relative shadow-xs"
+                    style={{ backgroundColor: colorHex }}
                   >
-                    {selectedColor === c && (
-                      <Check className={`w-3.5 h-3.5 ${isWhiteOrLight ? "text-black" : "text-white"}`} />
+                    {isSelected && (
+                      <Check className={`w-4 h-4 stroke-[3] ${isWhiteOrLight ? "text-zinc-950" : "text-white"}`} />
                     )}
-                    {isColorOutOfStock(c) && (
+                    {outOfStock && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-[1.5px] bg-black rotate-45" />
+                        <div className="w-full h-[1.5px] bg-zinc-950 rotate-45" />
                       </div>
                     )}
                   </div>
@@ -84,36 +93,44 @@ export const ProductVariantsStuds: React.FC<ProductVariantsStudsProps> = ({
         </div>
       )}
 
+      {/* Sizes Section */}
       {hasSizes && (
-        <div className="space-y-2.5 pt-4 border-t border-[#EAE3D5]">
-          <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
-              {t("product.details.sizes") || "Tailles"}
-            </h4>
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-bold text-zinc-900">
+              {t("product.details.sizes") || "Taille"}
+            </span>
             <button
               type="button"
               onClick={onOpenSizeGuide}
-              className="text-[9px] font-bold uppercase tracking-wider text-[#008BB5] hover:underline transition-all cursor-pointer"
+              className="text-xs font-semibold text-zinc-500 hover:text-emerald-700 flex items-center gap-1 transition-colors cursor-pointer border-none bg-transparent"
             >
-              {t("product.details.size_guide") || "Guide des tailles"}
+              <span>{t("product.details.size_guide") || "Guide des tailles"}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
+
           <div className="flex flex-wrap gap-2">
-            {product.sizes!.map((s: string) => (
-              <button
-                key={s}
-                type="button"
-                disabled={isSizeOutOfStock(s) && selectedSize !== s}
-                onClick={() => onSelectSize(s)}
-                className={`px-4 py-2 rounded-xl font-sans font-bold text-[10px] uppercase tracking-wider transition-all border cursor-pointer ${
-                  selectedSize === s
-                    ? "bg-[#008BB5] text-white border-[#008BB5] shadow-md"
-                    : "bg-white border-stone-200 text-stone-700 hover:border-[#008BB5]"
-                } ${isSizeOutOfStock(s) ? "opacity-30 cursor-not-allowed" : ""}`}
-              >
-                {s}
-              </button>
-            ))}
+            {product.sizes!.map((s: string) => {
+              const isSelected = selectedSize === s;
+              const outOfStock = isSizeOutOfStock(s);
+
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={outOfStock && !isSelected}
+                  onClick={() => onSelectSize(s)}
+                  className={`min-w-[50px] h-11 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border cursor-pointer active:scale-95 ${
+                    isSelected
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      : "bg-white border-zinc-200 text-zinc-900 hover:border-zinc-300"
+                  } ${outOfStock ? "opacity-35 cursor-not-allowed bg-zinc-50" : ""}`}
+                >
+                  {s}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

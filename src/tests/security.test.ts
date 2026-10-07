@@ -203,7 +203,7 @@ describe("Security Middleware Configuration", () => {
 
   describe("Rate Limiting Fail-Safe & Multi-Instance Configuration", () => {
     it("exports all critical rate limiters with fail-safe configuration", async () => {
-      const { apiLimiter, loginLimiter, pinLimiter, strictLimiter, webhookLimiter, debugLimiter } = await import(
+      const { apiLimiter, loginLimiter, pinLimiter, strictLimiter, adminLimiter, webhookLimiter, debugLimiter } = await import(
         "../middlewares/rateLimiters"
       );
 
@@ -211,6 +211,7 @@ describe("Security Middleware Configuration", () => {
       expect(loginLimiter).toBeDefined();
       expect(pinLimiter).toBeDefined();
       expect(strictLimiter).toBeDefined();
+      expect(adminLimiter).toBeDefined();
       expect(webhookLimiter).toBeDefined();
       expect(debugLimiter).toBeDefined();
     });

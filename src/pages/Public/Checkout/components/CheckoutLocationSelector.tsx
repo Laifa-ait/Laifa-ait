@@ -32,78 +32,83 @@ export const CheckoutLocationSelector: React.FC<CheckoutLocationSelectorProps> =
 
   return (
     <div className="space-y-6">
-      <div className="grid sm:grid-cols-2 gap-6">
-        <div className="space-y-3">
+      <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+        <div className="space-y-2">
           <label
             htmlFor="wilaya"
-            className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
+            className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
           >
-            {t("wilaya") || "Wilaya"}
+            {t("wilaya") || "Wilaya"} <span className="text-rose-500">*</span>
           </label>
-          <select
-            id="wilaya"
-            value={wilaya}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                wilaya: e.target.value,
-                commune: "",
-              }));
-              localStorage.setItem("olma_default_wilaya", e.target.value);
-            }}
-            className="w-full px-6 py-4 bg-transparent border border-stone-200 rounded-2xl outline-none font-bold text-sm cursor-pointer focus:ring-2 ring-[var(--color-orange-600, #ea580c)]/20"
-          >
-            {wilayasToDisplay.length > 0 ? wilayasToDisplay.map((w) => (
-              <option key={w} value={w}>
-                {w}
-              </option>
-            )) : <option value={wilaya}>{wilaya}</option>}
-          </select>
+          <div className="relative">
+            <select
+              id="wilaya"
+              value={wilaya}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  wilaya: e.target.value,
+                  commune: "",
+                }));
+                localStorage.setItem("olma_default_wilaya", e.target.value);
+              }}
+              className="w-full h-13 px-4 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-sm text-zinc-900 cursor-pointer transition-all"
+            >
+              {wilayasToDisplay.length > 0 ? wilayasToDisplay.map((w) => (
+                <option key={w} value={w}>
+                  {w}
+                </option>
+              )) : <option value={wilaya}>{wilaya}</option>}
+            </select>
+          </div>
         </div>
-        <div className="space-y-3">
+
+        <div className="space-y-2">
           <label
             htmlFor="commune"
-            className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
+            className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
           >
-            {t("commune") || "Commune"}
+            {t("commune") || "Commune"} <span className="text-rose-500">*</span>
           </label>
-          <select
-            id="commune"
-            value={commune}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, commune: e.target.value }))
-            }
-            className="w-full px-6 py-4 bg-transparent border border-stone-200 rounded-2xl outline-none font-bold text-sm cursor-pointer focus:ring-2 ring-[var(--color-orange-600, #ea580c)]/20"
-          >
-            <option value="">
-              -- {t("choose_commune") || "Choisissez la commune"} --
-            </option>
-            {availableCommunes.map((c) => (
-              <option key={c} value={c}>
-                {c}
+          <div className="relative">
+            <select
+              id="commune"
+              value={commune}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, commune: e.target.value }))
+              }
+              className="w-full h-13 px-4 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-sm text-zinc-900 cursor-pointer transition-all"
+            >
+              <option value="">
+                -- {t("choose_commune") || "Sélectionnez votre commune"} --
               </option>
-            ))}
-            <option value="Autre">{t("Autre")}</option>
-          </select>
+              {availableCommunes.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+              <option value="Autre">{t("Autre commune")}</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {commune === "Autre" && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <label
             htmlFor="customCommune"
-            className="text-xs font-sans font-bold text-stone-400 uppercase tracking-widest rtl:tracking-normal ms-1"
+            className="text-xs font-sans font-bold text-zinc-600 uppercase tracking-wider ms-1 block"
           >
-            {t("enter_commune_name") || "Saisir le nom de la Commune"}
+            {t("enter_commune_name") || "Précisez le nom de votre commune"} <span className="text-rose-500">*</span>
           </label>
           <input
             id="customCommune"
             type="text"
-            placeholder={t("Ex: Hydra, Hussein Dey") || "Ex: Hydra, Hussein Dey"}
+            placeholder={t("Ex: Hydra, Ouled Fayet, Bab Ezzouar...") || "Ex: Hydra, Ouled Fayet, Bab Ezzouar..."}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, commune: e.target.value }))
             }
-            className="w-full px-6 py-4 bg-transparent border border-stone-200 rounded-2xl outline-none font-bold focus:ring-2 ring-[var(--color-orange-600, #ea580c)]/20"
+            className="w-full h-13 px-4 bg-zinc-50/70 border border-zinc-200 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl outline-none font-semibold text-sm text-zinc-900 transition-all"
           />
         </div>
       )}

@@ -372,13 +372,19 @@ service cloud.firestore {
           get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
           get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid ||
           isAdmin() ||
-          (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
+          (isSeller() && (
+            ('sellerIds' in get(/databases/$(database)/documents/orders/$(orderId)).data && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds) ||
+            ('sellerId' in get(/databases/$(database)/documents/orders/$(orderId)).data && get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)
+          ))
         );
         allow write: if isAdmin() || (
           isSignedIn() && (
             get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
             get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid ||
-            (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
+            (isSeller() && (
+              ('sellerIds' in get(/databases/$(database)/documents/orders/$(orderId)).data && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds) ||
+              ('sellerId' in get(/databases/$(database)/documents/orders/$(orderId)).data && get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)
+            ))
           )
         );
       }
@@ -388,7 +394,10 @@ service cloud.firestore {
           get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
           get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid ||
           isAdmin() ||
-          (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
+          (isSeller() && (
+            ('sellerIds' in get(/databases/$(database)/documents/orders/$(orderId)).data && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds) ||
+            ('sellerId' in get(/databases/$(database)/documents/orders/$(orderId)).data && get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)
+          ))
         );
         allow create: if isSignedIn() && (
           isAdmin() ||
@@ -396,7 +405,10 @@ service cloud.firestore {
             (
               get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
               get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid ||
-              (isSeller() && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds)
+              (isSeller() && (
+                ('sellerIds' in get(/databases/$(database)/documents/orders/$(orderId)).data && request.auth.uid in get(/databases/$(database)/documents/orders/$(orderId)).data.sellerIds) ||
+                ('sellerId' in get(/databases/$(database)/documents/orders/$(orderId)).data && get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)
+              ))
             ) &&
             (!('senderId' in incoming()) || incoming().senderId == request.auth.uid)
           )
@@ -771,6 +783,188 @@ service cloud.firestore {
     match /translations/{lang} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // 18. BOUTIQUES & VENDEURS (Shops & Sellers Storefronts)
+    // =========================================================================
+    match /shops/{shopId} {
+      // Lecture publique pour l'annuaire et les vitrines des boutiques
+      allow read: if true;
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        incoming().ownerId == request.auth.uid ||
+        incoming().sellerId == request.auth.uid ||
+        shopId == request.auth.uid
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.sellerId == request.auth.uid ||
+        shopId == request.auth.uid ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['followersCount'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /sellers/{sellerId} {
+      allow read: if true;
+      allow create: if isSignedIn() && (isAdmin() || sellerId == request.auth.uid);
+      allow update: if isSignedIn() && (isAdmin() || sellerId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 19. MESSAGERIE INSTANTANÉE (Chats & Messages en direct)
+    // =========================================================================
+    match /chats/{chatId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        ('participants' in resource.data && request.auth.uid in resource.data.participants) ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        ('sellerId' in resource.data && resource.data.sellerId == request.auth.uid) ||
+        ('buyerId' in resource.data && resource.data.buyerId == request.auth.uid)
+      );
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        (!('userId' in incoming()) || incoming().userId == request.auth.uid) ||
+        (!('participants' in incoming()) || request.auth.uid in incoming().participants)
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        ('participants' in existing() && request.auth.uid in existing().participants) ||
+        ('userId' in existing() && existing().userId == request.auth.uid) ||
+        ('sellerId' in existing() && existing().sellerId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+          isAdmin() ||
+          (exists(/databases/$(database)/documents/chats/$(chatId)) && (
+            ('participants' in get(/databases/$(database)/documents/chats/$(chatId)).data && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) ||
+            ('userId' in get(/databases/$(database)/documents/chats/$(chatId)).data && get(/databases/$(database)/documents/chats/$(chatId)).data.userId == request.auth.uid) ||
+            ('sellerId' in get(/databases/$(database)/documents/chats/$(chatId)).data && get(/databases/$(database)/documents/chats/$(chatId)).data.sellerId == request.auth.uid) ||
+            ('buyerId' in get(/databases/$(database)/documents/chats/$(chatId)).data && get(/databases/$(database)/documents/chats/$(chatId)).data.buyerId == request.auth.uid)
+          ))
+        );
+        allow create: if isSignedIn() && (
+          isAdmin() ||
+          (!('senderId' in incoming()) || incoming().senderId == request.auth.uid)
+        );
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // =========================================================================
+    // 20. SPONSORISATIONS, MARKETING & AUDITS CHECKOUT
+    // =========================================================================
+    match /sponsorships/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /marketing_campaigns/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /checkout_audits/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() || (isSignedIn() && incoming().userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 21. ANALYTICS & LOGS SYSTÈME
+    // =========================================================================
+    match /search_analytics/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /search_synonyms/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /site_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /ip_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /category_history/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // =========================================================================
+    // 22. IMMOBILIER PRO & OLMA UNIVERS
+    // =========================================================================
+    match /real_estate_pro_applications/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /olma_univers_app/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /olma_univers_waitlist/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 23. GESTION DES LITIGES & PIÈCES JOINTES
+    // =========================================================================
+    match /disputes/{id} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.sellerId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      );
+      allow create: if isSignedIn() && (
+        incoming().buyerId == request.auth.uid ||
+        incoming().userId == request.auth.uid
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.sellerId == request.auth.uid
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /disputeAttachments/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /supportAttachments/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 24. NOTIFICATIONS PUSH & AFFINITÉS UTILISATEUR
+    // =========================================================================
+    match /pushTokens/{id} {
+      allow read, write: if isSignedIn() && (
+        isAdmin() ||
+        id == request.auth.uid ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        ('userId' in incoming() && incoming().userId == request.auth.uid)
+      );
+    }
+
+    match /user_affinities/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
   }

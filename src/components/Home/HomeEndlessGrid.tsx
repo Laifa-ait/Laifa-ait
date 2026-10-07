@@ -133,9 +133,9 @@ export const HomeEndlessGrid: React.FC = () => {
 
   return (
     <section className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 md:px-8 mb-12 sm:mb-16">
-      {/* En-tête simple sans grand cadre */}
+      {/* En-tête simple avec typographie nette */}
       <div className="flex items-center justify-between mb-5 sm:mb-6">
-        <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-zinc-950">
+        <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900">
           {t("home.endless_grid.title", "Publications récentes")}
         </h2>
       </div>
@@ -154,13 +154,13 @@ export const HomeEndlessGrid: React.FC = () => {
             type="button"
             onClick={loadMoreProducts}
             disabled={loadingMore}
-            className="group relative inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-zinc-950 hover:bg-zinc-800 text-white text-xs sm:text-sm font-bold tracking-wider uppercase rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer border-none"
+            className="group relative inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold tracking-wider uppercase rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 cursor-pointer border-none"
           >
             {loadingMore ? (
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-emerald-200 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <div className="w-2 h-2 bg-emerald-200 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <div className="w-2 h-2 bg-emerald-200 rounded-full animate-bounce" />
               </div>
             ) : (
               <span>{t("home.endless_grid.load_more", "Afficher plus d'articles")}</span>

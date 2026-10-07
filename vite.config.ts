@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+  const env = loadEnv(mode, process.cwd(), '');
 
   return {
     define: {
@@ -227,12 +227,15 @@ export default defineConfig(({mode}) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      dedupe: ['react', 'react-dom'],
     },
     optimizeDeps: {
       include: [
         'react',
         'react-dom',
         'react-router-dom',
+        'react-i18next',
+        'i18next',
         'firebase/app',
         'firebase/auth',
         'firebase/firestore',

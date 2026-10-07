@@ -5,26 +5,38 @@
 (function () {
   if (typeof window === "undefined") return;
 
+  const isBenignNoise = (args: unknown[]) => {
+    const text = args
+      .map((a) => {
+        if (typeof a === "string") return a;
+        if (a && typeof a === "object") {
+          if ("message" in a && typeof (a as { message: unknown }).message === "string") {
+            return (a as { message: string }).message;
+          }
+          try {
+            return JSON.stringify(a);
+          } catch {
+            return "";
+          }
+        }
+        return String(a || "");
+      })
+      .join(" ");
+
+    return (
+      text.includes("[vite] failed to connect to websocket") ||
+      text.includes("WebSocket connection to") ||
+      text.includes("WebSocket closed without opened") ||
+      text.includes("WebChannelConnection") ||
+      text.includes("RPC 'Listen' stream") ||
+      text.includes("transport errored") ||
+      (text.includes("@firebase/firestore") && text.includes("WebChannel"))
+    );
+  };
+
   const originalError = console.error;
   console.error = function (...args: unknown[]) {
-    if (
-      args[0] &&
-      typeof args[0] === "string" &&
-      (args[0].includes("[vite] failed to connect to websocket") ||
-        args[0].includes("WebSocket connection to") ||
-        args[0].includes("WebSocket closed without opened.") ||
-        args[0].includes("WebChannelConnection") ||
-        args[0].includes("RPC 'Listen' stream"))
-    ) {
-      return;
-    }
-    if (
-      args[1] &&
-      typeof args[1] === "object" &&
-      args[1] !== null &&
-      (("message" in args[1] && typeof (args[1] as { message: unknown }).message === "string" && ((args[1] as { message: string }).message.includes("WebSocket"))) ||
-        (typeof args[1] === "string" && (args[1] as string).includes("WebSocket")))
-    ) {
+    if (isBenignNoise(args)) {
       return;
     }
     originalError.apply(console, args as Parameters<typeof console.error>);
@@ -32,15 +44,7 @@
 
   const originalWarn = console.warn;
   console.warn = function (...args: unknown[]) {
-    if (
-      args[0] &&
-      typeof args[0] === "string" &&
-      (args[0].includes("[vite] failed to connect to websocket") ||
-        args[0].includes("WebSocket connection to") ||
-        args[0].includes("WebSocket closed without opened.") ||
-        args[0].includes("WebChannelConnection") ||
-        args[0].includes("RPC 'Listen' stream"))
-    ) {
+    if (isBenignNoise(args)) {
       return;
     }
     originalWarn.apply(console, args as Parameters<typeof console.warn>);

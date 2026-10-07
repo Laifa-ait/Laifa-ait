@@ -4,6 +4,8 @@ import { Shop } from "../../../domains/seller/shop.types";
 import { ProductAccordionDescription } from "./ProductAccordionDescription";
 import { ProductAccordionSpecs } from "./ProductAccordionSpecs";
 import { ProductAccordionShipping } from "./ProductAccordionShipping";
+import { Ruler, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface ProductAccordionsBentoProps {
   product: Product;
@@ -31,8 +33,10 @@ export const ProductAccordionsBento: React.FC<ProductAccordionsBentoProps> = ({
   getTranslatedSeason,
   detailedAttributes,
 }) => {
+  const { t } = useTranslation();
+
   return (
-    <div className="bg-white rounded-[2rem] border border-[#EAE3D5] overflow-hidden shadow-sm">
+    <div className="divide-y divide-zinc-100 pt-2">
       <ProductAccordionDescription
         product={product}
         bilingualMode={bilingualMode}
@@ -58,6 +62,19 @@ export const ProductAccordionsBento: React.FC<ProductAccordionsBentoProps> = ({
         isOpen={openAccordion === "shipping"}
         onToggle={() => onToggleAccordion("shipping")}
       />
+
+      {/* Guide des tailles entry */}
+      <button
+        type="button"
+        onClick={onOpenSizeGuide}
+        className="w-full flex items-center justify-between py-4 text-start font-bold text-xs uppercase tracking-wider text-zinc-900 hover:text-emerald-700 transition-colors cursor-pointer border-none bg-transparent"
+      >
+        <span className="flex items-center gap-2.5">
+          <Ruler className="w-4 h-4 text-emerald-600" />
+          <span>{t("product.details.size_guide") || "Guide des tailles"}</span>
+        </span>
+        <ChevronRight className="w-4 h-4 text-zinc-400" />
+      </button>
     </div>
   );
 };

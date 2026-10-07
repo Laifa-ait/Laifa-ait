@@ -16,6 +16,36 @@ export const executeProductPublisherJob = async (): Promise<number> => {
 
   isJobRunning = true;
   try {
+    // Multi-instance distributed lease lock for Cloud Run container scaling
+    try {
+      const locksCol = db.collection("system_locks");
+      if (typeof locksCol?.doc === "function" && typeof db.runTransaction === "function") {
+        const lockRef = locksCol.doc("product_publisher");
+        const acquired = await db.runTransaction(async (transaction) => {
+          const lockDoc = await transaction.get(lockRef);
+          const data = lockDoc.data ? lockDoc.data() : undefined;
+          const expiresAt = data?.expiresAt?.toMillis ? data.expiresAt.toMillis() : (typeof data?.expiresAt === "number" ? data.expiresAt : 0);
+          if (Date.now() < expiresAt) {
+            return false;
+          }
+          transaction.set(lockRef, {
+            instanceId: process.env.K_REVISION || `instance_${process.pid}`,
+            expiresAt: admin.firestore.Timestamp ? admin.firestore.Timestamp.fromMillis(Date.now() + 50000) : Date.now() + 50000,
+            acquiredAt: admin.firestore.FieldValue.serverTimestamp(),
+          }, { merge: true });
+          return true;
+        });
+
+        if (!acquired) {
+          safeLogger.info("[Olmart Workers] ⏳ Another Cloud Run instance holds the publisher lease. Skipping cycle.");
+          return 0;
+        }
+      }
+    } catch (lockError: unknown) {
+      // In testing environments or restricted permissions, safely continue with in-memory mutex
+      safeLogger.debug("[Olmart Workers] Distributed lock bypass", { reason: lockError instanceof Error ? lockError.message : String(lockError) });
+    }
+
     const now = Date.now();
     
     const snapshot = await db.collection("products")

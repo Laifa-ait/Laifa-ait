@@ -3,137 +3,15 @@ import { db } from "../../config/firebase-admin";
 import { CoreService, LogErrorBody } from "../../services/CoreService";
 import { TrendingSearchesService } from "../../services/TrendingSearchesService";
 import { safeLogger } from "../../utils/logger";
-import { validateExternalUrl } from "../../utils/security";
-import { corsOptions } from "../../middlewares/security";
 import { debugLimiter } from "../../middlewares/rateLimiters";
 import { PublicShopDTO } from "../seller/shop.types";
 import { buildWhitelistedShopDTO } from "../seller/shopPublic.projection";
+import { handleProxyVideo } from "./proxyVideo.handler";
 
 const router = Router();
 
 // GET proxy video with whitelist protection
-router.get("/api/v1/proxy-video", async (req: Request, res: Response) => {
-  try {
-    const videoUrl = req.query.url as string;
-    if (!videoUrl) {
-      return res.status(400).json({ error: "Missing url parameter" });
-    }
-
-    let parsedUrl: URL;
-    try {
-      parsedUrl = validateExternalUrl(videoUrl, false);
-    } catch (err) {
-      return res.status(400).json({ error: err instanceof Error ? err.message : "Format d'URL invalide" });
-    }
-
-    const hostname = parsedUrl.hostname.toLowerCase();
-
-    const ALLOWED_VIDEO_HOSTS = [
-      "commondatastorage.googleapis.com",
-      "storage.googleapis.com",
-      "firebasestorage.googleapis.com",
-      "videos.pexels.com",
-      "assets.mixkit.co",
-      "cdn.pixabay.com",
-      "vimeo.com",
-      "player.vimeo.com",
-      "cloudinary.com",
-      "res.cloudinary.com",
-    ];
-
-    const isAllowedHost = ALLOWED_VIDEO_HOSTS.some(
-      (allowed) => hostname === allowed || hostname.endsWith(`.${allowed}`)
-    );
-
-    if (!isAllowedHost) {
-      return res.status(403).json({ error: "Video host not in allowed proxy list" });
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-    const headers: Record<string, string> = {
-      "User-Agent": "Olmart-Video-Proxy/1.0",
-    };
-    if (req.headers.range) {
-      headers["Range"] = req.headers.range;
-    }
-
-    let response: globalThis.Response;
-    try {
-      response = await fetch(parsedUrl.toString(), {
-        signal: controller.signal,
-        headers,
-        redirect: "error",
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    if (!response.ok && response.status !== 206) {
-      return res.status(response.status).json({ error: `Upstream returned status ${response.status}` });
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-    if (contentType && !contentType.startsWith("video/") && !contentType.startsWith("application/octet-stream")) {
-      return res.status(400).json({ error: "Requested resource is not a video" });
-    }
-
-    res.status(response.status);
-    response.headers.forEach((value, key) => {
-      const lowerKey = key.toLowerCase();
-      if (
-        [
-          "content-type",
-          "content-length",
-          "accept-ranges",
-          "content-range",
-          "cache-control",
-          "etag",
-          "last-modified",
-        ].includes(lowerKey)
-      ) {
-        res.setHeader(key, value);
-      }
-    });
-
-    const origin = req.headers.origin;
-    if (origin && typeof corsOptions.origin === "function") {
-      corsOptions.origin(origin, (err: Error | null, allow?: boolean | string | RegExp | Array<boolean | string | RegExp>) => {
-        if (!err && allow) {
-          res.setHeader("Access-Control-Allow-Origin", origin);
-          res.setHeader("Vary", "Origin");
-        }
-      });
-    }
-    res.setHeader("Access-Control-Allow-Headers", "Range");
-    res.setHeader("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
-
-    if (!response.body) {
-      return res.end();
-    }
-
-    const reader = response.body.getReader();
-    const pump = async (): Promise<void> => {
-      try {
-        const { done, value } = await reader.read();
-        if (done) {
-          res.end();
-          return;
-        }
-        res.write(Buffer.from(value));
-        return pump();
-      } catch {
-        res.end();
-      }
-    };
-    return pump();
-  } catch (error: unknown) {
-    if (!res.headersSent) {
-      return res.status(502).json({ error: error instanceof Error ? error.message : "Erreur proxy vidéo" });
-    }
-  }
-});
+router.get("/api/v1/proxy-video", handleProxyVideo);
 
 // GET public homepage data
 router.get("/api/v1/public/home-data", async (_req: Request, res: Response) => {
@@ -168,8 +46,12 @@ router.post("/api/v1/logs/error", debugLimiter, async (req: Request, res: Respon
 // GET public profiles list (Authoritative projection with strict whitelist)
 router.get("/api/v1/public-profiles", async (_req: Request, res: Response) => {
   try {
+    if (!db || typeof db.collection !== "function") {
+      safeLogger.warn("/api/v1/public-profiles called before Firestore initialized, returning empty profiles");
+      return res.json({ success: true, profiles: [] });
+    }
+
     // 1. Select only active seller users up to a fixed limit of 100
-    // Query requires an index on (role, status) if Firestore executes composite query
     const usersSnap = await db
       .collection("users")
       .where("role", "==", "seller")
@@ -204,6 +86,69 @@ router.get("/api/v1/public-profiles", async (_req: Request, res: Response) => {
     return res.json({ success: true, profiles });
   } catch (err: unknown) {
     safeLogger.error("Error fetching public profiles", {
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return res.status(500).json({ success: false, error: "Erreur lors de la récupération des profils publics" });
+  }
+});
+
+// POST /api/v1/public-profiles (Batch lookup for checkout & cart)
+router.post("/api/v1/public-profiles", async (req: Request, res: Response) => {
+  try {
+    const rawIds = req.body?.ids;
+    if (!Array.isArray(rawIds)) {
+      return res.status(400).json({ success: false, error: "Paramètre 'ids' invalide (tableau requis)" });
+    }
+
+    const sellerIds = Array.from(
+      new Set(rawIds.filter((id): id is string => typeof id === "string" && Boolean(id.trim())))
+    ).slice(0, 50);
+
+    if (sellerIds.length === 0) {
+      return res.json({ success: true, profiles: {} });
+    }
+
+    if (!db || typeof db.collection !== "function") {
+      safeLogger.warn("POST /api/v1/public-profiles called before Firestore initialized, returning empty profiles");
+      return res.json({ success: true, profiles: {} });
+    }
+
+    const userDocPromises = sellerIds.map((id) => db.collection("users").doc(id).get());
+    const pubDocPromises = sellerIds.map((id) => db.collection("publicProfiles").doc(id).get());
+
+    const [userDocs, pubDocs] = await Promise.all([
+      Promise.all(userDocPromises),
+      Promise.all(pubDocPromises),
+    ]);
+
+    const pubDocsMap = new Map<string, Record<string, unknown>>();
+    pubDocs.forEach((doc) => {
+      if (doc.exists) {
+        pubDocsMap.set(doc.id, doc.data() || {});
+      }
+    });
+
+    const profilesMap: Record<string, PublicShopDTO> = {};
+    userDocs.forEach((userDoc) => {
+      if (userDoc.exists) {
+        const userData = userDoc.data() || {};
+        const pubData = pubDocsMap.get(userDoc.id) || {};
+        profilesMap[userDoc.id] = buildWhitelistedShopDTO(userDoc.id, userData, pubData);
+      } else {
+        const pubData = pubDocsMap.get(userDoc.id);
+        if (pubData) {
+          profilesMap[userDoc.id] = buildWhitelistedShopDTO(userDoc.id, {}, pubData);
+        }
+      }
+    });
+
+    safeLogger.info("/api/v1/public-profiles batch fetched profiles", {
+      requested: sellerIds.length,
+      found: Object.keys(profilesMap).length,
+    });
+    return res.json({ success: true, profiles: profilesMap });
+  } catch (err: unknown) {
+    safeLogger.error("Error in POST /api/v1/public-profiles", {
       err: err instanceof Error ? err.message : String(err),
     });
     return res.status(500).json({ success: false, error: "Erreur lors de la récupération des profils publics" });

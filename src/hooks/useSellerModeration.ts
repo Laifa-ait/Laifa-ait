@@ -158,11 +158,16 @@ export function useSellerModeration() {
 
   const handleBulkDeleteSellers = async () => {
     if (selectedSellerIds.length === 0) return;
-    if (selectedSellerIds.length > 50) {
-      toast.error(t('La suppression en masse est limitée à 50 vendeurs maximum à la fois.'));
+    if (selectedSellerIds.length > 20) {
+      toast.error(t('La suppression en masse est limitée à 20 vendeurs maximum à la fois.'));
       return;
     }
-    if (!window.confirm(t('ATTENTION : Êtes-vous certain de vouloir supprimer définitivement les {{count}} vendeurs sélectionnés ? Cette action est irréversible.', { count: selectedSellerIds.length }))) {
+    if (!window.confirm(t('⚠️ ATTENTION : Vous allez supprimer définitivement {{count}} vendeur(s).\nCette action est IRRÉVERSIBLE.\n\nTapez "SUPPRIMER" à l\'étape suivante pour valider.', { count: selectedSellerIds.length }))) {
+      return;
+    }
+    const userInput = window.prompt(t('Pour confirmer la suppression groupée de {{count}} vendeur(s), tapez SUPPRIMER :', { count: selectedSellerIds.length }));
+    if (userInput !== 'SUPPRIMER') {
+      toast.error(t('Suppression groupée annulée (mot de confirmation incorrect)'));
       return;
     }
     setBulkLoading(true);

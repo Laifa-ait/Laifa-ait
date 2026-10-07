@@ -5,7 +5,7 @@ import {
   Auth,
 } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { initializeFirestore, getFirestore, Firestore, setLogLevel } from "firebase/firestore";
 import { safeLogger } from "../utils/logger";
 
 const isTestEnv =
@@ -68,6 +68,15 @@ try {
   app = getApps().length === 0 ? initializeApp(clientConfig) : getApp();
   auth = getAuth(app);
   storage = getStorage(app);
+
+  if (!isTestEnv) {
+    try {
+      setLogLevel("error");
+    } catch {
+      // ignore
+    }
+  }
+
   const customDbId =
     import.meta.env?.VITE_FIREBASE_DATABASE_ID ||
     (typeof process !== "undefined" ? process.env?.FIREBASE_DATABASE_ID : undefined);
@@ -77,7 +86,17 @@ try {
   }
 
   const effectiveDbId = customDbId || "(default)";
-  db = effectiveDbId !== "(default)" ? getFirestore(app, effectiveDbId) : getFirestore(app);
+  try {
+    db = initializeFirestore(
+      app,
+      {
+        experimentalForceLongPolling: true,
+      },
+      effectiveDbId !== "(default)" ? effectiveDbId : undefined
+    );
+  } catch {
+    db = effectiveDbId !== "(default)" ? getFirestore(app, effectiveDbId) : getFirestore(app);
+  }
 } catch (err: unknown) {
   const errorObj = err as { code?: string; message?: string };
   if (errorObj?.code === "app/duplicate-app") {

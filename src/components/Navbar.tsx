@@ -12,6 +12,7 @@ import {
   Truck,
   Headphones,
   LayoutGrid,
+  ArrowLeft,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -66,6 +67,7 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isCategoriesPage = location.pathname === "/categories";
+  const isProductPage = location.pathname.startsWith("/product/");
 
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -138,7 +140,7 @@ export const Navbar: React.FC = () => {
     <>
       <div
         id="olmart-top-utility-bar"
-        className="bg-zinc-950 text-zinc-300 text-xs font-medium px-4 sm:px-6 lg:px-12 py-2 gap-4 overflow-x-auto whitespace-nowrap scrollbar-hide justify-between items-center relative hidden lg:flex border-b border-zinc-800/80"
+        className="bg-slate-900 text-slate-300 text-xs font-medium px-4 sm:px-6 lg:px-12 py-2 gap-4 overflow-x-auto whitespace-nowrap scrollbar-hide justify-between items-center relative hidden lg:flex border-b border-slate-800"
       >
         <div className="flex items-center mx-auto w-full max-w-[90rem] justify-between relative z-10">
           {/* Universes Navigation Hub */}
@@ -146,10 +148,10 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsSwitcherOpen(true)}
-              className="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-zinc-950 cursor-pointer group shadow-xs mr-1"
+              className="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 hover:text-white cursor-pointer group shadow-xs mr-1"
               title={t("Ouvrir le commutateur d'univers Olmart Super-App", "Ouvrir le commutateur d'univers Olmart Super-App")}
             >
-              <LayoutGrid className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <LayoutGrid className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform text-emerald-400" />
               <span>{t("Univers", "Univers")}</span>
             </button>
 
@@ -157,8 +159,8 @@ export const Navbar: React.FC = () => {
               to="/shop"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 location.pathname === "/" || location.pathname.startsWith("/shop")
-                  ? "bg-amber-500 text-zinc-950 shadow-xs font-bold"
-                  : "text-zinc-300 hover:text-white hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
@@ -169,13 +171,13 @@ export const Navbar: React.FC = () => {
               to="/bricolage"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 location.pathname.startsWith("/bricolage")
-                  ? "bg-amber-500 text-zinc-950 shadow-xs font-bold"
-                  : "text-zinc-300 hover:text-white hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
-              <Wrench className="w-3.5 h-3.5 text-amber-400" />
+              <Wrench className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("Olma Bricolage", "Olma Bricolage")}</span>
-              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded-full bg-slate-800 text-emerald-400 font-bold border border-slate-700">
                 {t("Artisans", "Artisans")}
               </span>
             </Link>
@@ -184,11 +186,11 @@ export const Navbar: React.FC = () => {
               to="/immo"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 location.pathname.startsWith("/immo")
-                  ? "bg-amber-500 text-zinc-950 shadow-xs font-bold"
-                  : "text-zinc-300 hover:text-white hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
-              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+              <Building2 className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("Olma Immo", "Olma Immo")}</span>
             </Link>
 
@@ -196,11 +198,11 @@ export const Navbar: React.FC = () => {
               to="/shops"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 location.pathname.startsWith("/shops")
-                  ? "bg-amber-500 text-zinc-950 shadow-xs font-bold"
-                  : "text-zinc-300 hover:text-white hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
-              <Store className="w-3.5 h-3.5 text-blue-400" />
+              <Store className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("Boutiques", "Boutiques")}</span>
             </Link>
 
@@ -208,11 +210,11 @@ export const Navbar: React.FC = () => {
               to="/comparator"
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 location.pathname.startsWith("/comparator")
-                  ? "bg-amber-500 text-zinc-950 shadow-xs font-bold"
-                  : "text-zinc-300 hover:text-white hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
-              <Scale className="w-3.5 h-3.5 text-purple-400" />
+              <Scale className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("Comparateur", "Comparateur")}</span>
             </Link>
           </div>
@@ -221,23 +223,23 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-4 text-xs font-medium">
             <Link
               to="/shipping-calculator"
-              className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+              className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
             >
-              <Truck className="w-3.5 h-3.5 text-zinc-400" />
+              <Truck className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("shipping_calc") || "Tarifs Livraison 69 Wilayas"}</span>
             </Link>
 
-            <span className="text-zinc-700">|</span>
+            <span className="text-slate-700">|</span>
 
             <Link
               to="/support"
-              className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+              className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
             >
-              <Headphones className="w-3.5 h-3.5 text-zinc-400" />
+              <Headphones className="w-3.5 h-3.5 text-slate-400" />
               <span>{t("support") || "Aide & Support"}</span>
             </Link>
 
-            <span className="text-zinc-700">|</span>
+            <span className="text-slate-700">|</span>
 
             <button
               onClick={() => {
@@ -249,7 +251,7 @@ export const Navbar: React.FC = () => {
                   navigate("/auth?role=seller");
                 }
               }}
-              className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 font-bold hover:from-amber-400 hover:to-orange-400 transition-all shadow-xs cursor-pointer border-none uppercase tracking-wider text-[11px]"
+              className="px-3 py-1 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black transition-all shadow-xs cursor-pointer border-none uppercase tracking-wider text-[11px]"
             >
               {t("sell_on_olma")}
             </button>
@@ -257,10 +259,38 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      <nav className={`sticky top-0 z-[100] bg-white/98 backdrop-blur-md border-b border-zinc-200/80 transition-shadow duration-200 ${
-        isScrolled ? "shadow-sm" : "shadow-xs"
+      <nav className={`${
+        isProductPage
+          ? "sticky top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs"
+          : `sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-slate-200 transition-shadow duration-200 ${
+              isScrolled ? "shadow-[0_4px_20px_rgba(15,23,42,0.06)]" : "shadow-xs"
+            }`
       } py-2 sm:py-2.5`}>
-        <div className={`flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 md:px-8 mx-auto w-full max-w-[90rem] justify-between relative gap-2 sm:gap-3 lg:gap-0 ${
+        {/* On mobile for Product Details: Dedicated sticky search bar with back button */}
+        {isProductPage && (
+          <div className="flex lg:hidden items-center justify-between w-full gap-2.5 h-11 px-3 pointer-events-auto">
+            <button
+              type="button"
+              onClick={() => {
+                if (window.history.length > 2) {
+                  navigate(-1);
+                } else {
+                  navigate("/shop");
+                }
+              }}
+              className="w-9 h-9 rounded-full bg-white hover:bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 cursor-pointer border border-slate-200 shadow-xs transition-all active:scale-95"
+              aria-label="Retour"
+            >
+              <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+            </button>
+
+            <div className="flex-1 min-w-0">
+              <Searchbar variant="transparent" />
+            </div>
+          </div>
+        )}
+
+        <div className={`${isProductPage ? "hidden lg:flex" : "flex"} flex-col lg:flex-row lg:items-center px-4 sm:px-6 md:px-8 mx-auto w-full max-w-[90rem] justify-between relative gap-2 sm:gap-3 lg:gap-0 ${
           location.pathname === "/" && showCategories ? "pb-2 sm:pb-3" : ""
         }`}>
           
@@ -271,41 +301,45 @@ export const Navbar: React.FC = () => {
                  onClick={handleLogoClick}
                  className="flex items-center gap-2 shrink-0 select-none cursor-pointer group bg-transparent border-none"
                >
-                 <OlmaLogo className="w-8 h-8 sm:w-9 sm:h-9 text-zinc-900 group-hover:scale-105 transition-transform duration-200" />
-                 <span className="font-display font-bold tracking-tight text-zinc-900 uppercase hidden sm:block text-2xl sm:text-3xl">
+                 <OlmaLogo className="w-8 h-8 sm:w-9 sm:h-9 text-emerald-600 group-hover:scale-105 transition-transform duration-200" />
+                 <span className="font-display font-bold tracking-tight text-slate-900 uppercase hidden sm:block text-2xl sm:text-3xl">
                    {t("Olma")}
-                   <span className="text-zinc-900">{t("rt")}</span>
+                   <span className="text-emerald-600">{t("rt")}</span>
                  </span>
               </button>
             </div>
             
-            {/* Actions for Mobile */}
-            <div className="flex items-center justify-end gap-2 sm:gap-3 lg:hidden relative shrink-0">
+             {/* Actions for Mobile */}
+            <div className="flex items-center justify-end gap-1.5 sm:gap-2 lg:hidden relative shrink-0">
                <button
+                type="button"
                 onClick={() => setIsCartOpen(true)}
-                className="flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors cursor-pointer relative bg-transparent border-none w-9 h-9 rounded-full"
+                aria-label={t("Mon Panier") || "Mon Panier"}
+                className="flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition-all cursor-pointer relative bg-transparent border-none w-10 h-10 rounded-full active:scale-95"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+                <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black shadow-xs border border-white tabular-nums">
                     {cartCount}
                   </span>
                 )}
               </button>
               
               <button
+                type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors cursor-pointer bg-transparent border-none w-9 h-9 rounded-full"
+                aria-label={t("Menu") || "Menu"}
+                className="flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition-all cursor-pointer bg-transparent border-none w-10 h-10 rounded-full active:scale-95"
               >
-                <Menu className="w-5 h-5 stroke-[1.5]" />
+                <Menu className="w-5 h-5 stroke-[1.8]" />
               </button>
             </div>
           </div>
 
           {!isCategoriesPage && (
-            <div className="flex-1 flex items-center justify-center w-full px-0 lg:px-8 order-last lg:order-none gap-2">
-              <div className="w-full max-w-3xl">
-                <Searchbar variant="default" />
+            <div className={`flex-1 flex items-center justify-center w-full px-0 ${isProductPage ? "lg:px-12 max-w-2xl" : "lg:px-8 max-w-3xl"} order-last lg:order-none gap-2`}>
+              <div className="w-full">
+                <Searchbar variant={isProductPage ? "discreet" : "default"} />
               </div>
             </div>
           )}
@@ -330,15 +364,15 @@ export const Navbar: React.FC = () => {
                 aria-expanded={isLangDropdownOpen}
                 aria-haspopup="true"
                 aria-label="Changer de langue"
-                className="flex items-center gap-1.5 text-xs font-bold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all h-10 px-3 bg-zinc-50 rounded-full cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-slate-100 border border-slate-200 transition-all h-10 px-3 bg-slate-50 rounded-full cursor-pointer"
               >
-                <Globe className="w-4 h-4 text-zinc-500" />
+                <Globe className="w-4 h-4 text-slate-500" />
                 <span className="uppercase">{lang ? lang.split("-")[0] : "fr"}</span>
               </button>
               {isLangDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-50 cursor-default" onClick={() => setIsLangDropdownOpen(false)} />
-                  <div className="absolute top-full right-0 mt-2 bg-white border border-zinc-100 shadow-xl z-[60] py-2 rounded-none min-w-[140px] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-slate-200 shadow-xl z-[60] py-2 rounded-2xl min-w-[140px] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
                     {[
                       { code: "fr", name: "Français" },
                       { code: "ar", name: "العربية" },
@@ -350,12 +384,12 @@ export const Navbar: React.FC = () => {
                           setLang(l.code);
                           setIsLangDropdownOpen(false);
                         }}
-                        className={`w-full text-left rtl:text-right px-4 py-2.5 text-sm font-medium transition-colors bg-transparent border-none cursor-pointer flex items-center justify-between gap-2 hover:bg-transparent ${
-                          lang === l.code ? "text-zinc-900" : "text-zinc-700"
+                        className={`w-full text-left rtl:text-right px-4 py-2.5 text-sm font-medium transition-colors bg-transparent border-none cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 ${
+                          lang === l.code ? "text-emerald-700 font-bold" : "text-slate-600"
                         }`}
                       >
                         <span>{l.name}</span>
-                        {lang === l.code && <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />}
+                        {lang === l.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />}
                       </button>
                     ))}
                   </div>
@@ -365,11 +399,11 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={() => setIsWishlistOpen(true)}
-              className="hidden lg:flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all cursor-pointer relative bg-zinc-50 w-10 h-10 rounded-full"
+              className="hidden lg:flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer relative bg-slate-50 w-10 h-10 rounded-full"
             >
-              <Heart className="w-5 h-5 stroke-[1.5] text-zinc-500" />
+              <Heart className="w-5 h-5 stroke-[1.5] text-slate-600" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm border border-white">
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm border border-white">
                   {wishlist.length}
                 </span>
               )}
@@ -377,12 +411,14 @@ export const Navbar: React.FC = () => {
 
             {/* Panier */}
             <button
+              type="button"
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all cursor-pointer relative bg-zinc-50 w-10 h-10 rounded-full"
+              aria-label={t("Mon Panier") || "Mon Panier"}
+              className="flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer relative bg-slate-50 w-10 h-10 rounded-full active:scale-95"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[1.5] text-zinc-500" />
+              <ShoppingBag className="w-5 h-5 stroke-[1.8] text-slate-700" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm border border-white">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black shadow-xs border border-white tabular-nums">
                   {cartCount}
                 </span>
               )}
@@ -412,8 +448,8 @@ export const Navbar: React.FC = () => {
                 aria-label="Compte utilisateur"
                 className={`flex items-center justify-center transition-all cursor-pointer w-10 h-10 rounded-full border ${
                   currentUser
-                    ? "p-0.5 border-[#dadce0] hover:ring-2 hover:ring-[#1a73e8]/30 hover:border-[#1a73e8] bg-white"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border-zinc-200/60 bg-zinc-50"
+                    ? "p-0.5 border-slate-300 hover:ring-2 hover:ring-emerald-500/30 hover:border-emerald-600 bg-white"
+                    : "text-slate-700 hover:text-emerald-700 hover:bg-slate-100 border-slate-200 bg-slate-50"
                 }`}
               >
                 {currentUser ? (
@@ -426,7 +462,7 @@ export const Navbar: React.FC = () => {
                     alt={userProfile?.displayName || "Profil"}
                   />
                 ) : (
-                  <UserIcon className="w-5 h-5 stroke-[1.5] text-zinc-500" />
+                  <UserIcon className="w-5 h-5 stroke-[1.5] text-slate-600" />
                 )}
               </button>
             </div>
@@ -434,10 +470,10 @@ export const Navbar: React.FC = () => {
             {/* PC Version Hamburger / Sandwich Menu on the Right */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="hidden lg:flex items-center justify-center text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all cursor-pointer bg-zinc-50 w-10 h-10 rounded-full shrink-0"
+              className="hidden lg:flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer bg-slate-50 w-10 h-10 rounded-full shrink-0"
               title={t("menu") || "Menu"}
             >
-              <Menu className="w-5 h-5 stroke-[1.5] text-zinc-500" />
+              <Menu className="w-5 h-5 stroke-[1.5] text-slate-600" />
             </button>
           </div>
         </div>

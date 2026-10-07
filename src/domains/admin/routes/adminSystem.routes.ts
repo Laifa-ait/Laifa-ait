@@ -372,8 +372,8 @@ router.post("/admin/users/bulk-delete", authenticateToken, authorizeAdmin, async
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ error: "Liste d'utilisateurs requise" });
     }
-    if (userIds.length > 50) {
-      return res.status(400).json({ error: "La suppression en masse est limitée à 50 utilisateurs maximum par opération." });
+    if (userIds.length > 20) {
+      return res.status(400).json({ error: "La suppression en masse est limitée à 20 utilisateurs maximum par opération." });
     }
 
     const batchSize = 400;

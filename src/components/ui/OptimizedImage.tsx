@@ -79,7 +79,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   return (
-    <div style={containerStyle} className={`inline-block relative ${className}`}>
+    <div style={containerStyle} className={`relative block ${className}`}>
       {/* Squelette d'attente (Skeleton Loader) pendant le chargement */}
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 bg-slate-200 dark:bg-slate-700 animate-pulse rounded" />
@@ -93,7 +93,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           className="w-full h-full object-cover rounded"
         />
       ) : (
-        <picture>
+        <picture className="block w-full h-full">
           {srcSet && (
             <source
               type="image/webp"

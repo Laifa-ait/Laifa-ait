@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkles, Plus, Zap, Crown, Smartphone, Flame } from "lucide-react";
+import { Sparkles, Plus, Zap, Crown, Smartphone, Flame, LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { HomepageSection } from "../../../domains/home/homepage.types";
 
@@ -7,14 +7,18 @@ interface PresetsRibbonProps {
   onApplyPreset: (preset: Partial<HomepageSection>) => void;
 }
 
-const PRESETS: Array<{
+interface PresetItem {
   name: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
+  iconColor: string;
   data: Partial<HomepageSection>;
-}> = [
+}
+
+const PRESETS: PresetItem[] = [
   {
     name: "Vente Flash Ramadan",
-    icon: <Zap className="w-3.5 h-3.5 text-rose-500" />,
+    icon: Zap,
+    iconColor: "text-rose-500",
     data: {
       name: "Vente Flash Ramadan",
       type: "flash_sale",
@@ -26,7 +30,8 @@ const PRESETS: Array<{
   },
   {
     name: "Sélection Prestige DZ",
-    icon: <Crown className="w-3.5 h-3.5 text-amber-500" />,
+    icon: Crown,
+    iconColor: "text-amber-500",
     data: {
       name: "Sélection Prestige & Artisanat",
       type: "top_picks",
@@ -38,7 +43,8 @@ const PRESETS: Array<{
   },
   {
     name: "Nouveautés High-Tech",
-    icon: <Smartphone className="w-3.5 h-3.5 text-sky-500" />,
+    icon: Smartphone,
+    iconColor: "text-sky-500",
     data: {
       name: "High-Tech & Gaming",
       type: "new_arrivals",
@@ -51,13 +57,14 @@ const PRESETS: Array<{
   },
   {
     name: "Tendances du Moment",
-    icon: <Flame className="w-3.5 h-3.5 text-orange-500" />,
+    icon: Flame,
+    iconColor: "text-orange-500",
     data: {
       name: "Tendances Shopping",
       type: "trending",
       style: "glass",
-      title: "Les Articles les Plus Demandés",
-      subtitle: "Sélectionnés par nos algorithmes de popularité",
+      title: "🔥 Les Incontournables & Top Ventes",
+      subtitle: "Les meilleures sélections plébiscitées partout en Algérie",
       limit: 8,
     },
   },
@@ -80,29 +87,32 @@ export const PresetsRibbon: React.FC<PresetsRibbonProps> = ({ onApplyPreset }) =
         </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.name}
-            type="button"
-            onClick={() => onApplyPreset(preset.data)}
-            className="flex items-center justify-between p-3 rounded-2xl border border-zinc-200 hover:border-amber-400 bg-zinc-50/50 hover:bg-amber-50/30 transition-all text-left group cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-white shadow-xs border border-zinc-100 group-hover:scale-110 transition-transform">
-                {preset.icon}
-              </div>
-              <div>
-                <div className="text-xs font-bold text-zinc-900 group-hover:text-amber-800">
-                  {preset.name}
+        {PRESETS.map((preset) => {
+          const PresetIcon = preset.icon;
+          return (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => onApplyPreset(preset.data)}
+              className="flex items-center justify-between p-3 rounded-2xl border border-zinc-200 hover:border-amber-400 bg-zinc-50/50 hover:bg-amber-50/30 transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-white shadow-xs border border-zinc-100 group-hover:scale-110 transition-transform">
+                  <PresetIcon className={`w-3.5 h-3.5 ${preset.iconColor}`} />
                 </div>
-                <div className="text-[10px] text-zinc-500 font-medium">
-                  Type: {preset.data.type}
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 group-hover:text-amber-800">
+                    {preset.name}
+                  </div>
+                  <div className="text-[10px] text-zinc-500 font-medium">
+                    Type: {preset.data.type}
+                  </div>
                 </div>
               </div>
-            </div>
-            <Plus className="w-4 h-4 text-zinc-400 group-hover:text-amber-600 transition-colors" />
-          </button>
-        ))}
+              <Plus className="w-4 h-4 text-zinc-400 group-hover:text-amber-600 transition-colors" />
+            </button>
+          );
+        })}
       </div>
     </div>
   );
